@@ -26,12 +26,11 @@ interface CategoryBreakdown {
 async function handler(req: NextRequest, context) {
   try {
     const organizationId = context.organizationId;
-    const tenantId = organizationId;
     
-    if (!tenantId) {
+    if (!organizationId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID required'
+      'Organization ID required'
     );
     }
 
@@ -49,7 +48,7 @@ async function handler(req: NextRequest, context) {
         claim_type AS category,
         COUNT(*) AS count
       FROM claims
-      WHERE tenant_id = ${tenantId}
+      WHERE organization_id = ${organizationId}
         AND created_at BETWEEN ${startDate} AND ${endDate}
       GROUP BY claim_type
       ORDER BY COUNT(*) DESC
@@ -69,7 +68,7 @@ async function handler(req: NextRequest, context) {
         claim_type AS category,
         COUNT(*) AS count
       FROM claims
-      WHERE tenant_id = ${tenantId}
+      WHERE organization_id = ${organizationId}
         AND created_at BETWEEN ${prevStartDate} AND ${prevEndDate}
       GROUP BY claim_type
     `) as any[];

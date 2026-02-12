@@ -45,7 +45,7 @@ async function getHandler(req: NextRequest, context: OrganizationContext, params
     );
     }
 
-    const schedule = await getScheduledReportById(params.id, tenantId);
+    const schedule = await getScheduledReportById(params.id, organizationId);
 
     if (!schedule) {
       return standardErrorResponse(
@@ -59,7 +59,7 @@ async function getHandler(req: NextRequest, context: OrganizationContext, params
     const includeHistory = searchParams.get('includeHistory') === 'true';
 
     if (includeHistory) {
-      const history = await getScheduleExecutionHistory(params.id, tenantId, 20);
+      const history = await getScheduleExecutionHistory(params.id, organizationId, 20);
       return NextResponse.json({
         ...schedule,
         executionHistory: history,
@@ -95,14 +95,14 @@ async function patchHandler(req: NextRequest, context: OrganizationContext, para
 
     // Handle special actions
     if (body.action === 'pause') {
-      await pauseSchedule(params.id, tenantId);
-      const schedule = await getScheduledReportById(params.id, tenantId);
+      await pauseSchedule(params.id, organizationId);
+      const schedule = await getScheduledReportById(params.id, organizationId);
       return NextResponse.json(schedule);
     }
 
     if (body.action === 'resume') {
-      await resumeSchedule(params.id, tenantId);
-      const schedule = await getScheduledReportById(params.id, tenantId);
+      await resumeSchedule(params.id, organizationId);
+      const schedule = await getScheduledReportById(params.id, organizationId);
       return NextResponse.json(schedule);
     }
 
@@ -128,7 +128,7 @@ async function patchHandler(req: NextRequest, context: OrganizationContext, para
       updateParams.isActive = body.isActive;
     }
 
-    const schedule = await updateScheduledReport(params.id, tenantId, updateParams);
+    const schedule = await updateScheduledReport(params.id, organizationId, updateParams);
 
     return NextResponse.json(schedule);
   } catch (error) {
@@ -155,7 +155,7 @@ async function deleteHandler(req: NextRequest, context: OrganizationContext, par
     );
     }
 
-    await deleteScheduledReport(params.id, tenantId);
+    await deleteScheduledReport(params.id, organizationId);
 
     return NextResponse.json({ success: true });
   } catch (error) {

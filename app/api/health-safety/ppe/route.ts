@@ -8,7 +8,7 @@
  * RLS: Organization-level isolation enforced by database policies
  */
 
-import { NextRequest, NextResponse } from "next/server";
+
 import { z } from "zod";
 import { ppeEquipment } from "@/db/schema/domains/health-safety/health-safety-schema";
 import { eq, desc, and, or, like, sql, lte } from "drizzle-orm";
@@ -94,11 +94,11 @@ export const GET = withEnhancedRoleAuth(30, async (request, context) => {
       const conditions = [];
       
       if (status) {
-        conditions.push(eq(ppeEquipment.status, status as any));
+        conditions.push(eq(ppeEquipment.status, status));
       }
       
       if (ppeType) {
-        conditions.push(eq(ppeEquipment.ppeType, ppeType as any));
+        conditions.push(eq(ppeEquipment.ppeType, ppeType));
       }
       
       if (issuedToId) {
@@ -112,7 +112,7 @@ export const GET = withEnhancedRoleAuth(30, async (request, context) => {
         conditions.push(
           and(
             lte(ppeEquipment.expiryDate, futureDate.toISOString().split('T')[0])
-          ) as any
+          ) as SQL<unknown> | undefined
         );
       }
       
@@ -129,7 +129,7 @@ export const GET = withEnhancedRoleAuth(30, async (request, context) => {
             like(ppeEquipment.itemNumber, `%${search}%`),
             like(ppeEquipment.itemName, `%${search}%`),
             like(ppeEquipment.serialNumber, `%${search}%`)
-          ) as any
+          ) as SQL<unknown> | undefined
         );
       }
 

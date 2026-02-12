@@ -12,7 +12,7 @@ import {
 } from '@/lib/api/standardized-responses';
 /**
  * GET /api/deadlines/overdue
- * Get all overdue deadlines for the tenant
+ * Get all overdue deadlines for the organization
  */
 export async function GET(request: NextRequest) {
   try {

@@ -126,7 +126,7 @@ export const GET = async (request: NextRequest) => {
 const taxCraExportSchema = z.object({
   organizationIds: z.string().uuid('Invalid organizationIds'),
   taxYear: z.string().min(1, 'taxYear is required'),
-  slipType = 't4a': z.unknown().optional(),
+  slipType: z.unknown().optional().default('t4a'),
 });
 
 export const POST = async (request: NextRequest) => {

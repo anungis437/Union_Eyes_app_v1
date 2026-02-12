@@ -723,7 +723,7 @@ describe('NotificationService', () => {
         limit: vi.fn().mockResolvedValue([
           {
             id: 'notif-123',
-            tenantId: 'org-123',
+            organizationId: 'org-123',
             status: 'failed',
             attemptCount: 1,
             payload: {
@@ -764,7 +764,7 @@ describe('NotificationService', () => {
         limit: vi.fn().mockResolvedValue([
           {
             id: 'notif-123',
-            tenantId: 'org-123',
+            organizationId: 'org-123',
             status: 'failed',
             attemptCount: 2,
             payload: {
@@ -830,7 +830,7 @@ describe('processPendingNotifications()', () => {
       limit: vi.fn().mockResolvedValue([
         {
           id: 'notif-123',
-          tenantId: 'org-123',
+          organizationId: 'org-123',
           status: 'pending',
           payload: {
             organizationId: 'org-123',

@@ -47,7 +47,7 @@ export const POST = withEnhancedRoleAuth(20, async (request, context) => {
   const body = parsed.data;
   const { userId, organizationId } = context;
 
-  const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
+  const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
     return standardErrorResponse(
       ErrorCode.FORBIDDEN,
@@ -57,7 +57,7 @@ export const POST = withEnhancedRoleAuth(20, async (request, context) => {
   }
 
 try {
-      // Get member to verify tenant
+      // Get member to verify organization
       const [currentMember] = await db
         .select()
         .from(members)
@@ -88,7 +88,7 @@ try {
         .where(
           and(
             eq(arrearsCases.memberId, memberId),
-            eq(arrearsCases.tenantId, currentMember.tenantId)
+            eq(arrearsCases.organizationId, currentMember.organizationId)
           )
         )
         .limit(1);
@@ -159,7 +159,7 @@ try {
 
       // Create future dues transactions for each installment
       const installmentTransactions = paymentSchedule.map((installment) => ({
-        tenantId: currentMember.tenantId,
+        organizationId: currentMember.organizationId,
         memberId,
         transactionType: 'payment_plan_installment',
         amount: installment.amount.toString(),

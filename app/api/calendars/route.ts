@@ -93,14 +93,14 @@ const calendarsSchema = z.object({
   description: z.string().optional(),
   color: z.unknown().optional(),
   icon: z.unknown().optional(),
-  isPersonal = true: z.boolean().optional(),
-  isShared = false: z.boolean().optional(),
-  isPublic = false: z.boolean().optional(),
-  timezone = 'America/New_York': z.string().datetime().optional(),
-  defaultEventDuration = 60: z.unknown().optional(),
-  reminderDefaultMinutes = 15: z.unknown().optional(),
-  allowOverlap = true: z.unknown().optional(),
-  requireApproval = false: z.unknown().optional(),
+  isPersonal: z.boolean().optional().default(true),
+  isShared: z.boolean().optional().default(false),
+  isPublic: z.boolean().optional().default(false),
+  timezone: z.string().datetime().optional().default('America/New_York'),
+  defaultEventDuration: z.unknown().optional().default(60),
+  reminderDefaultMinutes: z.unknown().optional().default(15),
+  allowOverlap: z.unknown().optional().default(true),
+  requireApproval: z.unknown().optional().default(false),
   metadata: z.unknown().optional(),
 });
 
@@ -152,13 +152,10 @@ export const POST = async (request: NextRequest) => {
         );
       }
 
-      // Use organization ID as tenant ID for proper multi-tenant isolation
-      const tenantId = organizationId;
-
       const [newCalendar] = await db
         .insert(calendars)
         .values({
-          tenantId,
+          organizationId,
           name,
           description,
           color,

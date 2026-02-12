@@ -7,7 +7,7 @@ import { db, schema } from '../db';
 import { eq, and, lt, sql, isNull } from 'drizzle-orm';
 
 export interface ArrearsDetectionConfig {
-  tenantId: string;
+  organizationId: string;
   gracePeriodDays?: number;
   lateFeePercentage?: number;
   lateFeeFixedAmount?: number;
@@ -35,7 +35,7 @@ export interface DetectedArrears {
 export async function detectOverduePayments(
   config: ArrearsDetectionConfig
 ): Promise<DetectedArrears[]> {
-  const { tenantId, gracePeriodDays = 30 } = config;
+  const { organizationId, gracePeriodDays = 30 } = config;
 
   // Calculate cutoff date (today - grace period)
   const cutoffDate = new Date();
@@ -50,7 +50,7 @@ export async function detectOverduePayments(
   }>(sql`
     SELECT id, member_id, due_date, amount
     FROM dues_transactions
-    WHERE tenant_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
       AND due_date < ${cutoffDate.toISOString()}
       AND status = 'pending'
     ORDER BY due_date ASC
@@ -131,7 +131,7 @@ export async function calculateLateFees(
  */
 export async function createArrearsCases(
   detectedArrears: DetectedArrears[],
-  tenantId: string,
+  organizationId: string,
   createdBy: string
 ): Promise<string[]> {
   const createdCaseIds: string[] = [];
@@ -143,7 +143,7 @@ export async function createArrearsCases(
       .from(schema.arrearsCases)
       .where(
         and(
-          eq(schema.arrearsCases.tenantId, tenantId),
+          eq(schema.arrearsCases.organizationId, organizationId),
           eq(schema.arrearsCases.memberId, arrears.memberId),
           eq(schema.arrearsCases.status, 'open')
         )
@@ -174,7 +174,7 @@ export async function createArrearsCases(
       const [newCase] = await db
         .insert(schema.arrearsCases)
         .values({
-          tenantId,
+          organizationId,
           memberId: arrears.memberId,
           caseNumber,
           totalOwed: arrears.totalOwing.toString(),
@@ -310,7 +310,7 @@ export async function runArrearsDetection(
   // Step 4: Create or update arrears cases
   const casesCreated = await createArrearsCases(
     detectedArrears,
-    config.tenantId,
+    config.organizationId,
     createdBy
   );
 

@@ -218,7 +218,6 @@ export const POST = withRoleAuth(90, async (request, context) => {
       const [newFund] = await db
         .insert(strikeFunds)
         .values({
-          tenantId: organizationId,
           organizationId: organizationId,
           fundName,
           fundCode,

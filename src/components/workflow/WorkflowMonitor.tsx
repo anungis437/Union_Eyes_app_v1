@@ -49,7 +49,7 @@ interface WorkflowInstance {
 }
 
 interface WorkflowMonitorProps {
-  tenantId: string;
+  organizationId: string;
   onViewDetails?: (instanceId: string) => void;
   className?: string;
 }
@@ -64,7 +64,7 @@ const statusConfig = {
 };
 
 export function WorkflowMonitor({
-  tenantId,
+  organizationId,
   onViewDetails,
   className = '',
 }: WorkflowMonitorProps) {
@@ -94,7 +94,7 @@ export function WorkflowMonitor({
         `/api/workflow-instances?${params.toString()}`,
         {
           headers: {
-            'X-Tenant-ID': tenantId,
+            'X-Organization-ID': organizationId,
           },
         }
       );
@@ -108,7 +108,7 @@ export function WorkflowMonitor({
     } finally {
       setLoading(false);
     }
-  }, [tenantId, statusFilter]);
+  }, [organizationId, statusFilter]);
 
   // Calculate statistics
   const calculateStats = (data: WorkflowInstance[]) => {
@@ -156,7 +156,7 @@ export function WorkflowMonitor({
       const response = await fetch(`/api/workflow-instances/${instanceId}/cancel`, {
         method: 'POST',
         headers: {
-          'X-Tenant-ID': tenantId,
+          'X-Organization-ID': organizationId,
         },
       });
 

@@ -447,9 +447,9 @@ async function handleDuesPaymentFailed(event: Stripe.Event) {
     const { eq, and } = await import('drizzle-orm');
     
     const memberId = setupIntent.metadata?.memberId;
-    const tenantId = setupIntent.metadata?.tenantId;
+    const organizationId = setupIntent.metadata?.organizationId;
     
-    if (!memberId || !tenantId) {
+    if (!memberId || !organizationId) {
       logger.warn('SetupIntent missing required metadata', { setupIntentId: setupIntent.id });
       return;
     }
@@ -483,9 +483,9 @@ async function handleDuesPaymentFailed(event: Stripe.Event) {
     const isDefault = existingMethods.length === 0;
     
     // Save payment method
-    await withRLSContext({ organizationId: tenantId }, async (db) => {
+    await withRLSContext({ organizationId }, async (db) => {
       return await db.insert(paymentMethods).values({
-        tenantId,
+        organizationId,
         memberId,
         stripePaymentMethodId: setupIntent.payment_method as string,
         stripeCustomerId: setupIntent.customer as string,

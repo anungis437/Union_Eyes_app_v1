@@ -3,7 +3,7 @@
  * 
  * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
- * - RLS policies enforce tenant isolation at database level
+ * - RLS policies enforce organization isolation at database level
  * 
  * Import multiple union members from CSV/Excel with validation.
  * Features:

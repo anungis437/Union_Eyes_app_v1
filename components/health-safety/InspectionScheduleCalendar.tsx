@@ -16,7 +16,6 @@
 import * as React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import { 
@@ -33,7 +32,6 @@ import {
   format,
   isSameDay,
   isToday,
-  isBefore,
   addMonths,
   subMonths,
   startOfWeek,
@@ -45,6 +43,15 @@ export interface Inspection {
   id: string;
   title: string;
   date: Date;
+  status: "scheduled" | "completed" | "overdue" | "in_progress";
+  inspector?: string;
+  location: string;
+}
+
+interface InspectionData {
+  id: string;
+  title: string;
+  date: string;
   status: "scheduled" | "completed" | "overdue" | "in_progress";
   inspector?: string;
   location: string;
@@ -66,11 +73,7 @@ export function InspectionScheduleCalendar({
   const [inspections, setInspections] = React.useState<Inspection[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
 
-  React.useEffect(() => {
-    loadInspections();
-  }, [organizationId, currentMonth]);
-
-  async function loadInspections() {
+  const loadInspections = React.useCallback(async () => {
     setIsLoading(true);
     try {
       const start = format(startOfMonth(currentMonth), "yyyy-MM-dd");
@@ -86,14 +89,14 @@ export function InspectionScheduleCalendar({
 
       const data = await response.json();
       if (data.success) {
-        setInspections(data.inspections.map((i: any) => ({
+        setInspections(data.inspections.map((i: InspectionData) => ({
           ...i,
           date: new Date(i.date)
         })));
       } else {
         throw new Error(data.error);
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to load inspection schedule",
@@ -102,7 +105,11 @@ export function InspectionScheduleCalendar({
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [organizationId, currentMonth, toast]);
+
+  React.useEffect(() => {
+    loadInspections();
+  }, [loadInspections]);
 
   function getInspectionsForDay(day: Date): Inspection[] {
     return inspections.filter(inspection => 

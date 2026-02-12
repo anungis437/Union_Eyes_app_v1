@@ -20,16 +20,15 @@ export const GET = async (request: NextRequest) => {
       // Get query parameters
       const searchParams = request.nextUrl.searchParams;
       const unreadOnly = searchParams.get('unreadOnly') === 'true';
-      const organizationId = (searchParams.get('organizationId') ?? searchParams.get('tenantId'));
-      const tenantId = organizationId; // Add tenantId filter
+      const organizationId = searchParams.get('organizationId');
       const limit = parseInt(searchParams.get('limit') || '50');
 
       // Build base where conditions
       const baseConditions = [eq(inAppNotifications.userId, context.userId)];
       
-      // Add tenant filter if provided
-      if (tenantId) {
-        baseConditions.push(eq(inAppNotifications.tenantId, tenantId));
+      // Add organization filter if provided
+      if (organizationId) {
+        baseConditions.push(eq(inAppNotifications.organizationId, organizationId));
       }
 
       // Build query with optional unreadOnly filter
@@ -46,14 +45,14 @@ export const GET = async (request: NextRequest) => {
           .limit(limit);
       });
 
-      // Get unread count with tenant filter
+      // Get unread count with organization filter
       const unreadCountConditions = [
         eq(inAppNotifications.userId, context.userId),
         eq(inAppNotifications.read, false),
       ];
       
-      if (tenantId) {
-        unreadCountConditions.push(eq(inAppNotifications.tenantId, tenantId));
+      if (organizationId) {
+        unreadCountConditions.push(eq(inAppNotifications.organizationId, organizationId));
       }
 
       const unreadCount = await withRLSContext({ organizationId: context.organizationId }, async (db) => {

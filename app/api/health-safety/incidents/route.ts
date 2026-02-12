@@ -8,10 +8,10 @@
  * RLS: Organization-level isolation enforced by database policies
  */
 
-import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { workplaceIncidents } from "@/db/schema/domains/health-safety/health-safety-schema";
-import { eq, desc, and, or, like, sql, gte, lte, inArray } from "drizzle-orm";
+import { eq, desc, and, or, like, sql, gte, lte } from "drizzle-orm";
+import type { SQL } from "drizzle-orm";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
@@ -130,11 +130,11 @@ export const GET = withEnhancedRoleAuth(30, async (request, context) => {
       }
       
       if (severity) {
-        conditions.push(eq(workplaceIncidents.severity, severity as any));
+        conditions.push(eq(workplaceIncidents.severity, severity));
       }
       
       if (incidentType) {
-        conditions.push(eq(workplaceIncidents.incidentType, incidentType as any));
+        conditions.push(eq(workplaceIncidents.incidentType, incidentType));
       }
       
       if (fromDate) {
@@ -155,7 +155,7 @@ export const GET = withEnhancedRoleAuth(30, async (request, context) => {
             like(workplaceIncidents.incidentNumber, `%${search}%`),
             like(workplaceIncidents.description, `%${search}%`),
             like(workplaceIncidents.locationDescription, `%${search}%`)
-          ) as any
+          ) as SQL<unknown> | undefined
         );
       }
 

@@ -47,14 +47,14 @@ interface ApprovalRequest {
 }
 
 interface ApprovalQueueProps {
-  tenantId: string;
+  organizationId: string;
   userId: string;
   onApprovalProcessed?: (approvalId: string, approved: boolean) => void;
   className?: string;
 }
 
 export function ApprovalQueue({
-  tenantId,
+  organizationId,
   userId,
   onApprovalProcessed,
   className = '',
@@ -79,7 +79,7 @@ export function ApprovalQueue({
     try {
       const response = await fetch('/api/approvals', {
         headers: {
-          'X-Tenant-ID': tenantId,
+          'X-Organization-ID': organizationId,
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
@@ -93,7 +93,7 @@ export function ApprovalQueue({
     } finally {
       setLoading(false);
     }
-  }, [tenantId, userId]);
+  }, [organizationId, userId]);
 
   // Calculate statistics
   const calculateStats = (data: ApprovalRequest[]) => {
@@ -135,7 +135,7 @@ export function ApprovalQueue({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Tenant-ID': tenantId,
+          'X-Organization-ID': organizationId,
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({

@@ -66,14 +66,14 @@ interface SettlementEstimate {
 interface PredictionDashboardProps {
   claimId?: string;
   claimData?: any;
-  tenantId: string;
+  organizationId: string;
   className?: string;
 }
 
 export function PredictionDashboard({
   claimId,
   claimData,
-  tenantId,
+  organizationId,
   className = '',
 }: PredictionDashboardProps) {
   const [outcomePrediction, setOutcomePrediction] = useState<ClaimOutcomePrediction | null>(null);
@@ -96,7 +96,7 @@ export function PredictionDashboard({
     } finally {
       setIsLoading(false);
     }
-  }, [claimId, claimData, tenantId]);
+  }, [claimId, claimData, organizationId]);
 
   useEffect(() => {
     if (claimId || claimData) {
@@ -112,7 +112,7 @@ export function PredictionDashboard({
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'X-Tenant-ID': tenantId,
+        'X-Organization-ID': organizationId,
       },
       body: JSON.stringify(claimData),
     });
@@ -131,7 +131,7 @@ export function PredictionDashboard({
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'X-Tenant-ID': tenantId,
+        'X-Organization-ID': organizationId,
       },
       body: JSON.stringify({ claimId }),
     });
@@ -150,7 +150,7 @@ export function PredictionDashboard({
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'X-Tenant-ID': tenantId,
+        'X-Organization-ID': organizationId,
       },
       body: JSON.stringify(claimData),
     });
@@ -169,7 +169,7 @@ export function PredictionDashboard({
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'X-Tenant-ID': tenantId,
+        'X-Organization-ID': organizationId,
       },
       body: JSON.stringify(claimData),
     });

@@ -108,7 +108,7 @@ return standardErrorResponse(
 };
 
 
-const social-mediaAccountsSchema = z.object({
+const socialMediaAccountsSchema = z.object({
   platform: z.string().min(1, 'platform is required'),
   account_id: z.string().uuid('Invalid account_id'),
 });

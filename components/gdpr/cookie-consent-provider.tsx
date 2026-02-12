@@ -11,5 +11,5 @@ export function CookieConsentProvider() {
     return null;
   }
 
-  return <CookieConsentBanner tenantId={organizationId} />;
+  return <CookieConsentBanner organizationId={organizationId} />;
 }

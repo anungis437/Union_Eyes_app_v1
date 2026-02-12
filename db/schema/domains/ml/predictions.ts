@@ -16,7 +16,7 @@ import {
   index,
   unique
 } from "drizzle-orm/pg-core";
-import { organizations } from "../schema-organizations";
+import { organizations } from "../../../schema-organizations";
 
 // ============================================================================
 // ML PREDICTIONS

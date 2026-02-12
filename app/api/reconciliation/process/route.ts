@@ -47,7 +47,7 @@ export const POST = async (req: NextRequest) => {
         );
       }
 
-      // Get member to verify tenant
+      // Get member to verify organization
       const [member] = await db
         .select()
         .from(members)
@@ -122,7 +122,7 @@ export const POST = async (req: NextRequest) => {
       const [remittance] = await db
         .insert(employerRemittances)
         .values({
-          tenantId: member.tenantId,
+          organizationId: member.organizationId,
           employerName: employerName || 'Unknown Employer',
           employerId: employerId || null,
           batchNumber,
@@ -171,7 +171,7 @@ export const POST = async (req: NextRequest) => {
           .from(members)
           .where(
             and(
-              eq(members.tenantId, member.tenantId),
+              eq(members.organizationId, member.organizationId),
               sql`(
               ${members.membershipNumber} = ${memberIdentifier} OR
               ${members.email} = ${memberIdentifier} OR
@@ -204,7 +204,7 @@ export const POST = async (req: NextRequest) => {
           .where(
             and(
               eq(duesTransactions.memberId, foundMember.id),
-              eq(duesTransactions.tenantId, member.tenantId),
+              eq(duesTransactions.organizationId, member.organizationId),
               sql`${duesTransactions.periodStart} <= ${new Date(period)}`,
               sql`${duesTransactions.periodEnd} >= ${new Date(periodEnd)}`,
               sql`ABS(CAST(${duesTransactions.totalAmount} AS NUMERIC) - ${amount}) < 0.01`
@@ -225,7 +225,7 @@ export const POST = async (req: NextRequest) => {
             .where(
               and(
                 eq(duesTransactions.memberId, foundMember.id),
-                eq(duesTransactions.tenantId, member.tenantId),
+                eq(duesTransactions.organizationId, member.organizationId),
                 sql`${duesTransactions.periodStart} <= ${new Date(period)}`,
                 sql`${duesTransactions.periodEnd} >= ${new Date(periodEnd)}`
               )

@@ -151,13 +151,13 @@ const calendarsEventsSchema = z.object({
   startTime: z.string().datetime().optional(),
   endTime: z.string().datetime().optional(),
   timezone: z.string().datetime().optional(),
-  isAllDay = false: z.boolean().optional(),
-  isRecurring = false: z.boolean().optional(),
+  isAllDay: z.boolean().optional().default(false),
+  isRecurring: z.boolean().optional().default(false),
   recurrenceRule: z.unknown().optional(),
   recurrenceExceptions: z.unknown().optional(),
-  eventType = 'meeting': z.unknown().optional(),
-  status = 'scheduled': z.unknown().optional(),
-  priority = 'normal': z.unknown().optional(),
+  eventType: z.unknown().optional().default('meeting'),
+  status: z.unknown().optional().default('scheduled'),
+  priority: z.unknown().optional().default('normal'),
   claimId: z.string().uuid('Invalid claimId'),
   caseNumber: z.unknown().optional(),
   memberId: z.string().uuid('Invalid memberId'),
@@ -165,12 +165,12 @@ const calendarsEventsSchema = z.object({
   meetingUrl: z.string().url('Invalid URL'),
   meetingPassword: z.unknown().optional(),
   agenda: z.unknown().optional(),
-  reminders = [15]: z.unknown().optional(),
-  isPrivate = false: z.boolean().optional(),
-  visibility = 'default': z.boolean().optional(),
+  reminders: z.unknown().optional().default([15]),
+  isPrivate: z.boolean().optional().default(false),
+  visibility: z.boolean().optional().default('default'),
   metadata: z.unknown().optional(),
   attachments: z.unknown().optional(),
-  attendees = []: z.unknown().optional(),
+  attendees: z.unknown().optional().default([]),
 });
 
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
@@ -255,15 +255,15 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         );
       }
 
-      // Get tenant ID from calendar
-      const tenantId = access.calendar!.tenantId;
+      // Get organization ID from calendar
+      const calendarOrganizationId = access.calendar!.organizationId;
 
       // Create event
       const [newEvent] = await db
         .insert(calendarEvents)
         .values({
           calendarId,
-          tenantId,
+          organizationId: calendarOrganizationId,
           title,
           description,
           location,
@@ -302,7 +302,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
 
           return {
             eventId: newEvent.id,
-            tenantId,
+            organizationId: calendarOrganizationId,
             userId: attendeeUserId,
             email: attendee.email,
             name: attendee.name,
@@ -312,7 +312,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
           };
         });
 
-        await withRLSContext({ organizationId }, async (db) => {
+        await withRLSContext({ organizationId: calendarOrganizationId }, async (db) => {
           return await db.insert(eventAttendees).values(attendeeValues);
         });
       }

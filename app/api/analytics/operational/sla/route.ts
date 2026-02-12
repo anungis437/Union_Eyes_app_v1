@@ -6,8 +6,8 @@ import { claims } from '@/db/schema/domains/claims';
 import { eq, and, gte, sql } from 'drizzle-orm';
 import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
 
-async function handler(req: NextRequest) {
-  const tenantId = (req as any).tenantId;
+async function handler(req: NextRequest, context) {
+  const { organizationId } = context;
   const searchParams = req.nextUrl.searchParams;
   const daysBack = parseInt(searchParams.get('days') || '30');
 
@@ -30,7 +30,7 @@ async function handler(req: NextRequest) {
         COUNT(CASE WHEN EXTRACT(EPOCH FROM (${claims.closedAt} - ${claims.createdAt})) / 86400 <= 30 THEN 1 END) as "onTime",
         COUNT(CASE WHEN EXTRACT(EPOCH FROM (${claims.closedAt} - ${claims.createdAt})) / 86400 > 30 THEN 1 END) as overdue
       FROM ${claims}
-      WHERE ${claims.organizationId} = ${tenantId}
+      WHERE ${claims.organizationId} = ${organizationId}
         AND ${claims.status} = 'resolved'
         AND ${claims.closedAt} >= ${startDate.toISOString()}::timestamp
       GROUP BY date_trunc('day', ${claims.closedAt})

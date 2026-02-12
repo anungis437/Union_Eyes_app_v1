@@ -35,13 +35,12 @@ export const GET = withApiAuth(async (
 ) => {
   try {
     const surveyId = params.surveyId;
-    const organizationId = (request.headers.get('x-organization-id') ?? request.headers.get('x-tenant-id'));
-    const tenantId = organizationId;
+    const organizationId = request.headers.get('x-organization-id');
     
-    if (!tenantId) {
+    if (!organizationId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID is required'
+      'Organization ID is required'
     );
     }
 
@@ -49,7 +48,7 @@ export const GET = withApiAuth(async (
     const [survey] = await db
       .select()
       .from(surveys)
-      .where(and(eq(surveys.id, surveyId), eq(surveys.tenantId, tenantId)))
+      .where(and(eq(surveys.id, surveyId), eq(surveys.organizationId, organizationId)))
       .limit(1);
 
     if (!survey) {
@@ -86,14 +85,13 @@ export const PUT = withApiAuth(async (
 ) => {
   try {
     const surveyId = params.surveyId;
-    const organizationId = (request.headers.get('x-organization-id') ?? request.headers.get('x-tenant-id'));
-    const tenantId = organizationId;
+    const organizationId = request.headers.get('x-organization-id');
     const userId = request.headers.get('x-user-id');
     
-    if (!tenantId || !userId) {
+    if (!organizationId || !userId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID and User ID are required'
+      'Organization ID and User ID are required'
     );
     }
 
@@ -132,7 +130,7 @@ export const PUT = withApiAuth(async (
     const [updatedSurvey] = await db
       .update(surveys)
       .set(updateData)
-      .where(and(eq(surveys.id, surveyId), eq(surveys.tenantId, tenantId)))
+      .where(and(eq(surveys.id, surveyId), eq(surveys.organizationId, organizationId)))
       .returning();
 
     // Update questions if provided
@@ -145,7 +143,7 @@ export const PUT = withApiAuth(async (
 
       // Insert new questions
       const questionValues = data.questions.map((q: any) => ({
-        tenantId,
+        organizationId,
         surveyId: surveyId,
         questionText: q.questionText,
         questionType: q.questionType,
@@ -192,13 +190,12 @@ export const DELETE = withApiAuth(async (
 ) => {
   try {
     const surveyId = params.surveyId;
-    const organizationId = (request.headers.get('x-organization-id') ?? request.headers.get('x-tenant-id'));
-    const tenantId = organizationId;
+    const organizationId = request.headers.get('x-organization-id');
     
-    if (!tenantId) {
+    if (!organizationId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID is required'
+      'Organization ID is required'
     );
     }
 
@@ -206,7 +203,7 @@ export const DELETE = withApiAuth(async (
     const [existingSurvey] = await db
       .select()
       .from(surveys)
-      .where(and(eq(surveys.id, surveyId), eq(surveys.tenantId, tenantId)))
+      .where(and(eq(surveys.id, surveyId), eq(surveys.organizationId, organizationId)))
       .limit(1);
 
     if (!existingSurvey) {
@@ -225,7 +222,7 @@ export const DELETE = withApiAuth(async (
     }
 
     // Delete answers first (cascading)
-    await withRLSContext({ organizationId: tenantId }, async (db) => {
+    await withRLSContext({ organizationId }, async (db) => {
       return await db
         .delete(surveyAnswers)
         .where(
@@ -251,7 +248,7 @@ export const DELETE = withApiAuth(async (
     // Delete survey
     await db
       .delete(surveys)
-      .where(and(eq(surveys.id, surveyId), eq(surveys.tenantId, tenantId)));
+      .where(and(eq(surveys.id, surveyId), eq(surveys.organizationId, organizationId)));
 
     return NextResponse.json({
       message: 'Survey deleted successfully',

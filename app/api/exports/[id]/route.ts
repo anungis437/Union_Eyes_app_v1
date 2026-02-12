@@ -15,7 +15,7 @@ import {
 } from '@/lib/api/standardized-responses';
 async function getHandler(
   req: NextRequest,
-  context: { tenantId: string; userId: string },
+  context: { organizationId: string; userId: string },
   params?: { id: string }
 ) {
   try {
@@ -28,7 +28,7 @@ async function getHandler(
 
     const job = await getExportJob(params.id);
 
-    if (!job || job.tenant_id !== context.organizationId) {
+    if (!job || job.organization_id !== context.organizationId) {
       return standardErrorResponse(
       ErrorCode.RESOURCE_NOT_FOUND,
       'Export job not found'

@@ -463,8 +463,8 @@ Complete backend API implementation for the Health & Safety module with 8+ produ
 ### Row-Level Security (RLS)
 - All database operations wrapped in `withRLSContext()`
 - Automatic organization-level isolation
-- RLS policies enforce tenant boundaries at database level
-- No manual tenant filtering required
+- RLS policies enforce organization boundaries at database level
+- No manual organization filtering required
 
 ### Rate Limiting
 - Implemented on POST endpoints to prevent abuse

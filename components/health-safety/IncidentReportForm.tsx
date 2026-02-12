@@ -38,7 +38,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
-import { AlertCircle, Calendar as CalendarIcon, Upload, Save, Send } from "lucide-react";
+import { Calendar as CalendarIcon, Upload, Save, Send } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -184,7 +184,7 @@ export function IncidentReportForm({
           window.location.href = `/health-safety/incidents/${result.incidentId}`;
         }
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to submit incident report",
@@ -205,7 +205,7 @@ export function IncidentReportForm({
         title: "Draft Saved",
         description: "Your incident report has been saved as a draft"
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to save draft",
@@ -334,7 +334,7 @@ export function IncidentReportForm({
             {/* Severity */}
             <div className="space-y-2">
               <Label htmlFor="severity">Severity *</Label>
-              <Select onValueChange={(value) => form.setValue("severity", value as any)}>
+              <Select onValueChange={(value) => form.setValue("severity", value as "minor" | "major" | "critical")}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select severity" />
                 </SelectTrigger>

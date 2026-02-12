@@ -273,14 +273,14 @@ describe('jurisdiction-helpers', () => {
       });
     });
 
-    describe('getTenantJurisdiction', () => {
+    describe('getOrganizationJurisdiction (legacy alias)', () => {
       it('should be tested with database mocking', () => {
         // Placeholder for async function tests
         // Implementation requires:
         // 1. Mock database connection
-        // 2. Mock tenants → organizations join query
-        // 3. Test valid tenant ID returns jurisdiction
-        // 4. Test invalid tenant ID returns null
+        // 2. Mock organizations join query
+        // 3. Test valid organization ID returns jurisdiction
+        // 4. Test invalid organization ID returns null
         // 5. Test database error handling
         expect(true).toBe(true); // Placeholder
       });

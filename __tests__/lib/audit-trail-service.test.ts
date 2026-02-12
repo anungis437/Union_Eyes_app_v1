@@ -19,7 +19,7 @@ vi.mock('@/db', () => ({
       values: vi.fn(() => ({
         returning: vi.fn(() => Promise.resolve([{
           id: 'audit-001',
-          tenantId: 'tenant-001',
+          organizationId: 'org-001',
           entityType: 'journal_entry',
           entityId: 'entry-001',
           action: 'create',
@@ -55,7 +55,7 @@ describe('AuditTrailService', () => {
   describe('logAction', () => {
     it('should log basic audit action', async () => {
       const entry = await AuditTrailService.logAction({
-        tenantId: 'tenant-001',
+        organizationId: 'org-001',
         entityType: 'invoice',
         entityId: 'inv-001',
         action: 'create',
@@ -77,7 +77,7 @@ describe('AuditTrailService', () => {
       ];
 
       const entry = await AuditTrailService.logAction({
-        tenantId: 'tenant-001',
+        organizationId: 'org-001',
         entityType: 'invoice',
         entityId: 'inv-001',
         action: 'update',
@@ -98,7 +98,7 @@ describe('AuditTrailService', () => {
       };
 
       const entry = await AuditTrailService.logAction({
-        tenantId: 'tenant-001',
+        organizationId: 'org-001',
         entityType: 'journal_entry',
         entityId: 'entry-001',
         action: 'approve',
@@ -126,7 +126,7 @@ describe('AuditTrailService', () => {
       };
 
       await AuditTrailService.logJournalEntryCreated({
-        tenantId: 'tenant-001',
+        organizationId: 'org-001',
         entryId: 'entry-001',
         userId: 'user-001',
         userName: 'Accountant',
@@ -142,7 +142,7 @@ describe('AuditTrailService', () => {
   describe('logJournalEntryApproved', () => {
     it('should log journal entry approval', async () => {
       await AuditTrailService.logJournalEntryApproved({
-        tenantId: 'tenant-001',
+        organizationId: 'org-001',
         entryId: 'entry-001',
         userId: 'manager-001',
         userName: 'Finance Manager',
@@ -158,7 +158,7 @@ describe('AuditTrailService', () => {
   describe('logJournalEntryReversed', () => {
     it('should log journal entry reversal', async () => {
       await AuditTrailService.logJournalEntryReversed({
-        tenantId: 'tenant-001',
+        organizationId: 'org-001',
         originalEntryId: 'entry-001',
         reversalEntryId: 'entry-002',
         userId: 'user-001',
@@ -180,7 +180,7 @@ describe('AuditTrailService', () => {
       ];
 
       await AuditTrailService.logInvoiceUpdated({
-        tenantId: 'tenant-001',
+        organizationId: 'org-001',
         invoiceId: 'inv-001',
         userId: 'user-001',
         userName: 'Billing Clerk',
@@ -196,7 +196,7 @@ describe('AuditTrailService', () => {
   describe('logBankReconciliation', () => {
     it('should log bank reconciliation', async () => {
       await AuditTrailService.logBankReconciliation({
-        tenantId: 'tenant-001',
+        organizationId: 'org-001',
         reconciliationId: 'recon-001',
         userId: 'user-001',
         userName: 'Accountant',
@@ -212,7 +212,7 @@ describe('AuditTrailService', () => {
   describe('logERPSync', () => {
     it('should log ERP sync action', async () => {
       await AuditTrailService.logERPSync({
-        tenantId: 'tenant-001',
+        organizationId: 'org-001',
         syncJobId: 'sync-001',
         entityType: 'invoices',
         direction: 'pull',
@@ -227,7 +227,7 @@ describe('AuditTrailService', () => {
 
     it('should log bidirectional sync', async () => {
       await AuditTrailService.logERPSync({
-        tenantId: 'tenant-001',
+        organizationId: 'org-001',
         syncJobId: 'sync-002',
         entityType: 'journal_entries',
         direction: 'bidirectional',
@@ -244,7 +244,7 @@ describe('AuditTrailService', () => {
   describe('queryAuditLog', () => {
     it('should query audit log by tenant', async () => {
       const results = await AuditTrailService.queryAuditLog({
-        tenantId: 'tenant-001'
+        organizationId: 'org-001'
       });
 
       expect(Array.isArray(results)).toBe(true);
@@ -252,7 +252,7 @@ describe('AuditTrailService', () => {
 
     it('should filter by entity type', async () => {
       const results = await AuditTrailService.queryAuditLog({
-        tenantId: 'tenant-001',
+        organizationId: 'org-001',
         entityType: 'invoice'
       });
 
@@ -261,7 +261,7 @@ describe('AuditTrailService', () => {
 
     it('should filter by entity ID', async () => {
       const results = await AuditTrailService.queryAuditLog({
-        tenantId: 'tenant-001',
+        organizationId: 'org-001',
         entityId: 'inv-001'
       });
 
@@ -270,7 +270,7 @@ describe('AuditTrailService', () => {
 
     it('should filter by user ID', async () => {
       const results = await AuditTrailService.queryAuditLog({
-        tenantId: 'tenant-001',
+        organizationId: 'org-001',
         userId: 'user-001'
       });
 
@@ -279,7 +279,7 @@ describe('AuditTrailService', () => {
 
     it('should filter by action', async () => {
       const results = await AuditTrailService.queryAuditLog({
-        tenantId: 'tenant-001',
+        organizationId: 'org-001',
         action: 'approve'
       });
 
@@ -288,7 +288,7 @@ describe('AuditTrailService', () => {
 
     it('should filter by date range', async () => {
       const results = await AuditTrailService.queryAuditLog({
-        tenantId: 'tenant-001',
+        organizationId: 'org-001',
         startDate: new Date('2026-01-01'),
         endDate: new Date('2026-02-28')
       });
@@ -298,7 +298,7 @@ describe('AuditTrailService', () => {
 
     it('should support pagination', async () => {
       const results = await AuditTrailService.queryAuditLog({
-        tenantId: 'tenant-001',
+        organizationId: 'org-001',
         limit: 50,
         offset: 100
       });
@@ -310,7 +310,7 @@ describe('AuditTrailService', () => {
   describe('getEntityHistory', () => {
     it('should get complete history for entity', async () => {
       const history = await AuditTrailService.getEntityHistory(
-        'tenant-001',
+        'org-001',
         'invoice',
         'inv-001'
       );
@@ -322,7 +322,7 @@ describe('AuditTrailService', () => {
   describe('getUserActivity', () => {
     it('should get user activity', async () => {
       const activity = await AuditTrailService.getUserActivity(
-        'tenant-001',
+        'org-001',
         'user-001'
       );
 
@@ -331,7 +331,7 @@ describe('AuditTrailService', () => {
 
     it('should get user activity with date range', async () => {
       const activity = await AuditTrailService.getUserActivity(
-        'tenant-001',
+        'org-001',
         'user-001',
         new Date('2026-01-01'),
         new Date('2026-02-28')
@@ -352,7 +352,7 @@ describe('AuditTrailService', () => {
                 offset: vi.fn(() => Promise.resolve([
                   {
                     id: 'audit-001',
-                    tenantId: 'tenant-001',
+                    organizationId: 'org-001',
                     entityType: 'invoice',
                     entityId: 'inv-001',
                     action: 'create',
@@ -362,7 +362,7 @@ describe('AuditTrailService', () => {
                   },
                   {
                     id: 'audit-002',
-                    tenantId: 'tenant-001',
+                    organizationId: 'org-001',
                     entityType: 'invoice',
                     entityId: 'inv-001',
                     action: 'approve',
@@ -378,13 +378,13 @@ describe('AuditTrailService', () => {
       } as any);
 
       const report = await AuditTrailService.generateComplianceReport(
-        'tenant-001',
+        'org-001',
         new Date('2026-02-01'),
         new Date('2026-02-28')
       );
 
       expect(report).toBeDefined();
-      expect(report.tenantId).toBe('tenant-001');
+      expect(report.organizationId).toBe('org-001');
       expect(report.totalEvents).toBeGreaterThanOrEqual(0);
       expect(report.byEntityType).toBeDefined();
       expect(report.byAction).toBeDefined();
@@ -396,7 +396,7 @@ describe('AuditTrailService', () => {
     it('should detect excessive deletions', async () => {
       const deletionLogs = Array.from({ length: 15 }, (_, i) => ({
         id: `audit-${i}`,
-        tenantId: 'tenant-001',
+        organizationId: 'org-001',
         entityType: 'invoice',
         entityId: `inv-${i}`,
         action: 'delete' as const,
@@ -419,7 +419,7 @@ describe('AuditTrailService', () => {
       } as any);
 
       const report = await AuditTrailService.generateComplianceReport(
-        'tenant-001',
+        'org-001',
         new Date('2026-02-07'),
         new Date('2026-02-07')
       );
@@ -434,7 +434,7 @@ describe('AuditTrailService', () => {
       // Create 7 logs after hours for same user (threshold is > 5 per user)
       const afterHoursLogs = Array.from({ length: 7 }, (_, i) => ({
         id: `audit-${i}`,
-        tenantId: 'tenant-001',
+        organizationId: 'org-001',
         entityType: 'invoice',
         entityId: `inv-${i}`,
         action: 'update' as const,
@@ -457,7 +457,7 @@ describe('AuditTrailService', () => {
       } as any);
 
       const report = await AuditTrailService.generateComplianceReport(
-        'tenant-001',
+        'org-001',
         new Date('2026-02-07'),
         new Date('2026-02-07')
       );
@@ -471,7 +471,7 @@ describe('AuditTrailService', () => {
       const largeMods = [
         {
           id: 'audit-001',
-          tenantId: 'tenant-001',
+          organizationId: 'org-001',
           entityType: 'invoice',
           entityId: 'inv-001',
           action: 'update' as const,
@@ -498,7 +498,7 @@ describe('AuditTrailService', () => {
       } as any);
 
       const report = await AuditTrailService.generateComplianceReport(
-        'tenant-001',
+        'org-001',
         new Date('2026-02-07'),
         new Date('2026-02-07')
       );
@@ -515,7 +515,7 @@ describe('AuditTrailService', () => {
       const mockLogs = [
         {
           id: 'audit-001',
-          tenantId: 'tenant-001',
+          organizationId: 'org-001',
           entityType: 'invoice',
           entityId: 'inv-001',
           action: 'create',
@@ -543,7 +543,7 @@ describe('AuditTrailService', () => {
 
     it('should export audit log as JSON', async () => {
       const exported = await AuditTrailService.exportAuditLog(
-        'tenant-001',
+        'org-001',
         new Date('2026-02-01'),
         new Date('2026-02-28'),
         'json'
@@ -555,7 +555,7 @@ describe('AuditTrailService', () => {
 
     it('should export audit log as CSV', async () => {
       const exported = await AuditTrailService.exportAuditLog(
-        'tenant-001',
+        'org-001',
         new Date('2026-02-01'),
         new Date('2026-02-28'),
         'csv'
@@ -568,3 +568,4 @@ describe('AuditTrailService', () => {
     });
   });
 });
+

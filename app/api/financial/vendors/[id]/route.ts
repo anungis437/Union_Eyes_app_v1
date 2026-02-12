@@ -1,8 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/services/financial-service/src/db';
 import { vendors } from '@/services/financial-service/src/db/schema';
 import { eq, and } from 'drizzle-orm';
+
+interface AuthUser {
+  id: string;
+  roleLevel?: number;
+}
+
+interface RequestContext {
+  organizationId: string;
+  params: {
+    id: string;
+  };
+}
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { 
@@ -45,13 +57,12 @@ export const GET = withApiAuth(async (request: NextRequest, context) => {
       return standardErrorResponse(ErrorCode.UNAUTHORIZED, 'Authentication required');
     }
 
-    const userLevel = (user as any).roleLevel || 0;
+    const userLevel = (user as AuthUser).roleLevel || 0;
     if (userLevel < 85) {
       return standardErrorResponse(ErrorCode.FORBIDDEN, 'Requires Financial Officer role (level 85+)');
     }
 
-    const { organizationId } = context as any;
-    const { params } = context as any;
+    const { organizationId, params } = context as RequestContext;
     const vendorId = params.id;
 
     const [vendor] = await db
@@ -101,13 +112,12 @@ export const PATCH = withApiAuth(async (request: NextRequest, context) => {
       return standardErrorResponse(ErrorCode.UNAUTHORIZED, 'Authentication required');
     }
 
-    const userLevel = (user as any).roleLevel || 0;
+    const userLevel = (user as AuthUser).roleLevel || 0;
     if (userLevel < 85) {
       return standardErrorResponse(ErrorCode.FORBIDDEN, 'Requires Financial Officer role (level 85+)');
     }
 
-    const { organizationId } = context as any;
-    const { params } = context as any;
+    const { organizationId, params } = context as RequestContext;
     const vendorId = params.id;
 
     const body = await request.json();
@@ -161,8 +171,9 @@ export const PATCH = withApiAuth(async (request: NextRequest, context) => {
       message: 'Vendor updated successfully',
     });
 
-  } catch (error: any) {
-    if (error?.message?.includes('unique_vendor_name')) {
+  } catch (error: unknown) {
+    const errorObj = error as { message?: string };
+    if (errorObj.message?.includes('unique_vendor_name')) {
       return standardErrorResponse(
         ErrorCode.DUPLICATE_ENTRY,
         'A vendor with this name already exists'

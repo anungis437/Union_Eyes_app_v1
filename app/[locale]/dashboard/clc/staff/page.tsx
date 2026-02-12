@@ -20,7 +20,6 @@ import {
   DollarSign
 } from 'lucide-react';
 import Link from 'next/link';
-import { db } from '@/db';
 import { getUserRoleInOrganization } from '@/lib/organization-utils';
 import { CLCApprovalWorkflow } from '@/components/admin/clc-approval-workflow';
 
@@ -34,12 +33,12 @@ async function checkCLCStaffAccess(userId: string, orgId: string): Promise<boole
     const userRole = await getUserRoleInOrganization(userId, orgId);
     // Allow clc_staff, clc_executive, and system_admin roles
     return ['clc_staff', 'clc_executive', 'system_admin'].includes(userRole || '');
-  } catch (error) {
+  } catch {
     return false;
   }
 }
 
-async function getCLCOperationalMetrics(orgId: string) {
+async function getCLCOperationalMetrics(_orgId: string) {
   try {
     // TODO: Replace with actual queries to clc_sync_log and related tables
     const pendingSyncs = 0;
@@ -349,7 +348,7 @@ export default async function CLCStaffDashboardPage() {
             </div>
           ) : (
             <div className="space-y-2">
-              {metrics.recentActivity.map((activity: any, index: number) => (
+              {metrics.recentActivity.map((activity: { description: string; timestamp: string }, index: number) => (
                 <div key={index} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-accent transition-colors">
                   <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
                     <Database className="h-4 w-4 text-primary" />

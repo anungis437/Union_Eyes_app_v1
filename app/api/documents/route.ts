@@ -20,7 +20,7 @@ import { standardErrorResponse, standardSuccessResponse, ErrorCode } from '@/lib
  * Validation schema for creating documents
  */
 const createDocumentSchema = z.object({
-  tenantId: z.string().uuid('Invalid tenant ID'),
+  organizationId: z.string().uuid('Invalid organization ID'),
   folderId: z.string().uuid().optional().nullable(),
   name: z.string().min(1, 'Name is required'),
   fileUrl: z.string().url('Invalid file URL'),
@@ -41,7 +41,7 @@ const createDocumentSchema = z.object({
  * List documents with filtering and pagination
  * 
  * Query params:
- * - tenantId: string (required)
+ * - organizationId: string (required)
  * - folderId: string
  * - category: string
  * - tags: string[] (comma-separated)
@@ -61,10 +61,10 @@ export const GET = withRoleAuth(10, async (request, context) => {
   try {
     const { searchParams } = new URL(request.url);
     
-    const requestOrgId = (searchParams.get("organizationId") ?? searchParams.get("tenantId"));
+    const requestOrgId = searchParams.get("organizationId") ?? searchParams.get("orgId") ?? searchParams.get("organization_id") ?? searchParams.get("org_id") ?? searchParams.get("unionId") ?? searchParams.get("union_id") ?? searchParams.get("localId") ?? searchParams.get("local_id");
     
-    const tenantId = requestOrgId;
-    if (!tenantId) {
+    const organizationIdParam = requestOrgId;
+    if (!organizationIdParam) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(), 
         userId,
@@ -73,16 +73,16 @@ export const GET = withRoleAuth(10, async (request, context) => {
         eventType: 'validation_failed',
         severity: 'low',
         dataType: 'DOCUMENTS',
-        details: { reason: 'tenantId is required' },
+        details: { reason: 'organizationId is required' },
       });
       return standardErrorResponse(
         ErrorCode.MISSING_REQUIRED_FIELD,
-        'tenantId is required'
+        'organizationId is required'
       );
     }
 
     // Verify organization ID matches context
-    if (tenantId !== organizationId) {
+    if (organizationIdParam !== organizationId) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),
         userId,
@@ -105,7 +105,7 @@ export const GET = withRoleAuth(10, async (request, context) => {
 
     // Return statistics
     if (statistics) {
-      const stats = await getDocumentStatistics(tenantId);
+      const stats = await getDocumentStatistics(organizationIdParam);
       logApiAuditEvent({
         timestamp: new Date().toISOString(), 
         userId,
@@ -114,7 +114,7 @@ export const GET = withRoleAuth(10, async (request, context) => {
         eventType: 'success',
         severity: 'low',
         dataType: 'DOCUMENTS',
-        details: { tenantId, mode: 'statistics' },
+        details: { organizationId: organizationIdParam, mode: 'statistics' },
       });
       return NextResponse.json(stats);
     }
@@ -139,7 +139,7 @@ export const GET = withRoleAuth(10, async (request, context) => {
       const page = parseInt(searchParams.get("page") || "1");
       const limit = parseInt(searchParams.get("limit") || "50");
 
-      const results = await searchDocuments(tenantId, searchQuery, filters, { page, limit });
+      const results = await searchDocuments(organizationIdParam, searchQuery, filters, { page, limit });
       logApiAuditEvent({
         timestamp: new Date().toISOString(), 
         userId,
@@ -148,13 +148,13 @@ export const GET = withRoleAuth(10, async (request, context) => {
         eventType: 'success',
         severity: 'low',
         dataType: 'DOCUMENTS',
-        details: { tenantId, mode: 'search', searchQuery, resultCount: results.documents?.length || 0 },
+        details: { organizationId: organizationIdParam, mode: 'search', searchQuery, resultCount: results.documents?.length || 0 },
       });
       return NextResponse.json(results);
     }
 
     // Build filters
-    const filters: any = { tenantId };
+    const filters: any = { organizationId: organizationIdParam };
     
     const folderId = searchParams.get("folderId");
     if (folderId) filters.folderId = folderId;
@@ -190,7 +190,7 @@ export const GET = withRoleAuth(10, async (request, context) => {
       eventType: 'success',
       severity: 'low',
       dataType: 'DOCUMENTS',
-      details: { tenantId, filters, resultCount: result.documents?.length || 0 },
+      details: { organizationId: organizationIdParam, filters, resultCount: result.documents?.length || 0 },
     });
 
     return NextResponse.json(result);
@@ -217,7 +217,7 @@ return NextResponse.json(
  * Create a new document
  * 
  * Body:
- * - tenantId: string (required)
+ * - organizationId: string (required)
  * - folderId: string (optional)
  * - name: string (required)
  * - fileUrl: string (required)
@@ -272,7 +272,7 @@ export const POST = withRoleAuth('member', async (request, context) => {
   const body = parsed.data;
 
   // Verify organization ID matches context
-  if (body.tenantId !== organizationId) {
+  if (body.organizationId !== organizationId) {
     logApiAuditEvent({
       timestamp: new Date().toISOString(),
       userId,
@@ -289,7 +289,7 @@ export const POST = withRoleAuth('member', async (request, context) => {
   try {
     // Create document
     const document = await createDocument({
-      tenantId: body.tenantId,
+      organizationId: body.organizationId,
       folderId: body.folderId || null,
       name: body.name,
       fileUrl: body.fileUrl,
@@ -315,7 +315,7 @@ export const POST = withRoleAuth('member', async (request, context) => {
       severity: 'medium',
       dataType: 'DOCUMENTS',
       details: { 
-        tenantId: body.tenantId, 
+        organizationId: body.organizationId, 
         documentId: document.id,
         documentName: body.name, 
         fileType: body.fileType 

@@ -23,7 +23,7 @@ import {
  * Validation schema for creating folders
  */
 const createFolderSchema = z.object({
-  tenantId: z.string().uuid('Invalid tenant ID'),
+  organizationId: z.string().uuid('Invalid organization ID'),
   name: z.string().min(1, 'Folder name is required'),
   description: z.string().optional().nullable(),
   parentFolderId: z.string().uuid().optional().nullable(),
@@ -34,7 +34,7 @@ const createFolderSchema = z.object({
  * List folders or get folder tree
  * 
  * Query params:
- * - tenantId: string (required)
+ * - organizationId: string (required)
  * - parentFolderId: string (optional, use "root" for root folders)
  * - tree: boolean - return full folder tree structure
  */
@@ -45,42 +45,42 @@ export const GET = async (request: NextRequest) => {
   try {
         const { searchParams } = new URL(request.url);
         
-        const organizationId = (searchParams.get("organizationId") ?? searchParams.get("tenantId"));
+        const requestOrgId = searchParams.get("organizationId") ?? searchParams.get("orgId") ?? searchParams.get("organization_id") ?? searchParams.get("org_id") ?? searchParams.get("unionId") ?? searchParams.get("union_id") ?? searchParams.get("localId") ?? searchParams.get("local_id");
         
-        const tenantId = organizationId;
-        if (!tenantId) {
+        const organizationIdParam = requestOrgId;
+        if (!organizationIdParam) {
           logApiAuditEvent({
             timestamp: new Date().toISOString(), userId,
             endpoint: '/api/documents/folders',
             method: 'GET',
             eventType: 'validation_failed',
             severity: 'low',
-            details: { reason: 'Missing tenantId parameter' },
+            details: { reason: 'Missing organizationId parameter' },
           });
           return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'tenantId is required'
+      'organizationId is required'
     );
         }
 
         const tree = searchParams.get("tree") === "true";
 
         if (tree) {
-          const folderTree = await getFolderTree(tenantId);
+          const folderTree = await getFolderTree(organizationIdParam);
           logApiAuditEvent({
             timestamp: new Date().toISOString(), userId,
             endpoint: '/api/documents/folders',
             method: 'GET',
             eventType: 'success',
             severity: 'low',
-            details: { tenantId, mode: 'tree', treeSize: JSON.stringify(folderTree || []).length },
+            details: { organizationId: organizationIdParam, mode: 'tree', treeSize: JSON.stringify(folderTree || []).length },
           });
           return NextResponse.json({ folders: folderTree });
         }
 
         const parentFolderId = searchParams.get("parentFolderId");
         const folders = await listFolders(
-          tenantId, 
+          organizationIdParam, 
           parentFolderId === "root" ? null : parentFolderId || undefined
         );
         
@@ -90,7 +90,7 @@ export const GET = async (request: NextRequest) => {
           method: 'GET',
           eventType: 'success',
           severity: 'low',
-          details: { tenantId, mode: 'list', folderCount: folders?.length || 0, hasParentFilter: !!parentFolderId },
+          details: { organizationId: organizationIdParam, mode: 'list', folderCount: folders?.length || 0, hasParentFilter: !!parentFolderId },
         });
 
         return NextResponse.json({ folders });
@@ -117,7 +117,7 @@ return standardErrorResponse(
  * Create a new folder
  * 
  * Body:
- * - tenantId: string (required)
+ * - organizationId: string (required)
  * - name: string (required)
  * - description: string
  * - parentFolderId: string
@@ -146,8 +146,7 @@ export const POST = withRoleAuth(20, async (request, context) => {
   const body = parsed.data;
   const { userId, organizationId } = context;
 
-  const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
-  if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
+  if (body.organizationId !== context.organizationId) {
     return standardErrorResponse(
       ErrorCode.FORBIDDEN,
       'Forbidden',
@@ -157,7 +156,7 @@ export const POST = withRoleAuth(20, async (request, context) => {
 
 try {
       const folder = await createFolder({
-        tenantId: body.tenantId,
+        organizationId: body.organizationId,
         name: body.name,
         description: body.description || null,
         parentFolderId: body.parentFolderId || null,
@@ -172,7 +171,7 @@ try {
         severity: 'medium',
         details: { 
           folderName: body.name,
-          tenantId: body.tenantId,
+          organizationId: body.organizationId,
           hasParent: !!body.parentFolderId,
         },
       });

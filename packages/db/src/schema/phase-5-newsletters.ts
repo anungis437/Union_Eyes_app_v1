@@ -1,12 +1,12 @@
 import { pgTable, uuid, varchar, text, boolean, timestamp, integer, jsonb } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
-import { tenants as organizations } from '../../../../db/schema/tenant-management-schema';
+import { organizations } from '../../../../db/schema-organizations';
 import { profiles } from '../../../../db/schema/profiles-schema';
 
 // Newsletter templates
 export const newsletterTemplates = pgTable('newsletter_templates', {
   id: uuid('id').primaryKey().defaultRandom(),
-  organizationId: uuid('organization_id').notNull().references(() => organizations.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   name: varchar('name', { length: 255 }).notNull(),
   description: text('description'),
   thumbnailUrl: text('thumbnail_url'),
@@ -21,7 +21,7 @@ export const newsletterTemplates = pgTable('newsletter_templates', {
 // Newsletters
 export const newsletters = pgTable('newsletters', {
   id: uuid('id').primaryKey().defaultRandom(),
-  organizationId: uuid('organization_id').notNull().references(() => organizations.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   templateId: uuid('template_id').references(() => newsletterTemplates.id, { onDelete: 'set null' }),
   subject: varchar('subject', { length: 500 }).notNull(),
   previewText: varchar('preview_text', { length: 255 }),

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/services/financial-service/src/db';
 import { budgets, budgetLineItems } from '@/services/financial-service/src/db/schema';
@@ -10,6 +10,28 @@ import {
   standardSuccessResponse, 
   ErrorCode 
 } from '@/lib/api/standardized-responses';
+
+interface AuthUser {
+  id: string;
+  roleLevel?: number;
+}
+
+interface RequestContext {
+  organizationId: string;
+  params: { id: string };
+}
+
+interface BudgetUpdateData {
+  budgetName?: string;
+  startDate?: string;
+  endDate?: string;
+  totalBudget?: string;
+  status?: 'draft' | 'approved' | 'active' | 'closed' | 'revised';
+  notes?: string;
+  updatedAt: string;
+  approvedBy?: string;
+  approvedAt?: string;
+}
 
 const updateBudgetSchema = z.object({
   budgetName: z.string().min(1).max(255).optional(),
@@ -31,13 +53,13 @@ export const GET = withApiAuth(async (request: NextRequest, context) => {
       return standardErrorResponse(ErrorCode.UNAUTHORIZED, 'Authentication required');
     }
 
-    const userLevel = (user as any).roleLevel || 0;
+    const userLevel = (user as AuthUser).roleLevel || 0;
     if (userLevel < 85) {
       return standardErrorResponse(ErrorCode.FORBIDDEN, 'Requires Financial Officer role (level 85+)');
     }
 
-    const { organizationId } = context as any;
-    const { params } = context as any;
+    const { organizationId } = context as RequestContext;
+    const { params } = context as RequestContext;
     const budgetId = params.id;
 
     const [budget] = await db
@@ -94,13 +116,13 @@ export const PATCH = withApiAuth(async (request: NextRequest, context) => {
       return standardErrorResponse(ErrorCode.UNAUTHORIZED, 'Authentication required');
     }
 
-    const userLevel = (user as any).roleLevel || 0;
+    const userLevel = (user as AuthUser).roleLevel || 0;
     if (userLevel < 85) {
       return standardErrorResponse(ErrorCode.FORBIDDEN, 'Requires Financial Officer role (level 85+)');
     }
 
-    const { organizationId } = context as any;
-    const { params } = context as any;
+    const { organizationId } = context as RequestContext;
+    const { params } = context as RequestContext;
     const budgetId = params.id;
 
     const body = await request.json();
@@ -130,7 +152,7 @@ export const PATCH = withApiAuth(async (request: NextRequest, context) => {
     }
 
     // Update budget
-    const updateData: any = { ...data, updatedAt: new Date().toISOString() };
+    const updateData: BudgetUpdateData = { ...data, updatedAt: new Date().toISOString() };
     
     // If status is being changed to approved, record approval
     if (data.status === 'approved' && existingBudget.status !== 'approved') {
@@ -180,13 +202,13 @@ export const DELETE = withApiAuth(async (request: NextRequest, context) => {
       return standardErrorResponse(ErrorCode.UNAUTHORIZED, 'Authentication required');
     }
 
-    const userLevel = (user as any).roleLevel || 0;
+    const userLevel = (user as AuthUser).roleLevel || 0;
     if (userLevel < 85) {
       return standardErrorResponse(ErrorCode.FORBIDDEN, 'Requires Financial Officer role (level 85+)');
     }
 
-    const { organizationId } = context as any;
-    const { params } = context as any;
+    const { organizationId } = context as RequestContext;
+    const { params } = context as RequestContext;
     const budgetId = params.id;
 
     // Verify budget exists and belongs to organization

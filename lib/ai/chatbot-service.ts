@@ -286,7 +286,7 @@ export class ChatSessionManager {
    */
   async createSession(data: {
     userId: string;
-    tenantId: string;
+    organizationId: string;
     title?: string;
     aiProvider?: string;
     model?: string;
@@ -298,7 +298,7 @@ export class ChatSessionManager {
       .insert(chatSessions)
       .values({
         userId: data.userId,
-        tenantId: data.tenantId,
+        tenantId: data.organizationId,
         title: data.title || "New conversation",
         aiProvider: (data.aiProvider as any) || "openai",
         model: data.model || "gpt-4",
@@ -396,7 +396,7 @@ export class RAGService {
    * Add document to knowledge base
    */
   async addDocument(data: {
-    tenantId: string;
+    organizationId: string;
     title: string;
     documentType: string;
     content: string;
@@ -416,6 +416,7 @@ export class RAGService {
     
     await db.insert(knowledgeBase).values({
       ...data,
+      tenantId: data.organizationId,
       documentType: data.documentType as any,
       embedding: JSON.stringify(embedding),
       embeddingModel: "text-embedding-ada-002",
@@ -428,7 +429,7 @@ export class RAGService {
   async searchDocuments(
     query: string,
     options: {
-      tenantId?: string;
+      organizationId?: string;
       documentTypes?: string[];
       limit?: number;
       similarityThreshold?: number;
@@ -458,7 +459,7 @@ export class RAGService {
       .where(
         and(
           eq(knowledgeBase.isActive, true),
-          options.tenantId ? eq(knowledgeBase.tenantId, options.tenantId) : undefined
+          options.organizationId ? eq(knowledgeBase.tenantId, options.organizationId) : undefined
         )
       )
       .limit(options.limit || 5);
@@ -550,7 +551,7 @@ export class ChatbotService {
     let retrievedDocs: any[] = [];
     if (data.useRAG !== false) {
       retrievedDocs = await this.ragService.searchDocuments(data.content, {
-        tenantId: session.tenantId,
+        organizationId: session.tenantId,
         limit: 3,
       });
       

@@ -55,7 +55,7 @@ export default function ClaimsPage() {
         <TabsContent value="submit">
           <ClaimFormWizard
             memberId="current-member-id"
-            tenantId="current-tenant-id"
+            organizationId="current-organization-id"
             onSubmit={async (data) => {
 // Handle claim submission
               setActiveTab("list");

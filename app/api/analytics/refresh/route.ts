@@ -33,12 +33,12 @@ async function postHandler(req: NextRequest, context) {
   }
 
   try {
-    const tenantId = organizationId;
+    const organizationScopeId = organizationId;
     
-    if (!tenantId) {
+    if (!organizationScopeId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID required'
+      'Organization ID required'
     );
     }
 
@@ -78,13 +78,12 @@ return standardErrorResponse(
 
 async function getHandler(req: NextRequest, context) {
   try {
-    const organizationId = context.organizationId;
-    const tenantId = organizationId;
+    const organizationScopeId = context.organizationId;
     
-    if (!tenantId) {
+    if (!organizationScopeId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID required'
+      'Organization ID required'
     );
     }
 

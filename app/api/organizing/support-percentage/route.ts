@@ -20,7 +20,7 @@ import {
 export const dynamic = 'force-dynamic';
 
 
-const organizingSupport-percentageSchema = z.object({
+const organizingSupportPercentageSchema = z.object({
   campaignId: z.string().uuid('Invalid campaignId'),
   asOfDate: z.string().datetime().optional(),
 });

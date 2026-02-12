@@ -254,7 +254,7 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
 
       // Server validated the switch, now update cookies
       document.cookie = `selected_organization_id=${newOrganizationId}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Strict`; // 1 year
-      document.cookie = `selected_tenant_id=${newOrganizationId}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Strict`; // 1 year
+      document.cookie = `selected_tenant_id=${newOrganizationId}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Strict`; // 1 year (legacy compatibility)
 
       // Update state
       setOrganizationId(newOrganizationId);
@@ -300,7 +300,7 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
       // Set both slug and ID cookies for backward compatibility
       document.cookie = `active-organization=${organization.slug}; path=/; max-age=${60 * 60 * 24 * 30}`; // 30 days
       document.cookie = `selected_organization_id=${organizationId}; path=/; max-age=${60 * 60 * 24 * 365}`; // 1 year
-      document.cookie = `selected_tenant_id=${organizationId}; path=/; max-age=${60 * 60 * 24 * 365}`; // 1 year (for tenant middleware)
+      document.cookie = `selected_tenant_id=${organizationId}; path=/; max-age=${60 * 60 * 24 * 365}`; // 1 year (legacy compatibility)
     }
   }, [organization, organizationId]);
 

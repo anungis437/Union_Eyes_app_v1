@@ -192,11 +192,11 @@ export const POST = withRoleAuth('officer', async (request: NextRequest, context
  * SECURITY: Allowlisted tables and their valid columns
  */
 const ALLOWED_TABLES: Record<string, string[]> = {
-  'claims': ['id', 'claim_number', 'status', 'amount', 'created_at', 'tenant_id', 'claimant_name', 'claim_type'],
-  'members': ['id', 'first_name', 'last_name', 'email', 'status', 'created_at', 'tenant_id', 'membership_number'],
-  'organization_members': ['id', 'first_name', 'last_name', 'email', 'status', 'created_at', 'tenant_id'],
-  'deadlines': ['id', 'title', 'due_date', 'status', 'created_at', 'tenant_id', 'priority'],
-  'grievances': ['id', 'grievance_number', 'status', 'created_at', 'tenant_id', 'grievance_type'],
+  'claims': ['id', 'claim_number', 'status', 'amount', 'created_at', 'organization_id', 'claimant_name', 'claim_type'],
+  'members': ['id', 'first_name', 'last_name', 'email', 'status', 'created_at', 'organization_id', 'membership_number'],
+  'organization_members': ['id', 'first_name', 'last_name', 'email', 'status', 'created_at', 'organization_id'],
+  'deadlines': ['id', 'title', 'due_date', 'status', 'created_at', 'organization_id', 'priority'],
+  'grievances': ['id', 'grievance_number', 'status', 'created_at', 'organization_id', 'grievance_type'],
 };
 
 const ALLOWED_AGGREGATIONS = ['count', 'sum', 'avg', 'min', 'max', 'distinct'];

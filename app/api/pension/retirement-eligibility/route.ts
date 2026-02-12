@@ -20,7 +20,7 @@ import {
 export const dynamic = 'force-dynamic';
 
 
-const pensionRetirement-eligibilitySchema = z.object({
+const pensionRetirementEligibilitySchema = z.object({
   pensionPlanId: z.string().uuid('Invalid pensionPlanId'),
   memberId: z.string().uuid('Invalid memberId'),
   checkDate: z.string().datetime().optional(),

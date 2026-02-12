@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
       .where(
         and(
           eq(billingTemplates.id, templateId),
-          eq(billingTemplates.tenantId, currentMember.tenantId)
+          eq(billingTemplates.organizationId, currentMember.organizationId)
         )
       )
       .limit(1);
@@ -94,12 +94,12 @@ export async function POST(req: NextRequest) {
         .from(members)
         .where(
           and(
-            eq(members.tenantId, currentMember.tenantId),
+            eq(members.organizationId, currentMember.organizationId),
             inArray(members.id, memberIds)
           )
         );
     } else {
-      const whereConditions = [eq(members.tenantId, currentMember.tenantId)];
+      const whereConditions = [eq(members.organizationId, currentMember.organizationId)];
 
       if (filters?.status) {
         whereConditions.push(eq(members.status, filters.status));

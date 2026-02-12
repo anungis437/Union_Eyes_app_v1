@@ -12,11 +12,67 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { organizationMembers, memberRoles, auditLog, roleDefinitions } from '@/db/schema';
+import { organizationMembers } from '@/db/schema';
 import { withApiAuth } from '@/lib/api-auth-guard';
 import { z } from 'zod';
 import { eq, and, inArray } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
+import { pgTable, uuid, text, timestamp, integer, boolean, jsonb } from 'drizzle-orm/pg-core';
+
+// ============================================================================
+// LOCAL TABLE DEFINITIONS
+// Note: These tables exist in DB but aren't exported in main schema yet
+// ============================================================================
+
+const memberRoles = pgTable('member_roles', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  memberId: uuid('member_id').notNull(),
+  organizationId: uuid('organization_id').notNull(),
+  roleCode: text('role_code').notNull(),
+  scopeType: text('scope_type').notNull(),
+  scopeValue: text('scope_value'),
+  assignmentType: text('assignment_type'),
+  status: text('status').notNull(),
+  startDate: timestamp('start_date', { withTimezone: true }),
+  endDate: timestamp('end_date', { withTimezone: true }),
+  assignedBy: text('assigned_by'),
+  assignedByRole: text('assigned_by_role'),
+  reason: text('reason'),
+  electionDate: timestamp('election_date', { withTimezone: true }),
+  voteCount: integer('vote_count'),
+  totalVotes: integer('total_votes'),
+  votePercentage: integer('vote_percentage'),
+  termYears: integer('term_years'),
+  nextElectionDate: timestamp('next_election_date', { withTimezone: true }),
+  isActingRole: boolean('is_acting_role'),
+  actingForMemberId: uuid('acting_for_member_id'),
+  actingReason: text('acting_reason'),
+  actingStartDate: timestamp('acting_start_date', { withTimezone: true }),
+  actingEndDate: timestamp('acting_end_date', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }),
+  updatedAt: timestamp('updated_at', { withTimezone: true }),
+});
+
+const roleDefinitions = pgTable('role_definitions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  roleCode: text('role_code').notNull(),
+  roleName: text('role_name').notNull(),
+  roleLevel: integer('role_level').notNull(),
+  isActive: boolean('is_active').notNull().default(true),
+  createdAt: timestamp('created_at', { withTimezone: true }),
+  updatedAt: timestamp('updated_at', { withTimezone: true }),
+});
+
+const auditLog = pgTable('audit_logs', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  organizationId: uuid('organization_id'),
+  userId: text('user_id'),
+  action: text('action').notNull(),
+  resourceType: text('resource_type'),
+  resourceId: text('resource_id'),
+  details: jsonb('details'),
+  createdAt: timestamp('created_at', { withTimezone: true }),
+});
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -62,7 +118,6 @@ const BatchRoleAssignmentRequestSchema = z.object({
 });
 
 type RoleAssignment = z.infer<typeof RoleAssignmentSchema>;
-type BatchRoleAssignmentRequest = z.infer<typeof BatchRoleAssignmentRequestSchema>;
 
 interface AssignmentResult {
   memberId: string;
@@ -95,7 +150,6 @@ function canAssignRole(currentUserRole: string, targetRoleCode: string): boolean
     member: 10,
   };
 
-  const currentLevel = ROLE_HIERARCHY[currentUserRole] || 0;
   const targetLevel = ROLE_HIERARCHY[targetRoleCode] || 0;
 
   // Admin can assign any role
@@ -126,7 +180,7 @@ async function validateAssignment(
   assignment: RoleAssignment,
   currentUserId: string,
   currentUserRole: string,
-  currentTenantId: string
+  currentOrganizationId: string
 ): Promise<{ valid: boolean; error?: string; skipReason?: string }> {
   // Authorization check
   if (!canAssignRole(currentUserRole, assignment.roleCode)) {
@@ -143,7 +197,7 @@ async function validateAssignment(
     .where(
       and(
         eq(organizationMembers.id, assignment.memberId),
-        eq(organizationMembers.tenantId, currentTenantId)
+        eq(organizationMembers.organizationId, currentOrganizationId)
       )
     )
     .limit(1);
@@ -235,7 +289,7 @@ async function executeAssignment(
   assignment: RoleAssignment,
   currentUserId: string,
   currentUserRole: string,
-  currentTenantId: string
+  currentOrganizationId: string
 ): Promise<AssignmentResult> {
   try {
     // Get target member info
@@ -260,7 +314,7 @@ async function executeAssignment(
       assignment,
       currentUserId,
       currentUserRole,
-      currentTenantId
+      currentOrganizationId
     );
 
     if (!validation.valid) {
@@ -313,7 +367,7 @@ async function executeAssignment(
       // Step 2: Insert into member_roles (enhanced RBAC)
       await tx.insert(memberRoles).values({
         memberId: assignment.memberId,
-        tenantId: currentTenantId,
+        organizationId: currentOrganizationId,
         roleCode: assignment.roleCode,
         scopeType: assignment.scopeType,
         scopeValue: assignment.scopeValue || '',
@@ -389,7 +443,7 @@ async function executeAssignment(
 
       // Step 5: Audit log
       await tx.insert(auditLog).values({
-        tenantId: currentTenantId,
+        organizationId: currentOrganizationId,
         userId: currentUserId,
         action: 'role_assigned',
         resourceType: 'member_role',
@@ -407,7 +461,7 @@ async function executeAssignment(
           assignedByRole: currentUserRole,
           batchOperation: true,
         },
-        timestamp: new Date(),
+        createdAt: new Date(),
       });
     });
 
@@ -435,9 +489,14 @@ async function executeAssignment(
 // API ROUTE HANDLER
 // ============================================================================
 
-async function batchRoleAssignmentHandler(req: NextRequest, context: any) {
+interface RequestContext {
+  user: { id: string; role: string };
+  organizationId: string;
+}
+
+async function batchRoleAssignmentHandler(req: NextRequest, context: RequestContext) {
   try {
-    const { user, organizationId: tenantId } = context;
+    const { user, organizationId } = context;
 
     // Parse and validate request body
     const body = await req.json();
@@ -458,7 +517,7 @@ async function batchRoleAssignmentHandler(req: NextRequest, context: any) {
 
     logger.info(`Batch role assignment started`, {
       userId: user.id,
-      tenantId,
+      organizationId,
       assignmentCount: assignments.length,
       dryRun,
       stopOnError,
@@ -486,7 +545,7 @@ async function batchRoleAssignmentHandler(req: NextRequest, context: any) {
           assignment,
           user.id,
           user.role,
-          tenantId
+          organizationId
         );
 
         results.push({
@@ -503,7 +562,7 @@ async function batchRoleAssignmentHandler(req: NextRequest, context: any) {
           assignment,
           user.id,
           user.role,
-          tenantId
+          organizationId
         );
 
         results.push(result);

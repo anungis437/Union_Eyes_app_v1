@@ -59,12 +59,12 @@ export interface MemberPaymentPattern {
  * Calculate collection metrics for a given date range
  */
 export async function getCollectionMetrics(
-  tenantId: string,
+  organizationId: string,
   dateRange: DateRange
 ): Promise<CollectionMetrics> {
   try {
     const { startDate, endDate } = dateRange;
-    logger.info('[getCollectionMetrics] Starting', { tenantId, startDate, endDate });
+    logger.info('[getCollectionMetrics] Starting', { organizationId, startDate, endDate });
 
     // Total dues charged in period
     const chargedResult = await db.execute<{ total: string; count: string }>(sql`
@@ -72,7 +72,7 @@ export async function getCollectionMetrics(
         COALESCE(SUM(amount), 0) as total,
         COUNT(DISTINCT member_id) as count
       FROM dues_transactions
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND transaction_type = 'charge'
         AND due_date >= ${startDate.toISOString()}
         AND due_date <= ${endDate.toISOString()}
@@ -87,7 +87,7 @@ export async function getCollectionMetrics(
         COALESCE(SUM(amount), 0) as total,
         COUNT(DISTINCT member_id) as count
       FROM dues_transactions
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND transaction_type = 'payment'
         AND payment_date >= ${startDate.toISOString()}
         AND payment_date <= ${endDate.toISOString()}
@@ -100,7 +100,7 @@ export async function getCollectionMetrics(
     const outstandingResult = await db.execute<{ total: string }>(sql`
       SELECT COALESCE(SUM(amount), 0) as total
       FROM dues_transactions
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND status = 'pending'
         AND due_date <= ${endDate.toISOString()}
     `);
@@ -111,7 +111,7 @@ export async function getCollectionMetrics(
     const paymentTimeResult = await db.execute<{ avg_days: string }>(sql`
       SELECT AVG(EXTRACT(DAY FROM (payment_date - due_date))) as avg_days
       FROM dues_transactions
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND transaction_type = 'charge'
         AND status = 'paid'
         AND payment_date IS NOT NULL
@@ -143,7 +143,7 @@ export async function getCollectionMetrics(
     logger.error('[getCollectionMetrics] Error', {
       error,
       stack: error instanceof Error ? error.stack : undefined,
-      tenantId,
+      organizationId,
     });
     throw error;
   }
@@ -153,10 +153,10 @@ export async function getCollectionMetrics(
  * Get arrears statistics
  */
 export async function getArrearsStatistics(
-  tenantId: string
+  organizationId: string
 ): Promise<ArrearsStatistics> {
   try {
-    logger.info('[getArrearsStatistics] Starting', { tenantId });
+    logger.info('[getArrearsStatistics] Starting', { organizationId });
 
     // Total cases and amount
     const totalResult = await db.execute<{ count: string; total: string }>(sql`
@@ -164,7 +164,7 @@ export async function getArrearsStatistics(
         COUNT(*) as count,
         COALESCE(SUM(CAST(total_owed AS DECIMAL)), 0) as total
       FROM arrears_cases
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND status NOT IN ('resolved', 'written_off')
     `);
 
@@ -175,7 +175,7 @@ export async function getArrearsStatistics(
     const statusResult = await db.execute<{ status: string; count: string }>(sql`
       SELECT status, COUNT(*) as count
       FROM arrears_cases
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND status NOT IN ('resolved', 'written_off')
       GROUP BY status
     `);
@@ -191,7 +191,7 @@ export async function getArrearsStatistics(
         COALESCE(CAST(escalation_level AS INTEGER), 0) as level,
         COUNT(*) as count
       FROM arrears_cases
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND status NOT IN ('resolved', 'written_off')
       GROUP BY escalation_level
     `);
@@ -205,7 +205,7 @@ export async function getArrearsStatistics(
     const avgDaysResult = await db.execute<{ avg_days: string }>(sql`
       SELECT AVG(CAST(days_overdue AS DECIMAL)) as avg_days
       FROM arrears_cases
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND status NOT IN ('resolved', 'written_off')
         AND days_overdue IS NOT NULL
     `);
@@ -221,7 +221,7 @@ export async function getArrearsStatistics(
     }>(sql`
       SELECT id, member_id, days_overdue, total_owed
       FROM arrears_cases
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND status NOT IN ('resolved', 'written_off')
         AND days_overdue IS NOT NULL
       ORDER BY CAST(days_overdue AS INTEGER) DESC
@@ -249,7 +249,7 @@ export async function getArrearsStatistics(
     logger.error('[getArrearsStatistics] Error', {
       error,
       stack: error instanceof Error ? error.stack : undefined,
-      tenantId,
+      organizationId,
     });
     throw error;
   }
@@ -259,18 +259,18 @@ export async function getArrearsStatistics(
  * Analyze revenue trends over time
  */
 export async function getRevenueAnalysis(
-  tenantId: string,
+  organizationId: string,
   dateRange: DateRange
 ): Promise<RevenueAnalysis> {
   try {
     const { startDate, endDate } = dateRange;
-    logger.info('[getRevenueAnalysis] Starting', { tenantId, startDate, endDate });
+    logger.info('[getRevenueAnalysis] Starting', { organizationId, startDate, endDate });
 
     // Total revenue from payments
     const revenueResult = await db.execute<{ total: string }>(sql`
       SELECT COALESCE(SUM(amount), 0) as total
       FROM dues_transactions
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND transaction_type = 'payment'
         AND payment_date >= ${startDate.toISOString()}
         AND payment_date <= ${endDate.toISOString()}
@@ -289,7 +289,7 @@ export async function getRevenueAnalysis(
         SUM(amount) as amount,
         COUNT(*) as count
       FROM dues_transactions
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND transaction_type = 'payment'
         AND payment_date >= ${startDate.toISOString()}
         AND payment_date <= ${endDate.toISOString()}
@@ -309,7 +309,7 @@ export async function getRevenueAnalysis(
         transaction_type as type,
         SUM(amount) as amount
       FROM dues_transactions
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND payment_date >= ${startDate.toISOString()}
         AND payment_date <= ${endDate.toISOString()}
       GROUP BY transaction_type
@@ -340,7 +340,7 @@ export async function getRevenueAnalysis(
     logger.error('[getRevenueAnalysis] Error', {
       error,
       stack: error instanceof Error ? error.stack : undefined,
-      tenantId,
+      organizationId,
     });
     throw error;
   }
@@ -350,13 +350,13 @@ export async function getRevenueAnalysis(
  * Analyze payment patterns for members
  */
 export async function getMemberPaymentPatterns(
-  tenantId: string,
+  organizationId: string,
   dateRange: DateRange,
   limit: number = 100
 ): Promise<MemberPaymentPattern[]> {
   try {
     const { startDate, endDate } = dateRange;
-    logger.info('[getMemberPaymentPatterns] Starting', { tenantId, startDate, endDate, limit });
+    logger.info('[getMemberPaymentPatterns] Starting', { organizationId, startDate, endDate, limit });
 
     const patternsResult = await db.execute<{
       member_id: string;
@@ -378,7 +378,7 @@ export async function getMemberPaymentPatterns(
         COUNT(CASE WHEN status = 'pending' AND due_date < CURRENT_DATE THEN 1 END) as missed,
         MAX(payment_date) as last_payment
       FROM dues_transactions
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND transaction_type = 'charge'
         AND due_date >= ${startDate.toISOString()}
         AND due_date <= ${endDate.toISOString()}
@@ -414,7 +414,7 @@ export async function getMemberPaymentPatterns(
     logger.error('[getMemberPaymentPatterns] Error', {
       error,
       stack: error instanceof Error ? error.stack : undefined,
-      tenantId,
+      organizationId,
     });
     throw error;
   }
@@ -424,11 +424,11 @@ export async function getMemberPaymentPatterns(
  * Get top-level financial dashboard summary
  */
 export async function getFinancialDashboard(
-  tenantId: string,
+  organizationId: string,
   dateRange: DateRange
 ) {
   try {
-    logger.info('[getFinancialDashboard] Starting', { tenantId, dateRange });
+    logger.info('[getFinancialDashboard] Starting', { organizationId, dateRange });
 
     const [
       collectionMetrics,
@@ -436,10 +436,10 @@ export async function getFinancialDashboard(
       revenueAnalysis,
       topPayers
     ] = await Promise.all([
-      getCollectionMetrics(tenantId, dateRange),
-      getArrearsStatistics(tenantId),
-      getRevenueAnalysis(tenantId, dateRange),
-      getMemberPaymentPatterns(tenantId, dateRange, 10),
+      getCollectionMetrics(organizationId, dateRange),
+      getArrearsStatistics(organizationId),
+      getRevenueAnalysis(organizationId, dateRange),
+      getMemberPaymentPatterns(organizationId, dateRange, 10),
     ]);
 
     return {
@@ -453,7 +453,7 @@ export async function getFinancialDashboard(
     logger.error('[getFinancialDashboard] Error', {
       error,
       stack: error instanceof Error ? error.stack : undefined,
-      tenantId,
+      organizationId,
     });
     throw error;
   }

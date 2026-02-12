@@ -7,11 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { JurisdictionBadge } from '@/components/jurisdiction/jurisdiction-badge';
 import { DeadlineCalculator } from '@/components/jurisdiction/deadline-calculator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CAJurisdiction, getDeadlineUrgency } from '@/lib/jurisdiction-helpers-client';
+import { CAJurisdiction, getDeadlineUrgency, mapJurisdictionValue } from '@/lib/jurisdiction-helpers-client';
 
 interface ClaimJurisdictionInfoProps {
   claimId: string;
-  tenantId: string;
+  organizationId: string;
   claimType: string;
   status: string;
   filedDate?: string;
@@ -29,7 +29,7 @@ interface DeadlineInfo {
 
 export function ClaimJurisdictionInfo({
   claimId,
-  tenantId,
+  organizationId,
   claimType,
   status,
   filedDate,
@@ -45,9 +45,9 @@ export function ClaimJurisdictionInfo({
       try {
         setLoading(true);
 
-        // Fetch tenant's jurisdiction
+        // Fetch organization's jurisdiction
         const jurisdictionResponse = await fetch(
-          `/api/jurisdiction/tenant/${tenantId}`
+          `/api/organizations/${organizationId}`
         );
 
         if (!jurisdictionResponse.ok) {
@@ -55,7 +55,13 @@ export function ClaimJurisdictionInfo({
         }
 
         const jurisdictionData = await jurisdictionResponse.json();
-        const jur = jurisdictionData.jurisdiction as CAJurisdiction;
+        const organization = jurisdictionData?.data ?? jurisdictionData;
+        const rawJurisdiction =
+          (organization?.jurisdiction ??
+            organization?.provinceTerritory ??
+            organization?.province_territory ??
+            '') as string;
+        const jur = mapJurisdictionValue(rawJurisdiction);
         setJurisdiction(jur);
 
         // If claim involves grievance/arbitration and has a filed date, calculate deadline
@@ -102,7 +108,7 @@ setError(
     };
 
     fetchJurisdictionData();
-  }, [claimId, tenantId, claimType, status, filedDate]);
+  }, [claimId, organizationId, claimType, status, filedDate]);
 
   if (loading) {
     return (
@@ -212,7 +218,7 @@ setError(
             {/* Interactive Calculator */}
             <div className="pt-2 border-t">
               <DeadlineCalculator
-                organizationId={tenantId}
+                organizationId={organizationId}
                 ruleCategory={deadlineInfo.ruleCategory}
                 defaultStartDate={filedDate ? new Date(filedDate) : undefined}
               />

@@ -10,7 +10,6 @@ import {
   DollarSign, 
   AlertCircle, 
   TrendingUp, 
-  Calendar,
   CheckCircle,
   Clock,
   Search,
@@ -20,9 +19,7 @@ import {
   Building2
 } from 'lucide-react';
 import Link from 'next/link';
-import { db } from '@/db';
 import { getUserRoleInOrganization } from '@/lib/organization-utils';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -40,6 +37,22 @@ import {
 } from '@/components/ui/table';
 import { format } from 'date-fns';
 
+type BadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline';
+type IconComponent = typeof Clock | typeof FileText | typeof CheckCircle | typeof AlertCircle;
+
+interface RemittanceData {
+  id: string;
+  year: number;
+  month: number;
+  organizationName: string;
+  clcCode?: string;
+  memberCount: number;
+  perCapitaRate: number;
+  totalAmount: number;
+  dueDate: string;
+  status: string;
+}
+
 export const metadata: Metadata = {
   title: 'Provincial Remittances | Federation Dashboard',
   description: 'Track and manage per-capita dues remittances from member unions',
@@ -49,12 +62,12 @@ async function checkFederationAccess(userId: string, orgId: string): Promise<boo
   try {
     const userRole = await getUserRoleInOrganization(userId, orgId);
     return ['fed_staff', 'fed_executive', 'admin', 'system_admin'].includes(userRole || '');
-  } catch (error) {
+  } catch {
     return false;
   }
 }
 
-async function getRemittanceData(federationId: string) {
+async function getRemittanceData(_federationId: string) {
   try {
     // TODO: Replace with actual federation_remittances queries
     // For now, return placeholder data
@@ -75,7 +88,7 @@ async function getRemittanceData(federationId: string) {
         month: currentMonth,
       },
     };
-  } catch (error) {
+  } catch {
     return {
       remittances: [],
       summary: {
@@ -94,7 +107,7 @@ async function getRemittanceData(federationId: string) {
 }
 
 function getStatusBadge(status: string) {
-  const variants: Record<string, { variant: any; icon: any; label: string }> = {
+  const variants: Record<string, { variant: BadgeVariant; icon: IconComponent; label: string }> = {
     pending: { 
       variant: 'secondary' as const, 
       icon: Clock, 
@@ -382,7 +395,7 @@ export default async function FederationRemittancesPage({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.remittances.map((remittance: any) => (
+                {data.remittances.map((remittance: RemittanceData) => (
                   <TableRow key={remittance.id}>
                     <TableCell className="font-medium">
                       {format(new Date(remittance.year, remittance.month - 1), 'MMM yyyy')}

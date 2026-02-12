@@ -24,7 +24,7 @@ import {
   ErrorCode 
 } from '@/lib/api/standardized-responses';
 
-const onboardingDiscover-federationSchema = z.object({
+const onboardingDiscoverFederationSchema = z.object({
   province: z.string().min(1, 'province is required'),
   sector: z.unknown().optional(),
   estimatedMemberCount: z.number().int().positive(),

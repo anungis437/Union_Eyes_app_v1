@@ -80,41 +80,9 @@ return NextResponse.json(
         message: 'Thank you for your feedback!',
       });
     } catch (error) {
-// Validation error
-      if (error instanceof z.ZodError) {
-        return standardErrorResponse(
-      ErrorCode.VALIDATION_ERROR,
-      'Invalid request',
-      error
-    );
-      }
-
-      // 3. Create Supabase client
-      const supabase = await createClient();
-
-      // 4. Get feedback for this query (filtered by organization)
-      const { data: feedback, error } = await supabase
-        .from('ai_feedback')
-        .select('*')
-        .eq('query_id', queryId as any)
-        .eq('organization_id', (organizationId || '') as any)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-return NextResponse.json(
-          { error: 'Failed to fetch feedback', details: error.message },
-          { status: 500 }
-        );
-      }
-
-      // 5. Return feedback
-      return NextResponse.json({
-        feedback: feedback || [],
-      });
-    } catch (error) {
-return NextResponse.json(
+      return NextResponse.json(
         {
-          error: 'Failed to fetch feedback',
+          error: 'Failed to submit feedback',
           message: error instanceof Error ? error.message : 'Unknown error',
         },
         { status: 500 }

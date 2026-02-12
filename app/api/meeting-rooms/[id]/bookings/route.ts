@@ -20,14 +20,14 @@ import {
   ErrorCode 
 } from '@/lib/api/standardized-responses';
 
-const meeting-roomsBookingsSchema = z.object({
+const meetingRoomsBookingsSchema = z.object({
   startTime: z.string().datetime().optional(),
   endTime: z.string().datetime().optional(),
   purpose: z.unknown().optional(),
   bookedFor: z.unknown().optional(),
-  setupRequired = false: z.unknown().optional(),
-  setupTime = 0: z.string().datetime().optional(),
-  cateringRequired = false: z.unknown().optional(),
+  setupRequired: z.unknown().optional().default(false),
+  setupTime: z.string().datetime().optional().default(0),
+  cateringRequired: z.unknown().optional().default(false),
   cateringNotes: z.string().optional(),
   specialRequests: z.unknown().optional(),
   attendeeCount: z.number().int().positive(),
@@ -52,7 +52,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
       );
     }
     
-    const { startTime, endTime, purpose, bookedFor, setupRequired = false, setupTime = 0, cateringRequired = false, cateringNotes, specialRequests, attendeeCount, eventId, // Optional } = validation.data;
+    const validatedData = validation.data;
 
       const {
         startTime,
@@ -67,7 +67,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         attendeeCount,
         eventId, // Optional: link to calendar event
         metadata,
-      } = body;
+      } = validatedData;
 
       // Validation
       if (!startTime || !endTime || !purpose) {
@@ -176,7 +176,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         .values({
           roomId,
           eventId,
-          tenantId: room.tenantId,
+          organizationId: room.organizationId,
           bookedBy: userId,
           bookedFor,
           purpose,

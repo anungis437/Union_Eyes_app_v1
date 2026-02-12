@@ -28,8 +28,8 @@ describe('document-service additional coverage', () => {
   describe('listFolders', () => {
     it('returns root folders when parentFolderId is null', async () => {
       const folders = [
-        { id: 'folder-1', tenantId: 'tenant-1', name: 'Root A', parentFolderId: null },
-        { id: 'folder-2', tenantId: 'tenant-1', name: 'Root B', parentFolderId: null },
+        { id: 'folder-1', organizationId: 'org-1', name: 'Root A', parentFolderId: null },
+        { id: 'folder-2', organizationId: 'org-1', name: 'Root B', parentFolderId: null },
       ];
 
       mockDb.select
@@ -51,7 +51,7 @@ describe('document-service additional coverage', () => {
           }),
         });
 
-      const result = await documentService.listFolders('tenant-1', null);
+      const result = await documentService.listFolders('org-1', null);
 
       expect(result).toHaveLength(2);
       expect(result[0].documentCount).toBe(2);
@@ -60,7 +60,7 @@ describe('document-service additional coverage', () => {
 
     it('filters by parent folder when parentFolderId is provided', async () => {
       const folders = [
-        { id: 'folder-3', tenantId: 'tenant-1', name: 'Child', parentFolderId: 'parent-1' },
+        { id: 'folder-3', organizationId: 'org-1', name: 'Child', parentFolderId: 'parent-1' },
       ];
 
       mockDb.select
@@ -77,7 +77,7 @@ describe('document-service additional coverage', () => {
           }),
         });
 
-      const result = await documentService.listFolders('tenant-1', 'parent-1');
+      const result = await documentService.listFolders('org-1', 'parent-1');
 
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe('folder-3');
@@ -88,7 +88,7 @@ describe('document-service additional coverage', () => {
         throw new Error('DB failure');
       });
 
-      await expect(documentService.listFolders('tenant-1')).rejects.toThrow('Failed to list folders');
+      await expect(documentService.listFolders('org-1')).rejects.toThrow('Failed to list folders');
     });
   });
 
@@ -100,7 +100,7 @@ describe('document-service additional coverage', () => {
         }),
       });
 
-      await expect(documentService.getFolderTree('tenant-1')).rejects.toThrow('Failed to get folder tree');
+      await expect(documentService.getFolderTree('org-1')).rejects.toThrow('Failed to get folder tree');
     });
   });
 
@@ -238,9 +238,12 @@ describe('document-service additional coverage', () => {
         throw new Error('Search failed');
       });
 
-      await expect(documentService.searchDocuments('tenant-1', 'query')).rejects.toThrow(
+      await expect(documentService.searchDocuments('org-1', 'query')).rejects.toThrow(
         'Failed to search documents'
       );
     });
   });
 });
+
+
+

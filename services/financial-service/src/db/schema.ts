@@ -986,7 +986,7 @@ export const claimUpdates = pgTable("claim_updates", {
 
 export const memberDuesAssignments = pgTable("member_dues_assignments", {
 	id: uuid("id").defaultRandom().primaryKey().notNull(),
-	tenantId: uuid("tenant_id").notNull(),
+	organizationId: uuid("organization_id").notNull(),
 	memberId: uuid("member_id").notNull(),
 	ruleId: uuid("rule_id").notNull(),
 	effectiveDate: date("effective_date").default(sql`CURRENT_DATE`).notNull(),
@@ -999,20 +999,20 @@ export const memberDuesAssignments = pgTable("member_dues_assignments", {
 },
 (table) => {
 	return {
-		idxAssignmentsActive: index("idx_assignments_active").using("btree", table.tenantId.asc().nullsLast(), table.isActive.asc().nullsLast()),
+		idxAssignmentsActive: index("idx_assignments_active").using("btree", table.organizationId.asc().nullsLast(), table.isActive.asc().nullsLast()),
 		idxAssignmentsMember: index("idx_assignments_member").using("btree", table.memberId.asc().nullsLast()),
-		idxAssignmentsTenant: index("idx_assignments_tenant").using("btree", table.tenantId.asc().nullsLast()),
+		idxAssignmentsOrganization: index("idx_assignments_organization").using("btree", table.organizationId.asc().nullsLast()),
 		memberDuesAssignmentsRuleIdFkey: foreignKey({
 			columns: [table.ruleId],
 			foreignColumns: [duesRules.id],
 			name: "member_dues_assignments_rule_id_fkey"
 		}).onDelete("cascade"),
-		memberDuesAssignmentsTenantIdFkey: foreignKey({
-			columns: [table.tenantId],
-			foreignColumns: [tenants.tenantId],
-			name: "member_dues_assignments_tenant_id_fkey"
+		memberDuesAssignmentsOrganizationIdFkey: foreignKey({
+			columns: [table.organizationId],
+			foreignColumns: [organizations.id],
+			name: "member_dues_assignments_organization_id_fkey"
 		}).onDelete("cascade"),
-		uniqueActiveAssignment: unique("unique_active_assignment").on(table.tenantId, table.memberId, table.ruleId, table.effectiveDate),
+		uniqueActiveAssignment: unique("unique_active_assignment").on(table.organizationId, table.memberId, table.ruleId, table.effectiveDate),
 	}
 });
 
@@ -1054,7 +1054,7 @@ export const employerRemittances = pgTable("employer_remittances", {
 
 export const duesRules = pgTable("dues_rules", {
 	id: uuid("id").defaultRandom().primaryKey().notNull(),
-	tenantId: uuid("tenant_id").notNull(),
+	organizationId: uuid("organization_id").notNull(),
 	ruleName: varchar("rule_name", { length: 255 }).notNull(),
 	ruleCode: varchar("rule_code", { length: 50 }).notNull(),
 	description: text("description"),
@@ -1076,14 +1076,14 @@ export const duesRules = pgTable("dues_rules", {
 },
 (table) => {
 	return {
-		idxDuesRulesActive: index("idx_dues_rules_active").using("btree", table.tenantId.asc().nullsLast(), table.isActive.asc().nullsLast()),
-		idxDuesRulesTenant: index("idx_dues_rules_tenant").using("btree", table.tenantId.asc().nullsLast()),
-		duesRulesTenantIdFkey: foreignKey({
-			columns: [table.tenantId],
-			foreignColumns: [tenants.tenantId],
-			name: "dues_rules_tenant_id_fkey"
+		idxDuesRulesActive: index("idx_dues_rules_active").using("btree", table.organizationId.asc().nullsLast(), table.isActive.asc().nullsLast()),
+		idxDuesRulesOrganization: index("idx_dues_rules_organization").using("btree", table.organizationId.asc().nullsLast()),
+		duesRulesOrganizationIdFkey: foreignKey({
+			columns: [table.organizationId],
+			foreignColumns: [organizations.id],
+			name: "dues_rules_organization_id_fkey"
 		}).onDelete("cascade"),
-		uniqueRuleCode: unique("unique_rule_code").on(table.tenantId, table.ruleCode),
+		uniqueRuleCode: unique("unique_rule_code").on(table.organizationId, table.ruleCode),
 	}
 });
 
@@ -1342,7 +1342,7 @@ export const hardshipApplications = pgTable("hardship_applications", {
 
 export const arrearsCases = pgTable("arrears_cases", {
 	id: uuid("id").defaultRandom().primaryKey().notNull(),
-	tenantId: uuid("tenant_id").notNull(),
+	organizationId: uuid("organization_id").notNull(),
 	memberId: uuid("member_id").notNull(),
 	caseNumber: varchar("case_number", { length: 100 }),
 	totalOwed: numeric("total_owed", { precision: 10, scale:  2 }).notNull(),
@@ -1379,13 +1379,13 @@ export const arrearsCases = pgTable("arrears_cases", {
 	return {
 		idxArrearsFollowup: index("idx_arrears_followup").using("btree", table.nextFollowupDate.asc().nullsLast()).where(sql`((status)::text = 'open'::text)`),
 		idxArrearsMember: index("idx_arrears_member").using("btree", table.memberId.asc().nullsLast()),
-		idxArrearsStatus: index("idx_arrears_status").using("btree", table.tenantId.asc().nullsLast(), table.status.asc().nullsLast()),
-		idxArrearsTenant: index("idx_arrears_tenant").using("btree", table.tenantId.asc().nullsLast()),
+		idxArrearsStatus: index("idx_arrears_status").using("btree", table.organizationId.asc().nullsLast(), table.status.asc().nullsLast()),
+		idxArrearsOrganization: index("idx_arrears_organization").using("btree", table.organizationId.asc().nullsLast()),
 		idxArrearsTransactionIds: index("idx_arrears_transaction_ids").using("gin", table.transactionIds.asc().nullsLast()),
-		arrearsCasesTenantIdFkey: foreignKey({
-			columns: [table.tenantId],
-			foreignColumns: [tenants.tenantId],
-			name: "arrears_cases_tenant_id_fkey"
+		arrearsCasesOrganizationIdFkey: foreignKey({
+			columns: [table.organizationId],
+			foreignColumns: [organizations.id],
+			name: "arrears_cases_organization_id_fkey"
 		}).onDelete("cascade"),
 		arrearsCasesCaseNumberKey: unique("arrears_cases_case_number_key").on(table.caseNumber),
 	}
@@ -5953,7 +5953,7 @@ export const trainingPrograms = pgTable("training_programs", {
 
 export const duesTransactions = pgTable("dues_transactions", {
 	id: uuid("id").defaultRandom().primaryKey().notNull(),
-	tenantId: uuid("tenant_id").notNull(),
+	organizationId: uuid("organization_id").notNull(),
 	memberId: uuid("member_id").notNull(),
 	assignmentId: uuid("assignment_id"),
 	ruleId: uuid("rule_id"),
@@ -5982,13 +5982,13 @@ export const duesTransactions = pgTable("dues_transactions", {
 },
 (table) => {
 	return {
-		idxDuesTransAmounts: index("idx_dues_trans_amounts").using("btree", table.tenantId.asc().nullsLast(), table.totalAmount.asc().nullsLast()),
+		idxDuesTransAmounts: index("idx_dues_trans_amounts").using("btree", table.organizationId.asc().nullsLast(), table.totalAmount.asc().nullsLast()),
 		idxDuesTransPaidDate: index("idx_dues_trans_paid_date").using("btree", table.paidDate.asc().nullsLast()).where(sql`(paid_date IS NOT NULL)`),
 		idxTransactionsDueDate: index("idx_transactions_due_date").using("btree", table.dueDate.asc().nullsLast()),
 		idxTransactionsMember: index("idx_transactions_member").using("btree", table.memberId.asc().nullsLast()),
 		idxTransactionsPeriod: index("idx_transactions_period").using("btree", table.periodStart.asc().nullsLast(), table.periodEnd.asc().nullsLast()),
-		idxTransactionsStatus: index("idx_transactions_status").using("btree", table.tenantId.asc().nullsLast(), table.status.asc().nullsLast()),
-		idxTransactionsTenant: index("idx_transactions_tenant").using("btree", table.tenantId.asc().nullsLast()),
+		idxTransactionsStatus: index("idx_transactions_status").using("btree", table.organizationId.asc().nullsLast(), table.status.asc().nullsLast()),
+		idxTransactionsOrganization: index("idx_transactions_organization").using("btree", table.organizationId.asc().nullsLast()),
 		duesTransactionsAssignmentIdFkey: foreignKey({
 			columns: [table.assignmentId],
 			foreignColumns: [memberDuesAssignments.id],
@@ -5999,10 +5999,10 @@ export const duesTransactions = pgTable("dues_transactions", {
 			foreignColumns: [duesRules.id],
 			name: "dues_transactions_rule_id_fkey"
 		}),
-		duesTransactionsTenantIdFkey: foreignKey({
-			columns: [table.tenantId],
-			foreignColumns: [tenants.tenantId],
-			name: "dues_transactions_tenant_id_fkey"
+		duesTransactionsOrganizationIdFkey: foreignKey({
+			columns: [table.organizationId],
+			foreignColumns: [organizations.id],
+			name: "dues_transactions_organization_id_fkey"
 		}).onDelete("cascade"),
 	}
 });

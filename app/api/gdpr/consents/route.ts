@@ -24,7 +24,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
 
     const { searchParams } = new URL(request.url);
     const organizationIdFromQuery =
-      searchParams.get("organizationId") ?? searchParams.get("tenantId");
+      searchParams.get("organizationId") ?? searchParams.get("orgId") ?? searchParams.get("organization_id") ?? searchParams.get("org_id");
 
     if (!organizationIdFromQuery) {
       return standardErrorResponse(
@@ -39,7 +39,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
       .where(
         and(
           eq(userConsents.userId, user.id),
-          eq(userConsents.tenantId, organizationIdFromQuery)
+          eq(userConsents.organizationId, organizationIdFromQuery)
         )
       )
       .orderBy(desc(userConsents.grantedAt));
@@ -63,7 +63,6 @@ function isConsentType(value: string | undefined): value is ConsentType {
 
 
 const gdprConsentsSchema = z.object({
-  tenantId: z.string().uuid('Invalid tenantId'),
   organizationId: z.string().uuid('Invalid organizationId'),
   granted: z.unknown().optional(),
 });
@@ -89,15 +88,14 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       );
     }
     
-    const { tenantId, organizationId, granted } = validation.data;
-    const { tenantId, organizationId, granted } = body || {};
+    const { organizationId, granted } = validation.data;
     const consentTypeRaw = body?.consentType as string | undefined;
-    const resolvedTenantId = organizationId ?? tenantId;
+    const resolvedOrganizationId = organizationId;
 
-    if (!resolvedTenantId || !isConsentType(consentTypeRaw)) {
+    if (!resolvedOrganizationId || !isConsentType(consentTypeRaw)) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'tenantId and consentType are required'
+      'organizationId and consentType are required'
     );
     }
 
@@ -120,7 +118,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
     if (granted) {
       const consent = await ConsentManager.recordConsent({
         userId: user.id,
-        tenantId: resolvedTenantId,
+        organizationId: resolvedOrganizationId,
         consentType: purpose.id,
         legalBasis: purpose.legalBasis,
         processingPurpose: purpose.processingPurpose,
@@ -143,7 +141,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       .where(
         and(
           eq(userConsents.userId, user.id),
-          eq(userConsents.tenantId, resolvedTenantId),
+          eq(userConsents.organizationId, resolvedOrganizationId),
           eq(userConsents.consentType, consentType)
         )
       )

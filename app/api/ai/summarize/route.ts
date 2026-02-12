@@ -172,47 +172,14 @@ return NextResponse.json(
         warning: 'This is an AI-generated draft. Human review required before use.',
       });
     } catch (error) {
-// Validation error
-      if (error instanceof z.ZodError) {
-        return standardErrorResponse(
-      ErrorCode.VALIDATION_ERROR,
-      'Invalid request',
-      error
-    );
-        }
-
-        // 2. Create Supabase client
-        const supabase = await createClient();
-
-        // 3. Get all AI summaries for this claim (filtered by organization)
-        const { data: summaries, error } = await supabase
-          .from('case_summaries')
-          .select('*')
-          .eq('claim_id', claimId as any)
-          .eq('organization_id', user.orgId as any)
-          .eq('created_by', 'ai' as any)
-          .order('created_at', { ascending: false });
-
-        if (error) {
-return NextResponse.json(
-            { error: 'Failed to fetch summaries', details: error.message },
-            { status: 500 }
-          );
-        }
-
-        // 4. Return summaries
-        return NextResponse.json({
-          summaries: summaries || [],
-        });
-      } catch (error) {
-return NextResponse.json(
-          {
-            error: 'Failed to fetch summaries',
-            message: error instanceof Error ? error.message : 'Unknown error',
-          },
-          { status: 500 }
-        );
-      }
+      return NextResponse.json(
+        {
+          error: 'Failed to generate summary',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        },
+        { status: 500 }
+      );
+    }
       })(request);
 };
 

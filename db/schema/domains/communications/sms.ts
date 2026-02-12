@@ -16,8 +16,8 @@ import {
   check,
 } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
-import { organizations } from '../schema-organizations';
-import { profiles } from './profiles-schema';
+import { organizations } from '../../../schema-organizations';
+import { profiles } from '../../profiles-schema';
 
 // ============================================================================
 // SMS TEMPLATES

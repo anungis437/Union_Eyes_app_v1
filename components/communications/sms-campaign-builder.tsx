@@ -42,7 +42,7 @@ import {
 } from 'lucide-react';
 
 interface SmsCampaignBuilderProps {
-  tenantId: string;
+  organizationId: string;
   onComplete?: (campaign: any) => void;
   onCancel?: () => void;
 }
@@ -73,7 +73,7 @@ const STEPS = [
 ];
 
 export function SmsCampaignBuilder({
-  tenantId,
+  organizationId,
   onComplete,
   onCancel,
 }: SmsCampaignBuilderProps) {
@@ -100,7 +100,7 @@ export function SmsCampaignBuilder({
   // Load templates
   const loadTemplates = useCallback(async () => {
     try {
-      const response = await fetch(`/api/communications/sms/templates?tenantId=${tenantId}`);
+      const response = await fetch(`/api/communications/sms/templates?organizationId=${organizationId}`);
       if (!response.ok) throw new Error('Failed to load templates');
       const { templates } = await response.json();
       setTemplates(templates);
@@ -111,7 +111,7 @@ toast({
         variant: 'destructive',
       });
     }
-  }, [tenantId, toast]);
+  }, [organizationId, toast]);
 
   useEffect(() => {
     loadTemplates();
@@ -120,7 +120,7 @@ toast({
   const loadMembers = useCallback(async () => {
     try {
       setMembersLoading(true);
-      const response = await fetch(`/api/organizations/${tenantId}/members`);
+      const response = await fetch(`/api/organizations/${organizationId}/members`);
       if (!response.ok) throw new Error('Failed to load members');
       const data = await response.json();
       setMembers((data?.data || []) as Member[]);
@@ -133,7 +133,7 @@ toast({
     } finally {
       setMembersLoading(false);
     }
-  }, [tenantId, toast]);
+  }, [organizationId, toast]);
 
   useEffect(() => {
     if (currentStep === 2 && members.length === 0 && !membersLoading) {
@@ -217,7 +217,7 @@ toast({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tenantId,
+          organizationId,
           name: campaignName,
           message,
           templateId: selectedTemplateId || undefined,

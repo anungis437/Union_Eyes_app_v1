@@ -3,9 +3,9 @@
  * 
  * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
- * - RLS policies enforce tenant isolation at database level
- * - Removed manual tenant lookup (getUserTenant) - RLS handles this
- * - Removed manual cross-tenant access checks - RLS enforces this
+ * - RLS policies enforce organization isolation at database level
+ * - Removed manual organization lookup (getUserOrganization) - RLS handles this
+ * - Removed manual cross-organization access checks - RLS enforces this
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -52,9 +52,9 @@ export const GET = async (
     try {
       const claimNumber = params.id;
 
-      // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+      // All database operations wrapped in withRLSContext - RLS policies handle organization isolation
       return withRLSContext(async (tx) => {
-        // Fetch claim by claim number - RLS policies automatically enforce tenant filtering
+        // Fetch claim by claim number - RLS policies automatically enforce organization filtering
         const [claim] = await tx
           .select()
           .from(claims)
@@ -153,9 +153,9 @@ export const PATCH = async (
   try {
       const claimNumber = params.id;
 
-      // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+      // All database operations wrapped in withRLSContext - RLS policies handle organization isolation
       return withRLSContext(async (tx) => {
-        // Check if claim exists - RLS policies automatically enforce tenant filtering
+        // Check if claim exists - RLS policies automatically enforce organization filtering
         const [existingClaim] = await tx
           .select()
           .from(claims)
@@ -274,9 +274,9 @@ export const DELETE = async (
     try {
       const claimNumber = params.id;
 
-      // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+      // All database operations wrapped in withRLSContext - RLS policies handle organization isolation
       return withRLSContext(async (tx) => {
-        // Check if claim exists - RLS policies automatically enforce tenant filtering
+        // Check if claim exists - RLS policies automatically enforce organization filtering
         const [existingClaim] = await tx
           .select()
           .from(claims)

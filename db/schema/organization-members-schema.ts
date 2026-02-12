@@ -15,7 +15,6 @@ export const organizationMembers = pgTable("organization_members", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: text("user_id").notNull(), // Changed from varchar to text to match database
   organizationId: uuid("organization_id").notNull().references(() => organizations.id),
-  tenantId: uuid("tenant_id"),
   
   // Role & Status
   role: text("role").notNull(),

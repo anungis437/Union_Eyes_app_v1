@@ -25,5 +25,5 @@ export * from './notifications';
 export * from './newsletters';
 export * from './sms';
 export * from './surveys';
-export * from './analytics';
+export * from '../../analytics';
 export * from './push-notifications';

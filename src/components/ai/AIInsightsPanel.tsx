@@ -27,7 +27,7 @@ interface Insight {
 }
 
 interface AIInsightsPanelProps {
-  tenantId: string;
+  organizationId: string;
   context?: {
     page?: string;
     claimId?: string;
@@ -39,7 +39,7 @@ interface AIInsightsPanelProps {
 }
 
 export function AIInsightsPanel({
-  tenantId,
+  organizationId,
   context,
   onInsightAction,
   className = '',
@@ -117,7 +117,7 @@ export function AIInsightsPanel({
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'X-Tenant-ID': tenantId,
+          'X-Organization-ID': organizationId,
         },
         body: JSON.stringify({
           feedbackType: 'insight',

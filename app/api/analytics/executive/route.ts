@@ -34,9 +34,9 @@ export const GET = withEnhancedRoleAuth(60, async (req: NextRequest, context) =>
   }
 
   try {
-    const tenantId = organizationId;
+    const organizationScopeId = organizationId;
     
-    if (!tenantId) {
+    if (!organizationScopeId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
       'Organization ID required'
@@ -51,10 +51,10 @@ export const GET = withEnhancedRoleAuth(60, async (req: NextRequest, context) =>
     startDate.setDate(startDate.getDate() - daysBack);
 
     // Get executive summary with period comparison
-    const summary = await getExecutiveSummary(tenantId, { startDate, endDate });
+    const summary = await getExecutiveSummary(organizationScopeId, { startDate, endDate });
 
     // Get monthly trends for the past 12 months
-    const trends = await getMonthlyTrends(tenantId, 12);
+    const trends = await getMonthlyTrends(organizationScopeId, 12);
 
     // Log audit event
     await logApiAuditEvent({

@@ -21,6 +21,7 @@ import {
   pgEnum,
   index,
 } from "drizzle-orm/pg-core";
+import { organizations } from "../schema-organizations";
 import { profiles } from "./profiles-schema";
 
 // Consent types enum
@@ -81,7 +82,9 @@ export const userConsents = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => profiles.userId, { onDelete: "cascade" }),
-    tenantId: text("tenant_id").notNull(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
     
     // Consent details
     consentType: consentTypeEnum("consent_type").notNull(),
@@ -115,7 +118,9 @@ export const userConsents = pgTable(
   },
   (table) => ({
     userIdIdx: index("user_consents_user_id_idx").on(table.userId),
-    tenantIdIdx: index("user_consents_tenant_id_idx").on(table.tenantId),
+    organizationIdIdx: index("user_consents_organization_id_idx").on(
+      table.organizationId
+    ),
     statusIdx: index("user_consents_status_idx").on(table.status),
     typeIdx: index("user_consents_type_idx").on(table.consentType),
   })
@@ -132,7 +137,9 @@ export const cookieConsents = pgTable(
     userId: text("user_id").references(() => profiles.userId, {
       onDelete: "cascade",
     }), // Optional - can track anonymous users
-    tenantId: text("tenant_id").notNull(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
     
     // Cookie categories
     essential: boolean("essential").notNull().default(true), // Always true
@@ -154,7 +161,9 @@ export const cookieConsents = pgTable(
   (table) => ({
     userIdIdx: index("cookie_consents_user_id_idx").on(table.userId),
     consentIdIdx: index("cookie_consents_consent_id_idx").on(table.consentId),
-    tenantIdIdx: index("cookie_consents_tenant_id_idx").on(table.tenantId),
+    organizationIdIdx: index("cookie_consents_organization_id_idx").on(
+      table.organizationId
+    ),
   })
 );
 
@@ -169,7 +178,9 @@ export const gdprDataRequests = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => profiles.userId, { onDelete: "cascade" }),
-    tenantId: text("tenant_id").notNull(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
     
     // Request details
     requestType: gdprRequestTypeEnum("request_type").notNull(),
@@ -217,7 +228,9 @@ export const gdprDataRequests = pgTable(
     statusIdx: index("gdpr_requests_status_idx").on(table.status),
     typeIdx: index("gdpr_requests_type_idx").on(table.requestType),
     deadlineIdx: index("gdpr_requests_deadline_idx").on(table.deadline),
-    tenantIdIdx: index("gdpr_requests_tenant_id_idx").on(table.tenantId),
+    organizationIdIdx: index("gdpr_requests_organization_id_idx").on(
+      table.organizationId
+    ),
   })
 );
 
@@ -229,7 +242,9 @@ export const dataProcessingRecords = pgTable(
   "data_processing_records",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    tenantId: text("tenant_id").notNull(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
     
     // Processing activity
     activityName: text("activity_name").notNull(),
@@ -268,7 +283,9 @@ export const dataProcessingRecords = pgTable(
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
   (table) => ({
-    tenantIdIdx: index("data_processing_tenant_id_idx").on(table.tenantId),
+    organizationIdIdx: index("data_processing_organization_id_idx").on(
+      table.organizationId
+    ),
     nextReviewIdx: index("data_processing_next_review_idx").on(
       table.nextReviewDue
     ),
@@ -283,7 +300,9 @@ export const dataRetentionPolicies = pgTable(
   "data_retention_policies",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    tenantId: text("tenant_id").notNull(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
     
     // Policy details
     policyName: text("policy_name").notNull(),
@@ -313,7 +332,9 @@ export const dataRetentionPolicies = pgTable(
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
   (table) => ({
-    tenantIdIdx: index("retention_policies_tenant_id_idx").on(table.tenantId),
+    organizationIdIdx: index("retention_policies_organization_id_idx").on(
+      table.organizationId
+    ),
     nextExecutionIdx: index("retention_policies_next_execution_idx").on(
       table.nextExecution
     ),
@@ -329,7 +350,9 @@ export const dataAnonymizationLog = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     userId: text("user_id").notNull(), // Original user ID (before anonymization)
-    tenantId: text("tenant_id").notNull(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
     
     // Operation details
     operationType: text("operation_type").notNull(), // anonymize, pseudonymize, delete
@@ -361,7 +384,9 @@ export const dataAnonymizationLog = pgTable(
   },
   (table) => ({
     userIdIdx: index("anonymization_log_user_id_idx").on(table.userId),
-    tenantIdIdx: index("anonymization_log_tenant_id_idx").on(table.tenantId),
+    organizationIdIdx: index("anonymization_log_organization_id_idx").on(
+      table.organizationId
+    ),
     requestIdIdx: index("anonymization_log_request_id_idx").on(
       table.requestId
     ),

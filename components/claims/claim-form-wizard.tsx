@@ -75,7 +75,7 @@ export interface ClaimFormWizardProps {
   onCancel?: () => void;
   initialData?: Partial<ClaimFormData>;
   memberId: string;
-  tenantId: string;
+  organizationId: string;
 }
 
 export function ClaimFormWizard({
@@ -83,7 +83,7 @@ export function ClaimFormWizard({
   onCancel,
   initialData,
   memberId,
-  tenantId,
+  organizationId,
 }: ClaimFormWizardProps) {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = React.useState(0);

@@ -45,7 +45,6 @@ async function postHandler(
 
   try {
     const organizationId = context.organizationId;
-    const tenantId = organizationId;
     const userId = context.userId;
     const headerOrganizationId = req.headers.get('x-organization-id');
     const effectiveOrganizationId = headerOrganizationId ?? organizationId;
@@ -57,16 +56,16 @@ async function postHandler(
     }
 
     
-    if (!tenantId || !userId || !effectiveOrganizationId) {
+    if (!organizationId || !userId || !effectiveOrganizationId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID, User ID, and Organization ID required'
+      'Organization ID and User ID required'
       // TODO: Migrate additional details: User ID, and Organization ID required'
     );
     }
 
     // Get report configuration
-    const report = await getReportById(reportId, tenantId);
+    const report = await getReportById(reportId, organizationId);
 
     if (!report) {
       return standardErrorResponse(
@@ -99,11 +98,11 @@ async function postHandler(
     };
 
     // Execute report
-    const executor = new ReportExecutor(effectiveOrganizationId, tenantId);
+    const executor = new ReportExecutor(effectiveOrganizationId, organizationId);
     const result = await executor.execute(config);
 
     // Log execution
-    await logReportExecution(reportId, tenantId, userId, {
+    await logReportExecution(reportId, organizationId, userId, {
       format: parameters.format || 'json',
       parameters: parameters,
       resultCount: result.rowCount,

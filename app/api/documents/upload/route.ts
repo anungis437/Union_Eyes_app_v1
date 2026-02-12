@@ -49,7 +49,7 @@ const documentUploadSchema = z.object({
       errorMap: () => ({ message: "Invalid file type" })
     })
   }),
-  tenantId: z.string().uuid("Invalid tenant ID"),
+  organizationId: z.string().uuid("Invalid organization ID"),
   folderId: z.string().uuid("Invalid folder ID").optional(),
   name: z.string().max(255, "Name too long").optional(),
   description: z.string().max(1000, "Description too long").optional(),
@@ -65,7 +65,7 @@ const documentUploadSchema = z.object({
  * 
  * Accepts multipart/form-data with:
  * - file: File (required)
- * - tenantId: string (required)
+ * - organizationId: string (required)
  * - folderId: string (optional)
  * - name: string (optional - defaults to filename)
  * - description: string (optional)
@@ -114,7 +114,7 @@ export const POST = withRoleAuth('member', async (request, context) => {
     // Parse form data
     const formData = await request.formData();
     const file = formData.get("file") as File;
-    const tenantId = formData.get("tenantId") as string;
+    const organizationIdFromForm = formData.get("organizationId") as string;
     const folderId = formData.get("folderId") as string | null;
     const name = (formData.get("name") as string) || file?.name;
     const description = formData.get("description") as string | null;
@@ -142,7 +142,7 @@ export const POST = withRoleAuth('member', async (request, context) => {
     );
     }
 
-    if (!tenantId) {
+    if (!organizationIdFromForm) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),
         userId,
@@ -151,16 +151,16 @@ export const POST = withRoleAuth('member', async (request, context) => {
         eventType: 'validation_failed',
         severity: 'low',
         dataType: 'DOCUMENTS',
-        details: { reason: 'tenantId is required' },
+        details: { reason: 'organizationId is required' },
       });
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'tenantId is required'
+      'organizationId is required'
     );
     }
 
     // Verify organization ID matches context
-    if (tenantId !== organizationId) {
+    if (organizationIdFromForm !== organizationId) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),
         userId,
@@ -232,7 +232,7 @@ export const POST = withRoleAuth('member', async (request, context) => {
 
     // Create document record
     const document = await createDocument({
-      tenantId,
+      organizationId: organizationIdFromForm,
       folderId: folderId || null,
       name,
       fileUrl: blob.url,
@@ -262,7 +262,7 @@ export const POST = withRoleAuth('member', async (request, context) => {
       severity: 'medium',
       dataType: 'DOCUMENTS',
       details: {
-        tenantId,
+        organizationId: organizationIdFromForm,
         documentId: document.id,
         fileName: file.name,
         fileSize: file.size,

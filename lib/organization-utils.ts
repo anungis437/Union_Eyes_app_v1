@@ -67,7 +67,7 @@ export async function getOrganizationIdForUser(userId: string): Promise<string> 
         
         // Otherwise, verify user has explicit membership in this organization
         const userOrg = await db
-          .select({ tenantId: organizationMembers.organizationId })
+          .select({ organizationId: organizationMembers.organizationId })
           .from(organizationMembers)
           .where(
             and(
@@ -85,13 +85,13 @@ export async function getOrganizationIdForUser(userId: string): Promise<string> 
     
     // Get user's first organization (primary/default) - return UUID
     const userOrgs = await db
-      .select({ tenantId: organizationMembers.organizationId })
+      .select({ organizationId: organizationMembers.organizationId })
       .from(organizationMembers)
       .where(eq(organizationMembers.userId, userId))
       .limit(1);
     
-    if (userOrgs.length > 0 && userOrgs[0].tenantId) {
-      return userOrgs[0].tenantId;
+    if (userOrgs.length > 0 && userOrgs[0].organizationId) {
+      return userOrgs[0].organizationId;
     }
     
     // Final fallback to default organization

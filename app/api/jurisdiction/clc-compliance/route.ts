@@ -20,71 +20,7 @@ import {
 } from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
-
-const jurisdictionClc-complianceSchema = z.object({
-  organizationId: z.string().uuid('Invalid organizationId'),
-  tierName: z.string().min(1, 'tierName is required'),
-  checkDate: z.string().datetime().optional(),
-});
-
-
-const jurisdictionClc-complianceSchema = z.object({
-  organizationId: z.string().uuid('Invalid organizationId'),
-  tierName: z.string().min(1, 'tierName is required'),
-  checkDate: z.string().datetime().optional(),
-});
-
-
-const jurisdictionClc-complianceSchema = z.object({
-  organizationId: z.string().uuid('Invalid organizationId'),
-  tierName: z.string().min(1, 'tierName is required'),
-  checkDate: z.string().datetime().optional(),
-});
-
-
-const jurisdictionClc-complianceSchema = z.object({
-  organizationId: z.string().uuid('Invalid organizationId'),
-  tierName: z.string().min(1, 'tierName is required'),
-  checkDate: z.string().datetime().optional(),
-});
-
-
-const jurisdictionClc-complianceSchema = z.object({
-  organizationId: z.string().uuid('Invalid organizationId'),
-  tierName: z.string().min(1, 'tierName is required'),
-  checkDate: z.string().datetime().optional(),
-});
-
-
-const jurisdictionClc-complianceSchema = z.object({
-  organizationId: z.string().uuid('Invalid organizationId'),
-  tierName: z.string().min(1, 'tierName is required'),
-  checkDate: z.string().datetime().optional(),
-});
-
-
-const jurisdictionClc-complianceSchema = z.object({
-  organizationId: z.string().uuid('Invalid organizationId'),
-  tierName: z.string().min(1, 'tierName is required'),
-  checkDate: z.string().datetime().optional(),
-});
-
-
-const jurisdictionClc-complianceSchema = z.object({
-  organizationId: z.string().uuid('Invalid organizationId'),
-  tierName: z.string().min(1, 'tierName is required'),
-  checkDate: z.string().datetime().optional(),
-});
-
-
-const jurisdictionClc-complianceSchema = z.object({
-  organizationId: z.string().uuid('Invalid organizationId'),
-  tierName: z.string().min(1, 'tierName is required'),
-  checkDate: z.string().datetime().optional(),
-});
-
-
-const jurisdictionClc-complianceSchema = z.object({
+const jurisdictionClcComplianceSchema = z.object({
   organizationId: z.string().uuid('Invalid organizationId'),
   tierName: z.string().min(1, 'tierName is required'),
   checkDate: z.string().datetime().optional(),

@@ -28,7 +28,7 @@ export const GET = withRoleAuth('member', async (req: NextRequest, context) => {
     );
   }
 
-  const tenantId = organizationId;
+  const organizationScopeId = organizationId;
   const searchParams = req.nextUrl.searchParams;
   const daysBack = parseInt(searchParams.get('days') || '30');
 
@@ -46,7 +46,7 @@ export const GET = withRoleAuth('member', async (req: NextRequest, context) => {
     .from(claims)
     .where(
       and(
-        eq(claims.organizationId, tenantId),
+        eq(claims.organizationId, organizationScopeId),
         gte(claims.incidentDate, startDate)
       )
     );
@@ -60,7 +60,7 @@ export const GET = withRoleAuth('member', async (req: NextRequest, context) => {
     .from(claims)
     .where(
       and(
-        eq(claims.organizationId, tenantId),
+        eq(claims.organizationId, organizationScopeId),
         sql`${claims.status} IN ('under_review', 'assigned', 'investigation')`,
         sql`${claims.assignedTo} IS NOT NULL`
       )
@@ -93,7 +93,7 @@ export const GET = withRoleAuth('member', async (req: NextRequest, context) => {
     .from(claims)
     .where(
       and(
-        eq(claims.organizationId, tenantId),
+        eq(claims.organizationId, organizationScopeId),
         gte(claims.incidentDate, prevStartDate),
         sql`${claims.incidentDate} < ${startDate.toISOString()}::timestamp`
       )

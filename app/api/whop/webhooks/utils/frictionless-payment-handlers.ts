@@ -3,7 +3,7 @@
  * 
  * MIGRATION STATUS: ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Migrated to use withSystemContext()
  * - System-wide webhook operations use withSystemContext() for unrestricted access
- * - Webhooks process payments across all tenants
+ * - Webhooks process payments across all organizations
  * 
  * This file contains handlers specifically for the "Pay First, Create Account Later" flow.
  * These functions are used when a user makes a purchase with just their email address

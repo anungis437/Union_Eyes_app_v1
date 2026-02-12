@@ -18,13 +18,13 @@ import {
   ErrorCode 
 } from '@/lib/api/standardized-responses';
 
-const aiExtract-clausesSchema = z.object({
+const aiExtractClausesSchema = z.object({
   pdfUrl: z.string().url('Invalid URL'),
   cbaId: z.string().uuid('Invalid cbaId'),
   organizationId: z.string().uuid('Invalid organizationId'),
-  autoSave = true: z.unknown().optional(),
-  batch = false: z.unknown().optional(),
-  cbas = []: z.unknown().optional(),
+  autoSave: z.boolean().default(true).optional(),
+  batch: z.boolean().default(false).optional(),
+  cbas: z.array(z.any()).default([]).optional(),
 });
 
 export const POST = async (request: NextRequest) => {

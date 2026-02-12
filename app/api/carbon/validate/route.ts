@@ -31,8 +31,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       );
     }
     
-    const { claimType, dataPoints } = validation.data; as CarbonValidationRequest;
-    const { claimType, dataPoints } = body;
+    const { claimType, dataPoints } = validation.data;
 
     // Validate required fields
     if (!claimType || !dataPoints || dataPoints.length === 0) {

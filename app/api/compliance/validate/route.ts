@@ -27,7 +27,7 @@ interface ComplianceRequestBody {
 async function handler(request: NextRequest) {
   try {
     const user = await getCurrentUser();
-    if (!user || (!user.organizationId && !user.tenantId)) {
+    if (!user || !user.organizationId) {
       return standardErrorResponse(
       ErrorCode.AUTH_REQUIRED,
       'Authentication and organization context required'

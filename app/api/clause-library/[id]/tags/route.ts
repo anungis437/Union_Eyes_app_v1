@@ -21,7 +21,7 @@ import {
 } from '@/lib/api/standardized-responses';
 // POST /api/clause-library/[id]/tags - Add tag
 
-const clause-libraryTagsSchema = z.object({
+const clauseLibraryTagsSchema = z.object({
   tagName: z.string().min(1, 'tagName is required'),
 });
 

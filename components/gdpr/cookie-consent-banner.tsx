@@ -31,11 +31,11 @@ interface CookiePreferences {
 }
 
 interface CookieConsentBannerProps {
-  tenantId: string;
+  organizationId: string;
   userId?: string;
 }
 
-export function CookieConsentBanner({ tenantId, userId }: CookieConsentBannerProps) {
+export function CookieConsentBanner({ organizationId, userId }: CookieConsentBannerProps) {
   const [showBanner, setShowBanner] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [preferences, setPreferences] = useState<CookiePreferences>({
@@ -141,7 +141,7 @@ export function CookieConsentBanner({ tenantId, userId }: CookieConsentBannerPro
         body: JSON.stringify({
           consentId,
           userId,
-          tenantId,
+          organizationId,
           ...prefs,
           ipAddress: undefined, // Server will capture this
           userAgent: navigator.userAgent,

@@ -104,6 +104,7 @@ export async function getDocumentById(
  */
 export async function listDocuments(
   filters: {
+    organizationId?: string;
     tenantId?: string;
     folderId?: string;
     category?: string;
@@ -120,8 +121,9 @@ export async function listDocuments(
 
     const conditions: SQL[] = [sql`${documents.deletedAt} IS NULL`];
 
-    if (filters.tenantId) {
-      conditions.push(eq(documents.tenantId, filters.tenantId));
+    const scopedOrganizationId = filters.organizationId ?? filters.tenantId;
+    if (scopedOrganizationId) {
+      conditions.push(eq(documents.tenantId, scopedOrganizationId));
     }
 
     if (filters.folderId) {
@@ -296,12 +298,12 @@ export async function getFolderById(id: string): Promise<FolderWithChildren | nu
  * List folders
  */
 export async function listFolders(
-  tenantId: string,
+  organizationId: string,
   parentFolderId?: string | null
 ): Promise<FolderWithChildren[]> {
   try {
     const conditions: SQL[] = [
-      eq(documentFolders.tenantId, tenantId),
+      eq(documentFolders.tenantId, organizationId),
       sql`${documentFolders.deletedAt} IS NULL`,
     ];
 
@@ -334,7 +336,7 @@ export async function listFolders(
 
     return foldersWithCounts;
   } catch (error) {
-    logger.error("Error listing folders", { error, tenantId });
+    logger.error("Error listing folders", { error, organizationId });
     throw new Error("Failed to list folders");
   }
 }
@@ -417,12 +419,12 @@ export async function deleteFolder(id: string, deleteContents = false): Promise<
 /**
  * Get folder tree
  */
-export async function getFolderTree(tenantId: string): Promise<FolderWithChildren[]> {
+export async function getFolderTree(organizationId: string): Promise<FolderWithChildren[]> {
   try {
     const allFolders = await db
       .select()
       .from(documentFolders)
-      .where(and(eq(documentFolders.tenantId, tenantId), sql`${documentFolders.deletedAt} IS NULL`));
+      .where(and(eq(documentFolders.tenantId, organizationId), sql`${documentFolders.deletedAt} IS NULL`));
 
     // Build tree structure
     const folderMap = new Map<string, FolderWithChildren>();
@@ -448,7 +450,7 @@ export async function getFolderTree(tenantId: string): Promise<FolderWithChildre
 
     return rootFolders;
   } catch (error) {
-    logger.error("Error getting folder tree", { error, tenantId });
+    logger.error("Error getting folder tree", { error, organizationId });
     throw new Error("Failed to get folder tree");
   }
 }
@@ -569,7 +571,7 @@ export async function bulkProcessOCR(documentIds: string[]): Promise<BulkOperati
  * Advanced document search
  */
 export async function searchDocuments(
-  tenantId: string,
+  organizationId: string,
   searchQuery: string,
   filters?: {
     category?: string;
@@ -584,7 +586,7 @@ export async function searchDocuments(
     const offset = (page - 1) * limit;
 
     const conditions: SQL[] = [
-      eq(documents.tenantId, tenantId),
+      eq(documents.tenantId, organizationId),
       sql`${documents.deletedAt} IS NULL`,
     ];
 
@@ -628,7 +630,7 @@ export async function searchDocuments(
       total: totalResult[0]?.count || 0,
     };
   } catch (error) {
-    logger.error("Error searching documents", { error, tenantId, searchQuery });
+    logger.error("Error searching documents", { error, organizationId, searchQuery });
     throw new Error("Failed to search documents");
   }
 }
@@ -748,7 +750,7 @@ export async function bulkDeleteDocuments(documentIds: string[]): Promise<BulkOp
 /**
  * Get document statistics
  */
-export async function getDocumentStatistics(tenantId: string): Promise<{
+export async function getDocumentStatistics(organizationId: string): Promise<{
   total: number;
   byCategory: Record<string, number>;
   byFileType: Record<string, number>;
@@ -759,7 +761,7 @@ export async function getDocumentStatistics(tenantId: string): Promise<{
     const docs = await db
       .select()
       .from(documents)
-      .where(and(eq(documents.tenantId, tenantId), sql`${documents.deletedAt} IS NULL`));
+      .where(and(eq(documents.tenantId, organizationId), sql`${documents.deletedAt} IS NULL`));
 
     const byCategory: Record<string, number> = {};
     const byFileType: Record<string, number> = {};
@@ -783,7 +785,7 @@ export async function getDocumentStatistics(tenantId: string): Promise<{
       confidential,
     };
   } catch (error) {
-    logger.error("Error getting document statistics", { error, tenantId });
+    logger.error("Error getting document statistics", { error, organizationId });
     throw new Error("Failed to get document statistics");
   }
 }

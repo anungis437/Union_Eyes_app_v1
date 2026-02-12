@@ -163,7 +163,7 @@ describe('CertificationJurisdictionInfo', () => {
       render(
         <CertificationJurisdictionInfo
           certificationId="cert-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           totalEmployees={100}
           cardsSignedCount={40}
           certificationMethod="mandatory-vote"
@@ -190,7 +190,7 @@ describe('CertificationJurisdictionInfo', () => {
       render(
         <CertificationJurisdictionInfo
           certificationId="cert-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           totalEmployees={100}
           cardsSignedCount={45}
           certificationMethod="mandatory-vote"
@@ -217,7 +217,7 @@ describe('CertificationJurisdictionInfo', () => {
       render(
         <CertificationJurisdictionInfo
           certificationId="cert-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           totalEmployees={100}
           cardsSignedCount={45}
           certificationMethod="mandatory-vote"
@@ -244,7 +244,7 @@ describe('CertificationJurisdictionInfo', () => {
       render(
         <CertificationJurisdictionInfo
           certificationId="cert-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           totalEmployees={100}
           cardsSignedCount={70}
           certificationMethod="card-check"
@@ -265,7 +265,7 @@ describe('CertificationJurisdictionInfo', () => {
       render(
         <CertificationJurisdictionInfo
           certificationId="cert-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           totalEmployees={100}
           cardsSignedCount={65}
           certificationMethod="card-check"
@@ -292,7 +292,7 @@ describe('CertificationJurisdictionInfo', () => {
       render(
         <CertificationJurisdictionInfo
           certificationId="cert-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           totalEmployees={100}
           cardsSignedCount={70}
           certificationMethod={null}
@@ -320,7 +320,7 @@ describe('CertificationJurisdictionInfo', () => {
       render(
         <CertificationJurisdictionInfo
           certificationId="cert-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           totalEmployees={100}
           cardsSignedCount={40}
           certificationMethod={null}
@@ -345,7 +345,7 @@ describe('CertificationJurisdictionInfo', () => {
       render(
         <CertificationJurisdictionInfo
           certificationId="cert-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           totalEmployees={100}
           cardsSignedCount={30}
           certificationMethod={null}
@@ -373,7 +373,7 @@ describe('CertificationJurisdictionInfo', () => {
       render(
         <CertificationJurisdictionInfo
           certificationId="cert-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           totalEmployees={100}
           cardsSignedCount={40}
           certificationMethod="mandatory-vote"
@@ -396,7 +396,7 @@ describe('CertificationJurisdictionInfo', () => {
       render(
         <CertificationJurisdictionInfo
           certificationId="cert-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           totalEmployees={100}
           cardsSignedCount={70}
           certificationMethod="card-check"
@@ -420,7 +420,7 @@ describe('CertificationJurisdictionInfo', () => {
       render(
         <CertificationJurisdictionInfo
           certificationId="cert-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           totalEmployees={100}
           cardsSignedCount={55}
           certificationMethod="card-check"
@@ -446,7 +446,7 @@ describe('CertificationJurisdictionInfo', () => {
       render(
         <CertificationJurisdictionInfo
           certificationId="cert-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           totalEmployees={100}
           cardsSignedCount={70}
           certificationMethod="card-check"
@@ -468,7 +468,7 @@ describe('CertificationJurisdictionInfo', () => {
       render(
         <CertificationJurisdictionInfo
           certificationId="cert-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           totalEmployees={100}
           cardsSignedCount={50}
           certificationMethod="card-check"
@@ -495,7 +495,7 @@ describe('CertificationJurisdictionInfo', () => {
       render(
         <CertificationJurisdictionInfo
           certificationId="cert-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           totalEmployees={100}
           cardsSignedCount={65}
           certificationMethod="card-check"
@@ -517,7 +517,7 @@ describe('CertificationJurisdictionInfo', () => {
       render(
         <CertificationJurisdictionInfo
           certificationId="cert-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           totalEmployees={100}
           cardsSignedCount={0}
           certificationMethod={null}
@@ -541,7 +541,7 @@ describe('CertificationJurisdictionInfo', () => {
       render(
         <CertificationJurisdictionInfo
           certificationId="cert-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           totalEmployees={100}
           cardsSignedCount={100}
           certificationMethod="card-check"
@@ -561,7 +561,7 @@ describe('CertificationJurisdictionInfo', () => {
       const { container } = render(
         <CertificationJurisdictionInfo
           certificationId="cert-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           totalEmployees={100}
           cardsSignedCount={50}
           certificationMethod="card-check"
@@ -579,7 +579,7 @@ describe('CertificationJurisdictionInfo', () => {
       const { container } = render(
         <CertificationJurisdictionInfo
           certificationId="cert-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           totalEmployees={100}
           cardsSignedCount={50}
           certificationMethod="card-check"
@@ -601,7 +601,7 @@ describe('CertificationJurisdictionInfo', () => {
       render(
         <CertificationJurisdictionInfo
           certificationId="cert-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           totalEmployees={100}
           cardsSignedCount={50}
           certificationMethod="card-check"

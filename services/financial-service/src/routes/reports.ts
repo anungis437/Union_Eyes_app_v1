@@ -15,7 +15,8 @@ const router = Router();
 interface AuthenticatedRequest extends Request {
   user?: {
     id: string;
-    tenantId: string;
+    organizationId?: string;
+    tenantId?: string;
     role: string;
     permissions: string[];
   };
@@ -49,7 +50,8 @@ router.get(
   authorize(['admin', 'financial_admin', 'financial_viewer']),
   async (req, res) => {
     try {
-      const { tenantId } = (req as any).user!;
+      const { organizationId: organizationIdFromUser, tenantId: legacyTenantId } = (req as any).user!;
+      const organizationId = organizationIdFromUser ?? legacyTenantId;
 
       // Default to last 30 days if not specified
       const endDate = req.query.endDate 
@@ -60,7 +62,7 @@ router.get(
         ? new Date(req.query.startDate as string)
         : new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-      const dashboard = await getFinancialDashboard(tenantId, {
+      const dashboard = await getFinancialDashboard(organizationId, {
         startDate,
         endDate,
       });
@@ -88,7 +90,8 @@ router.get(
   authorize(['admin', 'financial_admin', 'financial_viewer']),
   async (req, res) => {
     try {
-      const { tenantId } = (req as any).user!;
+      const { organizationId: organizationIdFromUser, tenantId: legacyTenantId } = (req as any).user!;
+      const organizationId = organizationIdFromUser ?? legacyTenantId;
 
       const validation = dateRangeSchema.safeParse(req.query);
       if (!validation.success) {
@@ -101,7 +104,7 @@ router.get(
 
       const { startDate, endDate } = validation.data;
 
-      const metrics = await getCollectionMetrics(tenantId, {
+      const metrics = await getCollectionMetrics(organizationId, {
         startDate,
         endDate,
       });
@@ -129,9 +132,10 @@ router.get(
   authorize(['admin', 'financial_admin', 'financial_viewer']),
   async (req, res) => {
     try {
-      const { tenantId } = (req as any).user!;
+      const { organizationId: organizationIdFromUser, tenantId: legacyTenantId } = (req as any).user!;
+      const organizationId = organizationIdFromUser ?? legacyTenantId;
 
-      const statistics = await getArrearsStatistics(tenantId);
+      const statistics = await getArrearsStatistics(organizationId);
 
       res.json({
         success: true,
@@ -156,7 +160,8 @@ router.get(
   authorize(['admin', 'financial_admin', 'financial_viewer']),
   async (req, res) => {
     try {
-      const { tenantId } = (req as any).user!;
+      const { organizationId: organizationIdFromUser, tenantId: legacyTenantId } = (req as any).user!;
+      const organizationId = organizationIdFromUser ?? legacyTenantId;
 
       const validation = dateRangeSchema.safeParse(req.query);
       if (!validation.success) {
@@ -169,7 +174,7 @@ router.get(
 
       const { startDate, endDate } = validation.data;
 
-      const analysis = await getRevenueAnalysis(tenantId, {
+      const analysis = await getRevenueAnalysis(organizationId, {
         startDate,
         endDate,
       });
@@ -197,7 +202,8 @@ router.get(
   authorize(['admin', 'financial_admin', 'financial_viewer']),
   async (req, res) => {
     try {
-      const { tenantId } = (req as any).user!;
+      const { organizationId: organizationIdFromUser, tenantId: legacyTenantId } = (req as any).user!;
+      const organizationId = organizationIdFromUser ?? legacyTenantId;
 
       const validation = dateRangeSchema.safeParse(req.query);
       if (!validation.success) {
@@ -214,7 +220,7 @@ router.get(
         : 100;
 
       const patterns = await getMemberPaymentPatterns(
-        tenantId,
+        organizationId,
         { startDate, endDate },
         limit
       );
@@ -246,7 +252,8 @@ router.get(
   authorize(['admin', 'financial_admin']),
   async (req, res) => {
     try {
-      const { tenantId } = (req as any).user!;
+      const { organizationId: organizationIdFromUser, tenantId: legacyTenantId } = (req as any).user!;
+      const organizationId = organizationIdFromUser ?? legacyTenantId;
       const format = (req.query.format as string) || 'json';
       const reportType = req.query.type as string;
 
@@ -272,19 +279,19 @@ router.get(
 
       switch (reportType) {
         case 'dashboard':
-          data = await getFinancialDashboard(tenantId, { startDate, endDate });
+          data = await getFinancialDashboard(organizationId, { startDate, endDate });
           break;
         case 'collection':
-          data = await getCollectionMetrics(tenantId, { startDate, endDate });
+          data = await getCollectionMetrics(organizationId, { startDate, endDate });
           break;
         case 'arrears':
-          data = await getArrearsStatistics(tenantId);
+          data = await getArrearsStatistics(organizationId);
           break;
         case 'revenue':
-          data = await getRevenueAnalysis(tenantId, { startDate, endDate });
+          data = await getRevenueAnalysis(organizationId, { startDate, endDate });
           break;
         case 'patterns':
-          data = await getMemberPaymentPatterns(tenantId, { startDate, endDate }, 1000);
+          data = await getMemberPaymentPatterns(organizationId, { startDate, endDate }, 1000);
           break;
         default:
           return res.status(400).json({

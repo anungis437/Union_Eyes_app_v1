@@ -3,7 +3,7 @@
  * 
  * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
- * - RLS policies enforce tenant isolation at database level
+ * - RLS policies enforce organization isolation at database level
  */
 
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { 
   updateUserRole, 
   toggleUserStatus, 
-  deleteUserFromTenant 
+  deleteUserFromTenant as deleteUserFromOrganization 
 } from "@/actions/admin-actions";
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { organizationUsers } from "@/db/schema/domains/member";
@@ -32,7 +32,7 @@ export const GET = async (request: NextRequest, { params }: { params: { userId: 
   try {
       const targetUserId = params.userId;
 
-      // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+      // All database operations wrapped in withRLSContext - RLS policies handle organization isolation
       return withRLSContext(async (tx) => {
         // Check admin role
         const adminCheck = await tx
@@ -48,7 +48,7 @@ export const GET = async (request: NextRequest, { params }: { params: { userId: 
           );
         }
 
-        // Get user details across all tenants
+        // Get user details across all organizations
         const userDetails = await tx
           .select()
           .from(organizationUsers)
@@ -80,7 +80,6 @@ export const GET = async (request: NextRequest, { params }: { params: { userId: 
 
 const adminUsersSchema = z.object({
   organizationId: z.string().uuid('Invalid organizationId'),
-  tenantId: z.string().uuid('Invalid tenantId'),
   action: z.unknown().optional(),
   role: z.unknown().optional(),
 });
@@ -102,10 +101,9 @@ export const PUT = async (request: NextRequest, { params }: { params: { userId: 
       );
     }
     
-    const { organizationId, tenantId, action, role } = validation.data;
-      const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, action, role } = body;
-      const requestedOrganizationId = organizationIdFromBody ?? tenantIdFromBody;
-      const tenantId = requestedOrganizationId;
+    const { organizationId, action, role } = validation.data;
+      const { organizationId: organizationIdFromBody, action, role } = body;
+      const requestedOrganizationId = organizationIdFromBody;
 
       if (!requestedOrganizationId) {
         return standardErrorResponse(
@@ -131,13 +129,13 @@ export const PUT = async (request: NextRequest, { params }: { params: { userId: 
 
         // Execute action
         if (action === "updateRole" && role) {
-          await updateUserRole(tx, targetUserId, tenantId, role);
+          await updateUserRole(tx, targetUserId, requestedOrganizationId, role);
           return NextResponse.json({
             success: true,
             message: "User role updated",
           });
         } else if (action === "toggleStatus") {
-          await toggleUserStatus(tx, targetUserId, tenantId);
+          await toggleUserStatus(tx, targetUserId, requestedOrganizationId);
           return NextResponse.json({
             success: true,
             message: "User status toggled",
@@ -167,8 +165,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { userI
   try {
       const targetUserId = params.userId;
       const searchParams = request.nextUrl.searchParams;
-      const requestedOrganizationId = (searchParams.get("organizationId") ?? searchParams.get("tenantId"));
-      const tenantId = requestedOrganizationId;
+      const requestedOrganizationId = searchParams.get("organizationId");
 
       if (!requestedOrganizationId) {
         return standardErrorResponse(
@@ -192,11 +189,11 @@ export const DELETE = async (request: NextRequest, { params }: { params: { userI
           );
         }
 
-        await deleteUserFromTenant(targetUserId, tenantId);
+        await deleteUserFromOrganization(targetUserId, requestedOrganizationId);
 
         return NextResponse.json({
           success: true,
-          message: "User removed from tenant",
+          message: "User removed from organization",
         });
       }, organizationId);
     } catch (error) {

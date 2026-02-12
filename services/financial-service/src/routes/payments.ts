@@ -81,11 +81,11 @@ const PaymentSummaryQuerySchema = z.object({
  */
 router.post('/dues/intent', async (req: Request, res: Response) => {
   try {
-    const tenantId = (req as any).user.tenantId;
+    const organizationId = (req as any).user.organizationId;
     const validatedData = CreateDuesPaymentSchema.parse(req.body);
 
     const paymentIntent = await PaymentService.createDuesPaymentIntent({
-      tenantId,
+      organizationId,
       memberId: validatedData.memberId,
       amount: validatedData.amount,
       currency: validatedData.currency,
@@ -113,11 +113,11 @@ router.post('/dues/intent', async (req: Request, res: Response) => {
  */
 router.post('/dues/confirm', async (req: Request, res: Response) => {
   try {
-    const tenantId = (req as any).user.tenantId;
+    const organizationId = (req as any).user.organizationId;
     const validatedData = ConfirmDuesPaymentSchema.parse(req.body);
 
     await PaymentService.confirmDuesPayment({
-      tenantId,
+      organizationId,
       paymentIntentId: validatedData.paymentIntentId,
       transactionId: validatedData.transactionId,
     });
@@ -145,11 +145,11 @@ router.post('/dues/confirm', async (req: Request, res: Response) => {
  */
 router.post('/stipends/payout', async (req: Request, res: Response) => {
   try {
-    const tenantId = (req as any).user.tenantId;
+    const organizationId = (req as any).user.organizationId;
     const validatedData = CreateStipendPayoutSchema.parse(req.body);
 
     const payout = await PaymentService.createStipendPayout({
-      tenantId,
+      organizationId,
       disbursementId: validatedData.disbursementId,
       amount: validatedData.amount,
       recipientBankAccount: validatedData.recipientBankAccount as {
@@ -180,11 +180,11 @@ router.post('/stipends/payout', async (req: Request, res: Response) => {
  */
 router.post('/stipends/payout/batch', async (req: Request, res: Response) => {
   try {
-    const tenantId = (req as any).user.tenantId;
+    const organizationId = (req as any).user.organizationId;
     const validatedData = BatchStipendPayoutSchema.parse(req.body);
 
     const results = await PaymentService.batchProcessStipendPayouts({
-      tenantId,
+      organizationId,
       strikeFundId: validatedData.strikeFundId,
       disbursementIds: validatedData.disbursementIds,
     });
@@ -212,11 +212,11 @@ router.post('/stipends/payout/batch', async (req: Request, res: Response) => {
  */
 router.post('/donations/intent', async (req: Request, res: Response) => {
   try {
-    const tenantId = (req as any).user?.tenantId || req.body.tenantId; // Allow public access
+    const organizationId = (req as any).user?.organizationId || req.body.organizationId; // Allow public access
     const validatedData = CreateDonationSchema.parse(req.body);
 
     const paymentIntent = await PaymentService.createDonationPaymentIntent({
-      tenantId,
+      organizationId,
       strikeFundId: validatedData.strikeFundId,
       amount: validatedData.amount,
       currency: validatedData.currency,
@@ -246,11 +246,11 @@ router.post('/donations/intent', async (req: Request, res: Response) => {
  */
 router.post('/donations/confirm', async (req: Request, res: Response) => {
   try {
-    const tenantId = (req as any).user?.tenantId || req.body.tenantId; // Allow public access
+    const organizationId = (req as any).user?.organizationId || req.body.organizationId; // Allow public access
     const validatedData = ConfirmDonationSchema.parse(req.body);
 
     const donationId = await PaymentService.confirmDonationPayment({
-      tenantId,
+      organizationId,
       paymentIntentId: validatedData.paymentIntentId,
     });
 
@@ -307,11 +307,11 @@ router.post('/webhook/stripe', async (req: Request, res: Response) => {
  */
 router.get('/summary', async (req: Request, res: Response) => {
   try {
-    const tenantId = (req as any).user.tenantId;
+    const organizationId = (req as any).user.organizationId;
     const { strikeFundId, startDate, endDate } = PaymentSummaryQuerySchema.parse(req.query);
 
     const summary = await PaymentService.getPaymentSummary(
-      tenantId,
+      organizationId,
       strikeFundId,
       startDate ? new Date(startDate) : undefined,
       endDate ? new Date(endDate) : undefined

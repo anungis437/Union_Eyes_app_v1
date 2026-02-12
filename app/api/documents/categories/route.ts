@@ -39,7 +39,7 @@ const DEFAULT_CATEGORIES = [
  * Get list of document categories
  * 
  * Query params:
- * - tenantId: string (required) - Filter by organization
+ * - organizationId: string (required) - Filter by organization
  * - includeDefault: boolean (optional) - Include default categories
  * - counts: boolean (optional) - Include document counts per category
  */
@@ -48,11 +48,11 @@ export const GET = withEnhancedRoleAuth(10, async (request, context) => {
 
   try {
     const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get("tenantId") || organizationId;
+    const requestOrgId = searchParams.get("organizationId") ?? searchParams.get("orgId") ?? searchParams.get("organization_id") ?? searchParams.get("org_id") ?? searchParams.get("unionId") ?? searchParams.get("union_id") ?? searchParams.get("localId") ?? searchParams.get("local_id") ?? organizationId;
     const includeDefault = searchParams.get("includeDefault") !== "false";
     const includeCounts = searchParams.get("counts") === "true";
 
-    if (!tenantId) {
+    if (!requestOrgId) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),
         userId,
@@ -61,16 +61,16 @@ export const GET = withEnhancedRoleAuth(10, async (request, context) => {
         eventType: 'validation_failed',
         severity: 'low',
         dataType: 'DOCUMENTS',
-        details: { reason: 'tenantId is required' },
+        details: { reason: 'organizationId is required' },
       });
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'tenantId is required'
+      'organizationId is required'
     );
     }
 
     // Verify organization access
-    if (tenantId !== organizationId) {
+    if (requestOrgId !== organizationId) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),
         userId,
@@ -94,7 +94,7 @@ export const GET = withEnhancedRoleAuth(10, async (request, context) => {
         count: sql<number>`count(*)::int`,
       })
       .from(documents)
-      .where(eq(documents.tenantId, tenantId))
+      .where(eq(documents.organizationId, requestOrgId))
       .groupBy(documents.category);
 
     const usedCategories = result
@@ -131,7 +131,7 @@ export const GET = withEnhancedRoleAuth(10, async (request, context) => {
       severity: 'low',
       dataType: 'DOCUMENTS',
       details: { 
-        tenantId,
+        organizationId: requestOrgId,
         categoryCount: categories.length 
       },
     });

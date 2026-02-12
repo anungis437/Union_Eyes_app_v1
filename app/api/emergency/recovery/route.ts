@@ -32,8 +32,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       );
     }
     
-    const { emergencyId, memberId } = validation.data; as EmergencyRecoveryRequest;
-    const { emergencyId, memberId } = body;
+    const { emergencyId, memberId } = validation.data;
 
     if (!emergencyId || !memberId) {
       return NextResponse.json(

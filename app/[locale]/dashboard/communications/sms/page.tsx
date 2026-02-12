@@ -32,6 +32,7 @@ import {
 import { SmsTemplateEditor } from '@/components/communications/sms-template-editor';
 import { SmsCampaignBuilder } from '@/components/communications/sms-campaign-builder';
 import { SmsInbox } from '@/components/communications/sms-inbox';
+import { useOrganizationId } from '@/lib/hooks/use-organization';
 
 interface SmsPageProps {
   params: {
@@ -60,6 +61,7 @@ interface Campaign {
 }
 
 export default function SmsPage({ params }: SmsPageProps) {
+  const organizationId = useOrganizationId();
   const [activeView, setActiveView] = useState<'dashboard' | 'template' | 'campaign' | 'inbox'>(
     'dashboard'
   );
@@ -295,6 +297,14 @@ export default function SmsPage({ params }: SmsPageProps) {
     </div>
   );
 
+  if (!organizationId) {
+    return (
+      <div className="container mx-auto py-6">
+        <div className="text-sm text-muted-foreground">Loading organization...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto py-6 space-y-6">
       {/* Header */}
@@ -316,19 +326,19 @@ export default function SmsPage({ params }: SmsPageProps) {
       {activeView === 'dashboard' && renderDashboard()}
       {activeView === 'template' && (
         <SmsTemplateEditor
-          tenantId={tenantId}
+          organizationId={organizationId}
           onSave={() => setActiveView('dashboard')}
           onCancel={() => setActiveView('dashboard')}
         />
       )}
       {activeView === 'campaign' && (
         <SmsCampaignBuilder
-          tenantId={tenantId}
+          organizationId={organizationId}
           onComplete={() => setActiveView('dashboard')}
           onCancel={() => setActiveView('dashboard')}
         />
       )}
-      {activeView === 'inbox' && <SmsInbox tenantId={tenantId} />}
+      {activeView === 'inbox' && <SmsInbox organizationId={organizationId} />}
     </div>
   );
 }

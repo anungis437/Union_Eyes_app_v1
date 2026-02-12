@@ -6,6 +6,7 @@ import { pgTable, text, uuid, numeric, timestamp, date, pgEnum, jsonb, varchar }
 
 export const transactionStatusEnum = pgEnum('transaction_status', ['pending', 'paid', 'partial', 'overdue', 'waived', 'refunded', 'cancelled']);
 export const transactionTypeEnum = pgEnum('transaction_type', ['charge', 'payment', 'adjustment', 'refund', 'waiver', 'late_fee']);
+export const paymentProcessorEnum = pgEnum('payment_processor', ['stripe', 'whop', 'paypal', 'square', 'manual']);
 
 export const duesTransactions = pgTable('dues_transactions', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -36,6 +37,11 @@ export const duesTransactions = pgTable('dues_transactions', {
   // Payment details
   paymentMethod: varchar('payment_method', { length: 50 }),
   paymentReference: varchar('payment_reference', { length: 255 }),
+  
+  // Payment processor details
+  processorType: paymentProcessorEnum('processor_type'),
+  processorPaymentId: varchar('processor_payment_id', { length: 255 }),
+  processorCustomerId: varchar('processor_customer_id', { length: 255 }),
   
   // Notes and metadata
   notes: text('notes'),

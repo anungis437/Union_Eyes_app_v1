@@ -86,7 +86,7 @@ return NextResponse.json(
 
           const { data: vectorChunks, error: vectorError } = await supabase.rpc('search_ai_chunks', {
             query_embedding: embedding,
-            org_id: (organizationId || 'test-tenant-001') as any,
+            org_id: (organizationId || 'test-org-001') as any,
             max_results: maxSources * 2,
             similarity_threshold: 0.7,
           });
@@ -104,7 +104,7 @@ return NextResponse.json(
         const { data: keywordChunks, error: searchError } = await supabase
           .from('ai_chunks')
           .select('id, document_id, content, metadata')
-          .eq('organization_id', (organizationId || 'test-tenant-001') as any)
+          .eq('organization_id', (organizationId || 'test-org-001') as any)
           .textSearch('content', query, { type: 'websearch', config: 'english' })
           .limit(maxSources * 2);
 
@@ -164,7 +164,7 @@ return NextResponse.json(
         // Log query with no results
         await logAiQuery({
           supabase,
-          tenantId: organizationId || '',
+          organizationId: organizationId || '',
           userId,
           queryText: query,
           filters,
@@ -200,7 +200,7 @@ return NextResponse.json(
         const latency = Date.now() - startTime;
         await logAiQuery({
           supabase,
-          tenantId: organizationId || '',
+          organizationId: organizationId || '',
           userId,
           queryText: query,
           filters,
@@ -242,7 +242,7 @@ return NextResponse.json(
       // 14. Log query for auditing
       await logAiQuery({
         supabase,
-        tenantId: organizationId || '',
+        organizationId: organizationId || '',
         userId,
         queryText: query,
         filters,
@@ -317,7 +317,7 @@ async function formatSources(supabase: any, chunks: any[]): Promise<AiSource[]> 
  */
 async function logAiQuery({
   supabase,
-  tenantId,
+  organizationId,
   userId,
   queryText,
   filters,
@@ -327,7 +327,7 @@ async function logAiQuery({
   latencyMs,
 }: {
   supabase: any;
-  tenantId: string;
+  organizationId: string;
   userId: string;
   queryText: string;
   filters: any;
@@ -338,7 +338,7 @@ async function logAiQuery({
 }) {
   try {
     const { error } = await supabase.rpc('log_ai_query', {
-      p_tenant_id: tenantId,
+      p_organization_id: organizationId,
       p_user_id: userId,
       p_query_text: queryText,
       p_filters: filters,

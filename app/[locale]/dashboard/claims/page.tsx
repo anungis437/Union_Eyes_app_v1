@@ -25,7 +25,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 interface DbClaim {
   claimId: string;
   claimNumber: string;
-  tenantId: string;
+  organizationId: string;
   memberId: string;
   isAnonymous: boolean;
   claimType: string;

@@ -40,7 +40,17 @@
     "signOut": "Sign Out",
     "help": "Help",
     "documentation": "Documentation",
-    "support": "Support"
+    "support": "Support",
+    "healthSafety": "Health & Safety",
+    "bargaining": "Bargaining & Negotiations",
+    "financialManagement": "Financial Management",
+    "clcDashboard": "CLC Executive Dashboard",
+    "clcStaff": "CLC Staff Operations",
+    "clcAffiliates": "Affiliates Management",
+    "clcCompliance": "CLC Compliance Tracking",
+    "federationDashboard": "Federation Dashboard",
+    "federationAffiliates": "Affiliate Unions",
+    "federationRemittances": "Remittance Tracking"
   },
   "auth": {
     "signIn": "Sign In",
@@ -517,6 +527,181 @@
           "description": "Add these environment variables to your .env file"
         }
       }
+    }
+  },
+  "healthSafety": {
+    "title": "Health & Safety",
+    "dashboard": "Safety Dashboard",
+    "incidents": {
+      "title": "Workplace Incidents",
+      "new": "Report Incident",
+      "list": "All Incidents",
+      "incidentNumber": "Incident Number",
+      "incidentType": "Incident Type",
+      "severity": "Severity",
+      "status": "Status",
+      "reportDate": "Report Date",
+      "incidentDate": "Incident Date"
+    },
+    "inspections": {
+      "title": "Safety Inspections",
+      "new": "Schedule Inspection",
+      "list": "All Inspections",
+      "inspectionNumber": "Inspection Number",
+      "inspectionType": "Inspection Type",
+      "workplace": "Workplace",
+      "inspector": "Inspector",
+      "scheduledDate": "Scheduled Date"
+    },
+    "hazards": {
+      "title": "Hazard Reports",
+      "new": "Report Hazard",
+      "list": "All Hazards",
+      "riskLevel": "Risk Level",
+      "controlMeasures": "Control Measures"
+    },
+    "ppe": {
+      "title": "PPE Management",
+      "distribution": "PPE Distribution",
+      "equipment": "Equipment",
+      "expiry": "Expiry Date"
+    }
+  },
+  "bargaining": {
+    "title": "Bargaining & Negotiations",
+    "negotiations": {
+      "title": "Active Negotiations",
+      "new": "Start Negotiation",
+      "list": "All Negotiations",
+      "status": "Status",
+      "employer": "Employer",
+      "bargainingUnit": "Bargaining Unit"
+    },
+    "proposals": {
+      "title": "Proposals",
+      "new": "Submit Proposal",
+      "list": "All Proposals",
+      "proposalType": "Proposal Type",
+      "stage": "Stage",
+      "comparison": "Proposal Comparison"
+    },
+    "tentativeAgreements": {
+      "title": "Tentative Agreements",
+      "ratificationDate": "Ratification Date",
+      "ratificationResult": "Result"
+    },
+    "sessions": {
+      "title": "Bargaining Sessions",
+      "date": "Session Date",
+      "duration": "Duration",
+      "notes": "Session Notes"
+    },
+    "team": {
+      "title": "Bargaining Team",
+      "role": "Role",
+      "member": "Team Member"
+    }
+  },
+  "financial": {
+    "title": "Financial Management",
+    "budgets": {
+      "title": "Budgets",
+      "new": "Create Budget",
+      "list": "All Budgets",
+      "fiscalYear": "Fiscal Year",
+      "totalBudget": "Total Budget",
+      "utilized": "Utilized",
+      "remaining": "Remaining",
+      "status": "Status"
+    },
+    "expenses": {
+      "title": "Expenses",
+      "new": "Submit Expense Request",
+      "list": "All Expenses",
+      "expenseType": "Expense Type",
+      "amount": "Amount",
+      "requestDate": "Request Date",
+      "approvalStatus": "Approval Status",
+      "approvalQueue": "Approval Queue"
+    },
+    "vendors": {
+      "title": "Vendors",
+      "new": "Add Vendor",
+      "list": "All Vendors",
+      "vendorName": "Vendor Name",
+      "vendorCode": "Vendor Code",
+      "contactInfo": "Contact Information",
+      "paymentTerms": "Payment Terms"
+    },
+    "invoices": {
+      "title": "Invoices",
+      "invoiceNumber": "Invoice Number",
+      "dueDate": "Due Date",
+      "paymentStatus": "Payment Status"
+    },
+    "accountsPayable": {
+      "title": "Accounts Payable",
+      "agingReport": "AP Aging Report",
+      "current": "Current",
+      "overdue": "Overdue"
+    }
+  },
+  "clc": {
+    "title": "Canadian Labour Congress",
+    "executive": {
+      "title": "CLC Executive Dashboard",
+      "overview": "National Overview",
+      "statistics": "National Statistics",
+      "affiliates": "Affiliated Organizations",
+      "remittances": "Remittance Status"
+    },
+    "staff": {
+      "title": "CLC Staff Operations",
+      "workflow": "Workflow Management",
+      "approvals": "Pending Approvals",
+      "communications": "Communications"
+    },
+    "affiliates": {
+      "title": "Affiliates Management",
+      "federations": "Provincial Federations",
+      "unions": "National Unions",
+      "locals": "Local Unions",
+      "membership": "Membership Numbers"
+    },
+    "compliance": {
+      "title": "Compliance Tracking",
+      "remittances": "Remittance Compliance",
+      "reporting": "Reporting Requirements",
+      "audits": "Audit Status"
+    }
+  },
+  "federation": {
+    "title": "Provincial Federation",
+    "dashboard": {
+      "title": "Federation Dashboard",
+      "overview": "Provincial Overview",
+      "affiliates": "Member Unions",
+      "campaigns": "Active Campaigns"
+    },
+    "affiliates": {
+      "title": "Affiliate Unions",
+      "list": "All Affiliates",
+      "onboarding": "Affiliate Onboarding",
+      "status": "Affiliation Status",
+      "membershipCount": "Membership Count"
+    },
+    "remittances": {
+      "title": "Remittance Tracking",
+      "compliance": "Compliance Status",
+      "history": "Payment History",
+      "dueDate": "Due Date",
+      "amount": "Amount"
+    },
+    "meetings": {
+      "title": "Federation Meetings",
+      "schedule": "Meeting Schedule",
+      "minutes": "Meeting Minutes",
+      "attendance": "Attendance"
     }
   }
 }

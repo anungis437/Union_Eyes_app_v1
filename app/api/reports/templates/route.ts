@@ -33,22 +33,22 @@ export const GET = async (req: NextRequest) => {
     );
       }
 
-      // Get all templates (public ones + this tenant's private ones)
+      // Get all templates (public ones + this organization's private ones)
       const templates = await db
         .select()
         .from(reports)
         .where(
           and(
             eq(reports.isTemplate, true),
-            // Either public or belongs to this tenant
-            // SQL: (is_public = true OR tenant_id = organizationId)
+            // Either public or belongs to this organization
+            // SQL: (is_public = true OR organization_id = organizationId)
           )
         )
         .orderBy(reports.name);
 
       // Filter in memory since complex OR conditions in where clause
       const filteredTemplates = templates.filter(
-        t => t.isPublic || t.tenantId === organizationId
+        t => t.isPublic || t.organizationId === organizationId
       );
 
       return NextResponse.json({

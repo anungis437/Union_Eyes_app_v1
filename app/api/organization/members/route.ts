@@ -1,6 +1,6 @@
 /**
  * API Route: Organization Members
- * Fetch members for the current user's tenant
+ * Fetch members for the current user's organization
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -26,7 +26,7 @@ export const GET = withEnhancedRoleAuth(20, async (request, context) => {
   const { userId, organizationId } = context;
 
   try {
-    // Fetch members for the current tenant
+    // Fetch members for the current organization
     const members = await getOrganizationMembers(organizationId);
     const totalCount = await getMemberCount(organizationId);
     const activeCount = await getActiveMemberCount(organizationId);
@@ -84,7 +84,7 @@ const createMemberSchema = z.object({
 
 /**
  * POST /api/organization/members
- * Create a new member for the current tenant
+ * Create a new member for the current organization
  * Requires role level 40 (steward or higher)
  */
 export const POST = withEnhancedRoleAuth(40, async (request, context) => {

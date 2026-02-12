@@ -11,7 +11,7 @@
  * - Education/Certifications (H&S rep certifications)
  * - Documents (incident photos, inspection reports, policy documents)
  * - Profiles (H&S representative assignments)
- * - Organizations (multi-tenant support)
+ * - Organizations (multi-organization support)
  * - Members (employee/member associations)
  * 
  * RLS: All tables have organization-level row-level security enabled

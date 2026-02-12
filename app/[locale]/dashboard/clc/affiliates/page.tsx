@@ -10,16 +10,13 @@ import {
   Building2, 
   Users, 
   MapPin, 
-  Phone, 
   Mail, 
   Search,
-  Filter,
   Download,
   Eye,
   TrendingUp,
   AlertCircle,
   CheckCircle,
-  Clock,
   DollarSign,
   FileText
 } from 'lucide-react';
@@ -43,6 +40,19 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
+interface AffiliateData {
+  id: string;
+  name: string;
+  organizationType: string;
+  province?: string | null;
+  memberCount: number;
+  remittanceStatus: string;
+  lastRemittanceDate: string | null;
+  complianceStatus: string;
+}
+
+type IconComponent = React.ComponentType<{ className?: string }>;
+
 export const metadata: Metadata = {
   title: 'Manage Affiliates | CLC Dashboard',
   description: 'View and manage direct-chartered unions and provincial federations',
@@ -52,7 +62,7 @@ async function checkCLCAccess(userId: string, orgId: string): Promise<boolean> {
   try {
     const userRole = await getUserRoleInOrganization(userId, orgId);
     return ['clc_executive', 'clc_staff', 'system_admin'].includes(userRole || '');
-  } catch (error) {
+  } catch {
     return false;
   }
 }
@@ -120,7 +130,7 @@ const getStatusBadge = (status: string) => {
 };
 
 const getComplianceBadge = (status: string) => {
-  const variants: Record<string, { variant: 'default' | 'destructive' | 'outline' | 'secondary', label: string, icon: any }> = {
+  const variants: Record<string, { variant: 'default' | 'destructive' | 'outline' | 'secondary', label: string, icon: IconComponent }> = {
     compliant: { variant: 'default', label: 'Compliant', icon: CheckCircle },
     'at-risk': { variant: 'secondary', label: 'At Risk', icon: AlertCircle },
     'non-compliant': { variant: 'destructive', label: 'Non-Compliant', icon: AlertCircle },
@@ -136,7 +146,7 @@ const getComplianceBadge = (status: string) => {
 };
 
 export default async function CLCAffiliatesPage({
-  searchParams,
+  searchParams: _searchParams,
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
@@ -330,7 +340,7 @@ export default async function CLCAffiliatesPage({
                     </TableCell>
                   </TableRow>
                 ) : (
-                  data.affiliates.map((affiliate: any) => (
+                  data.affiliates.map((affiliate: AffiliateData) => (
                     <TableRow key={affiliate.id}>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
@@ -394,8 +404,8 @@ export default async function CLCAffiliatesPage({
           <Card>
             <CardContent className="pt-6 space-y-4">
               {data.affiliates
-                .filter((a: any) => a.organizationType === 'federation')
-                .map((federation: any) => (
+                .filter((a: AffiliateData) => a.organizationType === 'federation')
+                .map((federation: AffiliateData) => (
                   <div key={federation.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors">
                     <div className="flex items-center gap-4">
                       <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">

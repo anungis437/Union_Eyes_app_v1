@@ -21,10 +21,9 @@ vi.mock('@/db/db', () => ({
 describe('ReportExecutor Functional Tests', () => {
   let executor: ReportExecutor;
   const mockOrgId = 'org-123';
-  const mockTenantId = 'tenant-456';
 
   beforeEach(() => {
-    executor = new ReportExecutor(mockOrgId, mockTenantId);
+    executor = new ReportExecutor(mockOrgId, mockOrgId);
     vi.clearAllMocks();
   });
 

@@ -27,12 +27,11 @@ interface EngagementTrend {
 async function handler(req: NextRequest, context) {
   try {
     const organizationId = context.organizationId;
-    const tenantId = organizationId;
     
-    if (!tenantId) {
+    if (!organizationId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID required'
+      'Organization ID required'
     );
     }
 
@@ -57,7 +56,7 @@ async function handler(req: NextRequest, context) {
           TO_CHAR(DATE_TRUNC('month', created_at), 'YYYY-MM') AS month,
           COUNT(*) AS new_count
         FROM organization_members
-        WHERE tenant_id = ${tenantId}
+        WHERE organization_id = ${organizationId}
         GROUP BY TO_CHAR(DATE_TRUNC('month', created_at), 'YYYY-MM')
       ),
       active_members AS (
@@ -73,7 +72,7 @@ async function handler(req: NextRequest, context) {
             END
           ) AS avg_engagement_score
         FROM claims c
-        WHERE c.tenant_id = ${tenantId}
+        WHERE c.organization_id = ${organizationId}
         GROUP BY TO_CHAR(DATE_TRUNC('month', c.created_at), 'YYYY-MM')
       ),
       churned_estimate AS (
@@ -86,7 +85,7 @@ async function handler(req: NextRequest, context) {
             member_id,
             MAX(created_at) AS last_activity
           FROM claims
-          WHERE tenant_id = ${tenantId}
+          WHERE organization_id = ${organizationId}
           GROUP BY member_id
           HAVING MAX(created_at) < NOW() - INTERVAL '180 days'
         ) AS inactive_members

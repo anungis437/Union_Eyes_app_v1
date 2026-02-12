@@ -6,8 +6,8 @@ import { claims } from '@/db/schema/domains/claims';
 import { eq, and, gte, sql } from 'drizzle-orm';
 import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
 
-async function handler(req: NextRequest) {
-  const tenantId = (req as any).tenantId;
+async function handler(req: NextRequest, context) {
+  const { organizationId } = context;
   const searchParams = req.nextUrl.searchParams;
   const daysBack = parseInt(searchParams.get('days') || '30');
 
@@ -24,7 +24,7 @@ async function handler(req: NextRequest) {
         AVG(EXTRACT(EPOCH FROM (COALESCE(${claims.updatedAt}, NOW()) - ${claims.createdAt})) / 3600) as avg_duration,
         PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY EXTRACT(EPOCH FROM (COALESCE(${claims.updatedAt}, NOW()) - ${claims.createdAt})) / 3600) as p75_duration
       FROM ${claims}
-      WHERE ${claims.organizationId} = ${tenantId}
+      WHERE ${claims.organizationId} = ${organizationId}
         AND ${claims.incidentDate} >= ${startDate.toISOString()}::timestamp
       GROUP BY ${claims.status}
     )

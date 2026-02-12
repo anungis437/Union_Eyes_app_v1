@@ -27,14 +27,14 @@ interface AIQueryResponse {
 }
 
 interface ChatInterfaceProps {
-  tenantId: string;
+  organizationId: string;
   context?: Record<string, any>;
   onQueryResult?: (result: AIQueryResponse) => void;
   className?: string;
 }
 
 export function ChatInterface({
-  tenantId,
+  organizationId,
   context,
   onQueryResult,
   className = '',
@@ -83,11 +83,11 @@ export function ChatInterface({
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'X-Tenant-ID': tenantId,
+          'X-Organization-ID': organizationId,
         },
         body: JSON.stringify({
           question,
-          tenantId,
+          organizationId,
           context,
         }),
       });
@@ -143,7 +143,7 @@ export function ChatInterface({
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'X-Tenant-ID': tenantId,
+          'X-Organization-ID': organizationId,
         },
         body: JSON.stringify({ question, answer }),
       });

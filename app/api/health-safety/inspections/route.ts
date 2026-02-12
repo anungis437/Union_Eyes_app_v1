@@ -8,7 +8,7 @@
  * RLS: Organization-level isolation enforced by database policies
  */
 
-import { NextRequest, NextResponse } from "next/server";
+
 import { z } from "zod";
 import { safetyInspections } from "@/db/schema/domains/health-safety/health-safety-schema";
 import { eq, desc, and, or, like, sql, gte, lte } from "drizzle-orm";
@@ -98,11 +98,11 @@ export const GET = withEnhancedRoleAuth(30, async (request, context) => {
       const conditions = [];
       
       if (status) {
-        conditions.push(eq(safetyInspections.status, status as any));
+        conditions.push(eq(safetyInspections.status, status));
       }
       
       if (inspectionType) {
-        conditions.push(eq(safetyInspections.inspectionType, inspectionType as any));
+        conditions.push(eq(safetyInspections.inspectionType, inspectionType));
       }
       
       if (fromDate) {
@@ -126,7 +126,7 @@ export const GET = withEnhancedRoleAuth(30, async (request, context) => {
           or(
             like(safetyInspections.inspectionNumber, `%${search}%`),
             like(safetyInspections.inspectionScope, `%${search}%`)
-          ) as any
+          ) as SQL<unknown> | undefined
         );
       }
 

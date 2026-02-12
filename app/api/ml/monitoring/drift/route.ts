@@ -52,7 +52,6 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
 
   try {
     const organizationScopeId = organizationId || userId;
-    const tenantId = organizationScopeId;
 
     // Query drift metrics from feature monitoring tables
     // Build on existing benchmark_data structure
@@ -65,7 +64,7 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
           STDDEV(member_age) as current_stddev
         FROM claims c
         JOIN profiles p ON p.user_id = c.created_by
-        WHERE c.tenant_id = ${tenantId}
+        WHERE c.organization_id = ${organizationScopeId}
           AND c.created_at >= NOW() - INTERVAL '7 days'
         
         UNION ALL
@@ -89,7 +88,7 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
             ELSE 2
           END) as current_stddev
         FROM claims c
-        WHERE c.tenant_id = ${tenantId}
+        WHERE c.organization_id = ${organizationScopeId}
           AND c.created_at >= NOW() - INTERVAL '7 days'
         
         UNION ALL
@@ -100,7 +99,7 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
           STDDEV(EXTRACT(YEAR FROM AGE(NOW(), p.union_join_date))) as current_stddev
         FROM claims c
         JOIN profiles p ON p.user_id = c.created_by
-        WHERE c.tenant_id = ${tenantId}
+        WHERE c.organization_id = ${organizationScopeId}
           AND c.created_at >= NOW() - INTERVAL '7 days'
           AND p.union_join_date IS NOT NULL
         
@@ -111,7 +110,7 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
           AVG(predicted_outcome::int) as current_value,
           STDDEV(predicted_outcome::int) as current_stddev
         FROM ml_predictions
-        WHERE tenant_id = ${tenantId}
+        WHERE organization_id = ${organizationScopeId}
           AND predicted_at >= NOW() - INTERVAL '7 days'
           AND model_type = 'claim_outcome'
       ),
@@ -122,7 +121,7 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
           baseline_value,
           baseline_stddev
         FROM model_feature_baselines
-        WHERE tenant_id = ${tenantId}
+        WHERE organization_id = ${organizationScopeId}
           AND is_active = true
       )
       SELECT 

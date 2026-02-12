@@ -3,8 +3,8 @@
  * 
  * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
- * - RLS policies enforce tenant isolation at database level
- * - Removed manual tenant lookup (getUserTenant) - RLS handles this
+ * - RLS policies enforce organization isolation at database level
+ * - Removed manual organization lookup (getUserOrganization) - RLS handles this
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -40,7 +40,7 @@ const createClaimSchema = z.object({
 /**
  * GET /api/claims
  * Fetch all claims with optional filtering
- * Protected by tenant middleware - only returns claims for the user's current tenant
+ * Protected by organization middleware - only returns claims for the user's current organization
  */
 export const GET = withRoleAuth(30, async (request, context) => {
   const { userId, organizationId } = context;
@@ -54,9 +54,9 @@ export const GET = withRoleAuth(30, async (request, context) => {
       const limit = parseInt(searchParams.get("limit") || "100");
       const offset = parseInt(searchParams.get("offset") || "0");
 
-      // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+      // All database operations wrapped in withRLSContext - RLS policies handle organization isolation
       return withRLSContext(async (tx) => {
-        // Build query conditions - RLS policies automatically filter by tenant
+        // Build query conditions - RLS policies automatically filter by organization
         const conditions = [];
         
         if (status && status !== "all") {
@@ -80,7 +80,7 @@ export const GET = withRoleAuth(30, async (request, context) => {
           conditions.push(eq(claims.memberId, memberId));
         }
 
-        // Execute query - RLS policies automatically enforce tenant filtering
+        // Execute query - RLS policies automatically enforce organization filtering
         const result = await tx
           .select()
           .from(claims)
@@ -89,7 +89,7 @@ export const GET = withRoleAuth(30, async (request, context) => {
           .limit(limit)
           .offset(offset);
 
-        // Count total for pagination - RLS policies automatically enforce tenant filtering
+        // Count total for pagination - RLS policies automatically enforce organization filtering
         const totalResult = await tx
           .select({ count: sql<number>`count(*)` })
           .from(claims)
@@ -154,7 +154,7 @@ export const GET = withRoleAuth(30, async (request, context) => {
 /**
  * POST /api/claims
  * Create a new claim
- * Protected by tenant middleware - claim will be created in the user's current tenant
+ * Protected by organization middleware - claim will be created in the user's current organization
  */
 export const POST = withRoleAuth(30, async (request, context) => {
   const { userId, organizationId } = context;
@@ -191,7 +191,7 @@ export const POST = withRoleAuth(30, async (request, context) => {
 
   const body = parsed.data;
 
-  const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
+  const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
     return standardErrorResponse(ErrorCode.FORBIDDEN, 'Forbidden');
   }
@@ -202,7 +202,7 @@ export const POST = withRoleAuth(30, async (request, context) => {
     const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, "0");
     const claimNumber = `CLM-${year}-${randomNum}`;
 
-    // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+    // All database operations wrapped in withRLSContext - RLS policies handle organization isolation
     return withRLSContext(async (tx) => {
       // Create claim - RLS policies automatically set organizationId
       const [newClaim] = await tx

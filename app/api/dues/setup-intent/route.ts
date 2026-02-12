@@ -53,7 +53,7 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
           name: member.name,
           metadata: {
             memberId: member.id,
-            tenantId: member.tenantId,
+            organizationId: member.organizationId,
           },
         });
 
@@ -79,7 +79,7 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
         usage: 'off_session', // For future payments
         metadata: {
           memberId: member.id,
-          tenantId: member.tenantId,
+          organizationId: member.organizationId,
         },
       });
 

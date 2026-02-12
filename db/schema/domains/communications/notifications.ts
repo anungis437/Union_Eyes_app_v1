@@ -8,6 +8,7 @@
  */
 
 import { pgTable, text, timestamp, boolean, jsonb, uuid, pgEnum, integer } from 'drizzle-orm/pg-core';
+import { organizations } from '../../../schema-organizations';
 
 // ============================================
 // Enums
@@ -68,7 +69,9 @@ export const digestFrequencyEnum = pgEnum('digest_frequency', [
 export const userNotificationPreferences = pgTable('user_notification_preferences', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: text('user_id').notNull().unique(),
-  tenantId: text('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   
   // Contact info
   email: text('email').notNull(),
@@ -152,7 +155,9 @@ export const notificationTracking = pgTable('notification_tracking', {
 export const inAppNotifications = pgTable('in_app_notifications', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: text('user_id').notNull(),
-  tenantId: text('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   
   // Notification content
   title: text('title').notNull(),
@@ -184,7 +189,9 @@ export const notificationHistory = pgTable('notification_history', {
   
   // Recipient info
   userId: text('user_id'), // Nullable for system-wide notifications
-  tenantId: text('tenant_id'),
+  organizationId: uuid('organization_id').references(() => organizations.id, {
+    onDelete: 'cascade',
+  }),
   recipient: text('recipient').notNull(), // Email, phone, or user ID
   
   // Notification details
@@ -222,7 +229,9 @@ export const notificationScheduleStatusEnum = pgEnum('notification_schedule_stat
 
 export const notifications = pgTable('notifications', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: text('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   userId: text('user_id').notNull(),
   
   // Notification content
@@ -283,7 +292,9 @@ export const notificationTemplateTypeEnum = pgEnum('notification_template_type',
 
 export const notificationTemplates = pgTable('notification_templates', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: text('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   
   // Template identification
   templateKey: text('template_key').notNull().unique(), // PAYMENT_RECEIVED, DUES_REMINDER, etc
@@ -333,7 +344,9 @@ export const notificationQueueStatusEnum = pgEnum('notification_queue_status', [
 
 export const notificationQueue = pgTable('notification_queue', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: text('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   
   // Queue status
   status: notificationQueueStatusEnum('status').notNull().default('pending'),
@@ -364,7 +377,9 @@ export const notificationQueue = pgTable('notification_queue', {
 
 export const notificationDeliveryLog = pgTable('notification_delivery_log', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: text('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   notificationId: uuid('notification_id').notNull(),
   
   // Event details
@@ -400,7 +415,9 @@ export const notificationBounceTypeEnum = pgEnum('notification_bounce_type', [
 
 export const notificationBounces = pgTable('notification_bounces', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: text('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   
   // Bounce details
   email: text('email').notNull(),
@@ -430,14 +447,14 @@ export const notificationBounces = pgTable('notification_bounces', {
 // These would be created in a migration file:
 //
 // CREATE INDEX idx_user_notifications_user_id ON user_notification_preferences(user_id);
-// CREATE INDEX idx_user_notifications_tenant_id ON user_notification_preferences(tenant_id);
+// CREATE INDEX idx_user_notifications_organization_id ON user_notification_preferences(organization_id);
 // 
 // CREATE INDEX idx_in_app_notifications_user_id ON in_app_notifications(user_id);
 // CREATE INDEX idx_in_app_notifications_user_read ON in_app_notifications(user_id, read);
 // CREATE INDEX idx_in_app_notifications_created_at ON in_app_notifications(created_at DESC);
 // 
 // CREATE INDEX idx_notification_history_user_id ON notification_history(user_id);
-// CREATE INDEX idx_notification_history_tenant_id ON notification_history(tenant_id);
+// CREATE INDEX idx_notification_history_organization_id ON notification_history(organization_id);
 // CREATE INDEX idx_notification_history_sent_at ON notification_history(sent_at DESC);
 // CREATE INDEX idx_notification_history_status ON notification_history(status);
 //

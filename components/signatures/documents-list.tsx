@@ -37,10 +37,10 @@ interface Document {
 }
 
 interface DocumentsListProps {
-  tenantId: string;
+  organizationId: string;
 }
 
-export function DocumentsList({ tenantId }: DocumentsListProps) {
+export function DocumentsList({ organizationId }: DocumentsListProps) {
   const [documents, setDocuments] = useState<{
     sent: Document[];
     toSign: any[];
@@ -49,12 +49,12 @@ export function DocumentsList({ tenantId }: DocumentsListProps) {
 
   useEffect(() => {
     loadDocuments();
-  }, [tenantId]);
+  }, [organizationId]);
 
   const loadDocuments = async () => {
     try {
       const response = await fetch(
-        `/api/signatures/documents?tenantId=${tenantId}`
+        `/api/signatures/documents?organizationId=${organizationId}`
       );
       if (response.ok) {
         const data = await response.json();

@@ -3,7 +3,7 @@
  * 
  * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
- * - RLS policies enforce tenant isolation at database level
+ * - RLS policies enforce organization isolation at database level
  */
 
 import { z } from 'zod';
@@ -114,7 +114,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
  * }
  */
 
-const educationNotification-preferencesSchema = z.object({
+const educationNotificationPreferencesSchema = z.object({
   memberId: z.string().uuid('Invalid memberId'),
   token: z.string().min(1, 'token is required'),
   registrationConfirmations: z.boolean().optional(),

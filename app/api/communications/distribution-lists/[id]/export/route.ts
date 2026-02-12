@@ -35,10 +35,10 @@ export async function GET(
       'Unauthorized'
     );
     }
-    if (!user.tenantId) {
+    if (!user.organizationId) {
       return standardErrorResponse(
       ErrorCode.FORBIDDEN,
-      'Tenant context required'
+      'Organization context required'
     );
     }
 
@@ -49,7 +49,7 @@ export async function GET(
       .where(
         and(
           eq(newsletterDistributionLists.id, params.id),
-          eq(newsletterDistributionLists.organizationId, user.tenantId)
+          eq(newsletterDistributionLists.organizationId, user.organizationId)
         )
       );
 

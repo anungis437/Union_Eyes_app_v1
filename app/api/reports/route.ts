@@ -34,9 +34,7 @@ async function getHandler(req: NextRequest, context) {
   }
 
   try {
-    const tenantId = organizationId;
-    
-    if (!tenantId || !userId) {
+    if (!organizationId || !userId) {
       return NextResponse.json(
         { error: 'Organization ID and User ID required' },
         { status: 400 }
@@ -52,7 +50,7 @@ async function getHandler(req: NextRequest, context) {
       search: searchParams.get('search') || undefined,
     };
 
-    const reports = await getReports(tenantId, userId, filters);
+    const reports = await getReports(organizationId, userId, filters);
 
     // Log audit event
     await logApiAuditEvent({
@@ -95,9 +93,7 @@ async function postHandler(req: NextRequest, context) {
   }
 
   try {
-    const tenantId = organizationId;
-    
-    if (!tenantId || !userId) {
+    if (!organizationId || !userId) {
       return standardErrorResponse(
         ErrorCode.MISSING_REQUIRED_FIELD,
         'Organization ID and User ID required'
@@ -114,7 +110,7 @@ async function postHandler(req: NextRequest, context) {
       );
     }
 
-    const report = await createReport(tenantId, userId, {
+    const report = await createReport(organizationId, userId, {
       name: body.name,
       description: body.description,
       reportType: body.reportType || 'custom',

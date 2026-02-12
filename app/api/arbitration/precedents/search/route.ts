@@ -102,10 +102,10 @@ const arbitrationPrecedentsSearchSchema = z.object({
   sharingLevels: z.unknown().optional(),
   minCitations: z.unknown().optional(),
   maxCitations: z.unknown().optional(),
-  page = 1: z.unknown().optional(),
-  limit = 20: z.unknown().optional(),
-  sortBy = 'decisionDate': z.boolean().optional(),
-  sortOrder = 'desc': z.unknown().optional(),
+  page: z.unknown().optional().default(1),
+  limit: z.unknown().optional().default(20),
+  sortBy: z.boolean().optional().default('decisionDate'),
+  sortOrder: z.unknown().optional().default('desc'),
 });
 
 export const POST = async (request: NextRequest) => {

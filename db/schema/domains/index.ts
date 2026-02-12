@@ -32,7 +32,7 @@ export * from './health-safety';   // Priority 10b: Workplace health & safety ma
 
 // Advanced Feature Domains
 export * from './ml';               // Priority 11: Machine learning and AI
-export * from './analytics';        // Priority 12: Reporting and analytics
+export * from '../../analytics';        // Priority 12: Reporting and analytics
 
 // Infrastructure Domain (Lowest Priority - Largest)
 export * from './infrastructure';   // Priority 13: System infrastructure and integrations

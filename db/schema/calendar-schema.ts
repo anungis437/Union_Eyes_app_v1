@@ -14,6 +14,7 @@
 
 import { pgTable, uuid, text, timestamp, boolean, integer, jsonb, varchar, pgEnum } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
+import { organizations } from '../schema-organizations';
 
 // ============================================================================
 // ENUMS
@@ -76,7 +77,9 @@ export const syncStatusEnum = pgEnum('sync_status', [
 
 export const calendars = pgTable('calendars', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: text('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   
   // Basic Info
   name: text('name').notNull(),
@@ -120,7 +123,9 @@ export const calendars = pgTable('calendars', {
 export const calendarEvents = pgTable('calendar_events', {
   id: uuid('id').primaryKey().defaultRandom(),
   calendarId: uuid('calendar_id').notNull().references(() => calendars.id, { onDelete: 'cascade' }),
-  tenantId: text('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   
   // Basic Info
   title: text('title').notNull(),
@@ -193,7 +198,9 @@ export const calendarEvents = pgTable('calendar_events', {
 export const eventAttendees = pgTable('event_attendees', {
   id: uuid('id').primaryKey().defaultRandom(),
   eventId: uuid('event_id').notNull().references(() => calendarEvents.id, { onDelete: 'cascade' }),
-  tenantId: text('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   
   // Attendee Info
   userId: text('user_id'),
@@ -226,7 +233,9 @@ export const eventAttendees = pgTable('event_attendees', {
 
 export const meetingRooms = pgTable('meeting_rooms', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: text('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   
   // Basic Info
   name: text('name').notNull(),
@@ -285,7 +294,9 @@ export const roomBookings = pgTable('room_bookings', {
   id: uuid('id').primaryKey().defaultRandom(),
   roomId: uuid('room_id').notNull().references(() => meetingRooms.id, { onDelete: 'cascade' }),
   eventId: uuid('event_id').references(() => calendarEvents.id, { onDelete: 'set null' }),
-  tenantId: text('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   
   // Booking Info
   bookedBy: text('booked_by').notNull(),
@@ -336,7 +347,9 @@ export const roomBookings = pgTable('room_bookings', {
 export const calendarSharing = pgTable('calendar_sharing', {
   id: uuid('id').primaryKey().defaultRandom(),
   calendarId: uuid('calendar_id').notNull().references(() => calendars.id, { onDelete: 'cascade' }),
-  tenantId: text('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   
   // Shared with
   sharedWithUserId: text('shared_with_user_id'),
@@ -369,7 +382,9 @@ export const calendarSharing = pgTable('calendar_sharing', {
 export const externalCalendarConnections = pgTable('external_calendar_connections', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: text('user_id').notNull(),
-  tenantId: text('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   
   // Provider Info
   provider: varchar('provider', { length: 50 }).notNull(), // 'google', 'microsoft', 'apple'
@@ -413,7 +428,9 @@ export const eventReminders = pgTable('event_reminders', {
   id: uuid('id').primaryKey().defaultRandom(),
   eventId: uuid('event_id').notNull().references(() => calendarEvents.id, { onDelete: 'cascade' }),
   userId: text('user_id').notNull(),
-  tenantId: text('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   
   // Reminder Settings
   reminderMinutes: integer('reminder_minutes').notNull(), // Minutes before event

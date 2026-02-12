@@ -76,7 +76,7 @@ export const GET = async (
     }
 
     // Verify organization access
-    if (document.tenantId !== organizationId) {
+    if (document.organizationId !== organizationId) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),
         userId,
@@ -215,7 +215,7 @@ export const PATCH = async (
     }
 
     // Verify organization access
-    if (document.tenantId !== organizationId) {
+    if (document.organizationId !== organizationId) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),
         userId,
@@ -304,7 +304,7 @@ export const DELETE = async (
     }
 
     // Verify organization access
-    if (document.tenantId !== organizationId) {
+    if (document.organizationId !== organizationId) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),
         userId,

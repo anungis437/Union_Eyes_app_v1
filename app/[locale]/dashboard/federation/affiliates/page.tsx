@@ -22,7 +22,6 @@ import {
 import Link from 'next/link';
 import { db } from '@/db';
 import { getUserRoleInOrganization } from '@/lib/organization-utils';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -30,6 +29,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+
+interface AffiliateData {
+  id: string;
+  name: string;
+  clcAffiliateCode?: string;
+  organizationType?: string;
+  primaryContactEmail?: string;
+  primaryContactPhone?: string;
+  address?: string;
+  description?: string;
+}
 
 export const metadata: Metadata = {
   title: 'Manage Affiliates | Federation Dashboard',
@@ -40,7 +50,7 @@ async function checkFederationAccess(userId: string, orgId: string): Promise<boo
   try {
     const userRole = await getUserRoleInOrganization(userId, orgId);
     return ['fed_staff', 'fed_executive', 'admin', 'system_admin'].includes(userRole || '');
-  } catch (error) {
+  } catch {
     return false;
   }
 }
@@ -68,7 +78,7 @@ async function getAffiliateData(federationId: string) {
         chapters: chapters.length,
       },
     };
-  } catch (error) {
+  } catch {
     return {
       affiliates: [],
       summary: {
@@ -82,7 +92,7 @@ async function getAffiliateData(federationId: string) {
 }
 
 export default async function FederationAffiliatesPage({
-  searchParams,
+  searchParams: _searchParams,
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
@@ -260,7 +270,7 @@ export default async function FederationAffiliatesPage({
             </div>
           ) : (
             <div className="space-y-4">
-              {data.affiliates.map((affiliate: any) => (
+              {data.affiliates.map((affiliate: AffiliateData) => (
                 <div 
                   key={affiliate.id} 
                   className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"

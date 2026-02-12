@@ -99,7 +99,7 @@ describe('AUTH/AUTHORIZATION SECURITY TESTS', () => {
     lastName: 'Officer',
     fullName: 'Test Officer',
     imageUrl: 'https://example.com/avatar.png',
-    publicMetadata: { tenantId: 'org_456', role: 'officer' },
+    publicMetadata: { organizationId: 'org_456', role: 'officer' },
     privateMetadata: {},
   };
 
@@ -244,7 +244,7 @@ describe('AUTH/AUTHORIZATION SECURITY TESTS', () => {
       (auth as Mock).mockResolvedValue(mockAuthContext);
       (currentUser as Mock).mockResolvedValue({
         ...mockClerkUser,
-        publicMetadata: { tenantId: 'org_456', role: 'member' },
+        publicMetadata: { organizationId: 'org_456', role: 'member' },
       });
       (db.query.organizationMembers.findFirst as Mock).mockResolvedValue({
         ...mockMember,
@@ -271,7 +271,7 @@ describe('AUTH/AUTHORIZATION SECURITY TESTS', () => {
       (auth as Mock).mockResolvedValue(mockAuthContext);
       (currentUser as Mock).mockResolvedValue({
         ...mockClerkUser,
-        publicMetadata: { tenantId: 'org_456', role: 'steward' },
+        publicMetadata: { organizationId: 'org_456', role: 'steward' },
       });
       (db.query.organizationMembers.findFirst as Mock).mockResolvedValue({
         ...mockMember,
@@ -297,7 +297,7 @@ describe('AUTH/AUTHORIZATION SECURITY TESTS', () => {
       (auth as Mock).mockResolvedValue(mockAuthContext);
       (currentUser as Mock).mockResolvedValue({
         ...mockClerkUser,
-        publicMetadata: { tenantId: 'org_456', role: 'steward' },
+        publicMetadata: { organizationId: 'org_456', role: 'steward' },
       });
       (db.query.organizationMembers.findFirst as Mock).mockResolvedValue({
         ...mockMember,
@@ -323,7 +323,7 @@ describe('AUTH/AUTHORIZATION SECURITY TESTS', () => {
       (auth as Mock).mockResolvedValue(mockAuthContext);
       (currentUser as Mock).mockResolvedValue({
         ...mockClerkUser,
-        publicMetadata: { tenantId: 'org_456', role: 'admin' },
+        publicMetadata: { organizationId: 'org_456', role: 'admin' },
       });
       (db.query.organizationMembers.findFirst as Mock).mockResolvedValue({
         ...mockMember,
@@ -359,7 +359,7 @@ describe('AUTH/AUTHORIZATION SECURITY TESTS', () => {
       });
       (currentUser as Mock).mockResolvedValue({
         ...mockClerkUser,
-        publicMetadata: { tenantId: 'org_AAA', role: 'officer' },
+        publicMetadata: { organizationId: 'org_AAA', role: 'officer' },
       });
       (db.query.organizationMembers.findFirst as Mock).mockResolvedValue({
         userId: 'user_123',
@@ -431,7 +431,7 @@ describe('AUTH/AUTHORIZATION SECURITY TESTS', () => {
       });
       (currentUser as Mock).mockResolvedValue({
         ...mockClerkUser,
-        publicMetadata: { tenantId: 'org_AAA', role: 'officer' },
+        publicMetadata: { organizationId: 'org_AAA', role: 'officer' },
       });
 
       // User is only member of Org A

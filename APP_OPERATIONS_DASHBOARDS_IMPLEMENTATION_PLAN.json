@@ -1,0 +1,1031 @@
+{
+  "existingInfrastructure": {
+    "schemas": {
+      "audit": {
+        "file": "db/schema/audit-security-schema.ts",
+        "tables": ["auditLogs", "securityEvents", "failedLoginAttempts", "rateLimitEvents"],
+        "status": "exists",
+        "usableFor": ["security_dashboard", "compliance_dashboard"]
+      },
+      "gdpr": {
+        "file": "db/schema/gdpr-compliance-schema.ts",
+        "tables": ["userConsents", "cookieConsents", "gdprRequests", "dataProcessingRecords"],
+        "status": "exists",
+        "usableFor": ["compliance_dashboard"]
+      },
+      "erp": {
+        "file": "db/schema/erp-integration-schema.ts",
+        "tables": ["erpConnectors", "glAccountMappings", "syncLogs"],
+        "status": "exists",
+        "usableFor": ["integrations_dashboard"]
+      },
+      "cms": {
+        "file": "db/schema/cms-website-schema.ts",
+        "tables": ["cmsTemplates", "cmsPages", "cmsBlocks", "cmsMediaLibrary"],
+        "status": "exists",
+        "usableFor": ["content_dashboard"]
+      },
+      "analytics": {
+        "file": "db/schema/analytics.ts",
+        "tables": ["analyticsMetrics", "kpiConfigurations", "mlPredictions", "trendAnalyses"],
+        "status": "exists",
+        "usableFor": ["analytics_admin_dashboard"]
+      },
+      "support": {
+        "status": "missing",
+        "needsCreation": true
+      },
+      "apiKeys": {
+        "status": "missing",
+        "needsCreation": true
+      },
+      "webhooks": {
+        "status": "partial",
+        "notes": "Some webhook tables in recognition-rewards-schema, need dedicated schema"
+      }
+    },
+    "apiRoutes": {
+      "analytics": [
+        "/api/analytics/dashboard",
+        "/api/analytics/metrics",
+        "/api/analytics/operational",
+        "/api/analytics/trends",
+        "/api/analytics/executive",
+        "/api/analytics/financial"
+      ],
+      "billing": [
+        "/api/billing/invoices",
+        "/api/billing/send-batch",
+        "/api/billing/validate",
+        "/api/billing/batch-status/[jobId]",
+        "/api/billing/credits/check-expired"
+      ],
+      "audits": [
+        "/api/audits"
+      ],
+      "support": {
+        "status": "missing",
+        "needsCreation": true
+      },
+      "security": {
+        "status": "missing",
+        "needsCreation": true
+      },
+      "integrations": {
+        "status": "partial",
+        "existing": ["/api/integrations/shopify/webhooks"],
+        "needsExpansion": true
+      }
+    },
+    "services": {
+      "billing": {
+        "file": "packages/multi-tenant/src/services/billingService.ts",
+        "status": "exists",
+        "capabilities": [
+          "createSubscription",
+          "updateSubscription",
+          "cancelSubscription",
+          "getUsageMetrics",
+          "trackUsage",
+          "listInvoices",
+          "planLimits"
+        ]
+      },
+      "audit": {
+        "file": "lib/services/audit-service.ts",
+        "status": "exists",
+        "capabilities": ["createAuditLog"]
+      },
+      "notification": {
+        "file": "lib/services/notification-service.ts",
+        "status": "exists"
+      },
+      "support": {
+        "status": "missing",
+        "needsCreation": true
+      },
+      "security": {
+        "status": "missing",
+        "needsCreation": true
+      }
+    }
+  },
+  "phase2": {
+    "priority": "P1",
+    "dashboards": {
+      "support": {
+        "needsSchema": true,
+        "schemaFile": "db/schema/support-tickets-schema.ts",
+        "schemaFields": [
+          "id: uuid",
+          "organizationId: uuid",
+          "ticketNumber: varchar",
+          "userId: varchar",
+          "title: text",
+          "description: text",
+          "priority: enum(low|medium|high|critical)",
+          "status: enum(open|assigned|in_progress|pending|resolved|closed)",
+          "category: enum(technical|billing|feature_request|bug|general)",
+          "assignedTo: varchar",
+          "assignedAt: timestamp",
+          "resolvedAt: timestamp",
+          "closedAt: timestamp",
+          "slaDeadline: timestamp",
+          "responseTime: integer (minutes)",
+          "resolutionTime: integer (minutes)",
+          "tags: text[]",
+          "metadata: jsonb",
+          "createdAt: timestamp",
+          "updatedAt: timestamp"
+        ],
+        "additionalTables": [
+          {
+            "name": "ticketComments",
+            "fields": [
+              "id: uuid",
+              "ticketId: uuid",
+              "userId: varchar",
+              "comment: text",
+              "isInternal: boolean",
+              "createdAt: timestamp"
+            ]
+          },
+          {
+            "name": "ticketAttachments",
+            "fields": [
+              "id: uuid",
+              "ticketId: uuid",
+              "fileName: text",
+              "fileUrl: text",
+              "fileSize: integer",
+              "uploadedBy: varchar",
+              "createdAt: timestamp"
+            ]
+          },
+          {
+            "name": "slaRules",
+            "fields": [
+              "id: uuid",
+              "organizationId: uuid",
+              "name: text",
+              "priority: enum",
+              "responseTimeMinutes: integer",
+              "resolutionTimeMinutes: integer",
+              "isActive: boolean",
+              "createdAt: timestamp"
+            ]
+          },
+          {
+            "name": "knowledgeBaseArticles",
+            "fields": [
+              "id: uuid",
+              "organizationId: uuid",
+              "title: text",
+              "slug: text",
+              "content: text",
+              "category: text",
+              "tags: text[]",
+              "views: integer",
+              "helpful: integer",
+              "notHelpful: integer",
+              "isPublished: boolean",
+              "createdBy: varchar",
+              "createdAt: timestamp",
+              "updatedAt: timestamp"
+            ]
+          }
+        ],
+        "needsAPI": true,
+        "apiEndpoints": [
+          {
+            "path": "/api/support/tickets",
+            "methods": ["GET", "POST"],
+            "description": "List and create support tickets"
+          },
+          {
+            "path": "/api/support/tickets/[id]",
+            "methods": ["GET", "PATCH", "DELETE"],
+            "description": "Get, update, delete specific ticket"
+          },
+          {
+            "path": "/api/support/tickets/[id]/comments",
+            "methods": ["GET", "POST"],
+            "description": "Ticket comments management"
+          },
+          {
+            "path": "/api/support/tickets/[id]/assign",
+            "methods": ["POST"],
+            "description": "Assign ticket to support staff"
+          },
+          {
+            "path": "/api/support/sla-metrics",
+            "methods": ["GET"],
+            "description": "SLA compliance metrics"
+          },
+          {
+            "path": "/api/support/knowledge-base",
+            "methods": ["GET", "POST"],
+            "description": "Knowledge base article management"
+          },
+          {
+            "path": "/api/support/knowledge-base/[slug]",
+            "methods": ["GET", "PATCH", "DELETE"],
+            "description": "Single article operations"
+          }
+        ],
+        "needsService": true,
+        "serviceFile": "lib/services/support-service.ts",
+        "serviceMethods": [
+          "createTicket",
+          "getTicketById",
+          "listTickets",
+          "updateTicket",
+          "assignTicket",
+          "closeTicket",
+          "addComment",
+          "getComments",
+          "addAttachment",
+          "calculateSla",
+          "getSlaMetrics",
+          "searchKnowledgeBase",
+          "createKbArticle"
+        ],
+        "dashboardQueries": [
+          "getOpenTickets(organizationId?, assignedTo?)",
+          "getTicketsByPriority(organizationId?)",
+          "getTicketsByStatus(organizationId?)",
+          "getSlaCompliance(organizationId?, timeRange)",
+          "getResponseTimeMetrics(organizationId?, timeRange)",
+          "getResolutionTimeMetrics(organizationId?, timeRange)",
+          "getTicketTrends(organizationId?, timeRange)",
+          "getTopCategories(organizationId?, timeRange)",
+          "getAssignedTickets(userId)",
+          "getOverdueTickets(organizationId?)"
+        ]
+      },
+      "analyticsAdmin": {
+        "needsSchema": false,
+        "usesExisting": "db/schema/analytics.ts",
+        "needsAPI": true,
+        "apiEndpoints": [
+          {
+            "path": "/api/admin/analytics/cross-tenant",
+            "methods": ["GET"],
+            "description": "Cross-tenant analytics for system admins",
+            "requiresRole": ["system_admin"]
+          },
+          {
+            "path": "/api/admin/analytics/usage-patterns",
+            "methods": ["GET"],
+            "description": "Platform-wide usage patterns"
+          },
+          {
+            "path": "/api/admin/analytics/performance",
+            "methods": ["GET"],
+            "description": "System performance metrics"
+          },
+          {
+            "path": "/api/admin/analytics/feature-adoption",
+            "methods": ["GET"],
+            "description": "Feature adoption rates across organizations"
+          },
+          {
+            "path": "/api/admin/analytics/user-growth",
+            "methods": ["GET"],
+            "description": "User growth metrics"
+          },
+          {
+            "path": "/api/admin/analytics/api-usage",
+            "methods": ["GET"],
+            "description": "API usage statistics by organization"
+          }
+        ],
+        "needsService": false,
+        "enhanceExisting": "lib/services/analytics-service.ts (to be created)",
+        "dashboardQueries": [
+          "getCrossTenantMetrics()",
+          "getOrganizationComparison(metricType, timeRange)",
+          "getPlatformUsageStats(timeRange)",
+          "getFeatureAdoptionRates(featureId?, timeRange)",
+          "getUserGrowthTrends(timeRange)",
+          "getApiUsageByOrg(timeRange)",
+          "getPerformanceMetrics(timeRange)",
+          "getResourceUtilization()",
+          "getErrorRates(timeRange)",
+          "getActiveOrganizations(timeRange)"
+        ]
+      },
+      "billingAdmin": {
+        "needsSchema": false,
+        "usesExisting": "packages/multi-tenant/src/services/billingService.ts",
+        "needsAPI": true,
+        "apiEndpoints": [
+          {
+            "path": "/api/admin/billing/overview",
+            "methods": ["GET"],
+            "description": "Platform-wide billing overview",
+            "requiresRole": ["system_admin", "billing_admin"]
+          },
+          {
+            "path": "/api/admin/billing/subscriptions",
+            "methods": ["GET"],
+            "description": "All organization subscriptions"
+          },
+          {
+            "path": "/api/admin/billing/revenue",
+            "methods": ["GET"],
+            "description": "Revenue analytics and forecasts"
+          },
+          {
+            "path": "/api/admin/billing/churn",
+            "methods": ["GET"],
+            "description": "Churn analysis and predictions"
+          },
+          {
+            "path": "/api/admin/billing/overages",
+            "methods": ["GET"],
+            "description": "Usage overages across organizations"
+          },
+          {
+            "path": "/api/admin/billing/failed-payments",
+            "methods": ["GET"],
+            "description": "Failed payment tracking"
+          },
+          {
+            "path": "/api/admin/billing/subscriptions/[id]/adjust",
+            "methods": ["POST"],
+            "description": "Manually adjust subscription"
+          }
+        ],
+        "needsService": false,
+        "enhanceExisting": "packages/multi-tenant/src/services/billingService.ts",
+        "additionalMethods": [
+          "getPlatformBillingOverview",
+          "getAllSubscriptions",
+          "getRevenueMetrics",
+          "getChurnMetrics",
+          "getOverageMetrics",
+          "getFailedPayments",
+          "adjustSubscription"
+        ],
+        "dashboardQueries": [
+          "getTotalMrr()",
+          "getMrrTrend(timeRange)",
+          "getSubscriptionsByPlan()",
+          "getChurnRate(timeRange)",
+          "getRevenueByOrganization(timeRange)",
+          "getOverageRevenue(timeRange)",
+          "getFailedPaymentsList(status?)",
+          "getTrialConversionRate(timeRange)",
+          "getAverageLtv()",
+          "getPaymentMethodStats()"
+        ]
+      }
+    }
+  },
+  "phase3": {
+    "priority": "P2",
+    "dashboards": {
+      "integrations": {
+        "needsSchema": true,
+        "schemaFile": "db/schema/integration-management-schema.ts",
+        "schemaFields": [
+          {
+            "table": "apiKeys",
+            "fields": [
+              "id: uuid",
+              "organizationId: uuid",
+              "name: text",
+              "keyHash: text (hashed API key)",
+              "keyPrefix: varchar(8) (first 8 chars for display)",
+              "scopes: text[] (permissions)",
+              "isActive: boolean",
+              "expiresAt: timestamp",
+              "lastUsedAt: timestamp",
+              "usageCount: integer",
+              "rateLimitPerHour: integer",
+              "createdBy: varchar",
+              "revokedBy: varchar",
+              "revokedAt: timestamp",
+              "metadata: jsonb",
+              "createdAt: timestamp"
+            ]
+          },
+          {
+            "table": "webhooks",
+            "fields": [
+              "id: uuid",
+              "organizationId: uuid",
+              "name: text",
+              "url: text",
+              "events: text[] (event types to listen to)",
+              "isActive: boolean",
+              "secret: text (webhook signing secret)",
+              "retryPolicy: jsonb {maxRetries, backoffMs, timeout}",
+              "lastTriggeredAt: timestamp",
+              "lastSuccessAt: timestamp",
+              "lastFailureAt: timestamp",
+              "successCount: integer",
+              "failureCount: integer",
+              "createdBy: varchar",
+              "createdAt: timestamp",
+              "updatedAt: timestamp"
+            ]
+          },
+          {
+            "table": "webhookDeliveries",
+            "fields": [
+              "id: uuid",
+              "webhookId: uuid",
+              "eventType: text",
+              "payload: jsonb",
+              "responseStatus: integer",
+              "responseBody: text",
+              "attemptNumber: integer",
+              "deliveredAt: timestamp",
+              "failureReason: text",
+              "createdAt: timestamp"
+            ]
+          },
+          {
+            "table": "oauthApps",
+            "fields": [
+              "id: uuid",
+              "organizationId: uuid",
+              "name: text",
+              "clientId: varchar",
+              "clientSecretHash: text",
+              "redirectUris: text[]",
+              "scopes: text[]",
+              "isActive: boolean",
+              "appType: enum(confidential|public)",
+              "grantTypes: text[] (authorization_code, refresh_token, etc.)",
+              "logoUrl: text",
+              "createdBy: varchar",
+              "createdAt: timestamp",
+              "updatedAt: timestamp"
+            ]
+          },
+          {
+            "table": "oauthAccessTokens",
+            "fields": [
+              "id: uuid",
+              "appId: uuid",
+              "userId: varchar",
+              "tokenHash: text",
+              "scopes: text[]",
+              "expiresAt: timestamp",
+              "revokedAt: timestamp",
+              "lastUsedAt: timestamp",
+              "createdAt: timestamp"
+            ]
+          }
+        ],
+        "needsAPI": true,
+        "apiEndpoints": [
+          {
+            "path": "/api/admin/integrations/api-keys",
+            "methods": ["GET", "POST"],
+            "description": "Manage API keys"
+          },
+          {
+            "path": "/api/admin/integrations/api-keys/[id]",
+            "methods": ["GET", "PATCH", "DELETE"],
+            "description": "API key operations"
+          },
+          {
+            "path": "/api/admin/integrations/api-keys/[id]/regenerate",
+            "methods": ["POST"],
+            "description": "Regenerate API key"
+          },
+          {
+            "path": "/api/admin/integrations/webhooks",
+            "methods": ["GET", "POST"],
+            "description": "Manage webhooks"
+          },
+          {
+            "path": "/api/admin/integrations/webhooks/[id]",
+            "methods": ["GET", "PATCH", "DELETE"],
+            "description": "Webhook operations"
+          },
+          {
+            "path": "/api/admin/integrations/webhooks/[id]/test",
+            "methods": ["POST"],
+            "description": "Test webhook delivery"
+          },
+          {
+            "path": "/api/admin/integrations/webhooks/[id]/deliveries",
+            "methods": ["GET"],
+            "description": "Webhook delivery logs"
+          },
+          {
+            "path": "/api/admin/integrations/oauth-apps",
+            "methods": ["GET", "POST"],
+            "description": "Manage OAuth applications"
+          },
+          {
+            "path": "/api/admin/integrations/oauth-apps/[id]",
+            "methods": ["GET", "PATCH", "DELETE"],
+            "description": "OAuth app operations"
+          }
+        ],
+        "needsService": true,
+        "serviceFile": "lib/services/integration-service.ts",
+        "serviceMethods": [
+          "createApiKey",
+          "listApiKeys",
+          "revokeApiKey",
+          "regenerateApiKey",
+          "validateApiKey",
+          "trackApiKeyUsage",
+          "createWebhook",
+          "listWebhooks",
+          "updateWebhook",
+          "deleteWebhook",
+          "testWebhook",
+          "getWebhookDeliveries",
+          "retryWebhookDelivery",
+          "createOAuthApp",
+          "listOAuthApps",
+          "updateOAuthApp",
+          "deleteOAuthApp",
+          "generateOAuthToken",
+          "revokeOAuthToken"
+        ],
+        "dashboardQueries": [
+          "getApiKeysOverview(organizationId?)",
+          "getApiKeyUsageStats(keyId?, timeRange)",
+          "getActiveWebhooks(organizationId?)",
+          "getWebhookHealthStatus(webhookId?)",
+          "getWebhookDeliveryStats(webhookId?, timeRange)",
+          "getFailedWebhookDeliveries(organizationId?)",
+          "getOAuthApps(organizationId?)",
+          "getOAuthTokenUsage(appId?, timeRange)",
+          "getIntegrationHealth()",
+          "getApiUsageByEndpoint(timeRange)"
+        ]
+      },
+      "compliance": {
+        "needsSchema": false,
+        "usesExisting": ["db/schema/gdpr-compliance-schema.ts", "db/schema/audit-security-schema.ts"],
+        "needsAPI": true,
+        "apiEndpoints": [
+          {
+            "path": "/api/admin/compliance/gdpr-requests",
+            "methods": ["GET"],
+            "description": "GDPR request tracking"
+          },
+          {
+            "path": "/api/admin/compliance/gdpr-requests/[id]/approve",
+            "methods": ["POST"],
+            "description": "Approve GDPR request"
+          },
+          {
+            "path": "/api/admin/compliance/consent-audit",
+            "methods": ["GET"],
+            "description": "Consent management audit trail"
+          },
+          {
+            "path": "/api/admin/compliance/data-processing",
+            "methods": ["GET"],
+            "description": "Data processing activities report"
+          },
+          {
+            "path": "/api/admin/compliance/risk-assessments",
+            "methods": ["GET", "POST"],
+            "description": "Risk assessment management"
+          },
+          {
+            "path": "/api/admin/compliance/policy-acknowledgments",
+            "methods": ["GET"],
+            "description": "Policy acknowledgment tracking"
+          },
+          {
+            "path": "/api/admin/compliance/data-breaches",
+            "methods": ["GET", "POST"],
+            "description": "Data breach incident management"
+          }
+        ],
+        "needsService": true,
+        "serviceFile": "lib/services/compliance-service.ts",
+        "serviceMethods": [
+          "getGdprRequests",
+          "approveGdprRequest",
+          "processDataExportRequest",
+          "processDataDeletionRequest",
+          "getConsentAudit",
+          "getDataProcessingActivities",
+          "createRiskAssessment",
+          "getRiskAssessments",
+          "trackPolicyAcknowledgment",
+          "getPolicyAcknowledgments",
+          "reportDataBreach",
+          "getComplianceScore"
+        ],
+        "dashboardQueries": [
+          "getPendingGdprRequests(organizationId?)",
+          "getGdprRequestMetrics(timeRange)",
+          "getConsentRates(organizationId?, consentType?)",
+          "getDataProcessingReport(organizationId?)",
+          "getRiskAssessmentSummary(organizationId?)",
+          "getHighRiskActivities()",
+          "getPolicyAcknowledgmentRate(policyId, organizationId?)",
+          "getDataBreaches(organizationId?, timeRange)",
+          "getComplianceScorecard(organizationId)",
+          "getAuditReadiness(organizationId?)"
+        ]
+      },
+      "security": {
+        "needsSchema": false,
+        "usesExisting": "db/schema/audit-security-schema.ts",
+        "needsAPI": true,
+        "apiEndpoints": [
+          {
+            "path": "/api/admin/security/events",
+            "methods": ["GET"],
+            "description": "Security event monitoring"
+          },
+          {
+            "path": "/api/admin/security/events/[id]",
+            "methods": ["GET", "PATCH"],
+            "description": "Security event details and resolution"
+          },
+          {
+            "path": "/api/admin/security/threats",
+            "methods": ["GET"],
+            "description": "Active threat monitoring"
+          },
+          {
+            "path": "/api/admin/security/failed-logins",
+            "methods": ["GET"],
+            "description": "Failed login attempts tracking"
+          },
+          {
+            "path": "/api/admin/security/rate-limits",
+            "methods": ["GET"],
+            "description": "Rate limit violations"
+          },
+          {
+            "path": "/api/admin/security/vulnerabilities",
+            "methods": ["GET", "POST"],
+            "description": "Vulnerability tracking"
+          },
+          {
+            "path": "/api/admin/security/audit-logs",
+            "methods": ["GET"],
+            "description": "Comprehensive audit log search"
+          }
+        ],
+        "needsService": true,
+        "serviceFile": "lib/services/security-monitoring-service.ts",
+        "serviceMethods": [
+          "getSecurityEvents",
+          "getSecurityEventById",
+          "resolveSecurityEvent",
+          "getActiveThreat",
+          "calculateRiskScore",
+          "getFailedLoginAttempts",
+          "getRateLimitViolations",
+          "getAuditLogs",
+          "detectAnomalies",
+          "getSuspiciousActivity",
+          "trackVulnerability",
+          "getVulnerabilities"
+        ],
+        "dashboardQueries": [
+          "getSecurityOverview(organizationId?)",
+          "getActiveThreats(organizationId?)",
+          "getSecurityEventsByCategory(category?, timeRange)",
+          "getSecurityEventsBySeverity(severity?, timeRange)",
+          "getFailedLoginsByUser(timeRange)",
+          "getFailedLoginsByIp(timeRange)",
+          "getRateLimitViolations(timeRange)",
+          "getSuspiciousActivityAlerts(organizationId?)",
+          "getVulnerabilityReport(organizationId?)",
+          "getSecurityScoreTrend(organizationId?, timeRange)",
+          "getUnresolvedSecurityEvents(organizationId?)"
+        ]
+      }
+    }
+  },
+  "phase4": {
+    "priority": "P3",
+    "dashboards": {
+      "content": {
+        "needsSchema": false,
+        "usesExisting": "db/schema/cms-website-schema.ts",
+        "needsAPI": true,
+        "apiEndpoints": [
+          {
+            "path": "/api/admin/content/templates",
+            "methods": ["GET", "POST"],
+            "description": "CMS template management"
+          },
+          {
+            "path": "/api/admin/content/templates/[id]",
+            "methods": ["GET", "PATCH", "DELETE"],
+            "description": "Template operations"
+          },
+          {
+            "path": "/api/admin/content/resources",
+            "methods": ["GET", "POST"],
+            "description": "Resource library management"
+          },
+          {
+            "path": "/api/admin/content/training",
+            "methods": ["GET", "POST"],
+            "description": "Training materials management"
+          },
+          {
+            "path": "/api/admin/content/media",
+            "methods": ["GET", "POST"],
+            "description": "Media library management"
+          },
+          {
+            "path": "/api/admin/content/usage",
+            "methods": ["GET"],
+            "description": "Content usage analytics"
+          }
+        ],
+        "needsService": true,
+        "serviceFile": "lib/services/content-management-service.ts",
+        "serviceMethods": [
+          "createTemplate",
+          "listTemplates",
+          "updateTemplate",
+          "deleteTemplate",
+          "publishTemplate",
+          "createResource",
+          "listResources",
+          "createTrainingMaterial",
+          "listTrainingMaterials",
+          "uploadMedia",
+          "getMediaLibrary",
+          "getContentUsageStats"
+        ],
+        "dashboardQueries": [
+          "getTemplateOverview(organizationId?)",
+          "getMostUsedTemplates(timeRange)",
+          "getResourceLibrary(category?, organizationId?)",
+          "getTrainingMaterials(category?, organizationId?)",
+          "getMediaLibraryStats(organizationId?)",
+          "getContentUsageByOrg(timeRange)",
+          "getPopularContent(type?, timeRange)",
+          "getUnpublishedContent(organizationId?)",
+          "getContentCreationTrends(timeRange)",
+          "getStorageUsage(organizationId?)"
+        ]
+      }
+    }
+  },
+  "implementationEstimates": {
+    "phase2": {
+      "support": {
+        "tasks": [
+          {
+            "task": "Create support-tickets-schema.ts",
+            "estimate": "4 hours",
+            "files": ["db/schema/support-tickets-schema.ts"]
+          },
+          {
+            "task": "Create support-service.ts",
+            "estimate": "6 hours",
+            "files": ["lib/services/support-service.ts"]
+          },
+          {
+            "task": "Create API routes",
+            "estimate": "8 hours",
+            "files": [
+              "app/api/support/tickets/route.ts",
+              "app/api/support/tickets/[id]/route.ts",
+              "app/api/support/tickets/[id]/comments/route.ts",
+              "app/api/support/tickets/[id]/assign/route.ts",
+              "app/api/support/sla-metrics/route.ts",
+              "app/api/support/knowledge-base/route.ts",
+              "app/api/support/knowledge-base/[slug]/route.ts"
+            ]
+          },
+          {
+            "task": "Build Support Dashboard UI",
+            "estimate": "12 hours",
+            "files": ["app/(dashboard)/admin/support/page.tsx"]
+          }
+        ],
+        "totalEstimate": "30 hours"
+      },
+      "analyticsAdmin": {
+        "tasks": [
+          {
+            "task": "Create analytics-service.ts",
+            "estimate": "4 hours",
+            "files": ["lib/services/analytics-service.ts"]
+          },
+          {
+            "task": "Create admin analytics API routes",
+            "estimate": "6 hours",
+            "files": [
+              "app/api/admin/analytics/cross-tenant/route.ts",
+              "app/api/admin/analytics/usage-patterns/route.ts",
+              "app/api/admin/analytics/performance/route.ts",
+              "app/api/admin/analytics/feature-adoption/route.ts",
+              "app/api/admin/analytics/user-growth/route.ts",
+              "app/api/admin/analytics/api-usage/route.ts"
+            ]
+          },
+          {
+            "task": "Build Analytics Admin Dashboard UI",
+            "estimate": "10 hours",
+            "files": ["app/(dashboard)/admin/analytics/page.tsx"]
+          }
+        ],
+        "totalEstimate": "20 hours"
+      },
+      "billingAdmin": {
+        "tasks": [
+          {
+            "task": "Enhance billingService.ts",
+            "estimate": "4 hours",
+            "files": ["packages/multi-tenant/src/services/billingService.ts"]
+          },
+          {
+            "task": "Create admin billing API routes",
+            "estimate": "6 hours",
+            "files": [
+              "app/api/admin/billing/overview/route.ts",
+              "app/api/admin/billing/subscriptions/route.ts",
+              "app/api/admin/billing/revenue/route.ts",
+              "app/api/admin/billing/churn/route.ts",
+              "app/api/admin/billing/overages/route.ts",
+              "app/api/admin/billing/failed-payments/route.ts",
+              "app/api/admin/billing/subscriptions/[id]/adjust/route.ts"
+            ]
+          },
+          {
+            "task": "Build Billing Admin Dashboard UI",
+            "estimate": "10 hours",
+            "files": ["app/(dashboard)/admin/billing/page.tsx"]
+          }
+        ],
+        "totalEstimate": "20 hours"
+      }
+    },
+    "phase3": {
+      "integrations": {
+        "tasks": [
+          {
+            "task": "Create integration-management-schema.ts",
+            "estimate": "6 hours",
+            "files": ["db/schema/integration-management-schema.ts"]
+          },
+          {
+            "task": "Create integration-service.ts",
+            "estimate": "8 hours",
+            "files": ["lib/services/integration-service.ts"]
+          },
+          {
+            "task": "Create integrations API routes",
+            "estimate": "10 hours",
+            "files": [
+              "app/api/admin/integrations/api-keys/route.ts",
+              "app/api/admin/integrations/api-keys/[id]/route.ts",
+              "app/api/admin/integrations/api-keys/[id]/regenerate/route.ts",
+              "app/api/admin/integrations/webhooks/route.ts",
+              "app/api/admin/integrations/webhooks/[id]/route.ts",
+              "app/api/admin/integrations/webhooks/[id]/test/route.ts",
+              "app/api/admin/integrations/webhooks/[id]/deliveries/route.ts",
+              "app/api/admin/integrations/oauth-apps/route.ts",
+              "app/api/admin/integrations/oauth-apps/[id]/route.ts"
+            ]
+          },
+          {
+            "task": "Build Integrations Dashboard UI",
+            "estimate": "14 hours",
+            "files": ["app/(dashboard)/admin/integrations/page.tsx"]
+          }
+        ],
+        "totalEstimate": "38 hours"
+      },
+      "compliance": {
+        "tasks": [
+          {
+            "task": "Create compliance-service.ts",
+            "estimate": "6 hours",
+            "files": ["lib/services/compliance-service.ts"]
+          },
+          {
+            "task": "Create compliance API routes",
+            "estimate": "8 hours",
+            "files": [
+              "app/api/admin/compliance/gdpr-requests/route.ts",
+              "app/api/admin/compliance/gdpr-requests/[id]/approve/route.ts",
+              "app/api/admin/compliance/consent-audit/route.ts",
+              "app/api/admin/compliance/data-processing/route.ts",
+              "app/api/admin/compliance/risk-assessments/route.ts",
+              "app/api/admin/compliance/policy-acknowledgments/route.ts",
+              "app/api/admin/compliance/data-breaches/route.ts"
+            ]
+          },
+          {
+            "task": "Build Compliance Dashboard UI",
+            "estimate": "12 hours",
+            "files": ["app/(dashboard)/admin/compliance/page.tsx"]
+          }
+        ],
+        "totalEstimate": "26 hours"
+      },
+      "security": {
+        "tasks": [
+          {
+            "task": "Create security-monitoring-service.ts",
+            "estimate": "6 hours",
+            "files": ["lib/services/security-monitoring-service.ts"]
+          },
+          {
+            "task": "Create security API routes",
+            "estimate": "8 hours",
+            "files": [
+              "app/api/admin/security/events/route.ts",
+              "app/api/admin/security/events/[id]/route.ts",
+              "app/api/admin/security/threats/route.ts",
+              "app/api/admin/security/failed-logins/route.ts",
+              "app/api/admin/security/rate-limits/route.ts",
+              "app/api/admin/security/vulnerabilities/route.ts",
+              "app/api/admin/security/audit-logs/route.ts"
+            ]
+          },
+          {
+            "task": "Build Security Dashboard UI",
+            "estimate": "14 hours",
+            "files": ["app/(dashboard)/admin/security/page.tsx"]
+          }
+        ],
+        "totalEstimate": "28 hours"
+      }
+    },
+    "phase4": {
+      "content": {
+        "tasks": [
+          {
+            "task": "Create content-management-service.ts",
+            "estimate": "4 hours",
+            "files": ["lib/services/content-management-service.ts"]
+          },
+          {
+            "task": "Create content API routes",
+            "estimate": "6 hours",
+            "files": [
+              "app/api/admin/content/templates/route.ts",
+              "app/api/admin/content/templates/[id]/route.ts",
+              "app/api/admin/content/resources/route.ts",
+              "app/api/admin/content/training/route.ts",
+              "app/api/admin/content/media/route.ts",
+              "app/api/admin/content/usage/route.ts"
+            ]
+          },
+          {
+            "task": "Build Content Dashboard UI",
+            "estimate": "10 hours",
+            "files": ["app/(dashboard)/admin/content/page.tsx"]
+          }
+        ],
+        "totalEstimate": "20 hours"
+      }
+    }
+  },
+  "totalProjectEstimate": {
+    "phase2": "70 hours (3-4 weeks)",
+    "phase3": "92 hours (4-5 weeks)",
+    "phase4": "20 hours (1 week)",
+    "total": "182 hours (8-10 weeks)",
+    "note": "Estimates assume parallel development where possible and include testing/documentation time"
+  },
+  "dependencies": {
+    "sharedComponents": [
+      "DataTable component for all dashboards",
+      "ChartComponents for metrics visualization",
+      "FilterBar for dashboard filtering",
+      "ExportButton for data export",
+      "RoleGuard for access control"
+    ],
+    "utilities": [
+      "formatters for dates, currency, numbers",
+      "validators for API input",
+      "error handlers",
+      "response standardizers"
+    ],
+    "testing": [
+      "Unit tests for all services",
+      "Integration tests for API routes",
+      "E2E tests for dashboard flows"
+    ]
+  },
+  "securityConsiderations": {
+    "apiKeys": "Hash before storage, never expose full key after creation",
+    "webhooks": "Sign payloads, verify signatures, implement replay protection",
+    "oauth": "Follow OAuth 2.0 security best practices, rotate secrets",
+    "auditLogs": "Archive old logs, never delete, encrypt sensitive data",
+    "gdprRequests": "Implement approval workflow, track all data deletions",
+    "rateLimit": "Apply aggressive rate limits on admin endpoints",
+    "roleChecks": "Enforce system_admin role for all admin dashboards"
+  }
+}

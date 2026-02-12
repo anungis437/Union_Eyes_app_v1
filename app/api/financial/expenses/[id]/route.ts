@@ -1,8 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/services/financial-service/src/db';
 import { expenseRequests, expenseApprovals, budgetLineItems } from '@/services/financial-service/src/db/schema';
 import { eq, and } from 'drizzle-orm';
+
+interface AuthUser {
+  id: string;
+  roleLevel?: number;
+}
+
+interface RequestContext {
+  organizationId: string;
+  params: {
+    id: string;
+  };
+}
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { 
@@ -31,8 +43,7 @@ export const GET = withApiAuth(async (request: NextRequest, context) => {
       return standardErrorResponse(ErrorCode.UNAUTHORIZED, 'Authentication required');
     }
 
-    const { organizationId } = context as any;
-    const { params } = context as any;
+    const { organizationId, params } = context as RequestContext;
     const expenseId = params.id;
 
     const [expense] = await db
@@ -47,7 +58,7 @@ export const GET = withApiAuth(async (request: NextRequest, context) => {
       return standardErrorResponse(ErrorCode.RESOURCE_NOT_FOUND, 'Expense not found');
     }
 
-    const userLevel = (user as any).roleLevel || 0;
+    const userLevel = (user as AuthUser).roleLevel || 0;
 
     // Non-financial officers can only view their own expenses
     if (userLevel < 85 && expense.requesterId !== user.id) {
@@ -97,8 +108,7 @@ export const PATCH = withApiAuth(async (request: NextRequest, context) => {
       return standardErrorResponse(ErrorCode.UNAUTHORIZED, 'Authentication required');
     }
 
-    const { organizationId } = context as any;
-    const { params } = context as any;
+    const { organizationId, params } = context as RequestContext;
     const expenseId = params.id;
 
     const body = await request.json();
@@ -127,7 +137,7 @@ export const PATCH = withApiAuth(async (request: NextRequest, context) => {
       return standardErrorResponse(ErrorCode.RESOURCE_NOT_FOUND, 'Expense not found');
     }
 
-    const userLevel = (user as any).roleLevel || 0;
+    const userLevel = (user as AuthUser).roleLevel || 0;
 
     // Handle approval actions
     if (data.approvalAction) {
@@ -168,7 +178,7 @@ export const PATCH = withApiAuth(async (request: NextRequest, context) => {
 
       // Update expense status
       const newStatus = data.approvalAction === 'approve' ? 'approved' : 'rejected';
-      const updateData: any = {
+      const updateData: Partial<typeof expenseRequests.$inferInsert> = {
         status: newStatus,
         updatedAt: new Date().toISOString(),
       };
@@ -239,7 +249,7 @@ export const PATCH = withApiAuth(async (request: NextRequest, context) => {
         );
       }
 
-      const updateData: any = {
+      const updateData: Partial<typeof expenseRequests.$inferInsert> = {
         status: data.status,
         updatedAt: new Date().toISOString(),
       };

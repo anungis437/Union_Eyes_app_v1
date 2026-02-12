@@ -13,7 +13,6 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import { 
@@ -52,11 +51,7 @@ export function IncidentTrendChart({
   const [data, setData] = React.useState<TrendData[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
 
-  React.useEffect(() => {
-    loadTrendData();
-  }, [organizationId, period]);
-
-  async function loadTrendData() {
+  const loadTrendData = React.useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch(
@@ -73,7 +68,7 @@ export function IncidentTrendChart({
       } else {
         throw new Error(result.error);
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to load incident trends",
@@ -82,7 +77,11 @@ export function IncidentTrendChart({
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [organizationId, period, toast]);
+
+  React.useEffect(() => {
+    loadTrendData();
+  }, [loadTrendData]);
 
   if (isLoading) {
     return (

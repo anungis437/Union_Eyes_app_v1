@@ -17,17 +17,16 @@ import {
 async function getHandler(req: NextRequest, context) {
   try {
     const organizationId = context.organizationId;
-    const tenantId = organizationId;
     const userId = context.userId;
     
-    if (!tenantId || !userId) {
+    if (!organizationId || !userId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID and User ID required'
+      'Organization ID and User ID required'
     );
     }
 
-    const jobs = await getUserExportJobs(tenantId, userId);
+    const jobs = await getUserExportJobs(organizationId, userId);
 
     return NextResponse.json({
       jobs: jobs.map(job => ({

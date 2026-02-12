@@ -50,7 +50,7 @@ export const POST = async (
     const body = parsed.data;
     const { userId, organizationId } = context;
 
-    const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
+    const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
     if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
       return standardErrorResponse(
       ErrorCode.FORBIDDEN,
@@ -59,7 +59,7 @@ export const POST = async (
     );
     }
 
-  // Get member to verify tenant
+  // Get member to verify organization
         const [currentMember] = await db
           .select()
           .from(members)
@@ -94,7 +94,7 @@ export const POST = async (
             .where(
               and(
                 eq(arrearsCases.id, params.caseId),
-                eq(arrearsCases.tenantId, currentMember.tenantId)
+                eq(arrearsCases.organizationId, currentMember.organizationId)
               )
             )
             .limit(1);
@@ -122,7 +122,7 @@ export const POST = async (
               .where(
                 and(
                   eq(duesTransactions.memberId, arrearsCase.memberId),
-                  eq(duesTransactions.tenantId, currentMember.tenantId),
+                  eq(duesTransactions.organizationId, currentMember.organizationId),
                   eq(duesTransactions.transactionType, 'payment_plan_installment'),
                   eq(duesTransactions.status, 'pending')
                 )

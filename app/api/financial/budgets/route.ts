@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/services/financial-service/src/db';
-import { budgets, budgetLineItems, organizations } from '@/services/financial-service/src/db/schema';
-import { eq, and, desc, gte, lte, or, sql } from 'drizzle-orm';
+import { budgets, budgetLineItems } from '@/services/financial-service/src/db/schema';
+import { eq, and, desc, sql } from 'drizzle-orm';
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { 
@@ -10,6 +10,15 @@ import {
   standardSuccessResponse, 
   ErrorCode 
 } from '@/lib/api/standardized-responses';
+
+interface AuthUser {
+  id: string;
+  roleLevel?: number;
+}
+
+interface RequestContext {
+  organizationId: string;
+}
 
 const createBudgetSchema = z.object({
   budgetName: z.string().min(1).max(255),
@@ -42,12 +51,12 @@ export const GET = withApiAuth(async (request: NextRequest, context) => {
     }
 
     // Check minimum role level (85 = Financial Officer, Secretary-Treasurer)
-    const userLevel = (user as any).roleLevel || 0;
+    const userLevel = (user as AuthUser).roleLevel || 0;
     if (userLevel < 85) {
       return standardErrorResponse(ErrorCode.FORBIDDEN, 'Requires Financial Officer role (level 85+)');
     }
 
-    const { organizationId } = context as any;
+    const { organizationId } = context as RequestContext;
     const { searchParams } = new URL(request.url);
     
     const fiscalYear = searchParams.get('fiscalYear');
@@ -82,14 +91,14 @@ export const GET = withApiAuth(async (request: NextRequest, context) => {
       query = query.where(and(
         eq(budgets.organizationId, organizationId),
         eq(budgets.fiscalYear, parseInt(fiscalYear))
-      )) as any;
+      ));
     }
 
     if (status) {
       query = query.where(and(
         eq(budgets.organizationId, organizationId),
-        eq(budgets.status, status as any)
-      )) as any;
+        eq(budgets.status, status)
+      ));
     }
 
     const results = await query
@@ -145,12 +154,12 @@ export const POST = withApiAuth(async (request: NextRequest, context) => {
     }
 
     // Check minimum role level
-    const userLevel = (user as any).roleLevel || 0;
+    const userLevel = (user as AuthUser).roleLevel || 0;
     if (userLevel < 85) {
       return standardErrorResponse(ErrorCode.FORBIDDEN, 'Requires Financial Officer role (level 85+)');
     }
 
-    const { organizationId } = context as any;
+    const { organizationId } = context as RequestContext;
     const body = await request.json();
     
     const parsed = createBudgetSchema.safeParse(body);
@@ -223,8 +232,9 @@ export const POST = withApiAuth(async (request: NextRequest, context) => {
       message: 'Budget created successfully',
     }, 201);
 
-  } catch (error: any) {
-    if (error?.message?.includes('unique_budget_name_year')) {
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'message' in error && 
+        typeof error.message === 'string' && error.message.includes('unique_budget_name_year')) {
       return standardErrorResponse(
         ErrorCode.DUPLICATE_ENTRY,
         'A budget with this name already exists for this fiscal year'

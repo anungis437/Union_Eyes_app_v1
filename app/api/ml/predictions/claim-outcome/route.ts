@@ -47,7 +47,7 @@ import {
  * }
  */
 
-const mlPredictionsClaim-outcomeSchema = z.object({
+const mlPredictionsClaimOutcomeSchema = z.object({
   claimId: z.string().uuid('Invalid claimId'),
   claimData: z.unknown().optional(),
 });
@@ -72,10 +72,9 @@ export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, contex
   }
 
   try {
-    const tenantId = organizationId || userId;
     const body = await request.json();
     // Validate request body
-    const validation = mlPredictionsClaim-outcomeSchema.safeParse(body);
+    const validation = mlPredictionsClaimOutcomeSchema.safeParse(body);
     if (!validation.success) {
       return standardErrorResponse(
         ErrorCode.VALIDATION_ERROR,
@@ -84,33 +83,33 @@ export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, contex
       );
     }
     
-    const { claimId, claimData } = validation.data;
-    
-    let claimData: any;
+    const { claimId, claimData: claimDataFromBody } = validation.data;
+    const organizationScopeId = organizationId || userId;
+    let resolvedClaimData: any;
     
     // Get claim data either from ID or request body
     if (body.claimId) {
       const claim = await withRLSContext(
-        { organizationId: tenantId },
+        { organizationId: organizationScopeId },
         async (db) => db.query.claims.findFirst({
           where: eq(claims.claimId, body.claimId)
         })
       );
       
-      if (!claim || claim.organizationId !== tenantId) {
+      if (!claim || claim.organizationId !== organizationScopeId) {
         return standardErrorResponse(
       ErrorCode.RESOURCE_NOT_FOUND,
       'Claim not found'
     );
       }
       
-      claimData = {
+      resolvedClaimData = {
         type: claim.claimType,
         description: claim.description,
         claimAmount: claim.claimAmount
       };
-    } else if (body.claimData) {
-      claimData = body.claimData;
+    } else if (body.claimData || claimDataFromBody) {
+      resolvedClaimData = body.claimData ?? claimDataFromBody;
     } else {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
@@ -126,12 +125,11 @@ export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, contex
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${process.env.AI_SERVICE_TOKEN}`,
-        'X-Organization-ID': tenantId,
-        'X-Tenant-ID': tenantId
+        'X-Organization-ID': organizationScopeId
       },
       body: JSON.stringify({
-        claimData,
-        tenantId
+        claimData: resolvedClaimData,
+        organizationId: organizationScopeId
       })
     });
 
@@ -149,9 +147,9 @@ export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, contex
           ? prediction.confidence
           : 0;
 
-      await withRLSContext({ organizationId: tenantId }, async (db) => {
+      await withRLSContext({ organizationId: organizationScopeId }, async (db) => {
         await db.insert(mlPredictions).values({
-          organizationId: tenantId,
+          organizationId: organizationScopeId,
           predictionType: 'claim_outcome',
           predictionDate: new Date(),
           predictedValue: predictedValue.toString(),

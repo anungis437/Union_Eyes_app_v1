@@ -114,7 +114,7 @@ export class MultiCurrencyTreasuryService {
   /**
    * Fetch current exchange rates from Bank of Canada
    */
-  static async fetchBOCRates(tenantId: string): Promise<void> {
+  static async fetchBOCRates(organizationId: string): Promise<void> {
     try {
       // Fetch USD/CAD rate from Bank of Canada
       const seriesCode = 'FXUSDCAD'; // US Dollar to Canadian Dollar
@@ -135,7 +135,7 @@ export class MultiCurrencyTreasuryService {
 
         // Save USD/CAD rate
         await db.insert(currencyExchangeRates).values({
-          tenantId,
+          tenantId: organizationId,
           baseCurrency: 'USD',
           targetCurrency: 'CAD',
           rate: rate.toString(),
@@ -145,7 +145,7 @@ export class MultiCurrencyTreasuryService {
 
         // Calculate and save CAD/USD rate (inverse)
         await db.insert(currencyExchangeRates).values({
-          tenantId,
+          tenantId: organizationId,
           baseCurrency: 'CAD',
           targetCurrency: 'USD',
           rate: new Decimal(1).dividedBy(rate).toString(),
@@ -156,11 +156,11 @@ export class MultiCurrencyTreasuryService {
         logger.info('Updated BOC exchange rates', {
           rate: rate.toFixed(4),
           pair: 'USD/CAD',
-          tenantId,
+          organizationId,
         });
       }
     } catch (error) {
-      logger.error('Failed to fetch BOC rates', { error, tenantId });
+      logger.error('Failed to fetch BOC rates', { error, organizationId });
       throw error;
     }
   }
@@ -375,7 +375,7 @@ export class MultiCurrencyTreasuryService {
    * Get FX exposure summary
    */
   static async getFXExposure(params: {
-    tenantId: string;
+    organizationId: string;
     baseCurrency: string;
   }): Promise<{
     totalExposure: Decimal;
@@ -396,15 +396,15 @@ export class MultiCurrencyTreasuryService {
   /**
    * Schedule automatic rate updates
    */
-  static async scheduleRateUpdates(tenantId: string, intervalHours: number = 24): Promise<void> {
+  static async scheduleRateUpdates(organizationId: string, intervalHours: number = 24): Promise<void> {
     // In production, this would set up a cron job or scheduled task
     logger.info('Scheduled automatic rate updates', {
-      tenantId,
+      organizationId,
       intervalHours,
     });
     
     // Initial fetch
-    await this.fetchBOCRates(tenantId);
+    await this.fetchBOCRates(organizationId);
   }
 
   /**

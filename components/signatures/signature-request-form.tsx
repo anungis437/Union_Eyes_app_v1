@@ -37,12 +37,12 @@ interface Signer {
 }
 
 interface SignatureRequestFormProps {
-  tenantId: string;
+  organizationId: string;
   onSuccess?: (document: any) => void;
 }
 
 export function SignatureRequestForm({
-  tenantId,
+  organizationId,
   onSuccess,
 }: SignatureRequestFormProps) {
   const [file, setFile] = useState<File | null>(null);
@@ -127,7 +127,7 @@ export function SignatureRequestForm({
       formData.append("title", title);
       formData.append("description", description);
       formData.append("documentType", documentType);
-      formData.append("tenantId", tenantId);
+      formData.append("organizationId", organizationId);
       formData.append("signers", JSON.stringify(signers));
       formData.append("provider", provider);
       formData.append("expirationDays", expirationDays);

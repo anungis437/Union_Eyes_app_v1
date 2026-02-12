@@ -389,9 +389,9 @@ export const hardshipApplicationsRelations = relations(hardshipApplications, ({o
 }));
 
 export const arrearsCasesRelations = relations(arrearsCases, ({one}) => ({
-	tenantsInTenantManagement: one(tenantsInTenantManagement, {
-		fields: [arrearsCases.tenantId],
-		references: [tenantsInTenantManagement.tenantId]
+	organization: one(organizations, {
+		fields: [arrearsCases.organizationId],
+		references: [organizations.id]
 	}),
 }));
 

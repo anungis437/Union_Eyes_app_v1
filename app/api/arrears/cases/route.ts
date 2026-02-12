@@ -35,7 +35,7 @@ export const GET = withRoleAuth(10, async (request, context) => {
   const query = parsed.data;
   const { userId, organizationId } = context;
 
-  const orgId = (query as Record<string, unknown>)["organizationId"] ?? (query as Record<string, unknown>)["orgId"] ?? (query as Record<string, unknown>)["organization_id"] ?? (query as Record<string, unknown>)["org_id"] ?? (query as Record<string, unknown>)["tenantId"] ?? (query as Record<string, unknown>)["tenant_id"] ?? (query as Record<string, unknown>)["unionId"] ?? (query as Record<string, unknown>)["union_id"] ?? (query as Record<string, unknown>)["localId"] ?? (query as Record<string, unknown>)["local_id"];
+  const orgId = (query as Record<string, unknown>)["organizationId"] ?? (query as Record<string, unknown>)["orgId"] ?? (query as Record<string, unknown>)["organization_id"] ?? (query as Record<string, unknown>)["org_id"] ?? (query as Record<string, unknown>)["unionId"] ?? (query as Record<string, unknown>)["union_id"] ?? (query as Record<string, unknown>)["localId"] ?? (query as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
     return standardErrorResponse(
       ErrorCode.FORBIDDEN,
@@ -44,7 +44,7 @@ export const GET = withRoleAuth(10, async (request, context) => {
   }
 
 try {
-      // Get member to verify tenant
+      // Get member to verify organization
       const [member] = await db
         .select()
         .from(members)
@@ -67,7 +67,7 @@ try {
       }
 
       // Build base query with validated parameters
-      let whereConditions = [eq(arrearsCases.tenantId, member.tenantId)];
+      let whereConditions = [eq(arrearsCases.organizationId, member.organizationId)];
 
       if (query.status) {
         whereConditions.push(eq(arrearsCases.status, query.status));

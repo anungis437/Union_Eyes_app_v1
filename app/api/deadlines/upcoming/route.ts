@@ -14,18 +14,17 @@ import {
 } from '@/lib/api/standardized-responses';
 export const GET = withApiAuth(async (request: NextRequest) => {
   const { searchParams } = new URL(request.url);
-  const organizationId = (searchParams.get('organizationId') ?? searchParams.get('tenantId'));
-  const tenantId = organizationId;
+  const organizationId = searchParams.get('organizationId') ?? searchParams.get('orgId') ?? searchParams.get('organization_id') ?? searchParams.get('org_id');
   
-  if (!tenantId) {
+  if (!organizationId) {
     return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID required'
+      'Organization ID required'
     );
   }
   
   try {
-    const deadlines = await getCriticalDeadlines(tenantId);
+    const deadlines = await getCriticalDeadlines(organizationId);
     return NextResponse.json({ deadlines });
   } catch (error) {
 return standardErrorResponse(

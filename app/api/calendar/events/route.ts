@@ -76,7 +76,7 @@ export const GET = withRoleAuth(10, async (request: NextRequest, context) => {
 
     // Build query conditions
     const conditions = [
-      eq(calendarEvents.tenantId, organizationId),
+      eq(calendarEvents.organizationId, organizationId),
     ];
 
     if (startDate) {
@@ -198,7 +198,7 @@ export const POST = withRoleAuth('member', async (request: NextRequest, context)
     const [newEvent] = await db
       .insert(calendarEvents)
       .values({
-        tenantId: organizationId,
+        organizationId,
         calendarId: data.calendarId || "00000000-0000-0000-0000-000000000000", // Default calendar
         title: data.title,
         description: data.description,

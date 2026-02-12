@@ -9,7 +9,6 @@ import {
   Building2, 
   Users, 
   DollarSign, 
-  TrendingUp, 
   AlertCircle,
   FileText,
   Calendar,
@@ -18,6 +17,13 @@ import {
 import Link from 'next/link';
 import { db } from '@/db';
 import { getUserRoleInOrganization } from '@/lib/organization-utils';
+
+interface MemberUnionData {
+  id: string;
+  name: string;
+  clcAffiliateCode?: string;
+  organizationType?: string;
+}
 
 export const metadata: Metadata = {
   title: 'Federation Dashboard | Union Eyes',
@@ -29,7 +35,7 @@ async function checkFederationAccess(userId: string, orgId: string): Promise<boo
     const userRole = await getUserRoleInOrganization(userId, orgId);
     // Allow fed_staff, fed_executive, and admin roles
     return ['fed_staff', 'fed_executive', 'admin', 'system_admin'].includes(userRole || '');
-  } catch (error) {
+  } catch {
     return false;
   }
 }
@@ -54,7 +60,7 @@ async function getFederationMetrics(orgId: string) {
       overdueRemittances,
       memberUnions,
     };
-  } catch (error) {
+  } catch {
     return {
       totalMemberUnions: 0,
       totalMembers: 0,
@@ -288,7 +294,7 @@ export default async function FederationDashboardPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {metrics.memberUnions.slice(0, 5).map((union: any) => (
+              {metrics.memberUnions.slice(0, 5).map((union: MemberUnionData) => (
                 <div key={union.id} className="flex items-center justify-between border-b pb-4 last:border-0">
                   <div>
                     <div className="font-medium">{union.name}</div>

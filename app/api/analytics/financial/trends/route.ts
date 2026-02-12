@@ -10,14 +10,14 @@ import {
 async function handler(req: NextRequest) {
   try {
     const user = await getCurrentUser();
-    if (!user || !user.tenantId) {
+    if (!user || !user.organizationId) {
       return standardErrorResponse(
       ErrorCode.AUTH_REQUIRED,
-      'Authentication and tenant context required'
+      'Authentication and organization context required'
     );
     }
     
-    const tenantId = user.tenantId;
+    const organizationId = user.organizationId;
     const searchParams = req.nextUrl.searchParams;
     const days = parseInt(searchParams.get('days') || '90');
     const groupBy = searchParams.get('groupBy') || 'weekly';
@@ -62,7 +62,7 @@ async function handler(req: NextRequest) {
           COALESCE(SUM(CASE WHEN c.resolution_outcome = 'won' THEN c.settlement_amount ELSE 0 END), 0) as settlements,
           COALESCE(SUM(c.legal_costs + COALESCE(c.court_costs, 0)), 0) as costs
         FROM claims c
-        WHERE c.tenant_id = ${tenantId}
+        WHERE c.organization_id = ${organizationId}
           AND c.filed_date >= ${startDate.toISOString()}
         GROUP BY date_trunc(${groupBy === 'monthly' ? 'month' : 'day'}, c.filed_date)
       )

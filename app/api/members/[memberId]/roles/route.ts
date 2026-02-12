@@ -11,7 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { organizationMembers } from '@/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { withApiAuth } from '@/lib/api-auth-guard';
 import { logger } from '@/lib/logger';
 import { z } from 'zod';
@@ -51,8 +51,6 @@ const RoleAssignmentSchema = z.object({
   actingEndDate: z.string().optional(),
 });
 
-type RoleAssignment = z.infer<typeof RoleAssignmentSchema>;
-
 // ============================================================================
 // ROLE LEVEL VALIDATION
 // ============================================================================
@@ -74,7 +72,6 @@ const ROLE_LEVELS: Record<string, number> = {
  * Check if user has authority to assign the requested role
  */
 function canAssignRole(assignerRole: string, targetRole: string): boolean {
-  const assignerLevel = ROLE_LEVELS[assignerRole] || 0;
   const targetLevel = ROLE_LEVELS[targetRole] || 0;
   
   // Admin can assign any role
@@ -100,10 +97,10 @@ function canAssignRole(assignerRole: string, targetRole: string): boolean {
 
 async function assignRoleHandler(
   request: NextRequest,
-  context: { params: { memberId: string }; userId: string; role: string; tenantId: string }
+  context: { params: { memberId: string }; userId: string; role: string; organizationId: string }
 ) {
   const { memberId } = context.params;
-  const { userId, role: assignerRole, tenantId } = context;
+  const { userId, role: assignerRole, organizationId } = context;
 
   try {
     // Parse and validate request body
@@ -136,7 +133,7 @@ async function assignRoleHandler(
       .where(
         and(
           eq(organizationMembers.id, memberId),
-          eq(organizationMembers.tenantId, tenantId)
+          eq(organizationMembers.organizationId, organizationId)
         )
       )
       .limit(1);
@@ -186,30 +183,23 @@ async function assignRoleHandler(
     }
     
     // Check for existing active role in same scope
-    const existingRole = await db.execute(
-      `SELECT id, role_code, status 
+    const existingRole = await db.execute<{ id: string; role_code: string; status: string }>(
+      sql`SELECT id, role_code, status 
        FROM member_roles 
-       WHERE member_id = $1 
-         AND tenant_id = $2 
-         AND role_code = $3
-         AND scope_type = $4
-         AND COALESCE(scope_value, '') = COALESCE($5, '')
+       WHERE member_id = ${memberId}
+         AND organization_id = ${organizationId}
+         AND role_code = ${validatedData.roleCode}
+         AND scope_type = ${validatedData.scopeType}
+         AND COALESCE(scope_value, '') = COALESCE(${validatedData.scopeValue || ''}, '')
          AND status = 'active'
-       LIMIT 1`,
-      [
-        memberId,
-        tenantId,
-        validatedData.roleCode,
-        validatedData.scopeType,
-        validatedData.scopeValue || '',
-      ]
+       LIMIT 1`
     );
     
-    if (existingRole.rows.length > 0) {
+    if (existingRole.length > 0) {
       return NextResponse.json(
         {
           error: 'Member already has this role in the specified scope',
-          existingRole: existingRole.rows[0],
+          existingRole: existingRole[0],
         },
         { status: 409 }
       );
@@ -234,10 +224,10 @@ async function assignRoleHandler(
       
       // 2. Insert new member_roles record (enhanced RBAC)
       await tx.execute(
-        `INSERT INTO member_roles (
+        sql`INSERT INTO member_roles (
           id,
           member_id,
-          tenant_id,
+          organization_id,
           role_code,
           scope_type,
           scope_value,
@@ -262,62 +252,46 @@ async function assignRoleHandler(
           updated_at
         ) VALUES (
           gen_random_uuid(),
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, NOW(), $22, NOW()
-        )`,
-        [
-          memberId,
-          tenantId,
-          validatedData.roleCode,
-          validatedData.scopeType,
-          validatedData.scopeValue || null,
-          startDate.toISOString().split('T')[0],
-          validatedData.termYears || null,
-          nextElectionDate?.toISOString().split('T')[0] || null,
-          validatedData.assignmentType,
-          validatedData.electionDate || null,
-          validatedData.assignmentType === 'elected' ? 'membership_vote' : null,
-          validatedData.voteCount || null,
-          validatedData.totalVotes || null,
-          validatedData.voteCount && validatedData.totalVotes
+          ${memberId}, ${organizationId}, ${validatedData.roleCode}, ${validatedData.scopeType}, ${validatedData.scopeValue || null},
+          ${startDate.toISOString().split('T')[0]}, ${validatedData.termYears || null}, ${nextElectionDate?.toISOString().split('T')[0] || null},
+          ${validatedData.assignmentType}, ${validatedData.electionDate || null},
+          ${validatedData.assignmentType === 'elected' ? 'membership_vote' : null},
+          ${validatedData.voteCount || null}, ${validatedData.totalVotes || null},
+          ${validatedData.voteCount && validatedData.totalVotes
             ? ((validatedData.voteCount / validatedData.totalVotes) * 100).toFixed(2)
-            : null,
-          'active',
-          validatedData.isActingRole,
-          validatedData.actingForMemberId || null,
-          validatedData.actingReason || null,
-          validatedData.actingStartDate || null,
-          validatedData.actingEndDate || null,
-          false, // No approval needed for API assignments
-          userId,
-        ]
+            : null},
+          ${'active'}, ${validatedData.isActingRole}, ${validatedData.actingForMemberId || null},
+          ${validatedData.actingReason || null}, ${validatedData.actingStartDate || null},
+          ${validatedData.actingEndDate || null}, ${false},
+          NOW(), ${userId}, NOW()
+        )`
       );
       
       // 3. Expire conflicting lower-level global roles
       await tx.execute(
-        `UPDATE member_roles mr
+        sql`UPDATE member_roles mr
          SET status = 'expired',
              end_date = CURRENT_DATE,
              updated_at = NOW(),
-             updated_by = $1
+             updated_by = ${userId}
          FROM role_definitions rd_new, role_definitions rd_old
-         WHERE mr.member_id = $2
-           AND mr.tenant_id = $3
-           AND mr.role_code != $4
+         WHERE mr.member_id = ${memberId}
+           AND mr.organization_id = ${organizationId}
+           AND mr.role_code != ${validatedData.roleCode}
            AND mr.scope_type = 'global'
            AND mr.status = 'active'
            AND mr.role_code = rd_old.role_code
-           AND rd_new.role_code = $4
-           AND rd_old.role_level < rd_new.role_level`,
-        [userId, memberId, tenantId, validatedData.roleCode]
+           AND rd_new.role_code = ${validatedData.roleCode}
+           AND rd_old.role_level < rd_new.role_level`
       );
       
       // 4. Audit logging
       await tx.execute(
-        `INSERT INTO audit_log (
+        sql`INSERT INTO audit_log (
           event_type,
           resource_type,
           resource_id,
-          tenant_id,
+          organization_id,
           user_id,
           event_data,
           ip_address,
@@ -327,20 +301,10 @@ async function assignRoleHandler(
         ) VALUES (
           'role_assigned',
           'member_roles',
-          $1,
-          $2,
-          $3,
-          $4,
-          $5,
-          $6,
-          'success',
-          NOW()
-        )`,
-        [
-          memberId,
-          tenantId,
-          userId,
-          JSON.stringify({
+          ${memberId},
+          ${organizationId},
+          ${userId},
+          ${JSON.stringify({
             memberId,
             memberName: targetMember.name,
             roleCode: validatedData.roleCode,
@@ -353,10 +317,12 @@ async function assignRoleHandler(
             isActingRole: validatedData.isActingRole,
             assignedBy: userId,
             assignedByRole: assignerRole,
-          }),
-          request.headers.get('x-forwarded-for') || 'unknown',
-          request.headers.get('user-agent') || 'unknown',
-        ]
+          })},
+          ${request.headers.get('x-forwarded-for') || 'unknown'},
+          ${request.headers.get('user-agent') || 'unknown'},
+          'success',
+          NOW()
+        )`
       );
     });
     
@@ -399,7 +365,7 @@ async function assignRoleHandler(
       error,
       memberId,
       userId,
-      tenantId,
+      organizationId,
     });
     
     return NextResponse.json(

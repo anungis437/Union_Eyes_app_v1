@@ -1,8 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/services/financial-service/src/db';
 import { vendors } from '@/services/financial-service/src/db/schema';
-import { eq, and, desc, or, ilike, sql } from 'drizzle-orm';
+import { eq, and, or, ilike, sql } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
+
+interface AuthUser {
+  id: string;
+  roleLevel?: number;
+}
+
+interface RequestContext {
+  organizationId: string;
+}
+
+type SQLCondition = SQL<unknown> | undefined;
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { 
@@ -20,8 +32,20 @@ const createVendorSchema = z.object({
   email: z.string().email().optional(),
   phone: z.string().max(50).optional(),
   fax: z.string().max(50).optional(),
-  address: z.any().optional(),
-  billingAddress: z.any().optional(),
+  address: z.object({
+    street: z.string().optional(),
+    city: z.string().optional(),
+    province: z.string().optional(),
+    postalCode: z.string().optional(),
+    country: z.string().optional(),
+  }).optional(),
+  billingAddress: z.object({
+    street: z.string().optional(),
+    city: z.string().optional(),
+    province: z.string().optional(),
+    postalCode: z.string().optional(),
+    country: z.string().optional(),
+  }).optional(),
   primaryContactName: z.string().max(255).optional(),
   primaryContactEmail: z.string().email().optional(),
   primaryContactPhone: z.string().max(50).optional(),
@@ -44,12 +68,12 @@ export const GET = withApiAuth(async (request: NextRequest, context) => {
       return standardErrorResponse(ErrorCode.UNAUTHORIZED, 'Authentication required');
     }
 
-    const userLevel = (user as any).roleLevel || 0;
+    const userLevel = (user as AuthUser).roleLevel || 0;
     if (userLevel < 85) {
       return standardErrorResponse(ErrorCode.FORBIDDEN, 'Requires Financial Officer role (level 85+)');
     }
 
-    const { organizationId } = context as any;
+    const { organizationId } = context as RequestContext;
     const { searchParams } = new URL(request.url);
     
     const status = searchParams.get('status');
@@ -58,10 +82,10 @@ export const GET = withApiAuth(async (request: NextRequest, context) => {
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-    let conditions: any[] = [eq(vendors.organizationId, organizationId)];
+    const conditions: SQLCondition[] = [eq(vendors.organizationId, organizationId)];
 
     if (status) {
-      conditions.push(eq(vendors.status, status as any));
+      conditions.push(eq(vendors.status, status));
     }
 
     if (vendorType) {
@@ -74,7 +98,7 @@ export const GET = withApiAuth(async (request: NextRequest, context) => {
           ilike(vendors.vendorName, `%${search}%`),
           ilike(vendors.email, `%${search}%`),
           ilike(vendors.vendorNumber, `%${search}%`)
-        ) as any
+        )
       );
     }
 
@@ -132,12 +156,12 @@ export const POST = withApiAuth(async (request: NextRequest, context) => {
       return standardErrorResponse(ErrorCode.UNAUTHORIZED, 'Authentication required');
     }
 
-    const userLevel = (user as any).roleLevel || 0;
+    const userLevel = (user as AuthUser).roleLevel || 0;
     if (userLevel < 85) {
       return standardErrorResponse(ErrorCode.FORBIDDEN, 'Requires Financial Officer role (level 85+)');
     }
 
-    const { organizationId } = context as any;
+    const { organizationId } = context as RequestContext;
     const body = await request.json();
     
     const parsed = createVendorSchema.safeParse(body);
@@ -204,14 +228,15 @@ export const POST = withApiAuth(async (request: NextRequest, context) => {
       message: 'Vendor created successfully',
     }, 201);
 
-  } catch (error: any) {
-    if (error?.message?.includes('unique_vendor_name')) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage.includes('unique_vendor_name')) {
       return standardErrorResponse(
         ErrorCode.DUPLICATE_ENTRY,
         'A vendor with this name already exists'
       );
     }
-    if (error?.message?.includes('unique_vendor_number')) {
+    if (errorMessage.includes('unique_vendor_number')) {
       return standardErrorResponse(
         ErrorCode.DUPLICATE_ENTRY,
         'Vendor number conflict - please try again'

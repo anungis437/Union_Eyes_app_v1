@@ -50,13 +50,12 @@ const CreateSurveySchema = z.object({
 export const GET = withApiAuth(async (request: NextRequest) => {
   try {
     const { searchParams } = new URL(request.url);
-    const organizationId = (request.headers.get('x-organization-id') ?? request.headers.get('x-tenant-id'));
-    const tenantId = organizationId;
+    const organizationId = request.headers.get('x-organization-id');
     
-    if (!tenantId) {
+    if (!organizationId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID is required'
+      'Organization ID is required'
     );
     }
 
@@ -66,7 +65,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
     const offset = parseInt(searchParams.get('offset') || '0');
 
     // Build where conditions
-    const conditions = [eq(surveys.tenantId, tenantId)];
+    const conditions = [eq(surveys.organizationId, organizationId)];
     if (status) conditions.push(eq(surveys.status, status));
     if (surveyType) conditions.push(eq(surveys.surveyType, surveyType as any));
 
@@ -118,14 +117,13 @@ return standardErrorResponse(
 // POST /api/communications/surveys - Create survey
 export const POST = withApiAuth(async (request: NextRequest) => {
   try {
-    const organizationId = (request.headers.get('x-organization-id') ?? request.headers.get('x-tenant-id'));
-    const tenantId = organizationId;
+    const organizationId = request.headers.get('x-organization-id');
     const userId = request.headers.get('x-user-id');
     
-    if (!tenantId || !userId) {
+    if (!organizationId || !userId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID and User ID are required'
+      'Organization ID and User ID are required'
     );
     }
 
@@ -178,7 +176,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
     const [survey] = await db
       .insert(surveys)
       .values({
-        tenantId,
+        organizationId,
         title: data.title,
         description: data.description,
         surveyType: data.surveyType,
@@ -197,7 +195,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
 
     // Create questions
     const questionValues = data.questions.map((q) => ({
-      tenantId,
+      organizationId,
       surveyId: survey.id,
       questionText: q.questionText,
       questionType: q.questionType,

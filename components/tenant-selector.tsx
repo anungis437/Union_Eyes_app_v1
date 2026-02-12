@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Tenant Selector Component (DEPRECATED)
+ * Organization Selector Wrapper (DEPRECATED)
  * 
  * @deprecated Use OrganizationSelector from @/components/organization/organization-selector instead
  * 

@@ -35,7 +35,7 @@ export const POST = async (req: NextRequest) => {
         );
       }
 
-      // Get member to verify tenant
+      // Get member to verify organization
       const [member] = await db
         .select()
         .from(members)
@@ -119,7 +119,7 @@ export const POST = async (req: NextRequest) => {
 
       // Upload file to Vercel Blob Storage
       const timestamp = Date.now();
-      const blobFileName = `reconciliation/${member.tenantId}/${timestamp}-${file.name}`;
+      const blobFileName = `reconciliation/${member.organizationId}/${timestamp}-${file.name}`;
       const { url: fileUrl } = await put(blobFileName, fileContent, {
         access: 'public',
         contentType: file.type || 'application/octet-stream',

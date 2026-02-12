@@ -24,7 +24,7 @@ const feedbackSchema = z.object({
 export const POST = withApiAuth(async (request: NextRequest, context) => {
   try {
     const { userId, organizationId } = context;
-    const tenantId = organizationId || userId;
+    const organizationScopeId = organizationId || userId;
     
     const body = await request.json();
     const validatedData = feedbackSchema.parse(body);
@@ -34,7 +34,7 @@ export const POST = withApiAuth(async (request: NextRequest, context) => {
     const result = await withRLSContext(async (tx) => {
       return await tx.execute(sql`
       INSERT INTO member_ai_feedback (
-        tenant_id,
+        organization_id,
         user_id,
         member_name,
         member_email,
@@ -44,7 +44,7 @@ export const POST = withApiAuth(async (request: NextRequest, context) => {
         status,
         submitted_at
       ) VALUES (
-        ${tenantId},
+        ${organizationScopeId},
         ${userId},
         ${name},
         ${email || null},
@@ -95,7 +95,7 @@ export const POST = withApiAuth(async (request: NextRequest, context) => {
 export const GET = withApiAuth(async (request: NextRequest, context) => {
   try {
     const { userId, organizationId } = context;
-    const tenantId = organizationId || userId;
+    const organizationScopeId = organizationId || userId;
     const { searchParams } = new URL(request.url);
     const statusFilter = searchParams.get('status') || 'all';
 
@@ -111,7 +111,7 @@ export const GET = withApiAuth(async (request: NextRequest, context) => {
         reviewed_at,
         reviewer_response as response
       FROM member_ai_feedback
-      WHERE tenant_id = ${tenantId}
+      WHERE organization_id = ${organizationScopeId}
         AND user_id = ${userId}
         ${statusFilter !== 'all' ? sql`AND status = ${statusFilter}` : sql``}
       ORDER BY submitted_at DESC

@@ -20,7 +20,6 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -159,7 +158,7 @@ export function InspectionChecklist({
         // Redirect
         window.location.href = `/health-safety/inspections/${inspectionId}`;
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to submit inspection",

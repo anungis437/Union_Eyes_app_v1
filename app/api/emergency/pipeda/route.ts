@@ -35,8 +35,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       );
     }
     
-    const { memberId, breachDate, affectedDataTypes, estimatedAffectedCount, province } = validation.data; as PIPEDABreachRequest;
-    const { memberId, breachDate, affectedDataTypes, estimatedAffectedCount, province } = body;
+    const { memberId, breachDate, affectedDataTypes, estimatedAffectedCount, province } = validation.data;
 
     // Validate required fields
     if (!memberId || !breachDate || !affectedDataTypes || affectedDataTypes.length === 0) {

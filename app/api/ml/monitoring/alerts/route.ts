@@ -62,8 +62,9 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
     );
   }
 
+  const organizationScopeId = organizationId || userId;
+
   try {
-    const tenantId = organizationId || userId;
 
     // Query active alerts from monitoring tables
     const alertsData = await db.execute(sql`
@@ -88,9 +89,8 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
             WHEN model_type = 'assignment' THEN 'Smart Assignment'
             ELSE model_type
           END as model_name,
-          NOW() as alert_timestamp
         FROM ml_predictions
-        WHERE tenant_id = ${tenantId}
+        WHERE organization_id = ${organizationScopeId}
           AND predicted_at >= NOW() - INTERVAL '48 hours'
         GROUP BY model_type
         HAVING AVG(CASE WHEN prediction_correct THEN 1.0 ELSE 0.0 END) < 0.80
@@ -109,9 +109,8 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
             WHEN model_type = 'assignment' THEN 'Smart Assignment'
             ELSE model_type
           END as model_name,
-          NOW() as alert_timestamp
         FROM ml_predictions
-        WHERE tenant_id = ${tenantId}
+        WHERE organization_id = ${organizationScopeId}
           AND predicted_at >= NOW() - INTERVAL '24 hours'
         GROUP BY model_type
         HAVING AVG(confidence_score) < 0.70
@@ -123,9 +122,8 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
           'P1' as severity,
           'Data drift detected: Case Complexity PSI = 0.28 (threshold: 0.25)' as message,
           'Claim Outcome Prediction' as model_name,
-          NOW() - INTERVAL '30 minutes' as alert_timestamp
         FROM claims
-        WHERE tenant_id = ${tenantId}
+        WHERE organization_id = ${organizationScopeId}
           AND created_at >= NOW() - INTERVAL '7 days'
         GROUP BY 1
         HAVING COUNT(*) > 100 -- Only if we have sufficient data
@@ -208,10 +206,10 @@ const mlMonitoringAlertsSchema = z.object({
 
 export const POST = withRoleAuth(20, async (request: NextRequest, context) => {
   const { userId, organizationId } = context;
-  const tenantId = organizationId || userId;
+  const organizationScopeId = organizationId || userId;
   
   try {
-    const { alertId } = await request.json();
+    const body = await request.json();
     // Validate request body
     const validation = mlMonitoringAlertsSchema.safeParse(body);
     if (!validation.success) {
@@ -235,13 +233,13 @@ export const POST = withRoleAuth(20, async (request: NextRequest, context) => {
     await db.execute(sql`
       INSERT INTO ml_alert_acknowledgments (
         alert_id,
-        tenant_id,
+          organization_id,
         acknowledged,
         acknowledged_by,
         acknowledged_at
       ) VALUES (
         ${alertId},
-        ${tenantId},
+          ${organizationScopeId},
         true,
         ${userId},
         NOW()

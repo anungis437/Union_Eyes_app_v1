@@ -21,7 +21,7 @@ export const GET = async (
   return withEnhancedRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
 
-  // Get member to verify tenant
+  // Get member to verify organization
       const [currentMember] = await db
         .select()
         .from(members)
@@ -65,7 +65,7 @@ export const GET = async (
           .where(
             and(
               eq(arrearsCases.memberId, params.memberId),
-              eq(arrearsCases.tenantId, currentMember.tenantId)
+              eq(arrearsCases.organizationId, currentMember.organizationId)
             )
           )
           .limit(1);
@@ -92,7 +92,7 @@ export const GET = async (
           .where(
             and(
               eq(duesTransactions.memberId, params.memberId),
-              eq(duesTransactions.tenantId, currentMember.tenantId),
+              eq(duesTransactions.organizationId, currentMember.organizationId),
               eq(duesTransactions.status, 'pending')
             )
           )

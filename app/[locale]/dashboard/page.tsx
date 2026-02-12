@@ -260,7 +260,7 @@ export default function DashboardPage() {
     const fetchStats = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/dashboard/stats?tenantId=${organizationId}`, {
+        const response = await fetch(`/api/dashboard/stats?organizationId=${organizationId}`, {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -286,7 +286,7 @@ setDashboardStats(data);
     const fetchNotifications = async () => {
       try {
         setIsLoadingNotifications(true);
-        const response = await fetch(`/api/notifications?tenantId=${organizationId}&limit=5`, {
+        const response = await fetch(`/api/notifications?organizationId=${organizationId}&limit=5`, {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -313,7 +313,7 @@ setDashboardStats(data);
     const fetchActivities = async () => {
       try {
         setIsLoadingActivities(true);
-        const response = await fetch(`/api/activities?tenantId=${organizationId}&limit=5`, {
+        const response = await fetch(`/api/activities?organizationId=${organizationId}&limit=5`, {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -341,7 +341,7 @@ setDashboardStats(data);
         setIsLoadingDeadlines(true);
         
         // Fetch summary
-        const summaryResponse = await fetch(`/api/deadlines/dashboard?tenantId=${organizationId}`, {
+        const summaryResponse = await fetch(`/api/deadlines/dashboard?organizationId=${organizationId}`, {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -352,7 +352,7 @@ setDashboardStats(data);
         }
 
         // Fetch critical deadlines
-        const upcomingResponse = await fetch(`/api/deadlines/upcoming?tenantId=${organizationId}`, {
+        const upcomingResponse = await fetch(`/api/deadlines/upcoming?organizationId=${organizationId}`, {
           headers: {
             'Content-Type': 'application/json',
           },

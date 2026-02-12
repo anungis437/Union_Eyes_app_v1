@@ -170,9 +170,8 @@ return standardErrorResponse(
 
 
 const eventsOccurrencesSchema = z.object({
-  startDate = new Date(): z.string().datetime().optional(),
-  endDate = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000): z.string().datetime().optional(),
-  // 90 days: z.unknown().optional(),
+  startDate: z.string().datetime().optional().default(new Date().toISOString()),
+  endDate: z.string().datetime().optional().default(new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()), // 90 days
 });
 
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
@@ -223,11 +222,11 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
       );
     }
     
-    const { startDate = new Date(), endDate = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days } = validation.data;
+    const validatedData = validation.data;
       const {
-        startDate = new Date(),
-        endDate = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days
-      } = body;
+        startDate = new Date().toISOString(),
+        endDate = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(), // 90 days
+      } = validatedData;
 
       // Generate instances
       const createdCount = await createRecurringInstances(

@@ -53,7 +53,7 @@ export const GET = withApiAuth(async (request: NextRequest, context: any) => {
       deadlines = await getClaimDeadlines(claimId);
     } else {
       // Get member's deadlines
-      deadlines = await getMemberDeadlines(userId, tenantId, {
+      deadlines = await getMemberDeadlines(userId, organizationId, {
         status,
         daysAhead: daysAhead ? parseInt(daysAhead) : undefined,
       });

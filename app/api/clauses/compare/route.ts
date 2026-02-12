@@ -21,8 +21,8 @@ import {
 
 const clausesCompareSchema = z.object({
   clauseIds: z.string().uuid('Invalid clauseIds'),
-  analysisType = "all": z.boolean().optional(),
-  save = false: z.unknown().optional(),
+  analysisType: z.boolean().optional().default("all"),
+  save: z.unknown().optional().default(false),
   comparisonName: z.boolean().optional(),
   organizationId: z.string().uuid('Invalid organizationId'),
 });

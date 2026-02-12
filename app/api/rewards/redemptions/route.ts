@@ -107,6 +107,8 @@ export const POST = async (request: NextRequest) => {
       'Validation failed',
       error
     );
+        }
+        throw error;
       }
 
       // 2. Get redemption ID from query
@@ -116,8 +118,7 @@ export const POST = async (request: NextRequest) => {
       if (!redemptionId) {
         return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Redemption ID required',
-      error
+      'Redemption ID required'
     );
       }
 

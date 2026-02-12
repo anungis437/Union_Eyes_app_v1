@@ -17,8 +17,8 @@ import {
   unique,
   index,
 } from 'drizzle-orm/pg-core';
-import { organizations } from '../schema-organizations';
-import { profiles } from './profiles-schema';
+import { organizations } from '../../../schema-organizations';
+import { profiles } from '../../profiles-schema';
 
 // =============================================
 // ENUMS

@@ -12,7 +12,6 @@ import { Progress } from '@/components/ui/progress';
 interface CertificationJurisdictionInfoProps {
   certificationId: string;
   organizationId: string;
-  tenantId?: string;
   totalEmployees: number;
   cardsSignedCount?: number;
   certificationMethod?: 'card-check' | 'mandatory-vote' | 'automatic';
@@ -33,7 +32,6 @@ interface CertificationRequirements {
 export function CertificationJurisdictionInfo({
   certificationId,
   organizationId,
-  tenantId,
   totalEmployees,
   cardsSignedCount = 0,
   certificationMethod,
@@ -48,15 +46,13 @@ export function CertificationJurisdictionInfo({
     const fetchRequirements = async () => {
       try {
         setLoading(true);
-        const orgId = organizationId || tenantId;
-
-        if (!orgId) {
+        if (!organizationId) {
           throw new Error('Missing organization id');
         }
 
         // Fetch organization's jurisdiction
         const jurisdictionResponse = await fetch(
-          `/api/jurisdiction/organization/${orgId}`
+          `/api/jurisdiction/organization/${organizationId}`
         );
 
         if (!jurisdictionResponse.ok) {
@@ -251,7 +247,7 @@ setError(
     };
 
     fetchRequirements();
-  }, [certificationId, organizationId, tenantId]);
+  }, [certificationId, organizationId]);
 
   if (loading) {
     return (

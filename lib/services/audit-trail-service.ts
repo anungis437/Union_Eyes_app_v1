@@ -11,7 +11,7 @@ import { eq, and, gte, lte, desc, sql } from 'drizzle-orm';
 
 export interface AuditLogEntry {
   id: string;
-  tenantId: string;
+  organizationId: string;
   entityType: string;
   entityId: string;
   action: 'create' | 'update' | 'delete' | 'sync' | 'approve' | 'reject' | 'void' | 'reverse';
@@ -29,7 +29,7 @@ export interface AuditLogEntry {
 }
 
 export interface AuditQueryOptions {
-  tenantId: string;
+  organizationId: string;
   entityType?: string;
   entityId?: string;
   userId?: string;
@@ -45,7 +45,7 @@ export class AuditTrailService {
    * Log a financial transaction action
    */
   static async logAction(params: {
-    tenantId: string;
+    organizationId: string;
     entityType: string;
     entityId: string;
     action: AuditLogEntry['action'];
@@ -57,7 +57,7 @@ export class AuditTrailService {
     userAgent?: string;
   }): Promise<AuditLogEntry> {
     const [entry] = await db.insert(financialAuditLog).values({
-      tenantId: params.tenantId,
+      tenantId: params.organizationId,
       entityType: params.entityType,
       entityId: params.entityId,
       action: params.action,
@@ -70,14 +70,17 @@ export class AuditTrailService {
       timestamp: new Date(),
     }).returning();
 
-    return entry as AuditLogEntry;
+    return {
+      ...(entry as AuditLogEntry & { tenantId?: string }),
+      organizationId: (entry as { tenantId?: string }).tenantId || params.organizationId,
+    } as AuditLogEntry;
   }
 
   /**
    * Log journal entry creation
    */
   static async logJournalEntryCreated(params: {
-    tenantId: string;
+    organizationId: string;
     entryId: string;
     userId: string;
     userName: string;
@@ -85,7 +88,7 @@ export class AuditTrailService {
     ipAddress?: string;
   }): Promise<void> {
     await this.logAction({
-      tenantId: params.tenantId,
+      organizationId: params.organizationId,
       entityType: 'journal_entry',
       entityId: params.entryId,
       action: 'create',
@@ -106,7 +109,7 @@ export class AuditTrailService {
    * Log journal entry approval
    */
   static async logJournalEntryApproved(params: {
-    tenantId: string;
+    organizationId: string;
     entryId: string;
     userId: string;
     userName: string;
@@ -114,7 +117,7 @@ export class AuditTrailService {
     ipAddress?: string;
   }): Promise<void> {
     await this.logAction({
-      tenantId: params.tenantId,
+      organizationId: params.organizationId,
       entityType: 'journal_entry',
       entityId: params.entryId,
       action: 'approve',
@@ -132,7 +135,7 @@ export class AuditTrailService {
    * Log journal entry reversal
    */
   static async logJournalEntryReversed(params: {
-    tenantId: string;
+    organizationId: string;
     originalEntryId: string;
     reversalEntryId: string;
     userId: string;
@@ -141,7 +144,7 @@ export class AuditTrailService {
     ipAddress?: string;
   }): Promise<void> {
     await this.logAction({
-      tenantId: params.tenantId,
+      organizationId: params.organizationId,
       entityType: 'journal_entry',
       entityId: params.originalEntryId,
       action: 'reverse',
@@ -159,7 +162,7 @@ export class AuditTrailService {
    * Log invoice changes
    */
   static async logInvoiceUpdated(params: {
-    tenantId: string;
+    organizationId: string;
     invoiceId: string;
     userId: string;
     userName: string;
@@ -167,7 +170,7 @@ export class AuditTrailService {
     ipAddress?: string;
   }): Promise<void> {
     await this.logAction({
-      tenantId: params.tenantId,
+      organizationId: params.organizationId,
       entityType: 'invoice',
       entityId: params.invoiceId,
       action: 'update',
@@ -182,7 +185,7 @@ export class AuditTrailService {
    * Log bank reconciliation
    */
   static async logBankReconciliation(params: {
-    tenantId: string;
+    organizationId: string;
     reconciliationId: string;
     userId: string;
     userName: string;
@@ -190,7 +193,7 @@ export class AuditTrailService {
     ipAddress?: string;
   }): Promise<void> {
     await this.logAction({
-      tenantId: params.tenantId,
+      organizationId: params.organizationId,
       entityType: 'bank_reconciliation',
       entityId: params.reconciliationId,
       action: 'create',
@@ -207,7 +210,7 @@ export class AuditTrailService {
    * Log ERP sync action
    */
   static async logERPSync(params: {
-    tenantId: string;
+    organizationId: string;
     syncJobId: string;
     entityType: string;
     direction: 'push' | 'pull' | 'bidirectional';
@@ -216,7 +219,7 @@ export class AuditTrailService {
     recordsFailed: number;
   }): Promise<void> {
     await this.logAction({
-      tenantId: params.tenantId,
+      organizationId: params.organizationId,
       entityType: 'erp_sync',
       entityId: params.syncJobId,
       action: 'sync',
@@ -236,7 +239,7 @@ export class AuditTrailService {
    * Query audit log
    */
   static async queryAuditLog(options: AuditQueryOptions): Promise<AuditLogEntry[]> {
-    const conditions = [eq(financialAuditLog.tenantId, options.tenantId)];
+    const conditions = [eq(financialAuditLog.tenantId, options.organizationId)];
 
     if (options.entityType) {
       conditions.push(eq(financialAuditLog.entityType, options.entityType));
@@ -273,19 +276,22 @@ export class AuditTrailService {
       .limit(limit)
       .offset(offset);
 
-    return results as AuditLogEntry[];
+    return results.map((entry) => ({
+      ...(entry as AuditLogEntry & { tenantId?: string }),
+      organizationId: (entry as { tenantId?: string }).tenantId || options.organizationId,
+    })) as AuditLogEntry[];
   }
 
   /**
    * Get complete history for an entity
    */
   static async getEntityHistory(
-    tenantId: string,
+    organizationId: string,
     entityType: string,
     entityId: string
   ): Promise<AuditLogEntry[]> {
     return this.queryAuditLog({
-      tenantId,
+      organizationId,
       entityType,
       entityId,
     });
@@ -295,13 +301,13 @@ export class AuditTrailService {
    * Get user activity log
    */
   static async getUserActivity(
-    tenantId: string,
+    organizationId: string,
     userId: string,
     startDate?: Date,
     endDate?: Date
   ): Promise<AuditLogEntry[]> {
     return this.queryAuditLog({
-      tenantId,
+      organizationId,
       userId,
       startDate,
       endDate,
@@ -312,12 +318,12 @@ export class AuditTrailService {
    * Generate compliance report
    */
   static async generateComplianceReport(
-    tenantId: string,
+    organizationId: string,
     startDate: Date,
     endDate: Date
   ): Promise<ComplianceReport> {
     const logs = await this.queryAuditLog({
-      tenantId,
+      organizationId,
       startDate,
       endDate,
       limit: 10000,
@@ -360,7 +366,7 @@ export class AuditTrailService {
     const suspiciousActivities = this.identifySuspiciousActivities(logs);
 
     return {
-      tenantId,
+      organizationId,
       startDate,
       endDate,
       totalEvents: logs.length,
@@ -461,13 +467,13 @@ export class AuditTrailService {
    * Export audit log for regulatory compliance
    */
   static async exportAuditLog(
-    tenantId: string,
+    organizationId: string,
     startDate: Date,
     endDate: Date,
     format: 'json' | 'csv'
   ): Promise<string> {
     const logs = await this.queryAuditLog({
-      tenantId,
+      organizationId,
       startDate,
       endDate,
       limit: 100000,
@@ -607,7 +613,7 @@ export class AuditTrailService {
 // ============================================================================
 
 export interface ComplianceReport {
-  tenantId: string;
+  organizationId: string;
   startDate: Date;
   endDate: Date;
   totalEvents: number;

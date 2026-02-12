@@ -3,7 +3,7 @@
  * 
  * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
- * - RLS policies enforce tenant isolation at database level
+ * - RLS policies enforce organization isolation at database level
  */
 
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
@@ -38,7 +38,7 @@ export const GET = withEnhancedRoleAuth(10, async (request: NextRequest, context
       const limit = parseInt(searchParams.get("limit") || "20");
       const offset = parseInt(searchParams.get("offset") || "0");
 
-      // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+      // All database operations wrapped in withRLSContext - RLS policies handle organization isolation
       return withRLSContext(async (tx) => {
         // If claimId provided, check for cached analysis
         if (claimId) {

@@ -1,12 +1,12 @@
 import { pgTable, uuid, varchar, text, boolean, timestamp, integer, decimal, date, time, jsonb } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
-import { tenants as organizations } from '../../../../db/schema/tenant-management-schema';
+import { organizations } from '../../../../db/schema-organizations';
 import { profiles } from '../../../../db/schema/profiles-schema';
 
 // Communication analytics summary
 export const communicationAnalytics = pgTable('communication_analytics', {
   id: uuid('id').primaryKey().defaultRandom(),
-  organizationId: uuid('organization_id').notNull().references(() => organizations.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   date: date('date').notNull(),
   channel: varchar('channel', { length: 50 }).notNull(),
   messagesSent: integer('messages_sent').default(0),
@@ -29,7 +29,7 @@ export const communicationAnalytics = pgTable('communication_analytics', {
 // User engagement scores
 export const userEngagementScores = pgTable('user_engagement_scores', {
   id: uuid('id').primaryKey().defaultRandom(),
-  organizationId: uuid('organization_id').notNull().references(() => organizations.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   userId: uuid('user_id').notNull().references(() => profiles.userId, { onDelete: 'cascade' }),
   overallScore: integer('overall_score').default(0),
   emailScore: integer('email_score').default(0),
@@ -52,7 +52,7 @@ export const userEngagementScores = pgTable('user_engagement_scores', {
 // Push notification devices
 export const pushDevices = pgTable('push_devices', {
   id: uuid('id').primaryKey().defaultRandom(),
-  organizationId: uuid('organization_id').notNull().references(() => organizations.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   userId: uuid('user_id').notNull().references(() => profiles.userId, { onDelete: 'cascade' }),
   deviceToken: varchar('device_token', { length: 500 }).notNull().unique(),
   deviceType: varchar('device_type', { length: 50 }).notNull(),
@@ -68,7 +68,7 @@ export const pushDevices = pgTable('push_devices', {
 // Push notification messages
 export const pushNotifications = pgTable('push_notifications', {
   id: uuid('id').primaryKey().defaultRandom(),
-  organizationId: uuid('organization_id').notNull().references(() => organizations.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   title: varchar('title', { length: 255 }).notNull(),
   body: text('body').notNull(),
   imageUrl: text('image_url'),
@@ -108,7 +108,7 @@ export const pushNotificationRecipients = pgTable('push_notification_recipients'
 // Communication preferences
 export const communicationPreferences = pgTable('communication_preferences', {
   id: uuid('id').primaryKey().defaultRandom(),
-  organizationId: uuid('organization_id').notNull().references(() => organizations.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   userId: uuid('user_id').notNull().references(() => profiles.userId, { onDelete: 'cascade' }),
   emailEnabled: boolean('email_enabled').default(true),
   smsEnabled: boolean('sms_enabled').default(true),

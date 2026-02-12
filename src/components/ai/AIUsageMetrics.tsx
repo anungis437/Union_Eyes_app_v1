@@ -45,11 +45,11 @@ interface TrendData {
 }
 
 interface AIUsageMetricsProps {
-  tenantId: string;
+  organizationId: string;
   className?: string;
 }
 
-export function AIUsageMetrics({ tenantId, className = '' }: AIUsageMetricsProps) {
+export function AIUsageMetrics({ organizationId, className = '' }: AIUsageMetricsProps) {
   const [timeRange, setTimeRange] = useState<'day' | 'week' | 'month'>('week');
   const [usageByFeature, setUsageByFeature] = useState<UsageData[]>([]);
   const [providerStats, setProviderStats] = useState<ProviderStats[]>([]);
@@ -70,7 +70,7 @@ export function AIUsageMetrics({ tenantId, className = '' }: AIUsageMetricsProps
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'X-Tenant-ID': tenantId,
+            'X-Organization-ID': organizationId,
           },
         }
       );
@@ -88,7 +88,7 @@ export function AIUsageMetrics({ tenantId, className = '' }: AIUsageMetricsProps
     } finally {
       setIsLoading(false);
     }
-  }, [timeRange, tenantId, totalStats]);
+  }, [timeRange, organizationId, totalStats]);
 
   useEffect(() => {
     fetchMetrics();

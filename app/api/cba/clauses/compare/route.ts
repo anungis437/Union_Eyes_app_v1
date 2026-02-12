@@ -3,7 +3,7 @@
  * 
  * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
- * - RLS policies enforce tenant isolation at database level
+ * - RLS policies enforce organization isolation at database level
  */
 
 import { z } from 'zod';
@@ -22,7 +22,7 @@ import {
 /**
  * POST /api/cba/clauses/compare
  * Compare clauses across multiple CBAs
- * Protected by tenant middleware - only compares clauses within the current tenant
+ * Protected by organization middleware - only compares clauses within the current organization
  * 
  * Body: {
  *   clauseIds: string[],
@@ -32,20 +32,20 @@ import {
 
 const cbaClausesCompareSchema = z.object({
   clauseIds: z.string().uuid('Invalid clauseIds'),
-  analysisType = "general": z.boolean().optional(),
+  analysisType: z.boolean().optional().default("general"),
 });
 
 export const POST = withApiAuth(async (request: NextRequest) => {
   try {
     const user = await getCurrentUser();
-    if (!user || !user.tenantId) {
+    if (!user || !user.organizationId) {
       return standardErrorResponse(
       ErrorCode.AUTH_REQUIRED,
-      'Authentication and tenant context required'
+      'Authentication and organization context required'
     );
     }
     
-    const tenantId = user.tenantId;
+    const organizationId = user.organizationId;
     const userId = user.id;
     const body = await request.json();
     // Validate request body
@@ -68,9 +68,9 @@ export const POST = withApiAuth(async (request: NextRequest) => {
     );
     }
 
-    // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+    // All database operations wrapped in withRLSContext - RLS policies handle organization isolation
     return withRLSContext(async (tx) => {
-      // Fetch all clauses - RLS ensures they belong to the current tenant
+      // Fetch all clauses - RLS ensures they belong to the current organization
       const clauses = await tx
         .select()
         .from(cbaClause)
@@ -78,7 +78,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
         .where(
           and(
             inArray(cbaClause.id, clauseIds),
-            eq(collectiveAgreements.organizationId, tenantId)
+            eq(collectiveAgreements.organizationId, organizationId)
           )
         );
 
@@ -92,14 +92,14 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       // Extract just the cbaClause objects
       const clauseObjects = clauses.map(result => result.cba_clauses);
 
-      // Check if comparison already exists for this tenant
+      // Check if comparison already exists for this organization
       const existingComparison = await tx
         .select()
         .from(clauseComparisons)
         .where(
           and(
             inArray(clauseComparisons.id, clauseIds),
-            eq(clauseComparisons.organizationId, tenantId)
+            eq(clauseComparisons.organizationId, organizationId)
           )
         )
         .limit(1);
@@ -121,7 +121,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
     const comparison = {
       comparisonName: `${analysisType} comparison - ${new Date().toISOString()}`,
       clauseType: clauseObjects[0].clauseType, // Use first clause's type
-      organizationId: tenantId,
+      organizationId,
       clauseIds,
       analysisResults: {
         similarities: contentAnalysis.similarities.map(s => ({ description: s, clauseIds })),
@@ -211,20 +211,20 @@ function analyzeClauseContent(clauses: any[], analysisType: string) {
 
 /**
  * GET /api/cba/clauses/compare
- * Retrieve previously saved comparisons for the current tenant
- * Protected by tenant middleware
+ * Retrieve previously saved comparisons for the current organization
+ * Protected by organization middleware
  */
 export const GET = withApiAuth(async (request: NextRequest) => {
   try {
     const user = await getCurrentUser();
-    if (!user || !user.tenantId) {
+    if (!user || !user.organizationId) {
       return standardErrorResponse(
       ErrorCode.AUTH_REQUIRED,
-      'Authentication and tenant context required'
+      'Authentication and organization context required'
     );
     }
     
-    const tenantId = user.tenantId;
+    const organizationId = user.organizationId;
     const { searchParams } = new URL(request.url);
     const clauseIds = searchParams.get("clauseIds")?.split(",") || [];
 
@@ -235,14 +235,14 @@ export const GET = withApiAuth(async (request: NextRequest) => {
     );
     }
 
-    // Find comparisons involving these clauses, filtered by tenant
+    // Find comparisons involving these clauses, filtered by organization
     const comparisons = await db
       .select()
       .from(clauseComparisons)
       .where(
         and(
           inArray(clauseComparisons.id, clauseIds),
-          eq(clauseComparisons.organizationId, tenantId)
+          eq(clauseComparisons.organizationId, organizationId)
         )
       )
       .limit(10);

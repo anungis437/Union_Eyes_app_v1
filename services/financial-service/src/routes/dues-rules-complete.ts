@@ -67,11 +67,12 @@ const createDuesRuleSchema = z.object({
  */
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const { tenantId } = (req as any).user!;
+    const { organizationId: organizationIdFromUser, tenantId: legacyTenantId } = (req as any).user!;
+    const organizationId = organizationIdFromUser ?? legacyTenantId;
     const { active, category, status } = req.query;
 
     // Build query conditions
-    const conditions = [eq(schema.duesRules.tenantId, tenantId)];
+    const conditions = [eq(schema.duesRules.tenantId, organizationId)];
     
     if (active !== undefined) {
       conditions.push(eq(schema.duesRules.isActive, active === 'true'));
@@ -100,7 +101,8 @@ router.get('/', async (req: Request, res: Response) => {
  */
 router.get('/:id', async (req: Request, res: Response) => {
   try {
-    const { tenantId } = (req as any).user!;
+    const { organizationId: organizationIdFromUser, tenantId: legacyTenantId } = (req as any).user!;
+    const organizationId = organizationIdFromUser ?? legacyTenantId;
     const { id } = req.params;
 
     const [rule] = await db
@@ -108,7 +110,7 @@ router.get('/:id', async (req: Request, res: Response) => {
       .from(schema.duesRules)
       .where(and(
         eq(schema.duesRules.id, id),
-        eq(schema.duesRules.tenantId, tenantId)
+        eq(schema.duesRules.tenantId, organizationId)
       ))
       .limit(1);
 
@@ -129,7 +131,8 @@ router.get('/:id', async (req: Request, res: Response) => {
  */
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const { tenantId, userId, role } = (req as any).user!;
+    const { organizationId: organizationIdFromUser, tenantId: legacyTenantId, userId, role } = (req as any).user!;
+    const organizationId = organizationIdFromUser ?? legacyTenantId;
 
     // Check permissions
     if (!['admin', 'financial_admin'].includes(role)) {
@@ -143,7 +146,7 @@ router.post('/', async (req: Request, res: Response) => {
       .insert(schema.duesRules)
       .values({
         ...validatedData,
-        tenantId,
+        tenantId: organizationId,
         createdBy: userId,
       } as any)
       .returning();
@@ -164,7 +167,8 @@ router.post('/', async (req: Request, res: Response) => {
  */
 router.put('/:id', async (req: Request, res: Response) => {
   try {
-    const { tenantId, userId, role } = (req as any).user!;
+    const { organizationId: organizationIdFromUser, tenantId: legacyTenantId, userId, role } = (req as any).user!;
+    const organizationId = organizationIdFromUser ?? legacyTenantId;
     const { id } = req.params;
 
     // Check permissions
@@ -189,7 +193,7 @@ router.put('/:id', async (req: Request, res: Response) => {
       .set(updateData)
       .where(and(
         eq(schema.duesRules.id, id),
-        eq(schema.duesRules.tenantId, tenantId)
+        eq(schema.duesRules.tenantId, organizationId)
       ))
       .returning();
 
@@ -213,7 +217,8 @@ router.put('/:id', async (req: Request, res: Response) => {
  */
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
-    const { tenantId, role } = (req as any).user!;
+    const { organizationId: organizationIdFromUser, tenantId: legacyTenantId, role } = (req as any).user!;
+    const organizationId = organizationIdFromUser ?? legacyTenantId;
     const { id } = req.params;
 
     // Check permissions (admin only)
@@ -229,7 +234,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
       } as any)
       .where(and(
         eq(schema.duesRules.id, id),
-        eq(schema.duesRules.tenantId, tenantId)
+        eq(schema.duesRules.tenantId, organizationId)
       ))
       .returning();
 
@@ -250,7 +255,8 @@ router.delete('/:id', async (req: Request, res: Response) => {
  */
 router.post('/:id/duplicate', async (req: Request, res: Response) => {
   try {
-    const { tenantId, userId, role } = (req as any).user!;
+    const { organizationId: organizationIdFromUser, tenantId: legacyTenantId, userId, role } = (req as any).user!;
+    const organizationId = organizationIdFromUser ?? legacyTenantId;
     const { id } = req.params;
     const { newCode, newName } = req.body;
 
@@ -272,7 +278,7 @@ router.post('/:id/duplicate', async (req: Request, res: Response) => {
       .from(schema.duesRules)
       .where(and(
         eq(schema.duesRules.id, id),
-        eq(schema.duesRules.tenantId, tenantId)
+        eq(schema.duesRules.tenantId, organizationId)
       ))
       .limit(1);
 
@@ -289,7 +295,7 @@ router.post('/:id/duplicate', async (req: Request, res: Response) => {
         ...ruleData,
         ruleCode: newCode,
         ruleName: newName,
-        tenantId,
+        tenantId: organizationId,
         createdBy: userId,
       } as any)
       .returning();

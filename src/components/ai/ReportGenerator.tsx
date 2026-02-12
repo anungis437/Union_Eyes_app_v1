@@ -38,7 +38,7 @@ interface Report {
 }
 
 interface ReportGeneratorProps {
-  tenantId: string;
+  organizationId: string;
   onReportGenerated?: (report: Report) => void;
   className?: string;
 }
@@ -71,7 +71,7 @@ const reportTemplates = [
 ];
 
 export function ReportGenerator({
-  tenantId,
+  organizationId,
   onReportGenerated,
   className = '',
 }: ReportGeneratorProps) {
@@ -117,7 +117,7 @@ export function ReportGenerator({
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'X-Tenant-ID': tenantId,
+          'X-Organization-ID': organizationId,
         },
         body: JSON.stringify({
           specification,
@@ -155,7 +155,7 @@ export function ReportGenerator({
         const response = await fetch(`/api/ai/jobs/${jobId}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'X-Tenant-ID': tenantId,
+            'X-Organization-ID': organizationId,
           },
         });
 

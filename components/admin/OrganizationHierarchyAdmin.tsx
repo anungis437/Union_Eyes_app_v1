@@ -1,7 +1,7 @@
 /**
- * Multi-Tenant Hierarchy Admin Component
- * Manage organization parent-child relationships and tenant isolation
- * Phase 1: Multi-Tenant Architecture
+ * Organization Hierarchy Admin Component
+ * Manage organization parent-child relationships and organization isolation
+ * Phase 1: Organization Architecture
  */
 
 'use client';
@@ -257,7 +257,7 @@ export function OrganizationHierarchyAdmin({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Organization Hierarchy</h2>
-          <p className="text-muted-foreground">Manage multi-tenant organization structure</p>
+          <p className="text-muted-foreground">Manage organization structure and isolation</p>
         </div>
         {userRole === 'admin' && (
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -271,7 +271,7 @@ export function OrganizationHierarchyAdmin({
               <DialogHeader>
                 <DialogTitle>Create New Organization</DialogTitle>
                 <DialogDescription>
-                  Add a new organization to the hierarchy with proper tenant isolation.
+                  Add a new organization to the hierarchy with proper organization isolation.
                 </DialogDescription>
               </DialogHeader>
               
@@ -377,7 +377,7 @@ export function OrganizationHierarchyAdmin({
         <CardHeader>
           <CardTitle>Organization Tree</CardTitle>
           <CardDescription>
-            Hierarchical view of all organizations with RLS tenant isolation
+            Hierarchical view of all organizations with RLS organization isolation
           </CardDescription>
         </CardHeader>
         <CardContent>

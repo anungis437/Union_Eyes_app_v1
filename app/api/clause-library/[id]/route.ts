@@ -205,7 +205,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
 
 // PATCH /api/clause-library/[id] - Update clause
 
-const clause-librarySchema = z.object({
+const clauseLibrarySchema = z.object({
   clauseTitle: z.string().min(1, 'clauseTitle is required'),
   clauseText: z.unknown().optional(),
   clauseType: z.unknown().optional(),

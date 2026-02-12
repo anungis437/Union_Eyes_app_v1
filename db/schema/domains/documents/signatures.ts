@@ -16,7 +16,8 @@ import {
   index,
   integer,
 } from "drizzle-orm/pg-core";
-import { profiles } from "./profiles-schema";
+import { organizations } from "../../../schema-organizations";
+import { profiles } from "../../profiles-schema";
 
 // E-Signature provider enum
 export const signatureProviderEnum = pgEnum("signature_provider", [
@@ -82,7 +83,9 @@ export const signatureDocuments = pgTable(
   "signature_documents",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    tenantId: text("tenant_id").notNull(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
     
     // Document details
     title: text("title").notNull(),
@@ -154,8 +157,8 @@ export const signatureDocuments = pgTable(
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
   (table) => ({
-    tenantIdIdx: index("signature_documents_tenant_id_idx").on(
-      table.tenantId
+    organizationIdIdx: index("signature_documents_organization_id_idx").on(
+      table.organizationId
     ),
     statusIdx: index("signature_documents_status_idx").on(table.status),
     sentByIdx: index("signature_documents_sent_by_idx").on(table.sentBy),
@@ -325,7 +328,9 @@ export const signatureTemplates = pgTable(
   "signature_templates",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    tenantId: text("tenant_id").notNull(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
     
     // Template details
     name: text("name").notNull(),
@@ -391,8 +396,8 @@ export const signatureTemplates = pgTable(
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
   (table) => ({
-    tenantIdIdx: index("signature_templates_tenant_id_idx").on(
-      table.tenantId
+    organizationIdIdx: index("signature_templates_organization_id_idx").on(
+      table.organizationId
     ),
     categoryIdx: index("signature_templates_category_idx").on(
       table.category

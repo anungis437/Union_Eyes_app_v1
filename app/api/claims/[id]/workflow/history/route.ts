@@ -3,7 +3,7 @@
  * 
  * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
- * - RLS policies enforce tenant isolation at database level
+ * - RLS policies enforce organization isolation at database level
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -27,13 +27,13 @@ export const GET = async (
     const resolvedParams = await params;
     const claimNumber = resolvedParams.id;
 
-    // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+    // All database operations wrapped in withRLSContext - RLS policies handle organization isolation
     return withRLSContext(async (tx) => {
-      // Get claim with member info - RLS policies automatically enforce tenant filtering
+      // Get claim with member info - RLS policies automatically enforce organization filtering
       const claim = await tx
         .select({
           id: claims.claimId,
-          tenantId: claims.organizationId,
+          organizationId: claims.organizationId,
           memberId: claims.memberId,
           assignedTo: claims.assignedTo,
         })
@@ -79,7 +79,7 @@ export const GET = async (
     );
       }
 
-      // Get workflow history with user emails - RLS policies enforce tenant isolation
+      // Get workflow history with user emails - RLS policies enforce organization isolation
       const historyRecords = await tx
         .select({
           id: claimUpdates.updateId,

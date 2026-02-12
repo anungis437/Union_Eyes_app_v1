@@ -85,7 +85,7 @@ function calculateBillingPeriod(frequency: string, referenceDate: Date = new Dat
 }
 
 /**
- * Generate billing cycle for all tenants and frequencies
+ * Generate billing cycle for all organizations and frequencies
  */
 async function generateBillingCycles() {
   console.log('Starting billing cycle generation...');
@@ -95,19 +95,19 @@ async function generateBillingCycles() {
     const activeRules = await db
       .select({
         frequency: duesRules.billingFrequency,
-        tenantId: duesRules.tenantId,
+        organizationId: duesRules.organizationId,
       })
       .from(duesRules)
       .where(eq(duesRules.isActive, true))
-      .groupBy(duesRules.billingFrequency, duesRules.tenantId);
+      .groupBy(duesRules.billingFrequency, duesRules.organizationId);
 
     for (const rule of activeRules) {
       const period = calculateBillingPeriod(rule.frequency);
       
-      console.log(`Generating ${rule.frequency} billing cycle for tenant ${rule.tenantId}: ${period.start.toISOString()} to ${period.end.toISOString()}`);
+      console.log(`Generating ${rule.frequency} billing cycle for organization ${rule.organizationId}: ${period.start.toISOString()} to ${period.end.toISOString()}`);
 
       const result = await DuesCalculationEngine.generateBillingCycle(
-        rule.tenantId,
+        rule.organizationId,
         period.start,
         period.end
       );
@@ -269,16 +269,16 @@ async function processLateFees() {
   console.log('Starting late fee calculation...');
 
   try {
-    // Get all tenants
-    const tenants = await db
-      .select({ tenantId: duesRules.tenantId })
+    // Get all organizations
+    const organizations = await db
+      .select({ organizationId: duesRules.organizationId })
       .from(duesRules)
-      .groupBy(duesRules.tenantId);
+      .groupBy(duesRules.organizationId);
 
-    for (const { tenantId } of tenants) {
-      console.log(`Processing late fees for tenant ${tenantId}`);
+    for (const { organizationId } of organizations) {
+      console.log(`Processing late fees for organization ${organizationId}`);
       
-      const result = await DuesCalculationEngine.calculateLateFees(tenantId, 0.02);
+      const result = await DuesCalculationEngine.calculateLateFees(organizationId, 0.02);
       
       console.log(`Applied late fees to ${result.transactionsUpdated} transactions`);
     }

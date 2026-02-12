@@ -4,7 +4,7 @@
  * =============================================================================
  * Purpose: TypeScript schema definitions for analytics and reporting tables
  * Tables: scheduled_reports, report_delivery_history, benchmark_categories,
- *         benchmark_data, tenant_benchmark_snapshots
+ *         benchmark_data, organization_benchmark_snapshots
  * Features: Scheduled report delivery, benchmark comparisons, analytics tracking
  * =============================================================================
  */
@@ -23,7 +23,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { organizations } from "../schema-organizations";
+import { organizations } from "../../../schema-organizations";
 
 // =============================================================================
 // TABLE 1: analytics_scheduled_reports
@@ -214,7 +214,7 @@ export const benchmarkCategoriesIndexes = [
 // Relations for benchmark_categories
 export const benchmarkCategoriesRelations = relations(benchmarkCategories, ({ many }) => ({
   benchmarkData: many(benchmarkData),
-  tenantSnapshots: many(tenantBenchmarkSnapshots),
+  organizationSnapshots: many(organizationBenchmarkSnapshots),
 }));
 
 // Types for benchmark_categories
@@ -289,10 +289,10 @@ export type BenchmarkData = typeof benchmarkData.$inferSelect;
 export type NewBenchmarkData = typeof benchmarkData.$inferInsert;
 
 // =============================================================================
-// TABLE 5: tenant_benchmark_snapshots
+// TABLE 5: organization_benchmark_snapshots
 // =============================================================================
 
-export const tenantBenchmarkSnapshots = pgTable("tenant_benchmark_snapshots", {
+export const organizationBenchmarkSnapshots = pgTable("organization_benchmark_snapshots", {
   // Primary key
   id: uuid("id").primaryKey().defaultRandom(),
 
@@ -311,7 +311,7 @@ export const tenantBenchmarkSnapshots = pgTable("tenant_benchmark_snapshots", {
   periodEnd: date("period_end").notNull(),
   periodType: text("period_type").default("monthly").notNull(),
 
-  // Tenant metric value
+  // Organization metric value
   metricValue: decimal("metric_value", { precision: 15, scale: 2 }).notNull(),
 
   // Comparison vs. benchmark
@@ -336,33 +336,33 @@ export const tenantBenchmarkSnapshots = pgTable("tenant_benchmark_snapshots", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
-// Indexes for tenant_benchmark_snapshots
-export const tenantBenchmarkSnapshotsIndexes = [
-  { name: "idx_tenant_benchmark_snapshots_organization", columns: ["organization_id"] },
-  { name: "idx_tenant_benchmark_snapshots_category", columns: ["benchmark_category_id"] },
-  { name: "idx_tenant_benchmark_snapshots_period", columns: ["period_start", "period_end"] },
+// Indexes for organization_benchmark_snapshots
+export const organizationBenchmarkSnapshotsIndexes = [
+  { name: "idx_organization_benchmark_snapshots_organization", columns: ["organization_id"] },
+  { name: "idx_organization_benchmark_snapshots_category", columns: ["benchmark_category_id"] },
+  { name: "idx_organization_benchmark_snapshots_period", columns: ["period_start", "period_end"] },
   {
-    name: "idx_tenant_benchmark_snapshots_composite",
+    name: "idx_organization_benchmark_snapshots_composite",
     columns: ["organization_id", "benchmark_category_id", "period_start"],
   },
-  { name: "idx_tenant_benchmark_snapshots_performance", columns: ["performance_indicator"] },
+  { name: "idx_organization_benchmark_snapshots_performance", columns: ["performance_indicator"] },
 ];
 
-// Relations for tenant_benchmark_snapshots
-export const tenantBenchmarkSnapshotsRelations = relations(tenantBenchmarkSnapshots, ({ one }) => ({
+// Relations for organization_benchmark_snapshots
+export const organizationBenchmarkSnapshotsRelations = relations(organizationBenchmarkSnapshots, ({ one }) => ({
   organization: one(organizations, {
-    fields: [tenantBenchmarkSnapshots.organizationId],
+    fields: [organizationBenchmarkSnapshots.organizationId],
     references: [organizations.id],
   }),
   category: one(benchmarkCategories, {
-    fields: [tenantBenchmarkSnapshots.benchmarkCategoryId],
+    fields: [organizationBenchmarkSnapshots.benchmarkCategoryId],
     references: [benchmarkCategories.id],
   }),
 }));
 
-// Types for tenant_benchmark_snapshots
-export type TenantBenchmarkSnapshot = typeof tenantBenchmarkSnapshots.$inferSelect;
-export type NewTenantBenchmarkSnapshot = typeof tenantBenchmarkSnapshots.$inferInsert;
+// Types for organization_benchmark_snapshots
+export type OrganizationBenchmarkSnapshot = typeof organizationBenchmarkSnapshots.$inferSelect;
+export type NewOrganizationBenchmarkSnapshot = typeof organizationBenchmarkSnapshots.$inferInsert;
 
 // =============================================================================
 // TYPE UNIONS & UTILITY TYPES
@@ -492,7 +492,7 @@ export interface BenchmarkComparisonResponse {
   displayName: string;
   categoryGroup: BenchmarkCategoryGroup;
   unitType: UnitType;
-  tenantValue: number;
+  organizationValue: number;
   localAverage?: number;
   regionalAverage?: number;
   nationalAverage?: number;

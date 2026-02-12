@@ -68,15 +68,13 @@ export { auth, clerkCurrentUser as currentUser };
 // =============================================================================
 
 /**
- * Complete Union Role Hierarchy with CLC Integration
+ * Complete Role Hierarchy with App Operations & CLC Integration
  * Defines permission levels for all user roles in descending order of authority
- * Includes cross-organizational hierarchy for Canadian Labour Congress (CLC)
- * Matches role_definitions table from migration 008_enhanced_rbac_schema.sql
- * 
- * @see database/migrations-archive-raw-sql/008_enhanced_rbac_schema.sql
+ * Includes Nzila Ventures operations roles and cross-organizational hierarchy
  * 
  * Hierarchy Structure:
- * - System Administration (200): IT operations across all orgs
+ * - App Operations (250-300): Nzila Ventures platform operations team
+ * - System Administration (200-240): Technical operations across all orgs
  * - CLC National (180-190): Canadian Labour Congress executives and staff
  * - Federation (160-170): Provincial federation executives and staff
  * - National Union (150): National-level union officers
@@ -87,39 +85,90 @@ export { auth, clerkCurrentUser as currentUser };
  * - Base Membership (10): Regular members
  */
 export const ROLE_HIERARCHY = {
-  // System Administration (200+)
-  system_admin: 200,            // CLC IT / System operators - Full technical access
+  // ========================================================
+  // NZILA VENTURES - APP OPERATIONS (250-300)
+  // Platform ownership and operations team
+  // ========================================================
   
-  // CLC National (Congress) Level (180-190)
-  clc_executive: 190,           // CLC President, Secretary-Treasurer - National leadership
-  clc_staff: 180,               // CLC national staff - Cross-affiliate operations
+  // Strategic Leadership (290-300)
+  app_owner: 300,                    // CEO - Strategic ownership & vision
+  coo: 295,                          // COO - Overall platform operations
+  cto: 290,                          // CTO - Technology leadership
   
-  // Federation Level (160-170)
-  fed_executive: 170,           // Federation President, VP - Provincial leadership
-  fed_staff: 160,               // Provincial federation staff - Regional coordination
+  // Operational Leadership (260-280)
+  platform_lead: 270,                // Platform Manager - Day-to-day operations
+  customer_success_director: 260,    // Customer Success Director - Retention & growth
   
-  // Union National Level (150)
-  national_officer: 150,        // National union officers - Multi-local oversight
+  // Department Managers (210-250)
+  support_manager: 250,              // Support Manager - Help desk operations
+  data_analytics_manager: 240,       // Analytics Manager - BI & reporting
+  billing_manager: 230,              // Billing Manager - Subscriptions & payments
+  integration_manager: 220,          // Integration Manager - APIs & partnerships
+  compliance_manager: 210,           // Compliance Manager - Platform compliance
+  security_manager: 200,             // Security Manager - Security operations
   
-  // Local Union Executives (85-100)
-  admin: 100,                   // Organization Administrator - Full local system access
-  president: 90,                // Union President - Chief executive officer
-  vice_president: 85,           // Vice President - Second in command
-  secretary_treasurer: 85,      // Secretary-Treasurer - Financial officer
+  // Operations Staff (150-190)
+  support_agent: 180,                // Support Agent - Customer support
+  data_analyst: 170,                 // Data Analyst - Analytics & reporting
+  billing_specialist: 160,           // Billing Specialist - Billing operations
+  integration_specialist: 150,       // Integration Specialist - API support
   
-  // Senior Representatives (60-70)
-  chief_steward: 70,            // Chief Steward - Supervises all stewards
-  officer: 60,                  // Union Officer - Board member
+  // Content & Training (140-145)
+  content_manager: 145,              // Content Manager - Resources & training
+  training_coordinator: 140,         // Training Coordinator - User training
   
-  // Front-line Representatives (40-50)
-  steward: 50,                  // Union Steward - Department representative
-  bargaining_committee: 40,     // Bargaining Committee Member - Contract negotiations
+  // ========================================================
+  // SYSTEM ADMINISTRATION (135)
+  // Technical operations across all union organizations
+  // ========================================================
+  system_admin: 135,                 // System Admin - Technical operations
   
-  // Specialized Representatives (30)
-  health_safety_rep: 30,        // Health & Safety Representative - Workplace safety
+  // ========================================================
+  // CLC NATIONAL (120-130) - Canadian Labour Congress
+  // ========================================================
+  clc_executive: 130,                // CLC President, Secretary-Treasurer
+  clc_staff: 120,                    // CLC national staff
   
-  // Base Membership (10)
-  member: 10,                   // Union Member - Regular member with self-service
+  // ========================================================
+  // FEDERATION LEVEL (105-115) - Provincial Federations
+  // ========================================================
+  fed_executive: 115,                // Federation President, VP
+  fed_staff: 105,                    // Provincial federation staff
+  
+  // ========================================================
+  // UNION NATIONAL LEVEL (100)
+  // ========================================================
+  national_officer: 100,             // National union officers
+  
+  // ========================================================
+  // LOCAL UNION EXECUTIVES (85-95)
+  // ========================================================
+  admin: 95,                         // Organization Administrator
+  president: 90,                     // Union President
+  vice_president: 85,                // Vice President
+  secretary_treasurer: 85,           // Secretary-Treasurer
+  
+  // ========================================================
+  // SENIOR REPRESENTATIVES (60-70)
+  // ========================================================
+  chief_steward: 70,                 // Chief Steward
+  officer: 60,                       // Union Officer
+  
+  // ========================================================
+  // FRONT-LINE REPRESENTATIVES (40-50)
+  // ========================================================
+  steward: 50,                       // Union Steward
+  bargaining_committee: 40,          // Bargaining Committee Member
+  
+  // ========================================================
+  // SPECIALIZED REPRESENTATIVES (30)
+  // ========================================================
+  health_safety_rep: 30,             // Health & Safety Representative
+  
+  // ========================================================
+  // BASE MEMBERSHIP (10)
+  // ========================================================
+  member: 10,                        // Union Member
 } as const;
 
 export type UserRole = keyof typeof ROLE_HIERARCHY;
@@ -154,7 +203,7 @@ export interface AuthUser {
   firstName: string | null;
   lastName: string | null;
   imageUrl: string | null;
-  tenantId: string | null;
+  tenantId: string | null; // Legacy compatibility
   role: string | null;
   organizationId: string | null;
   metadata: Record<string, unknown>;
@@ -306,6 +355,11 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 
     const publicMetadata = user.publicMetadata || {};
     const privateMetadata = user.privateMetadata || {};
+    const legacyTenantId =
+      (publicMetadata.tenantId as string) || (privateMetadata.tenantId as string) || null;
+    const metadataOrgId =
+      (publicMetadata.organizationId as string) || (privateMetadata.organizationId as string) || null;
+    const resolvedOrganizationId = orgId || metadataOrgId || legacyTenantId || null;
 
     return {
       id: userId,
@@ -314,9 +368,9 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
       firstName: user.firstName || null,
       lastName: user.lastName || null,
       imageUrl: user.imageUrl || null,
-      tenantId: (publicMetadata.tenantId as string) || (privateMetadata.tenantId as string) || orgId || null,
+      tenantId: legacyTenantId,
       role: (publicMetadata.role as string) || (privateMetadata.role as string) || 'member',
-      organizationId: orgId || null,
+      organizationId: resolvedOrganizationId,
       metadata: { ...publicMetadata },
     };
   } catch (error) {
@@ -623,11 +677,11 @@ export async function hasRoleInOrganization(
 
 /**
  * Get user's role in organization
- * Accepts either organization UUID or tenant UUID
+ * Accepts either organization UUID or legacy tenant UUID
  * Returns the role or null if user is not a member
  * 
  * @param userId - User ID to check
- * @param organizationId - Organization/tenant ID (UUID or slug)
+ * @param organizationId - Organization ID (UUID or slug)
  * @returns User's role or null
  */
 export async function getUserRole(

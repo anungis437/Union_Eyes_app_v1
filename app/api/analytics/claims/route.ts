@@ -36,9 +36,9 @@ export const GET = withEnhancedRoleAuth(30, async (req: NextRequest, context) =>
   }
 
   try {
-    const tenantId = organizationId;
+    const organizationScopeId = organizationId;
     
-    if (!tenantId) {
+    if (!organizationScopeId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
       'Organization ID required'
@@ -74,7 +74,7 @@ export const GET = withEnhancedRoleAuth(30, async (req: NextRequest, context) =>
       db.execute(sql`
         SELECT COUNT(*) as total_claims
         FROM claims
-        WHERE organization_id = ${tenantId}
+        WHERE organization_id = ${organizationScopeId}
           AND created_at >= ${startDate}
           AND created_at <= ${endDate}
       `),
@@ -83,7 +83,7 @@ export const GET = withEnhancedRoleAuth(30, async (req: NextRequest, context) =>
       db.execute(sql`
         SELECT status, COUNT(*) as count
         FROM claims
-        WHERE organization_id = ${tenantId}
+        WHERE organization_id = ${organizationScopeId}
           AND created_at >= ${startDate}
           AND created_at <= ${endDate}
         GROUP BY status
@@ -93,7 +93,7 @@ export const GET = withEnhancedRoleAuth(30, async (req: NextRequest, context) =>
       db.execute(sql`
         SELECT claim_type, COUNT(*) as count
         FROM claims
-        WHERE organization_id = ${tenantId}
+        WHERE organization_id = ${organizationScopeId}
           AND created_at >= ${startDate}
           AND created_at <= ${endDate}
         GROUP BY claim_type
@@ -104,7 +104,7 @@ export const GET = withEnhancedRoleAuth(30, async (req: NextRequest, context) =>
       db.execute(sql`
         SELECT priority, COUNT(*) as count
         FROM claims
-        WHERE organization_id = ${tenantId}
+        WHERE organization_id = ${organizationScopeId}
           AND created_at >= ${startDate}
           AND created_at <= ${endDate}
         GROUP BY priority
@@ -117,7 +117,7 @@ export const GET = withEnhancedRoleAuth(30, async (req: NextRequest, context) =>
           COUNT(*) FILTER (WHERE status = 'rejected') as rejected_count,
           AVG(EXTRACT(EPOCH FROM (resolved_at - created_at)) / 86400) FILTER (WHERE resolved_at IS NOT NULL) as avg_resolution_days
         FROM claims
-        WHERE organization_id = ${tenantId}
+        WHERE organization_id = ${organizationScopeId}
           AND created_at >= ${startDate}
           AND created_at <= ${endDate}
       `)
@@ -175,7 +175,7 @@ return standardErrorResponse(
 
 // Helper function to get claims by date range
 async function getClaimsByDateRange(
-  tenantId: string,
+  organizationId: string,
   dateRange: { startDate: Date; endDate: Date },
   filters: any
 ) {
@@ -195,7 +195,7 @@ async function getClaimsByDateRange(
       claim_amount,
       settlement_amount
     FROM claims
-    WHERE organization_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
       AND created_at >= ${startDate}
       AND created_at <= ${endDate}
   `;

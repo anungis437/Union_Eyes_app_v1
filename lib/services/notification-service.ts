@@ -119,7 +119,7 @@ export interface NotificationProvider {
 Schema reference for notifications table:
 export const notifications = pgTable('notifications', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: text('tenant_id').notNull(),
+  organizationId: text('tenant_id').notNull(),
   userId: text('user_id').notNull(),
   type: text('type').notNull(),
   title: text('title').notNull(),
@@ -551,7 +551,7 @@ export class NotificationService {
       try {
         await db.insert(notificationQueue).values({
           id: response.id,
-          tenantId: payload.organizationId as any,
+          organizationId: payload.organizationId as any,
           status: 'completed' as any,
           priority: (payload.priority || 'normal') as any,
           payload: {
@@ -569,7 +569,7 @@ export class NotificationService {
         // Also log delivery event
         await db.insert(notificationDeliveryLog).values({
           id: uuid(),
-          tenantId: payload.organizationId as any,
+          organizationId: payload.organizationId as any,
           notificationId: response.id as any,
           event: response.status === 'sent' ? 'sent' : 'failed' as any,
           eventTimestamp: response.sentAt || new Date() as any,
@@ -623,7 +623,7 @@ export class NotificationService {
     try {
       await db.insert(notificationQueue).values({
         id: notificationId,
-        tenantId: payload.organizationId as any,
+        organizationId: payload.organizationId as any,
         status: 'pending' as any,
         priority: (payload.priority || 'normal') as any,
         payload: payload as any,
@@ -671,7 +671,7 @@ export class NotificationService {
       const queueId = uuid();
       await db.insert(notificationQueue).values({
         id: queueId,
-        tenantId: payload.organizationId as any,
+        organizationId: payload.organizationId as any,
         status: 'retrying' as any,
         priority: (payload.priority || 'normal') as any,
         payload: payload as any,
@@ -809,7 +809,7 @@ export class NotificationService {
             ),
             lt(notificationQueue.nextRetryAt || now, now),
             lt(notificationQueue.attemptCount as any, maxRetries),
-            eq(notificationQueue.tenantId, organizationId)
+            eq(notificationQueue.organizationId, organizationId)
           ]
         : [
             or(

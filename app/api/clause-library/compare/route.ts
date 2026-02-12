@@ -26,7 +26,7 @@ import {
 } from '@/lib/api/standardized-responses';
 // POST /api/clause-library/compare - Compare multiple clauses
 
-const clause-libraryCompareSchema = z.object({
+const clauseLibraryCompareSchema = z.object({
   clauseIds: z.string().uuid('Invalid clauseIds'),
   comparisonNotes: z.boolean().optional(),
 });

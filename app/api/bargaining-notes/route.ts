@@ -131,7 +131,7 @@ return standardErrorResponse(
 };
 
 
-const bargaining-notesSchema = z.object({
+const bargainingNotesSchema = z.object({
   map: z.unknown().optional(),
   organizationId: z.string().uuid('Invalid organizationId'),
   sessionDate: z.string().datetime().optional(),

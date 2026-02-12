@@ -14,7 +14,7 @@ type SmsConversationsContext = { params?: Record<string, any>; organizationId?: 
 export const GET = withRoleAuth<SmsConversationsContext>('member', async (request, context) => {
   try {
     const { searchParams } = new URL(request.url);
-    let organizationId = searchParams.get('organizationId') ?? searchParams.get('tenantId');
+    let organizationId = searchParams.get('organizationId');
     
     if (!organizationId) {
       const userContext = await getUserContext();

@@ -67,7 +67,7 @@ ChartJS.register(
 
 interface SurveyResultsDashboardProps {
   surveyId: string;
-  tenantId: string;
+  organizationId: string;
 }
 
 interface Survey {
@@ -108,7 +108,7 @@ interface SurveyResults {
   questionResults: QuestionResult[];
 }
 
-export function SurveyResultsDashboard({ surveyId, tenantId }: SurveyResultsDashboardProps) {
+export function SurveyResultsDashboard({ surveyId, organizationId }: SurveyResultsDashboardProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [results, setResults] = useState<SurveyResults | null>(null);
@@ -118,7 +118,11 @@ export function SurveyResultsDashboard({ surveyId, tenantId }: SurveyResultsDash
   const loadResults = useCallback(async () => {
     try {
       const url = `/api/communications/surveys/${surveyId}/results?dateRange=${dateRange}`;
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: {
+          'X-Organization-ID': organizationId,
+        },
+      });
       
       if (!response.ok) throw new Error('Failed to load results');
 
@@ -142,7 +146,11 @@ toast({
   const handleExportCSV = async () => {
     setIsExporting(true);
     try {
-      const response = await fetch(`/api/communications/surveys/${surveyId}/export?format=csv`);
+      const response = await fetch(`/api/communications/surveys/${surveyId}/export?format=csv`, {
+        headers: {
+          'X-Organization-ID': organizationId,
+        },
+      });
       if (!response.ok) throw new Error('Export failed');
 
       const blob = await response.blob();
@@ -173,7 +181,11 @@ toast({
   const handleExportExcel = async () => {
     setIsExporting(true);
     try {
-      const response = await fetch(`/api/communications/surveys/${surveyId}/export?format=excel`);
+      const response = await fetch(`/api/communications/surveys/${surveyId}/export?format=excel`, {
+        headers: {
+          'X-Organization-ID': organizationId,
+        },
+      });
       if (!response.ok) throw new Error('Export failed');
 
       const blob = await response.blob();

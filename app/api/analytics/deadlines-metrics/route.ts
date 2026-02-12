@@ -18,12 +18,11 @@ import {
 async function handler(req: NextRequest, context) {
   try {
     const organizationId = context.organizationId;
-    const tenantId = organizationId;
     
-    if (!tenantId) {
+    if (!organizationId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID required'
+      'Organization ID required'
     );
     }
 
@@ -34,7 +33,7 @@ async function handler(req: NextRequest, context) {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - daysBack);
 
-    const analytics = await getDeadlineAnalytics(tenantId, { startDate, endDate });
+    const analytics = await getDeadlineAnalytics(organizationId, { startDate, endDate });
 
     return NextResponse.json({
       analytics,

@@ -263,7 +263,7 @@ export const GET = async (request: NextRequest) => {
 
 const educationCertificationsGenerateSchema = z.object({
   registrationId: z.string().uuid('Invalid registrationId'),
-  sendEmail = false: z.string().email('Invalid email address'),
+  sendEmail: z.boolean().optional().default(false),
 });
 
 export const POST = async (request: NextRequest) => {

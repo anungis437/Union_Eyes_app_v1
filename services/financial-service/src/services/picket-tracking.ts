@@ -11,7 +11,7 @@ const GPS_ACCURACY_THRESHOLD_METERS = 100; // Maximum distance from picket line
 const HAVERSINE_EARTH_RADIUS_KM = 6371;
 
 export interface CheckInRequest {
-  tenantId: string;
+  organizationId: string;
   strikeFundId: string;
   memberId: string;
   method: 'nfc' | 'qr_code' | 'gps' | 'manual';
@@ -26,7 +26,7 @@ export interface CheckInRequest {
 }
 
 export interface CheckOutRequest {
-  tenantId: string;
+  organizationId: string;
   attendanceId: string;
   latitude?: number;
   longitude?: number;
@@ -204,7 +204,7 @@ export async function checkIn(
       .from(schema.picketAttendance)
       .where(
         and(
-          eq(schema.picketAttendance.tenantId, request.tenantId),
+          eq(schema.picketAttendance.tenantId, request.organizationId),
           eq(schema.picketAttendance.memberId, request.memberId),
           eq(schema.picketAttendance.strikeFundId, request.strikeFundId),
           sql`${schema.picketAttendance.checkOutTime} IS NULL`
@@ -224,7 +224,7 @@ export async function checkIn(
     const [attendance] = await db
       .insert(schema.picketAttendance)
       .values({
-        tenantId: request.tenantId,
+        tenantId: request.organizationId,
         strikeFundId: request.strikeFundId,
         memberId: request.memberId,
         checkInTime: new Date().toISOString(),
@@ -268,7 +268,7 @@ export async function checkOut(
       .where(
         and(
           eq(schema.picketAttendance.id, request.attendanceId),
-          eq(schema.picketAttendance.tenantId, request.tenantId)
+          eq(schema.picketAttendance.tenantId, request.organizationId)
         )
       )
       .limit(1);
@@ -320,7 +320,7 @@ return {
  * Get active check-ins (not checked out)
  */
 export async function getActiveCheckIns(
-  tenantId: string,
+  organizationId: string,
   strikeFundId: string
 ): Promise<AttendanceRecord[]> {
   const records = await db
@@ -328,7 +328,7 @@ export async function getActiveCheckIns(
     .from(schema.picketAttendance)
     .where(
       and(
-        eq(schema.picketAttendance.tenantId, tenantId),
+        eq(schema.picketAttendance.tenantId, organizationId),
         eq(schema.picketAttendance.strikeFundId, strikeFundId),
         sql`${schema.picketAttendance.checkOutTime} IS NULL`
       )
@@ -350,14 +350,14 @@ export async function getActiveCheckIns(
  * Get attendance history for a date range
  */
 export async function getAttendanceHistory(
-  tenantId: string,
+  organizationId: string,
   strikeFundId: string,
   startDate: Date,
   endDate: Date,
   memberId?: string
 ): Promise<AttendanceRecord[]> {
   const conditions = [
-    eq(schema.picketAttendance.tenantId, tenantId),
+    eq(schema.picketAttendance.tenantId, organizationId),
     eq(schema.picketAttendance.strikeFundId, strikeFundId),
     between(schema.picketAttendance.checkInTime, startDate.toISOString(), endDate.toISOString()),
   ];
@@ -387,14 +387,14 @@ export async function getAttendanceHistory(
  * Get attendance summary for members
  */
 export async function getAttendanceSummary(
-  tenantId: string,
+  organizationId: string,
   strikeFundId: string,
   startDate: Date,
   endDate: Date,
   memberId?: string
 ): Promise<AttendanceSummary[]> {
   const conditions = [
-    eq(schema.picketAttendance.tenantId, tenantId),
+    eq(schema.picketAttendance.tenantId, organizationId),
     eq(schema.picketAttendance.strikeFundId, strikeFundId),
     between(schema.picketAttendance.checkInTime, startDate.toISOString(), endDate.toISOString()),
     sql`${schema.picketAttendance.hoursWorked} IS NOT NULL`, // Only completed check-ins
@@ -431,7 +431,7 @@ export async function getAttendanceSummary(
  * Manual check-in override by coordinator
  */
 export async function coordinatorOverride(
-  tenantId: string,
+  organizationId: string,
   strikeFundId: string,
   memberId: string,
   verifiedBy: string,
@@ -445,7 +445,7 @@ export async function coordinatorOverride(
     const [attendance] = await db
       .insert(schema.picketAttendance)
       .values({
-        tenantId,
+        tenantId: organizationId,
         strikeFundId,
         memberId,
         checkInTime: checkInTime.toISOString(),

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { approveDeadlineExtension, denyDeadlineExtension } from '@/db/queries/deadline-queries';
-import { requireApiAuth } from '@/lib/api-auth-guard';
+import { withMinRole, getCurrentUser } from '@/lib/api-auth-guard';
 
 import { 
   standardErrorResponse, 
@@ -11,15 +11,18 @@ import {
  * PATCH /api/extensions/[id]
  * Approve or deny a deadline extension request
  */
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export const PATCH = withMinRole('steward', async (request: NextRequest, context: any) => {
   try {
-    const { userId } = await requireApiAuth({
-      tenant: true,
-      roles: ['admin', 'steward', 'officer'],
-    });
+    const user = await getCurrentUser();
+    const userId = user?.id;
+    const params = context?.params as { id: string } | undefined;
+
+    if (!userId || !params?.id) {
+      return standardErrorResponse(
+        ErrorCode.AUTH_REQUIRED,
+        'Unauthorized'
+      );
+    }
 
     const body = await request.json();
     const { action, daysGranted, notes, reason } = body;
@@ -75,4 +78,4 @@ return NextResponse.json(
       { status: 500 }
     );
   }
-}
+});

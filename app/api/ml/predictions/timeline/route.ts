@@ -64,17 +64,16 @@ export const POST = withRoleAuth(20, async (request: NextRequest, context) => {
     const { claimId } = TimelineRequestSchema.parse(body);
 
     const organizationScopeId = organizationId || userId;
-    const tenantId = organizationScopeId;
 
-    // Verify claim exists and belongs to tenant
+    // Verify claim exists and belongs to organization
     const claim = await withRLSContext(
-      { organizationId: tenantId },
+      { organizationId: organizationScopeId },
       async (db) => db.query.claims.findFirst({
         where: eq(claims.claimId, claimId)
       })
     );
     
-    if (!claim || claim.organizationId !== tenantId) {
+    if (!claim || claim.organizationId !== organizationScopeId) {
       return standardErrorResponse(
       ErrorCode.RESOURCE_NOT_FOUND,
       'Claim not found'
@@ -89,12 +88,11 @@ export const POST = withRoleAuth(20, async (request: NextRequest, context) => {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${process.env.AI_SERVICE_TOKEN}`,
-        'X-Organization-ID': tenantId,
-        'X-Tenant-ID': tenantId
+        'X-Organization-ID': organizationScopeId
       },
       body: JSON.stringify({
         claimId,
-        tenantId
+        organizationId: organizationScopeId
       })
     });
 

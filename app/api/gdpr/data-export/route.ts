@@ -22,9 +22,8 @@ import {
  * Request data export
  */
 
-const gdprData-exportSchema = z.object({
+const gdprDataExportSchema = z.object({
   organizationId: z.string().uuid('Invalid organizationId'),
-  tenantId: z.string().uuid('Invalid tenantId'),
   preferredFormat: z.unknown().optional(),
   requestDetails: z.unknown().optional(),
 });
@@ -42,7 +41,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
     const userId = user.id;
     const body = await request.json();
     // Validate request body
-    const validation = gdprData-exportSchema.safeParse(body);
+    const validation = gdprDataExportSchema.safeParse(body);
     if (!validation.success) {
       return standardErrorResponse(
         ErrorCode.VALIDATION_ERROR,
@@ -51,10 +50,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       );
     }
     
-    const { organizationId, tenantId, preferredFormat, requestDetails } = validation.data;
-    const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, preferredFormat, requestDetails } = body;
-    const organizationId = organizationIdFromBody ?? tenantIdFromBody;
-    const tenantId = organizationId;
+    const { organizationId, preferredFormat, requestDetails } = validation.data;
     const format = preferredFormat || "json";
 
     if (!organizationId) {
@@ -74,7 +70,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
     // Create data access request
     const request = await GdprRequestManager.requestDataAccess({
       userId: userId,
-      tenantId,
+      organizationId,
       requestDetails: {
         preferredFormat: format,
         ...requestDetails,
@@ -96,7 +92,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
         "gdpr-export",
         {
           reportType: "gdpr_export",
-          tenantId,
+          organizationId,
           userId,
           parameters: {
             requestId: request.id,
@@ -146,10 +142,9 @@ export const GET = withApiAuth(async (request: NextRequest) => {
     const userId = user.id;
     const { searchParams } = new URL(request.url);
     const requestId = searchParams.get("requestId");
-    const organizationIdFromQuery = (searchParams.get("organizationId") ?? searchParams.get("tenantId"));
-    const tenantId = organizationIdFromQuery;
+    const organizationIdFromQuery = searchParams.get("organizationId") ?? searchParams.get("orgId") ?? searchParams.get("organization_id") ?? searchParams.get("org_id");
 
-    if (!requestId || !tenantId) {
+    if (!requestId || !organizationIdFromQuery) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
       'Request ID and Organization ID required'
@@ -157,9 +152,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
     }
 
     // Get request status
-    const requests = await GdprRequestManager.getUserRequests( userId,
-      tenantId
-    );
+    const requests = await GdprRequestManager.getUserRequests(userId, organizationIdFromQuery);
     const request = requests.find((r) => r.id === requestId);
 
     if (!request) {

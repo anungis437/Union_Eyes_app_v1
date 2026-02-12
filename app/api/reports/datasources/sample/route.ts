@@ -13,7 +13,7 @@ import {
 async function handler(request: NextRequest) {
   try {
     const user = await getCurrentUser();
-    if (!user || (!user.organizationId && !user.tenantId)) {
+    if (!user || !user.organizationId) {
       return standardErrorResponse(
       ErrorCode.AUTH_REQUIRED,
       'Authentication and organization context required'
@@ -41,7 +41,7 @@ async function handler(request: NextRequest) {
       );
     }
 
-    const organizationId = user.organizationId || user.tenantId;
+    const organizationId = user.organizationId;
     if (!organizationId) {
       return NextResponse.json(
         { error: 'Organization context required' },

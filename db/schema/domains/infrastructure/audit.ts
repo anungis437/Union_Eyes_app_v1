@@ -1,7 +1,7 @@
 import { pgTable, uuid, varchar, boolean, timestamp, text, jsonb, integer, pgSchema, check } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import { organizations } from "../schema-organizations";
-import { users } from "./user-management-schema";
+import { organizations } from "../../../schema-organizations";
+import { users } from "../../user-management-schema";
 
 // Create audit_security schema
 export const auditSecuritySchema = pgSchema("audit_security");

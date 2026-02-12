@@ -88,7 +88,7 @@ export const GET = async (request: NextRequest) => {
 };
 
 
-const organizingLabour-boardSchema = z.object({
+const organizingLabourBoardSchema = z.object({
   organizationId: z.string().uuid('Invalid organizationId'),
   campaignId: z.string().uuid('Invalid campaignId'),
   filingType: z.unknown().optional(),

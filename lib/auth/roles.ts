@@ -8,50 +8,160 @@
 
 // User roles in the system - aligned with ROLE_HIERARCHY
 export enum UserRole {
-  // System Administration
-  SYSTEM_ADMIN = "system_admin",
+  // ===== NZILA VENTURES - APP OPERATIONS =====
+  // Strategic Leadership
+  APP_OWNER = "app_owner",                         // CEO - Strategic ownership
+  COO = "coo",                                     // Chief Operating Officer
+  CTO = "cto",                                     // Chief Technology Officer
   
-  // CLC National (Congress) Level
-  CLC_EXECUTIVE = "clc_executive",      // CLC President, Secretary-Treasurer
-  CLC_STAFF = "clc_staff",              // CLC national staff
+  // Operational Leadership
+  PLATFORM_LEAD = "platform_lead",                 // Day-to-day operations
+  CUSTOMER_SUCCESS_DIRECTOR = "customer_success_director",  // User success & retention
   
-  // Federation Level
-  FED_EXECUTIVE = "fed_executive",      // Federation President, VP
-  FED_STAFF = "fed_staff",              // Provincial federation staff
+  // Department Managers
+  SUPPORT_MANAGER = "support_manager",             // Support operations
+  DATA_ANALYTICS_MANAGER = "data_analytics_manager",  // Analytics & BI
+  BILLING_MANAGER = "billing_manager",             // Subscriptions & billing
+  INTEGRATION_MANAGER = "integration_manager",     // APIs & partnerships
+  COMPLIANCE_MANAGER = "compliance_manager",       // Platform compliance
+  SECURITY_MANAGER = "security_manager",           // Security operations
   
-  // Union National Level
-  NATIONAL_OFFICER = "national_officer",
+  // Operations Staff
+  SUPPORT_AGENT = "support_agent",                 // Customer support
+  DATA_ANALYST = "data_analyst",                   // Data analysis
+  BILLING_SPECIALIST = "billing_specialist",       // Billing operations
+  INTEGRATION_SPECIALIST = "integration_specialist",  // Integration support
   
-  // Local Union Executives
-  ADMIN = "admin",
-  PRESIDENT = "president",
-  VICE_PRESIDENT = "vice_president",
-  SECRETARY_TREASURER = "secretary_treasurer",
+  // Content & Training
+  CONTENT_MANAGER = "content_manager",             // Resources & training
+  TRAINING_COORDINATOR = "training_coordinator",   // User training
   
-  // Senior Representatives
-  CHIEF_STEWARD = "chief_steward",
-  OFFICER = "officer",
+  // ===== SYSTEM ADMINISTRATION =====
+  SYSTEM_ADMIN = "system_admin",                   // Technical operations
   
-  // Front-line Representatives
-  STEWARD = "steward",
-  BARGAINING_COMMITTEE = "bargaining_committee",
+  // ===== CLC NATIONAL (CONGRESS) LEVEL =====
+  CLC_EXECUTIVE = "clc_executive",                 // CLC President, Secretary-Treasurer
+  CLC_STAFF = "clc_staff",                         // CLC national staff
   
-  // Specialized Representatives
-  HEALTH_SAFETY_REP = "health_safety_rep",
+  // ===== FEDERATION LEVEL =====
+  FED_EXECUTIVE = "fed_executive",                 // Federation President, VP
+  FED_STAFF = "fed_staff",                         // Provincial federation staff
   
-  // Base Membership
-  MEMBER = "member",
+  // ===== UNION NATIONAL LEVEL =====
+  NATIONAL_OFFICER = "national_officer",           // National union officers
   
-  // Legacy (for backward compatibility)
-  GUEST = "guest",
-  CONGRESS_STAFF = "congress_staff",      // Deprecated: Use CLC_STAFF
-  FEDERATION_STAFF = "federation_staff",  // Deprecated: Use FED_STAFF
-  UNION_REP = "union_rep",                // Deprecated: Use STEWARD
-  STAFF_REP = "staff_rep",                // Deprecated: Use STEWARD
+  // ===== LOCAL UNION EXECUTIVES =====
+  ADMIN = "admin",                                 // Organization Administrator
+  PRESIDENT = "president",                         // Union President
+  VICE_PRESIDENT = "vice_president",               // Vice President
+  SECRETARY_TREASURER = "secretary_treasurer",     // Secretary-Treasurer
+  
+  // ===== SENIOR REPRESENTATIVES =====
+  CHIEF_STEWARD = "chief_steward",                 // Chief Steward
+  OFFICER = "officer",                             // Union Officer
+  
+  // ===== FRONT-LINE REPRESENTATIVES =====
+  STEWARD = "steward",                             // Union Steward
+  BARGAINING_COMMITTEE = "bargaining_committee",   // Bargaining Committee Member
+  
+  // ===== SPECIALIZED REPRESENTATIVES =====
+  HEALTH_SAFETY_REP = "health_safety_rep",         // Health & Safety Rep
+  
+  // ===== BASE MEMBERSHIP =====
+  MEMBER = "member",                               // Union Member
+  
+  // ===== LEGACY (BACKWARD COMPATIBILITY) =====
+  GUEST = "guest",                                 // Deprecated
+  CONGRESS_STAFF = "congress_staff",               // Deprecated: Use CLC_STAFF
+  FEDERATION_STAFF = "federation_staff",           // Deprecated: Use FED_STAFF
+  UNION_REP = "union_rep",                         // Deprecated: Use STEWARD
+  STAFF_REP = "staff_rep",                         // Deprecated: Use STEWARD
 }
 
 // Permissions that can be assigned to roles
 export enum Permission {
+  // ===== APP OPERATIONS PERMISSIONS =====
+  // Platform Operations
+  VIEW_PLATFORM_HEALTH = "view_platform_health",
+  MANAGE_PLATFORM_OPERATIONS = "manage_platform_operations",
+  VIEW_SYSTEM_METRICS = "view_system_metrics",
+  MANAGE_INCIDENTS = "manage_incidents",
+  VIEW_SLA_DASHBOARD = "view_sla_dashboard",
+  MANAGE_RELEASES = "manage_releases",
+  VIEW_CAPACITY_PLANNING = "view_capacity_planning",
+  
+  // Customer Success
+  VIEW_CUSTOMER_HEALTH = "view_customer_health",
+  MANAGE_CUSTOMER_SUCCESS = "manage_customer_success",
+  VIEW_CHURN_RISK = "view_churn_risk",
+  MANAGE_ONBOARDING = "manage_onboarding",
+  VIEW_ADOPTION_METRICS = "view_adoption_metrics",
+  MANAGE_CUSTOMER_FEEDBACK = "manage_customer_feedback",
+  
+  // Support Operations
+  VIEW_SUPPORT_TICKETS = "view_support_tickets",
+  MANAGE_SUPPORT_OPERATIONS = "manage_support_operations",
+  ASSIGN_TICKETS = "assign_tickets",
+  VIEW_SUPPORT_METRICS = "view_support_metrics",
+  MANAGE_KNOWLEDGE_BASE = "manage_knowledge_base",
+  ESCALATE_TICKETS = "escalate_tickets",
+  
+  // Data & Analytics (Platform-wide)
+  VIEW_CROSS_TENANT_ANALYTICS = "view_cross_tenant_analytics",
+  MANAGE_PLATFORM_ANALYTICS = "manage_platform_analytics",
+  CREATE_CUSTOM_REPORTS = "create_custom_reports",
+  EXPORT_PLATFORM_DATA = "export_platform_data",
+  MANAGE_BI_INTEGRATIONS = "manage_bi_integrations",
+  VIEW_USAGE_TRENDS = "view_usage_trends",
+  
+  // Billing & Finance (Platform)
+  VIEW_ALL_SUBSCRIPTIONS = "view_all_subscriptions",
+  MANAGE_SUBSCRIPTIONS = "manage_subscriptions",
+  VIEW_REVENUE_DASHBOARD = "view_revenue_dashboard",
+  MANAGE_INVOICING = "manage_invoicing",
+  PROCESS_PAYMENTS = "process_payments",
+  VIEW_FINANCIAL_REPORTS = "view_financial_reports",
+  
+  // Integration Management
+  VIEW_API_INTEGRATIONS = "view_api_integrations",
+  MANAGE_API_KEYS = "manage_api_keys",
+  MONITOR_WEBHOOKS = "monitor_webhooks",
+  MANAGE_PARTNER_INTEGRATIONS = "manage_partner_integrations",
+  VIEW_INTEGRATION_HEALTH = "view_integration_health",
+  MANAGE_OAUTH_APPS = "manage_oauth_apps",
+  
+  // Compliance Operations
+  VIEW_AUDIT_LOGS = "view_audit_logs",
+  MANAGE_COMPLIANCE_REPORTS = "manage_compliance_reports",
+  ENFORCE_POLICIES = "enforce_policies",
+  MONITOR_GDPR_COMPLIANCE = "monitor_gdpr_compliance",
+  MANAGE_RISK_ASSESSMENTS = "manage_risk_assessments",
+  GENERATE_REGULATORY_REPORTS = "generate_regulatory_reports",
+  
+  // Security Operations
+  VIEW_SECURITY_ALERTS = "view_security_alerts",
+  MANAGE_SECURITY_INCIDENTS = "manage_security_incidents",
+  AUDIT_USER_ACCESS = "audit_user_access",
+  MONITOR_THREATS = "monitor_threats",
+  MANAGE_VULNERABILITIES = "manage_vulnerabilities",
+  VIEW_SECURITY_REPORTS = "view_security_reports",
+  
+  // Content Management
+  MANAGE_TEMPLATES = "manage_templates",
+  MANAGE_RESOURCE_LIBRARY = "manage_resource_library",
+  CREATE_TRAINING_MATERIALS = "create_training_materials",
+  MANAGE_DOCUMENTATION = "manage_documentation",
+  CREATE_ANNOUNCEMENTS = "create_announcements",
+  MANAGE_EMAIL_TEMPLATES = "manage_email_templates",
+  
+  // Strategic Operations
+  VIEW_STRATEGIC_DASHBOARD = "view_strategic_dashboard",
+  MANAGE_ROADMAP = "manage_roadmap",
+  VIEW_STAKEHOLDER_REPORTS = "view_stakeholder_reports",
+  MANAGE_PARTNERSHIPS = "manage_partnerships",
+  VIEW_PLATFORM_KPIS = "view_platform_kpis",
+  
+  // ===== UNION APPLICATION PERMISSIONS =====
   // Claims permissions
   VIEW_ALL_CLAIMS = "view_all_claims",
   VIEW_OWN_CLAIMS = "view_own_claims",
@@ -152,6 +262,225 @@ export enum Permission {
 
 // Role definitions with their permissions
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
+  // ========================================================
+  // NZILA VENTURES - APP OPERATIONS ROLES
+  // ========================================================
+  
+  [UserRole.APP_OWNER]: [
+    // CEO - Strategic ownership with complete platform visibility
+    // Full access to all strategic and operational dashboards
+    Permission.VIEW_STRATEGIC_DASHBOARD,
+    Permission.MANAGE_ROADMAP,
+    Permission.VIEW_STAKEHOLDER_REPORTS,
+    Permission.MANAGE_PARTNERSHIPS,
+    Permission.VIEW_PLATFORM_KPIS,
+    Permission.VIEW_PLATFORM_HEALTH,
+    Permission.VIEW_SYSTEM_METRICS,
+    Permission.VIEW_CUSTOMER_HEALTH,
+    Permission.VIEW_REVENUE_DASHBOARD,
+    Permission.VIEW_CROSS_TENANT_ANALYTICS,
+    Permission.VIEW_USAGE_TRENDS,
+    Permission.VIEW_ALL_SUBSCRIPTIONS,
+    Permission.VIEW_FINANCIAL_REPORTS,
+    Permission.VIEW_SUPPORT_METRICS,
+    Permission.VIEW_SECURITY_REPORTS,
+    Permission.VIEW_AUDIT_LOGS,
+  ],
+  
+  [UserRole.COO]: [
+    // COO - Overall platform operations with full operational visibility
+    Permission.MANAGE_PLATFORM_OPERATIONS,
+    Permission.VIEW_PLATFORM_HEALTH,
+    Permission.VIEW_SYSTEM_METRICS,
+    Permission.MANAGE_INCIDENTS,
+    Permission.VIEW_SLA_DASHBOARD,
+    Permission.MANAGE_RELEASES,
+    Permission.VIEW_CAPACITY_PLANNING,
+    Permission.VIEW_CUSTOMER_HEALTH,
+    Permission.VIEW_SUPPORT_METRICS,
+    Permission.VIEW_CROSS_TENANT_ANALYTICS,
+    Permission.VIEW_USAGE_TRENDS,
+    Permission.VIEW_STRATEGIC_DASHBOARD,
+    Permission.VIEW_PLATFORM_KPIS,
+  ],
+  
+  [UserRole.CTO]: [
+    // CTO - Technology leadership with full technical visibility
+    Permission.MANAGE_PLATFORM_OPERATIONS,
+    Permission.VIEW_PLATFORM_HEALTH,
+    Permission.VIEW_SYSTEM_METRICS,
+    Permission.MANAGE_INCIDENTS,
+    Permission.VIEW_SLA_DASHBOARD,
+    Permission.MANAGE_RELEASES,
+    Permission.VIEW_CAPACITY_PLANNING,
+    Permission.VIEW_SECURITY_ALERTS,
+    Permission.MANAGE_SECURITY_INCIDENTS,
+    Permission.VIEW_SECURITY_REPORTS,
+    Permission.MANAGE_API_KEYS,
+    Permission.VIEW_API_INTEGRATIONS,
+    Permission.VIEW_INTEGRATION_HEALTH,
+    Permission.VIEW_AUDIT_LOGS,
+    Permission.VIEW_CROSS_TENANT_ANALYTICS,
+  ],
+  
+  [UserRole.PLATFORM_LEAD]: [
+    // Platform Manager - Day-to-day operational management
+    Permission.MANAGE_PLATFORM_OPERATIONS,
+    Permission.VIEW_PLATFORM_HEALTH,
+    Permission.VIEW_SYSTEM_METRICS,
+    Permission.MANAGE_INCIDENTS,
+    Permission.VIEW_SLA_DASHBOARD,
+    Permission.MANAGE_RELEASES,
+    Permission.VIEW_CAPACITY_PLANNING,
+    Permission.VIEW_SUPPORT_METRICS,
+    Permission.VIEW_CUSTOMER_HEALTH,
+    Permission.VIEW_SECURITY_ALERTS,
+    Permission.VIEW_CROSS_TENANT_ANALYTICS,
+    Permission.VIEW_USAGE_TRENDS,
+  ],
+  
+  [UserRole.CUSTOMER_SUCCESS_DIRECTOR]: [
+    // Customer Success Director - Customer retention & growth
+    Permission.VIEW_CUSTOMER_HEALTH,
+    Permission.MANAGE_CUSTOMER_SUCCESS,
+    Permission.VIEW_CHURN_RISK,
+    Permission.MANAGE_ONBOARDING,
+    Permission.VIEW_ADOPTION_METRICS,
+    Permission.MANAGE_CUSTOMER_FEEDBACK,
+    Permission.VIEW_SUPPORT_TICKETS,
+    Permission.VIEW_SUPPORT_METRICS,
+    Permission.VIEW_ALL_SUBSCRIPTIONS,
+    Permission.VIEW_CROSS_TENANT_ANALYTICS,
+    Permission.VIEW_USAGE_TRENDS,
+  ],
+  
+  [UserRole.SUPPORT_MANAGER]: [
+    // Support Manager - Help desk and support operations
+    Permission.VIEW_SUPPORT_TICKETS,
+    Permission.MANAGE_SUPPORT_OPERATIONS,
+    Permission.ASSIGN_TICKETS,
+    Permission.VIEW_SUPPORT_METRICS,
+    Permission.MANAGE_KNOWLEDGE_BASE,
+    Permission.ESCALATE_TICKETS,
+    Permission.VIEW_CUSTOMER_HEALTH,
+    Permission.MANAGE_CUSTOMER_FEEDBACK,
+  ],
+  
+  [UserRole.DATA_ANALYTICS_MANAGER]: [
+    // Analytics Manager - Platform-wide analytics and BI
+    Permission.VIEW_CROSS_TENANT_ANALYTICS,
+    Permission.MANAGE_PLATFORM_ANALYTICS,
+    Permission.CREATE_CUSTOM_REPORTS,
+    Permission.EXPORT_PLATFORM_DATA,
+    Permission.MANAGE_BI_INTEGRATIONS,
+    Permission.VIEW_USAGE_TRENDS,
+    Permission.VIEW_CUSTOMER_HEALTH,
+    Permission.VIEW_ADOPTION_METRICS,
+    Permission.VIEW_SYSTEM_METRICS,
+  ],
+  
+  [UserRole.BILLING_MANAGER]: [
+    // Billing Manager - Subscriptions and payment operations
+    Permission.VIEW_ALL_SUBSCRIPTIONS,
+    Permission.MANAGE_SUBSCRIPTIONS,
+    Permission.VIEW_REVENUE_DASHBOARD,
+    Permission.MANAGE_INVOICING,
+    Permission.PROCESS_PAYMENTS,
+    Permission.VIEW_FINANCIAL_REPORTS,
+    Permission.VIEW_CUSTOMER_HEALTH,
+  ],
+  
+  [UserRole.INTEGRATION_MANAGER]: [
+    // Integration Manager - APIs and third-party partnerships
+    Permission.VIEW_API_INTEGRATIONS,
+    Permission.MANAGE_API_KEYS,
+    Permission.MONITOR_WEBHOOKS,
+    Permission.MANAGE_PARTNER_INTEGRATIONS,
+    Permission.VIEW_INTEGRATION_HEALTH,
+    Permission.MANAGE_OAUTH_APPS,
+    Permission.VIEW_SYSTEM_METRICS,
+  ],
+  
+  [UserRole.COMPLIANCE_MANAGER]: [
+    // Compliance Manager - Platform compliance and auditing
+    Permission.VIEW_AUDIT_LOGS,
+    Permission.MANAGE_COMPLIANCE_REPORTS,
+    Permission.ENFORCE_POLICIES,
+    Permission.MONITOR_GDPR_COMPLIANCE,
+    Permission.MANAGE_RISK_ASSESSMENTS,
+    Permission.GENERATE_REGULATORY_REPORTS,
+    Permission.VIEW_SECURITY_ALERTS,
+    Permission.VIEW_CROSS_TENANT_ANALYTICS,
+  ],
+  
+  [UserRole.SECURITY_MANAGER]: [
+    // Security Manager - Security monitoring and incident response
+    Permission.VIEW_SECURITY_ALERTS,
+    Permission.MANAGE_SECURITY_INCIDENTS,
+    Permission.AUDIT_USER_ACCESS,
+    Permission.MONITOR_THREATS,
+    Permission.MANAGE_VULNERABILITIES,
+    Permission.VIEW_SECURITY_REPORTS,
+    Permission.VIEW_AUDIT_LOGS,
+    Permission.VIEW_SYSTEM_METRICS,
+  ],
+  
+  [UserRole.SUPPORT_AGENT]: [
+    // Support Agent - Customer support and ticket handling
+    Permission.VIEW_SUPPORT_TICKETS,
+    Permission.ASSIGN_TICKETS,
+    Permission.ESCALATE_TICKETS,
+    Permission.MANAGE_KNOWLEDGE_BASE,
+  ],
+  
+  [UserRole.DATA_ANALYST]: [
+    // Data Analyst - Analytics and reporting
+    Permission.VIEW_CROSS_TENANT_ANALYTICS,
+    Permission.CREATE_CUSTOM_REPORTS,
+    Permission.EXPORT_PLATFORM_DATA,
+    Permission.VIEW_USAGE_TRENDS,
+    Permission.VIEW_ADOPTION_METRICS,
+  ],
+  
+  [UserRole.BILLING_SPECIALIST]: [
+    // Billing Specialist - Billing operations
+    Permission.VIEW_ALL_SUBSCRIPTIONS,
+    Permission.MANAGE_SUBSCRIPTIONS,
+    Permission.MANAGE_INVOICING,
+    Permission.PROCESS_PAYMENTS,
+    Permission.VIEW_REVENUE_DASHBOARD,
+  ],
+  
+  [UserRole.INTEGRATION_SPECIALIST]: [
+    // Integration Specialist - API support
+    Permission.VIEW_API_INTEGRATIONS,
+    Permission.MANAGE_API_KEYS,
+    Permission.MONITOR_WEBHOOKS,
+    Permission.VIEW_INTEGRATION_HEALTH,
+  ],
+  
+  [UserRole.CONTENT_MANAGER]: [
+    // Content Manager - Resources and training materials
+    Permission.MANAGE_TEMPLATES,
+    Permission.MANAGE_RESOURCE_LIBRARY,
+    Permission.CREATE_TRAINING_MATERIALS,
+    Permission.MANAGE_DOCUMENTATION,
+    Permission.CREATE_ANNOUNCEMENTS,
+    Permission.MANAGE_EMAIL_TEMPLATES,
+  ],
+  
+  [UserRole.TRAINING_COORDINATOR]: [
+    // Training Coordinator - User training and onboarding
+    Permission.CREATE_TRAINING_MATERIALS,
+    Permission.MANAGE_RESOURCE_LIBRARY,
+    Permission.MANAGE_ONBOARDING,
+    Permission.VIEW_ADOPTION_METRICS,
+  ],
+  
+  // ========================================================
+  // SYSTEM ADMINISTRATION & UNION ROLES
+  // ========================================================
+  
   [UserRole.SYSTEM_ADMIN]: [
     // System administrators have complete access to all features
     Permission.VIEW_ALL_CLAIMS,

@@ -38,7 +38,7 @@ describe('Document Service - Minimal Tests', () => {
   it('should get document by ID', async () => {
     const mockDocument = {
       id: 'doc-123',
-      tenantId: 'tenant-1',
+      organizationId: 'org-1',
       name: 'Contract.pdf',
       fileUrl: 'https://storage.example.com/contract.pdf',
       fileType: 'application/pdf',
@@ -65,3 +65,6 @@ describe('Document Service - Minimal Tests', () => {
     expect(result).toBeNull();
   });
 });
+
+
+

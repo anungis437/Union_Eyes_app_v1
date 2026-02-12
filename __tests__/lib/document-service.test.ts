@@ -90,7 +90,7 @@ describe('Document Service - Document Operations', () => {
     it('should get document by ID', async () => {
       const mockDocument = {
         id: 'doc-123',
-        tenantId: 'tenant-1',
+        organizationId: 'org-1',
         name: 'Contract.pdf',
         fileUrl: 'https://storage.example.com/contract.pdf',
         fileType: 'application/pdf',
@@ -132,7 +132,7 @@ describe('Document Service - Document Operations', () => {
       const mockFolder = {
         id: 'folder-1',
         name: 'Contracts',
-        tenantId: 'tenant-1',
+        organizationId: 'org-1',
       };
 
       (db.query.documents.findFirst as any) = vi.fn().mockResolvedValue(mockDocument);
@@ -184,7 +184,7 @@ describe('Document Service - Document Operations', () => {
       expect(result.limit).toBe(10);
     });
 
-    it('should filter by tenant ID', async () => {
+    it('should filter by organization ID', async () => {
       const mockFrom = vi.fn().mockReturnThis();
       const mockWhere = vi.fn().mockReturnThis();
 
@@ -200,7 +200,7 @@ describe('Document Service - Document Operations', () => {
         }),
       });
 
-      await listDocuments({ tenantId: 'tenant-1' });
+      await listDocuments({ organizationId: 'org-1' });
 
       expect(mockWhere).toHaveBeenCalled();
     });
@@ -252,7 +252,7 @@ describe('Document Service - Document Operations', () => {
   describe('createDocument()', () => {
     it('should create document', async () => {
       const newDocument = {
-        tenantId: 'tenant-1',
+        organizationId: 'org-1',
         name: 'Contract.pdf',
         fileUrl: 'https://storage.example.com/contract.pdf',
         fileType: 'application/pdf',
@@ -284,7 +284,7 @@ describe('Document Service - Document Operations', () => {
         }),
       });
 
-      await expect(createDocument({ tenantId: 'tenant-1', name: 'Test' } as any)).rejects.toThrow(
+      await expect(createDocument({ organizationId: 'org-1', name: 'Test' } as any)).rejects.toThrow(
         'Failed to create document'
       );
     });
@@ -389,7 +389,7 @@ describe('Document Service - Folder Operations', () => {
       const mockFolder = {
         id: 'folder-1',
         name: 'Contracts',
-        tenantId: 'tenant-1',
+        organizationId: 'org-1',
         deletedAt: null,
       };
 
@@ -437,7 +437,7 @@ describe('Document Service - Folder Operations', () => {
           where: vi.fn().mockResolvedValue([{ count: 0 }]),
         }));
 
-      const result = await listFolders('tenant-1', null);
+      const result = await listFolders('org-1', null);
 
       expect(result).toHaveLength(2);
     });
@@ -456,7 +456,7 @@ describe('Document Service - Folder Operations', () => {
           where: vi.fn().mockResolvedValue([{ count: 0 }]),
         }));
 
-      const result = await listFolders('tenant-1', 'folder-1');
+      const result = await listFolders('org-1', 'folder-1');
 
       expect(result).toHaveLength(1);
     });
@@ -465,7 +465,7 @@ describe('Document Service - Folder Operations', () => {
   describe('createFolder()', () => {
     it('should create folder', async () => {
       const newFolder = {
-        tenantId: 'tenant-1',
+        organizationId: 'org-1',
         name: 'New Folder',
       };
 
@@ -563,7 +563,7 @@ describe('Document Service - Folder Operations', () => {
         where: vi.fn().mockResolvedValue(mockFolders),
       }));
 
-      const result = await getFolderTree('tenant-1');
+      const result = await getFolderTree('org-1');
 
       expect(result).toHaveLength(2); // Two root folders
       expect(result[0].children).toHaveLength(1); // First root has 1 child
@@ -575,7 +575,7 @@ describe('Document Service - Folder Operations', () => {
         where: vi.fn().mockResolvedValue([]),
       }));
 
-      const result = await getFolderTree('tenant-1');
+      const result = await getFolderTree('org-1');
 
       expect(result).toHaveLength(0);
     });
@@ -741,7 +741,7 @@ describe('Document Service - Statistics', () => {
         where: vi.fn().mockResolvedValue(mockDocs),
       }));
 
-      const result = await getDocumentStatistics('tenant-1');
+      const result = await getDocumentStatistics('org-1');
 
       expect(result.total).toBe(3);
       expect(result.byCategory['legal']).toBe(2);
@@ -757,7 +757,7 @@ describe('Document Service - Statistics', () => {
         where: vi.fn().mockResolvedValue([]),
       }));
 
-      const result = await getDocumentStatistics('tenant-1');
+      const result = await getDocumentStatistics('org-1');
 
       expect(result.total).toBe(0);
       expect(result.totalSize).toBe(0);
@@ -780,10 +780,13 @@ describe('Document Service - Statistics', () => {
         where: vi.fn().mockResolvedValue(mockDocs),
       }));
 
-      const result = await getDocumentStatistics('tenant-1');
+      const result = await getDocumentStatistics('org-1');
 
       expect(result.total).toBe(1);
       expect(Object.keys(result.byCategory)).toHaveLength(0);
     });
   });
 });
+
+
+

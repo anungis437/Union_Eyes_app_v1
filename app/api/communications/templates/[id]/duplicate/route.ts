@@ -31,12 +31,12 @@ export async function POST(
       'Unauthorized'
     );
     }
-    const { id: userId, tenantId } = user;
+    const { id: userId, organizationId } = user;
 
-    if (!tenantId) {
+    if (!organizationId) {
       return standardErrorResponse(
       ErrorCode.FORBIDDEN,
-      'Tenant context required'
+      'Organization context required'
     );
     }
 
@@ -47,7 +47,7 @@ export async function POST(
       .where(
         and(
           eq(newsletterTemplates.id, params.id),
-          eq(newsletterTemplates.organizationId, tenantId)
+          eq(newsletterTemplates.organizationId, organizationId)
         )
       );
 
@@ -62,7 +62,7 @@ export async function POST(
     const [duplicate] = await db
       .insert(newsletterTemplates)
       .values({
-        organizationId: tenantId,
+        organizationId,
         createdBy: userId,
         name: `${original.name} (Copy)`,
         description: original.description,

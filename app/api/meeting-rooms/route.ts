@@ -146,7 +146,7 @@ export const GET = async (request: NextRequest) => {
 };
 
 
-const meeting-roomsSchema = z.object({
+const meetingRoomsSchema = z.object({
   name: z.string().min(1, 'name is required'),
   displayName: z.boolean().optional(),
   description: z.string().optional(),
@@ -154,16 +154,16 @@ const meeting-roomsSchema = z.object({
   floor: z.unknown().optional(),
   roomNumber: z.unknown().optional(),
   address: z.unknown().optional(),
-  capacity = 10: z.unknown().optional(),
-  features = []: z.unknown().optional(),
-  equipment = []: z.unknown().optional(),
-  requiresApproval = false: z.unknown().optional(),
-  minBookingDuration = 30: z.unknown().optional(),
-  maxBookingDuration = 480: z.unknown().optional(),
-  advanceBookingDays = 90: z.unknown().optional(),
+  capacity: z.unknown().optional().default(10),
+  features: z.unknown().optional().default([]),
+  equipment: z.unknown().optional().default([]),
+  requiresApproval: z.unknown().optional().default(false),
+  minBookingDuration: z.unknown().optional().default(30),
+  maxBookingDuration: z.unknown().optional().default(480),
+  advanceBookingDays: z.unknown().optional().default(90),
   operatingHours: z.unknown().optional(),
   allowedUserRoles: z.unknown().optional(),
-  blockedDates = []: z.string().datetime().optional(),
+  blockedDates: z.string().datetime().optional(),
   contactPersonId: z.string().uuid('Invalid contactPersonId'),
   contactEmail: z.string().email('Invalid email address'),
   contactPhone: z.string().min(10, 'Invalid phone number'),
@@ -228,13 +228,13 @@ export const POST = async (request: NextRequest) => {
     );
       }
 
-      // Get tenant ID
-      const tenantId = organizationId;
+      // Get organization ID
+      const organizationScopeId = organizationId;
 
       const [newRoom] = await db
         .insert(meetingRooms)
         .values({
-          tenantId,
+          organizationId: organizationScopeId,
           name,
           displayName: displayName || name,
           description,

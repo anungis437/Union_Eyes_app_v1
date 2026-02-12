@@ -22,7 +22,7 @@ export { WorkflowAnalytics } from './WorkflowAnalytics';
  * import { WorkflowBuilder } from '@/components/workflow';
  * 
  * <WorkflowBuilder
- *   tenantId="tenant-123"
+ *   organizationId="org-123"
  *   onSave={(workflow) => undefined}
  *   onTest={(workflow) => undefined}
  * />
@@ -33,7 +33,7 @@ export { WorkflowAnalytics } from './WorkflowAnalytics';
  * import { WorkflowMonitor } from '@/components/workflow';
  * 
  * <WorkflowMonitor
- *   tenantId="tenant-123"
+ *   organizationId="org-123"
  *   onViewDetails={(instanceId) => navigate(`/workflows/instances/${instanceId}`)}
  * />
  * ```
@@ -44,7 +44,7 @@ export { WorkflowAnalytics } from './WorkflowAnalytics';
  * 
  * <WorkflowInstanceDetail
  *   instanceId="instance-456"
- *   tenantId="tenant-123"
+ *   organizationId="org-123"
  *   onBack={() => navigate('/workflows')}
  * />
  * ```
@@ -54,7 +54,7 @@ export { WorkflowAnalytics } from './WorkflowAnalytics';
  * import { ApprovalQueue } from '@/components/workflow';
  * 
  * <ApprovalQueue
- *   tenantId="tenant-123"
+ *   organizationId="org-123"
  *   userId="user-789"
  *   onApprovalProcessed={(id, approved) => undefined}
  * />
@@ -65,7 +65,7 @@ export { WorkflowAnalytics } from './WorkflowAnalytics';
  * import { WorkflowTemplateGallery } from '@/components/workflow';
  * 
  * <WorkflowTemplateGallery
- *   tenantId="tenant-123"
+ *   organizationId="org-123"
  *   onCreateFromTemplate={(templateId, customizations) => {
  *     handleTemplateCreate(templateId, customizations);
  *   }}
@@ -78,7 +78,7 @@ export { WorkflowAnalytics } from './WorkflowAnalytics';
  * import { WorkflowAnalytics } from '@/components/workflow';
  * 
  * <WorkflowAnalytics
- *   tenantId="tenant-123"
+ *   organizationId="org-123"
  *   workflowId="workflow-123" // Optional - shows overview if omitted
  * />
  * ```

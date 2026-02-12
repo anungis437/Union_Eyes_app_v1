@@ -322,7 +322,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
 
             return {
               eventId,
-              tenantId: updatedEvent.tenantId,
+              organizationId: updatedEvent.organizationId,
               userId: attendeeUserId,
               email: attendee.email,
               name: attendee.name,
@@ -428,7 +428,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
           for (const attendee of attendees) {
             if (attendee.email) {
               await notificationService.send({
-                organizationId: event.tenantId,
+                organizationId: event.organizationId,
                 recipientId: attendee.userId || undefined,
                 recipientEmail: attendee.email,
                 type: 'email',

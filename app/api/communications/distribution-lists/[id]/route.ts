@@ -125,12 +125,27 @@ export const PUT = withOrganizationAuth(async (
 
     return NextResponse.json({ list });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return standardErrorResponse(
-      ErrorCode.VALIDATION_ERROR,
-      'Validation error',
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update distribution list',
       error
     );
+  }
+});
+
+export const DELETE = withOrganizationAuth(async (
+  request: NextRequest,
+  context,
+  params?: { id: string }
+) => {
+  try {
+    const { organizationId } = context;
+
+    if (!params?.id) {
+      return standardErrorResponse(
+        ErrorCode.MISSING_REQUIRED_FIELD,
+        'List ID required'
+      );
     }
 
     await db
@@ -144,7 +159,7 @@ export const PUT = withOrganizationAuth(async (
 
     return NextResponse.json({ success: true });
   } catch (error) {
-return standardErrorResponse(
+    return standardErrorResponse(
       ErrorCode.INTERNAL_ERROR,
       'Failed to delete distribution list',
       error

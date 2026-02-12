@@ -282,7 +282,7 @@ setError(err instanceof Error ? err.message : 'Failed to load claim');
             >
               <ClaimJurisdictionInfo
                 claimId={claim.claimId}
-                tenantId={claim.organizationId}
+                organizationId={claim.organizationId}
                 claimType={claim.claimType}
                 status={claim.status}
                 filedDate={claim.filedDate}

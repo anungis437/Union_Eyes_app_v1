@@ -33,7 +33,7 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 
 interface SmsInboxProps {
-  tenantId: string;
+  organizationId: string;
 }
 
 interface Conversation {
@@ -47,7 +47,7 @@ interface Conversation {
   userId?: string;
 }
 
-export function SmsInbox({ tenantId }: SmsInboxProps) {
+export function SmsInbox({ organizationId }: SmsInboxProps) {
   const { toast } = useToast();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
@@ -67,11 +67,11 @@ export function SmsInbox({ tenantId }: SmsInboxProps) {
     const interval = setInterval(loadData, 30000);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tenantId]);
+  }, [organizationId]);
 
   const loadConversations = async () => {
     try {
-      const response = await fetch(`/api/communications/sms/conversations?tenantId=${tenantId}`);
+      const response = await fetch(`/api/communications/sms/conversations?organizationId=${organizationId}`);
       if (!response.ok) throw new Error('Failed to load conversations');
       const { conversations } = await response.json();
       setConversations(conversations || []);
@@ -121,7 +121,7 @@ toast({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'send',
-          tenantId,
+          organizationId,
           phoneNumber: conversation.phoneNumber,
           message: replyMessage,
         }),

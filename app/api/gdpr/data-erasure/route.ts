@@ -21,11 +21,10 @@ import {
 
 const erasureRequestSchema = z.object({
   organizationId: z.string().uuid().optional(),
-  tenantId: z.string().uuid().optional(),
   reason: z.string().min(10).max(500).optional(),
   requestDetails: z.record(z.any()).optional(),
-}).refine((data) => data.organizationId || data.tenantId, {
-  message: "Either organizationId or tenantId must be provided",
+}).refine((data) => data.organizationId, {
+  message: "organizationId must be provided",
 });
 
 const erasureExecutionSchema = z.object({
@@ -77,9 +76,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       );
     }
     
-    const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, reason, requestDetails } = validation.data;
-    const organizationId = organizationIdFromBody ?? tenantIdFromBody;
-    const tenantId = organizationId;
+    const { organizationId, reason, requestDetails } = validation.data;
 
     if (!organizationId) {
       return standardErrorResponse(
@@ -90,7 +87,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
 
     // Check if data can be erased
     const { canErase, reasons } = await DataErasureService.canEraseData( userId,
-      tenantId
+      organizationId
     );
 
     if (!canErase) {
@@ -106,7 +103,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
     // Create erasure request
     const request = await GdprRequestManager.requestDataErasure({
       userId,
-      tenantId,
+      organizationId,
       requestDetails: {
         reason,
         ...requestDetails,
@@ -164,7 +161,7 @@ export const DELETE = withRoleAuth('admin', async (request: NextRequest, context
     }
 
     const body = await request.json();
-    \n    // Validate input
+    // Validate input
     const validation = erasureExecutionSchema.safeParse(body);
     if (!validation.success) {
       return standardErrorResponse(
@@ -172,17 +169,16 @@ export const DELETE = withRoleAuth('admin', async (request: NextRequest, context
         validation.error.errors[0]?.message || 'Invalid request data'
       );
     }
-    \n    const { requestId, confirmation } = validation.data;
+    
+    const { requestId, confirmation } = validation.data;
     const targetUserId = body.userId; // Get from body but not validated by schema
-    const organizationIdFromBody = body.organizationId || body.tenantId;
-    const tenantId = organizationIdFromBody;
+    const organizationIdFromBody = body.organizationId;
 
     if (!targetUserId || !organizationIdFromBody) {
       return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Missing userId or organizationId'
     );
-    }
     }
 
     // Require explicit confirmation
@@ -194,12 +190,12 @@ export const DELETE = withRoleAuth('admin', async (request: NextRequest, context
     }
 
     // Log the admin action
-    logger.info('Data erasure initiated', { adminId: userId, targetUserId, tenantId });
+    logger.info('Data erasure initiated', { adminId: userId, targetUserId, organizationId: organizationIdFromBody });
 
     // Execute erasure
     await DataErasureService.eraseUserData(
       targetUserId,
-      tenantId,
+      organizationIdFromBody,
       requestId,
       userId
     );
@@ -235,19 +231,16 @@ export const GET = withApiAuth(async (request: NextRequest) => {
     
     const userId = user.id;
     const { searchParams } = new URL(request.url);
-    const organizationIdFromQuery = (searchParams.get("organizationId") ?? searchParams.get("tenantId"));
-    const tenantId = organizationIdFromQuery;
+    const organizationIdFromQuery = searchParams.get("organizationId") ?? searchParams.get("orgId") ?? searchParams.get("organization_id") ?? searchParams.get("org_id");
 
-    if (!tenantId) {
+    if (!organizationIdFromQuery) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
       'Organization ID required'
     );
     }
 
-    const requests = await GdprRequestManager.getUserRequests( userId,
-      tenantId
-    );
+    const requests = await GdprRequestManager.getUserRequests(userId, organizationIdFromQuery);
 
     const erasureRequests = requests.filter(
       (r) => r.requestType === "erasure"

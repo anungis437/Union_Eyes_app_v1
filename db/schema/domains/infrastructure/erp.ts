@@ -7,6 +7,7 @@
 
 import { pgTable, uuid, varchar, text, timestamp, boolean, decimal, integer, jsonb, index, pgEnum } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
+import { organizations } from '../../../schema-organizations';
 
 // ============================================================================
 // ENUMS
@@ -63,7 +64,9 @@ export const auditActionEnum = pgEnum('audit_action', [
 
 export const erpConnectors = pgTable('erp_connectors', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   name: varchar('name', { length: 255 }).notNull(),
   systemType: erpSystemEnum('system_type').notNull(),
   isActive: boolean('is_active').default(true).notNull(),
@@ -95,7 +98,7 @@ export const erpConnectors = pgTable('erp_connectors', {
   createdBy: varchar('created_by', { length: 255 }), // User ID - matches users.userId VARCHAR(255)
   updatedBy: varchar('updated_by', { length: 255 }), // User ID - matches users.userId VARCHAR(255)
 }, (table) => ({
-  tenantIdx: index('erp_connectors_tenant_idx').on(table.tenantId),
+  organizationIdx: index('erp_connectors_organization_idx').on(table.organizationId),
   systemTypeIdx: index('erp_connectors_system_type_idx').on(table.systemType),
 }));
 
@@ -105,7 +108,9 @@ export const erpConnectors = pgTable('erp_connectors', {
 
 export const chartOfAccounts = pgTable('chart_of_accounts', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   connectorId: uuid('connector_id').notNull().references(() => erpConnectors.id),
   
   externalId: varchar('external_id', { length: 255 }).notNull(),
@@ -129,7 +134,7 @@ export const chartOfAccounts = pgTable('chart_of_accounts', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => ({
-  tenantIdx: index('coa_tenant_idx').on(table.tenantId),
+  organizationIdx: index('coa_organization_idx').on(table.organizationId),
   connectorIdx: index('coa_connector_idx').on(table.connectorId),
   accountNumberIdx: index('coa_account_number_idx').on(table.accountNumber),
   externalIdIdx: index('coa_external_id_idx').on(table.externalId),
@@ -141,7 +146,9 @@ export const chartOfAccounts = pgTable('chart_of_accounts', {
 
 export const glAccountMappings = pgTable('gl_account_mappings', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   connectorId: uuid('connector_id').notNull().references(() => erpConnectors.id),
   
   unionEyesAccount: varchar('union_eyes_account', { length: 255 }).notNull(),
@@ -156,7 +163,7 @@ export const glAccountMappings = pgTable('gl_account_mappings', {
   createdBy: varchar('created_by', { length: 255 }), // User ID - matches users.userId VARCHAR(255)
   updatedBy: varchar('updated_by', { length: 255 }), // User ID - matches users.userId VARCHAR(255)
 }, (table) => ({
-  tenantIdx: index('gl_mappings_tenant_idx').on(table.tenantId),
+  organizationIdx: index('gl_mappings_organization_idx').on(table.organizationId),
   unionAccountIdx: index('gl_mappings_union_account_idx').on(table.unionEyesAccount),
   erpAccountIdx: index('gl_mappings_erp_account_idx').on(table.erpAccountId),
 }));
@@ -167,7 +174,9 @@ export const glAccountMappings = pgTable('gl_account_mappings', {
 
 export const journalEntries = pgTable('journal_entries', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   connectorId: uuid('connector_id').references(() => erpConnectors.id),
   
   externalId: varchar('external_id', { length: 255 }),
@@ -195,7 +204,7 @@ export const journalEntries = pgTable('journal_entries', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => ({
-  tenantIdx: index('je_tenant_idx').on(table.tenantId),
+  organizationIdx: index('je_organization_idx').on(table.organizationId),
   entryNumberIdx: index('je_entry_number_idx').on(table.entryNumber),
   entryDateIdx: index('je_entry_date_idx').on(table.entryDate),
   externalIdIdx: index('je_external_id_idx').on(table.externalId),
@@ -233,7 +242,9 @@ export const journalEntryLines = pgTable('journal_entry_lines', {
 
 export const erpInvoices = pgTable('erp_invoices', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   connectorId: uuid('connector_id').references(() => erpConnectors.id),
   
   externalId: varchar('external_id', { length: 255 }),
@@ -266,7 +277,7 @@ export const erpInvoices = pgTable('erp_invoices', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => ({
-  tenantIdx: index('invoices_tenant_idx').on(table.tenantId),
+  organizationIdx: index('invoices_organization_idx').on(table.organizationId),
   invoiceNumberIdx: index('invoices_number_idx').on(table.invoiceNumber),
   statusIdx: index('invoices_status_idx').on(table.status),
   dueDateIdx: index('invoices_due_date_idx').on(table.dueDate),
@@ -278,7 +289,9 @@ export const erpInvoices = pgTable('erp_invoices', {
 
 export const bankAccounts = pgTable('bank_accounts', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   connectorId: uuid('connector_id').references(() => erpConnectors.id),
   
   externalId: varchar('external_id', { length: 255 }),
@@ -304,7 +317,7 @@ export const bankAccounts = pgTable('bank_accounts', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => ({
-  tenantIdx: index('bank_accounts_tenant_idx').on(table.tenantId),
+  organizationIdx: index('bank_accounts_organization_idx').on(table.organizationId),
 }));
 
 export const bankTransactions = pgTable('bank_transactions', {
@@ -337,7 +350,9 @@ export const bankTransactions = pgTable('bank_transactions', {
 
 export const bankReconciliations = pgTable('bank_reconciliations', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   bankAccountId: uuid('bank_account_id').notNull().references(() => bankAccounts.id),
   
   statementDate: timestamp('statement_date', { withTimezone: true }).notNull(),
@@ -356,7 +371,7 @@ export const bankReconciliations = pgTable('bank_reconciliations', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => ({
-  tenantIdx: index('bank_recon_tenant_idx').on(table.tenantId),
+  organizationIdx: index('bank_recon_organization_idx').on(table.organizationId),
   bankAccountIdx: index('bank_recon_account_idx').on(table.bankAccountId),
   statementDateIdx: index('bank_recon_date_idx').on(table.statementDate),
 }));
@@ -367,7 +382,9 @@ export const bankReconciliations = pgTable('bank_reconciliations', {
 
 export const syncJobs = pgTable('sync_jobs', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   connectorId: uuid('connector_id').notNull().references(() => erpConnectors.id),
   
   entityType: varchar('entity_type', { length: 100 }).notNull(),
@@ -393,7 +410,7 @@ export const syncJobs = pgTable('sync_jobs', {
   metadata: jsonb('metadata'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => ({
-  tenantIdx: index('sync_jobs_tenant_idx').on(table.tenantId),
+  organizationIdx: index('sync_jobs_organization_idx').on(table.organizationId),
   connectorIdx: index('sync_jobs_connector_idx').on(table.connectorId),
   statusIdx: index('sync_jobs_status_idx').on(table.status),
   startedAtIdx: index('sync_jobs_started_at_idx').on(table.startedAt),
@@ -405,7 +422,9 @@ export const syncJobs = pgTable('sync_jobs', {
 
 export const financialAuditLog = pgTable('financial_audit_log', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   
   entityType: varchar('entity_type', { length: 100 }).notNull(),
   entityId: uuid('entity_id').notNull(),
@@ -426,7 +445,7 @@ export const financialAuditLog = pgTable('financial_audit_log', {
   
   timestamp: timestamp('timestamp', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => ({
-  tenantIdx: index('audit_tenant_idx').on(table.tenantId),
+  organizationIdx: index('audit_organization_idx').on(table.organizationId),
   entityIdx: index('audit_entity_idx').on(table.entityType, table.entityId),
   userIdx: index('audit_user_idx').on(table.userId),
   timestampIdx: index('audit_timestamp_idx').on(table.timestamp),
@@ -438,7 +457,9 @@ export const financialAuditLog = pgTable('financial_audit_log', {
 
 export const currencyExchangeRates = pgTable('currency_exchange_rates', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   
   baseCurrency: varchar('base_currency', { length: 3 }).notNull(),
   targetCurrency: varchar('target_currency', { length: 3 }).notNull(),
@@ -450,7 +471,7 @@ export const currencyExchangeRates = pgTable('currency_exchange_rates', {
   metadata: jsonb('metadata'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => ({
-  tenantIdx: index('fx_rates_tenant_idx').on(table.tenantId),
+  organizationIdx: index('fx_rates_organization_idx').on(table.organizationId),
   currencyIdx: index('fx_rates_currency_idx').on(table.baseCurrency, table.targetCurrency),
   effectiveDateIdx: index('fx_rates_date_idx').on(table.effectiveDate),
 }));

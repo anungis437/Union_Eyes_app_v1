@@ -37,9 +37,9 @@ export const GET = withRoleAuth('steward', async (req: NextRequest, context) => 
   }
 
   try {
-    const tenantId = organizationId;
+    const organizationScopeId = organizationId;
     
-    if (!tenantId) {
+    if (!organizationScopeId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
       'Organization ID required'
@@ -67,7 +67,7 @@ export const GET = withRoleAuth('steward', async (req: NextRequest, context) => 
       })
       .from(claims)
       .where(and(
-        eq(claims.organizationId, tenantId),
+        eq(claims.organizationId, organizationScopeId),
         gte(claims.filedDate, startDate)
       ));
     });
@@ -81,7 +81,7 @@ export const GET = withRoleAuth('steward', async (req: NextRequest, context) => 
       })
       .from(claims)
       .where(and(
-        eq(claims.organizationId, tenantId),
+        eq(claims.organizationId, organizationScopeId),
         gte(claims.filedDate, prevStartDate),
         sql`${claims.filedDate} < ${startDate}`
       ));

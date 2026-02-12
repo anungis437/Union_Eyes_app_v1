@@ -7,7 +7,7 @@
  * Features:
  * - Daily/weekly/monthly aggregations
  * - Incremental updates
- * - Multi-tenant support
+ * - Multi-organization support
  * 
  * Created: November 15, 2025
  */
@@ -18,7 +18,6 @@ import { eq, and, gte, sql, count } from 'drizzle-orm';
 
 interface DailyAggregation {
   organizationId: string;
-  tenantId?: string;
   date: Date;
   totalClaims: number;
   newClaims: number;
@@ -30,9 +29,8 @@ interface DailyAggregation {
   totalCosts: number;
 }
 
-interface TenantMetrics {
+interface OrganizationMetrics {
   organizationId: string;
-  tenantId?: string;
   metrics: {
     claims: {
       total: number;
@@ -59,7 +57,7 @@ interface TenantMetrics {
 
 class AnalyticsAggregationService {
   /**
-   * Compute daily aggregations for a tenant
+  * Compute daily aggregations for an organization
    */
   async computeDailyAggregation(
     organizationId: string,
@@ -130,7 +128,6 @@ class AnalyticsAggregationService {
 
     return {
       organizationId,
-      tenantId: organizationId,
       date,
       totalClaims: totals.total,
       newClaims: newClaims.count,
@@ -144,9 +141,9 @@ class AnalyticsAggregationService {
   }
 
   /**
-   * Compute comprehensive tenant metrics
+  * Compute comprehensive organization metrics
    */
-  async computeTenantMetrics(organizationId: string): Promise<TenantMetrics> {
+  async computeOrganizationMetrics(organizationId: string): Promise<OrganizationMetrics> {
     // Claims metrics
     const [claimsMetrics] = await db
       .select({
@@ -194,7 +191,6 @@ class AnalyticsAggregationService {
 
     return {
       organizationId,
-      tenantId: organizationId,
       metrics: {
         claims: {
           total: claimsMetrics.total,
@@ -242,7 +238,6 @@ class AnalyticsAggregationService {
 
     return {
       organizationId,
-      tenantId: organizationId,
       startDate,
       endDate,
       ...metrics,
@@ -250,20 +245,20 @@ class AnalyticsAggregationService {
   }
 
   /**
-   * Run scheduled aggregation for all tenants
+  * Run scheduled aggregation for all organizations
    * Should be called daily via cron job
    */
   async runDailyAggregations(): Promise<void> {
-// Get all unique tenant IDs
-    const tenants = await db
+// Get all unique organization IDs
+        const organizations = await db
       .selectDistinct({ organizationId: claims.organizationId })
       .from(claims);
 
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
 
-    // Compute aggregations for each tenant
-    for (const { organizationId } of tenants) {
+    // Compute aggregations for each organization
+        for (const { organizationId } of organizations) {
       try {
         await this.computeDailyAggregation(organizationId, yesterday);
 } catch (error) {
@@ -278,7 +273,7 @@ export const aggregationService = new AnalyticsAggregationService();
 /**
  * Helper function to get or compute metrics with caching
  */
-export async function getTenantMetrics(organizationId: string): Promise<TenantMetrics> {
-  return await aggregationService.computeTenantMetrics(organizationId);
+export async function getOrganizationMetrics(organizationId: string): Promise<OrganizationMetrics> {
+  return await aggregationService.computeOrganizationMetrics(organizationId);
 }
 

@@ -1,7 +1,7 @@
 import { pgTable, uuid, varchar, boolean, timestamp, text, jsonb, integer, decimal, check } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import { organizations } from "../schema-organizations";
-import { organizationMembers } from "./organization-members-schema";
+import { organizations } from "../../../schema-organizations";
+import { organizationMembers } from "../../organization-members-schema";
 
 // Voting sessions table - convention and ratification voting
 export const votingSessions = pgTable("voting_sessions", {

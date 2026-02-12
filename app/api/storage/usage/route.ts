@@ -21,7 +21,7 @@ import {
  * Get storage usage statistics for an organization
  * 
  * Query params:
- * - tenantId: string (required) - Organization ID
+ * - organizationId: string (required) - Organization ID
  * - breakdown: boolean (optional) - Include breakdown by file type and category
  */
 export const GET = withEnhancedRoleAuth(90, async (request, context) => {
@@ -62,10 +62,10 @@ export const GET = withEnhancedRoleAuth(90, async (request, context) => {
     }
 
     const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get("tenantId") || organizationId;
+    const organizationIdParam = searchParams.get("organizationId") || organizationId;
     const breakdown = searchParams.get("breakdown") === "true";
 
-    if (!tenantId) {
+    if (!organizationIdParam) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),
         userId,
@@ -74,16 +74,16 @@ export const GET = withEnhancedRoleAuth(90, async (request, context) => {
         eventType: 'validation_failed',
         severity: 'low',
         dataType: 'DOCUMENTS',
-        details: { reason: 'tenantId is required' },
+        details: { reason: 'organizationId is required' },
       });
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'tenantId is required'
+      'organizationId is required'
     );
     }
 
     // Verify organization access (admin only)
-    if (tenantId !== organizationId) {
+    if (organizationIdParam !== organizationId) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),
         userId,
@@ -109,7 +109,7 @@ export const GET = withEnhancedRoleAuth(90, async (request, context) => {
         deletedFiles: sql<number>`COUNT(CASE WHEN ${documents.deletedAt} IS NOT NULL THEN 1 END)::int`,
       })
       .from(documents)
-      .where(eq(documents.tenantId, tenantId));
+      .where(eq(documents.organizationId, organizationIdParam));
 
     const total = totalResult[0];
     const totalSizeBytes = Number(total.totalSize);
@@ -117,7 +117,7 @@ export const GET = withEnhancedRoleAuth(90, async (request, context) => {
     const totalSizeGB = totalSizeMB / 1024;
 
     const response: any = {
-      tenantId,
+      organizationId: organizationIdParam,
       usage: {
         totalSize: totalSizeBytes,
         totalSizeMB: Math.round(totalSizeMB * 100) / 100,
@@ -139,7 +139,7 @@ export const GET = withEnhancedRoleAuth(90, async (request, context) => {
         })
         .from(documents)
         .where(and(
-          eq(documents.tenantId, tenantId),
+          eq(documents.organizationId, organizationIdParam),
           isNull(documents.deletedAt)
         ))
         .groupBy(documents.fileType);
@@ -153,7 +153,7 @@ export const GET = withEnhancedRoleAuth(90, async (request, context) => {
         })
         .from(documents)
         .where(and(
-          eq(documents.tenantId, tenantId),
+          eq(documents.organizationId, organizationIdParam),
           isNull(documents.deletedAt)
         ))
         .groupBy(documents.category);
@@ -183,7 +183,7 @@ export const GET = withEnhancedRoleAuth(90, async (request, context) => {
       severity: 'low',
       dataType: 'DOCUMENTS',
       details: { 
-        tenantId,
+        organizationId: organizationIdParam,
         totalSizeMB: response.usage.totalSizeMB,
         totalFiles: response.usage.totalFiles 
       },

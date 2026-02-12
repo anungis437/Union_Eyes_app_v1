@@ -6,12 +6,12 @@ import { Users, CheckCircle, AlertTriangle, Info, Scale, TrendingUp } from 'luci
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { JurisdictionBadge } from '@/components/jurisdiction/jurisdiction-badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CAJurisdiction, getJurisdictionName } from '@/lib/jurisdiction-helpers-client';
+import { CAJurisdiction, getJurisdictionName, mapJurisdictionValue } from '@/lib/jurisdiction-helpers-client';
 import { Progress } from '@/components/ui/progress';
 
 interface StrikeVoteJurisdictionInfoProps {
   voteId: string;
-  tenantId: string;
+  organizationId: string;
   totalEligibleMembers: number;
   votesInFavor: number;
   votesAgainst: number;
@@ -29,7 +29,7 @@ interface ThresholdRequirements {
 
 export function StrikeVoteJurisdictionInfo({
   voteId,
-  tenantId,
+  organizationId,
   totalEligibleMembers,
   votesInFavor,
   votesAgainst,
@@ -46,9 +46,9 @@ export function StrikeVoteJurisdictionInfo({
       try {
         setLoading(true);
 
-        // Fetch tenant's jurisdiction
+        // Fetch organization's jurisdiction
         const jurisdictionResponse = await fetch(
-          `/api/jurisdiction/tenant/${tenantId}`
+          `/api/organizations/${organizationId}`
         );
 
         if (!jurisdictionResponse.ok) {
@@ -56,7 +56,13 @@ export function StrikeVoteJurisdictionInfo({
         }
 
         const jurisdictionData = await jurisdictionResponse.json();
-        const jur = jurisdictionData.jurisdiction as CAJurisdiction;
+        const organization = jurisdictionData?.data ?? jurisdictionData;
+        const rawJurisdiction =
+          (organization?.jurisdiction ??
+            organization?.provinceTerritory ??
+            organization?.province_territory ??
+            '') as string;
+        const jur = mapJurisdictionValue(rawJurisdiction);
         setJurisdiction(jur);
 
         // Fetch strike vote threshold requirements
@@ -132,7 +138,7 @@ setError(
     };
 
     fetchRequirements();
-  }, [voteId, tenantId]);
+  }, [voteId, organizationId]);
 
   if (loading) {
     return (

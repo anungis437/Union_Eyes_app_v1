@@ -34,13 +34,13 @@ interface ContractAnalysis {
 }
 
 interface ContractAnalyzerProps {
-  tenantId: string;
+  organizationId: string;
   onAnalysisComplete?: (analysis: ContractAnalysis) => void;
   className?: string;
 }
 
 export function ContractAnalyzer({
-  tenantId,
+  organizationId,
   onAnalysisComplete,
   className = '',
 }: ContractAnalyzerProps) {
@@ -66,7 +66,7 @@ export function ContractAnalyzer({
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'X-Tenant-ID': tenantId,
+            'X-Organization-ID': organizationId,
           },
           body: formData,
         });
@@ -93,7 +93,7 @@ export function ContractAnalyzer({
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'X-Tenant-ID': tenantId,
+          'X-Organization-ID': organizationId,
         },
         body: JSON.stringify({ contractText }),
       });

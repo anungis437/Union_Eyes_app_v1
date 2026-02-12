@@ -52,7 +52,7 @@ export type NotificationType =
 export type NotificationPriority = 'low' | 'normal' | 'high' | 'urgent';
 
 export interface NotificationRequest {
-  tenantId: string;
+  organizationId: string;
   userId: string;
   type: NotificationType;
   channels: NotificationChannel[];
@@ -88,10 +88,10 @@ export interface SendNotificationResult {
  * Queue a notification for delivery
  */
 export async function queueNotification(request: NotificationRequest): Promise<string> {
-  const { tenantId, userId, type, channels, priority = 'normal', data, scheduledFor } = request;
+  const { organizationId, userId, type, channels, priority = 'normal', data, scheduledFor } = request;
 
   // Get user preferences
-  const preferences = await getUserNotificationPreferences(tenantId, userId);
+  const preferences = await getUserNotificationPreferences(organizationId, userId);
 
   // Filter channels based on user preferences
   const allowedChannels = channels.filter(channel => {
@@ -105,7 +105,7 @@ export async function queueNotification(request: NotificationRequest): Promise<s
 
   // Create notification queue entry
   const [notification] = await db.insert(notificationQueue).values({
-    tenantId,
+    tenantId: organizationId,
     userId,
     type,
     channels: allowedChannels as string[], // text array in schema
@@ -256,7 +256,7 @@ async function sendThroughChannel(
   channel: NotificationChannel,
   type: NotificationType,
   userId: string,
-  tenantId: string,
+  organizationId: string,
   data: Record<string, any>
 ): Promise<void> {
   // Get template for this type/channel
@@ -276,7 +276,7 @@ async function sendThroughChannel(
       await sendPushNotification(userId, rendered.subject || type, rendered.body, data);
       break;
     case 'in_app':
-      await createInAppNotification(tenantId, userId, type, rendered.body, data);
+      await createInAppNotification(organizationId, userId, type, rendered.body, data);
       break;
     default:
       throw new Error(`Unknown channel: ${channel}`);
@@ -373,14 +373,14 @@ async function sendPushNotification(
  * Create in-app notification
  */
 async function createInAppNotification(
-  tenantId: string,
+  organizationId: string,
   userId: string,
   type: NotificationType,
   message: string,
   data: Record<string, any>
 ): Promise<void> {
   // Store in database for in-app display
-  logger.info('[IN-APP] Notification created', { userId, type, message });
+  logger.info('[IN-APP] Notification created', { userId, type, message, organizationId });
   
   // In production, would insert into in_app_notifications table
 }
@@ -565,7 +565,7 @@ function extractVariables(template: string): string[] {
  * Get user notification preferences
  */
 export async function getUserNotificationPreferences(
-  tenantId: string,
+  organizationId: string,
   userId: string
 ): Promise<Record<string, boolean>> {
   const [prefs] = await db
@@ -573,7 +573,7 @@ export async function getUserNotificationPreferences(
     .from(userNotificationPreferences)
     .where(
       and(
-        eq(userNotificationPreferences.tenantId, tenantId),
+        eq(userNotificationPreferences.tenantId, organizationId),
         eq(userNotificationPreferences.userId, userId)
       )
     );
@@ -590,14 +590,14 @@ export async function getUserNotificationPreferences(
  * Update user notification preferences
  */
 export async function updateUserNotificationPreferences(
-  tenantId: string,
+  organizationId: string,
   userId: string,
   preferences: Record<string, boolean>
 ): Promise<void> {
   await db
     .insert(userNotificationPreferences)
     .values({
-      tenantId,
+      tenantId: organizationId,
       userId,
       preferences: JSON.stringify(preferences),
       updatedAt: new Date(),
@@ -663,7 +663,7 @@ async function logNotification(
  * Get notification history for user
  */
 export async function getNotificationHistory(
-  tenantId: string,
+  organizationId: string,
   userId: string,
   limit: number = 50
 ): Promise<any[]> {
@@ -672,7 +672,7 @@ export async function getNotificationHistory(
     .from(notificationQueue)
     .where(
       and(
-        eq(notificationQueue.tenantId, tenantId),
+        eq(notificationQueue.tenantId, organizationId),
         eq(notificationQueue.userId, userId)
       )
     )

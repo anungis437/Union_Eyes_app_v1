@@ -48,7 +48,7 @@ export class SignatureService {
    * Create and send a document for signature
    */
   static async createSignatureRequest(data: {
-    tenantId: string;
+    organizationId: string;
     title: string;
     description?: string;
     documentType: string;
@@ -100,7 +100,7 @@ export class SignatureService {
 
     const storageService = new DocumentStorageService();
     const uploadResult = await storageService.uploadDocument({
-      organizationId: data.tenantId,
+      organizationId: data.organizationId,
       documentName: data.fileName,
       documentBuffer: data.file,
       documentType: data.documentType,
@@ -115,7 +115,7 @@ export class SignatureService {
     const [document] = await db
       .insert(signatureDocuments)
       .values({
-        tenantId: data.tenantId,
+        organizationId: data.organizationId,
         title: data.title,
         description: data.description,
         documentType: data.documentType,
@@ -203,13 +203,13 @@ export class SignatureService {
     // SECURITY: User has access if they:
     // 1. Sent the document
     // 2. Are a signer on the document
-    // 3. Share the same tenantId (organization member)
+    // 3. Share the same organizationId (organization member)
     
     const isSender = document.sentBy === userId;
     const isSigner = document.signers.some((s) => s.userId === userId);
     
-    // Verify tenant-based access (prevents IDOR attacks)
-    const isOrgMember = await this.checkOrgMembership(userId, document.tenantId);
+    // Verify organization-based access (prevents IDOR attacks)
+    const isOrgMember = await this.checkOrgMembership(userId, document.organizationId);
     
     return isSender || isSigner || isOrgMember;
   }
@@ -222,13 +222,13 @@ export class SignatureService {
    */
   private static async checkOrgMembership(
     userId: string,
-    tenantId: string
+    organizationId: string
   ): Promise<boolean> {
     try {
       const membership = await db.query.organizationMembers.findFirst({
         where: and(
           eq(organizationMembers.userId, userId),
-          eq(organizationMembers.organizationId, tenantId),
+          eq(organizationMembers.organizationId, organizationId),
           eq(organizationMembers.status, 'active')
         ),
       });
@@ -509,11 +509,19 @@ return false;
       throw new Error("Signer not found");
     }
 
+    const document = await db.query.signatureDocuments.findFirst({
+      where: eq(signatureDocuments.id, signer.documentId),
+    });
+
+    if (!document) {
+      throw new Error("Document not found");
+    }
+
     // Send email reminder
     try {
       const notificationService = new NotificationService();
       await notificationService.send({
-        organizationId: signer.tenantId,
+        organizationId: document.organizationId,
         recipientEmail: signer.email,
         type: 'email',
         priority: 'normal',
@@ -551,7 +559,7 @@ return false;
   /**
    * Get documents for user
    */
-  static async getUserDocuments(userId: string, tenantId: string) {
+  static async getUserDocuments(userId: string, organizationId: string) {
     // Documents sent by user
     const sent = await db
       .select()
@@ -559,7 +567,7 @@ return false;
       .where(
         and(
           eq(signatureDocuments.sentBy, userId),
-          eq(signatureDocuments.tenantId, tenantId)
+          eq(signatureDocuments.organizationId, organizationId)
         )
       )
       .orderBy(desc(signatureDocuments.createdAt));
@@ -578,7 +586,7 @@ return false;
       .where(
         and(
           eq(documentSigners.userId, userId),
-          eq(signatureDocuments.tenantId, tenantId)
+          eq(signatureDocuments.organizationId, organizationId)
         )
       )
       .orderBy(desc(signatureDocuments.createdAt));

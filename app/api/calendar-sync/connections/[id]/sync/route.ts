@@ -29,7 +29,7 @@ import {
   ErrorCode 
 } from '@/lib/api/standardized-responses';
 
-const calendar-syncConnectionsSyncSchema = z.object({
+const calendarSyncConnectionsSyncSchema = z.object({
   localCalendarId: z.string().uuid('Invalid localCalendarId'),
   externalCalendarId: z.string().uuid('Invalid externalCalendarId'),
   timeMin: z.string().datetime().optional(),

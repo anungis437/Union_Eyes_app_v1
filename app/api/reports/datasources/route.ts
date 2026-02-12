@@ -21,14 +21,14 @@ import {
 async function getHandler(req: NextRequest, context) {
   try {
     const user = await getCurrentUser();
-    if (!user || !user.tenantId) {
+    if (!user || !user.organizationId) {
       return standardErrorResponse(
       ErrorCode.AUTH_REQUIRED,
-      'Authentication and tenant context required'
+      'Authentication and organization context required'
     );
     }
     
-    const tenantId = user.tenantId;
+    const organizationId = user.organizationId;
     const userId = user.id;
     
     // Get data sources from report executor registry

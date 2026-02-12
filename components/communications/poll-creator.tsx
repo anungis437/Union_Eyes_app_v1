@@ -23,7 +23,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Plus, Trash2, GripVertical, Save, Send, Calendar } from 'lucide-react';
 
 interface PollCreatorProps {
-  tenantId: string;
+  organizationId: string;
   pollId?: string;
   onSave?: () => void;
   onCancel?: () => void;
@@ -35,7 +35,7 @@ interface PollOption {
   order: number;
 }
 
-export function PollCreator({ tenantId, pollId, onSave, onCancel }: PollCreatorProps) {
+export function PollCreator({ organizationId, pollId, onSave, onCancel }: PollCreatorProps) {
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
 
@@ -125,7 +125,7 @@ export function PollCreator({ tenantId, pollId, onSave, onCancel }: PollCreatorP
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...(pollId && { id: pollId }),
-          tenantId,
+          organizationId,
           question,
           description,
           options: options

@@ -61,7 +61,7 @@ describe('document-service', () => {
     it('should return a document when found', async () => {
       const mockDocument = {
         id: 'doc-1',
-        tenantId: 'tenant-1',
+        organizationId: 'org-1',
         name: 'Test Document',
         fileUrl: 'https://example.com/file.pdf',
         fileType: 'pdf',
@@ -276,8 +276,8 @@ describe('document-service', () => {
   describe('getFolderTree', () => {
     it('should build folder tree structure', async () => {
       const mockFolders = [
-        { id: 'folder-1', name: 'Root 1', parentFolderId: null, tenantId: 'tenant-1' },
-        { id: 'folder-2', name: 'Child 1', parentFolderId: 'folder-1', tenantId: 'tenant-1' },
+        { id: 'folder-1', name: 'Root 1', parentFolderId: null, organizationId: 'org-1' },
+        { id: 'folder-2', name: 'Child 1', parentFolderId: 'folder-1', organizationId: 'org-1' },
       ];
 
       mockDb.select.mockReturnValue({
@@ -286,7 +286,7 @@ describe('document-service', () => {
         }),
       });
 
-      const result = await getFolderTree('tenant-1');
+      const result = await getFolderTree('org-1');
 
       expect(result).toHaveLength(1); // One root folder
       expect(result[0]).toHaveProperty('children');
@@ -392,7 +392,7 @@ describe('document-service', () => {
         }),
       });
 
-      const result = await searchDocuments('tenant-1', 'test');
+      const result = await searchDocuments('org-1', 'test');
 
       expect(result).toHaveProperty('documents');
       expect(result).toHaveProperty('total');
@@ -501,7 +501,7 @@ describe('document-service', () => {
         }),
       });
 
-      const result = await getDocumentStatistics('tenant-1');
+      const result = await getDocumentStatistics('org-1');
 
       expect(result.total).toBe(3);
       expect(result.byCategory).toEqual({ legal: 2, financial: 1 });
@@ -517,7 +517,7 @@ describe('document-service', () => {
         }),
       });
 
-      const result = await getDocumentStatistics('tenant-1');
+      const result = await getDocumentStatistics('org-1');
 
       expect(result.total).toBe(0);
       expect(result.byCategory).toEqual({});
@@ -532,7 +532,7 @@ describe('document-service', () => {
     it('should return a document when found', async () => {
       const mockDocument = {
         id: 'doc-1',
-        tenantId: 'tenant-1',
+        organizationId: 'org-1',
         name: 'Test Document',
         fileUrl: 'https://example.com/file.pdf',
         fileType: 'pdf',
@@ -582,7 +582,7 @@ describe('document-service', () => {
       const mockFolder = {
         id: 'folder-1',
         name: 'Test Folder',
-        tenantId: 'tenant-1',
+        organizationId: 'org-1',
       };
 
       vi.mocked(db.query.documents.findFirst).mockResolvedValue(mockDocument as any);
@@ -638,8 +638,8 @@ describe('document-service', () => {
       expect(result).toHaveProperty('limit', 10);
     });
 
-    it('should filter by tenantId', async () => {
-      await listDocuments({ tenantId: 'tenant-1' });
+    it('should filter by organizationId', async () => {
+      await listDocuments({ organizationId: 'org-1' });
 
       expect(db.select).toHaveBeenCalled();
     });
@@ -705,7 +705,7 @@ describe('document-service', () => {
     it('should create a document successfully', async () => {
       const mockDocument = {
         id: 'doc-1',
-        tenantId: 'tenant-1',
+        organizationId: 'org-1',
         name: 'New Document',
         fileUrl: 'https://example.com/file.pdf',
         fileType: 'pdf',
@@ -853,7 +853,7 @@ describe('document-service', () => {
       const mockFolder = {
         id: 'folder-1',
         name: 'Test Folder',
-        tenantId: 'tenant-1',
+        organizationId: 'org-1',
         deletedAt: null,
       };
 
@@ -903,8 +903,8 @@ describe('document-service', () => {
   describe('listFolders', () => {
     it('should list folders with document counts', async () => {
       const mockFolders = [
-        { id: 'folder-1', name: 'Folder 1', tenantId: 'tenant-1' },
-        { id: 'folder-2', name: 'Folder 2', tenantId: 'tenant-1' },
+        { id: 'folder-1', name: 'Folder 1', organizationId: 'org-1' },
+        { id: 'folder-2', name: 'Folder 2', organizationId: 'org-1' },
       ];
 
       // First call for listing folders
@@ -930,7 +930,7 @@ describe('document-service', () => {
         return mockCountSelect as any;
       });
 
-      const result = await listFolders('tenant-1');
+      const result = await listFolders('org-1');
 
       expect(result).toHaveLength(2);
     });
@@ -950,7 +950,7 @@ describe('document-service', () => {
       vi.mocked(db.select).mockReturnValueOnce(mockSelect as any);
       vi.mocked(db.select).mockReturnValue(mockCountSelect as any);
 
-      await listFolders('tenant-1', null);
+      await listFolders('org-1', null);
 
       expect(db.select).toHaveBeenCalled();
     });
@@ -970,7 +970,7 @@ describe('document-service', () => {
       vi.mocked(db.select).mockReturnValueOnce(mockSelect as any);
       vi.mocked(db.select).mockReturnValue(mockCountSelect as any);
 
-      await listFolders('tenant-1', 'parent-folder-1');
+      await listFolders('org-1', 'parent-folder-1');
 
       expect(db.select).toHaveBeenCalled();
     });
@@ -980,7 +980,7 @@ describe('document-service', () => {
         throw new Error('DB Error');
       });
 
-      await expect(listFolders('tenant-1')).rejects.toThrow('Failed to list folders');
+      await expect(listFolders('org-1')).rejects.toThrow('Failed to list folders');
     });
   });
 
@@ -989,7 +989,7 @@ describe('document-service', () => {
       const mockFolder = {
         id: 'folder-1',
         name: 'New Folder',
-        tenantId: 'tenant-1',
+        organizationId: 'org-1',
         createdBy: 'user-1',
       };
 
@@ -1124,9 +1124,9 @@ describe('document-service', () => {
   describe('getFolderTree', () => {
     it('should build folder tree structure', async () => {
       const mockFolders = [
-        { id: 'folder-1', name: 'Root 1', parentFolderId: null, tenantId: 'tenant-1' },
-        { id: 'folder-2', name: 'Child 1', parentFolderId: 'folder-1', tenantId: 'tenant-1' },
-        { id: 'folder-3', name: 'Root 2', parentFolderId: null, tenantId: 'tenant-1' },
+        { id: 'folder-1', name: 'Root 1', parentFolderId: null, organizationId: 'org-1' },
+        { id: 'folder-2', name: 'Child 1', parentFolderId: 'folder-1', organizationId: 'org-1' },
+        { id: 'folder-3', name: 'Root 2', parentFolderId: null, organizationId: 'org-1' },
       ];
 
       const mockSelect = {
@@ -1136,7 +1136,7 @@ describe('document-service', () => {
 
       vi.mocked(db.select).mockReturnValue(mockSelect as any);
 
-      const result = await getFolderTree('tenant-1');
+      const result = await getFolderTree('org-1');
 
       expect(result).toHaveLength(2); // Two root folders
       expect(result[0]).toHaveProperty('children');
@@ -1150,7 +1150,7 @@ describe('document-service', () => {
 
       vi.mocked(db.select).mockReturnValue(mockSelect as any);
 
-      const result = await getFolderTree('tenant-1');
+      const result = await getFolderTree('org-1');
 
       expect(result).toEqual([]);
     });
@@ -1160,7 +1160,7 @@ describe('document-service', () => {
         throw new Error('DB Error');
       });
 
-      await expect(getFolderTree('tenant-1')).rejects.toThrow('Failed to get folder tree');
+      await expect(getFolderTree('org-1')).rejects.toThrow('Failed to get folder tree');
     });
   });
 
@@ -1301,7 +1301,7 @@ describe('document-service', () => {
 
       vi.mocked(db.select).mockReturnValue(mockSelect as any);
 
-      const result = await searchDocuments('tenant-1', 'test');
+      const result = await searchDocuments('org-1', 'test');
 
       expect(result).toHaveProperty('documents');
       expect(result).toHaveProperty('total');
@@ -1317,7 +1317,7 @@ describe('document-service', () => {
 
       vi.mocked(db.select).mockReturnValue(mockSelect as any);
 
-      await searchDocuments('tenant-1', 'test', { category: 'legal' });
+      await searchDocuments('org-1', 'test', { category: 'legal' });
 
       expect(db.select).toHaveBeenCalled();
     });
@@ -1332,7 +1332,7 @@ describe('document-service', () => {
 
       vi.mocked(db.select).mockReturnValue(mockSelect as any);
 
-      await searchDocuments('tenant-1', 'test', { fileType: 'pdf' });
+      await searchDocuments('org-1', 'test', { fileType: 'pdf' });
 
       expect(db.select).toHaveBeenCalled();
     });
@@ -1347,7 +1347,7 @@ describe('document-service', () => {
 
       vi.mocked(db.select).mockReturnValue(mockSelect as any);
 
-      await searchDocuments('tenant-1', 'test', { tags: ['tag1'] });
+      await searchDocuments('org-1', 'test', { tags: ['tag1'] });
 
       expect(db.select).toHaveBeenCalled();
     });
@@ -1362,7 +1362,7 @@ describe('document-service', () => {
 
       vi.mocked(db.select).mockReturnValue(mockSelect as any);
 
-      await searchDocuments('tenant-1', 'test', { uploadedBy: 'user-1' });
+      await searchDocuments('org-1', 'test', { uploadedBy: 'user-1' });
 
       expect(db.select).toHaveBeenCalled();
     });
@@ -1377,7 +1377,7 @@ describe('document-service', () => {
 
       vi.mocked(db.select).mockReturnValue(mockSelect as any);
 
-      await searchDocuments('tenant-1', 'test', {}, { page: 2, limit: 20 });
+      await searchDocuments('org-1', 'test', {}, { page: 2, limit: 20 });
 
       expect(db.select).toHaveBeenCalled();
     });
@@ -1387,7 +1387,7 @@ describe('document-service', () => {
         throw new Error('DB Error');
       });
 
-      await expect(searchDocuments('tenant-1', 'test')).rejects.toThrow(
+      await expect(searchDocuments('org-1', 'test')).rejects.toThrow(
         'Failed to search documents'
       );
     });
@@ -1579,7 +1579,7 @@ describe('document-service', () => {
 
       vi.mocked(db.select).mockReturnValue(mockSelect as any);
 
-      const result = await getDocumentStatistics('tenant-1');
+      const result = await getDocumentStatistics('org-1');
 
       expect(result.total).toBe(3);
       expect(result.byCategory).toEqual({ legal: 2, financial: 1 });
@@ -1596,7 +1596,7 @@ describe('document-service', () => {
 
       vi.mocked(db.select).mockReturnValue(mockSelect as any);
 
-      const result = await getDocumentStatistics('tenant-1');
+      const result = await getDocumentStatistics('org-1');
 
       expect(result.total).toBe(0);
       expect(result.byCategory).toEqual({});
@@ -1623,7 +1623,7 @@ describe('document-service', () => {
 
       vi.mocked(db.select).mockReturnValue(mockSelect as any);
 
-      const result = await getDocumentStatistics('tenant-1');
+      const result = await getDocumentStatistics('org-1');
 
       expect(result.totalSize).toBe(0);
     });
@@ -1633,9 +1633,12 @@ describe('document-service', () => {
         throw new Error('DB Error');
       });
 
-      await expect(getDocumentStatistics('tenant-1')).rejects.toThrow(
+      await expect(getDocumentStatistics('org-1')).rejects.toThrow(
         'Failed to get document statistics'
       );
     });
   });
 });
+
+
+

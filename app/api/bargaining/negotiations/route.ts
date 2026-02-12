@@ -9,7 +9,7 @@ import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { negotiations } from "@/db/schema";
-import { eq, and, or, desc, asc, sql } from "drizzle-orm";
+import { eq, and, desc, sql } from "drizzle-orm";
 import { 
   standardErrorResponse, 
   standardSuccessResponse, 
@@ -64,7 +64,7 @@ export const GET = async (request: NextRequest) => {
         const conditions = [eq(negotiations.organizationId, organizationId)];
         
         if (status) {
-          conditions.push(eq(negotiations.status, status as any));
+          conditions.push(eq(negotiations.status, status));
         }
         
         if (expiringCbaId) {

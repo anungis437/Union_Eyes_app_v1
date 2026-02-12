@@ -51,6 +51,14 @@ export const paymentMethodEnum = pgEnum("payment_method", [
   "ewallet",
 ]);
 
+export const paymentProcessorEnum = pgEnum("payment_processor", [
+  "stripe",
+  "whop",
+  "paypal",
+  "square",
+  "manual",
+]);
+
 export const paymentTypeEnum = pgEnum("payment_type", [
   "dues",
   "strike_fund",
@@ -99,6 +107,10 @@ export const payments = pgTable(
     bankDepositId: varchar("bank_deposit_id"),
     checkNumber: varchar("check_number"),
     referenceNumber: varchar("reference_number"), // For bank transfers
+    
+    // Payment processor abstraction
+    processorType: paymentProcessorEnum("processor_type"),
+    processorCustomerId: varchar("processor_customer_id", { length: 255 }),
     
     // Payment cycle
     paymentCycleId: uuid("payment_cycle_id").references(() => paymentCycles.id),
@@ -184,9 +196,13 @@ export const paymentMethods = pgTable(
     isDefault: boolean("is_default").default(false),
     isActive: boolean("is_active").default(true),
     
-    // Stripe
+    // Stripe (legacy)
     stripePaymentMethodId: varchar("stripe_payment_method_id"),
     stripeBillingDetails: jsonb("stripe_billing_details"), // JSON: { name, email, phone, address }
+    
+    // Payment processor abstraction
+    processorType: paymentProcessorEnum("processor_type"),
+    processorMethodId: varchar("processor_method_id", { length: 255 }),
     
     // Bank
     bankAccountToken: varchar("bank_account_token"), // Tokenized, not stored plaintext

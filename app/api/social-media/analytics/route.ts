@@ -164,13 +164,13 @@ return NextResponse.json(
 };
 
 
-const social-mediaAnalyticsSchema = z.object({
+const socialMediaAnalyticsSchema = z.object({
   platform: z.unknown().optional(),
   campaign_id: z.string().uuid('Invalid campaign_id'),
   start_date: z.string().datetime().optional(),
   end_date: z.string().datetime().optional(),
-  limit = 50: z.unknown().optional(),
-  offset = 0: z.unknown().optional(),
+  limit: z.unknown().optional().default(50),
+  offset: z.unknown().optional().default(0),
 });
 
 export const POST = async (request: NextRequest) => {

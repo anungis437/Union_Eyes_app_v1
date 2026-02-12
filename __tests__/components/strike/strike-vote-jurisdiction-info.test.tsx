@@ -19,11 +19,11 @@ describe('StrikeVoteJurisdictionInfo', () => {
     vi.clearAllMocks();
     mockJurisdiction = 'CA-FED';
     mockRules = [];
-    (global.fetch as any).mockImplementation((url: string) => {
-      if (url.startsWith('/api/jurisdiction/tenant/')) {
+      (global.fetch as any).mockImplementation((url: string) => {
+        if (url.startsWith('/api/organizations/')) {
         return Promise.resolve({
           ok: true,
-          json: async () => ({ jurisdiction: mockJurisdiction }),
+          json: async () => ({ success: true, data: { jurisdiction: mockJurisdiction } }),
         });
       }
       if (url.startsWith('/api/jurisdiction/rules')) {
@@ -53,7 +53,7 @@ describe('StrikeVoteJurisdictionInfo', () => {
       render(
         <StrikeVoteJurisdictionInfo
           voteId="vote-1"
-          tenantId="tenant-1"
+           organizationId="org-1"
           totalEligibleMembers={1000}
           votesInFavor={650}
           votesAgainst={300}
@@ -78,7 +78,7 @@ describe('StrikeVoteJurisdictionInfo', () => {
       render(
         <StrikeVoteJurisdictionInfo
           voteId="vote-1"
-          tenantId="tenant-1"
+           organizationId="org-1"
           totalEligibleMembers={1000}
           votesInFavor={650}
           votesAgainst={350}
@@ -103,7 +103,7 @@ describe('StrikeVoteJurisdictionInfo', () => {
       render(
         <StrikeVoteJurisdictionInfo
           voteId="vote-1"
-          tenantId="tenant-1"
+           organizationId="org-1"
           totalEligibleMembers={1000}
           votesInFavor={600}
           votesAgainst={400}
@@ -132,7 +132,7 @@ describe('StrikeVoteJurisdictionInfo', () => {
       render(
         <StrikeVoteJurisdictionInfo
           voteId="vote-1"
-          tenantId="tenant-1"
+           organizationId="org-1"
           totalEligibleMembers={1000}
           votesInFavor={450}
           votesAgainst={100}
@@ -162,7 +162,7 @@ describe('StrikeVoteJurisdictionInfo', () => {
       render(
         <StrikeVoteJurisdictionInfo
           voteId="vote-1"
-          tenantId="tenant-1"
+           organizationId="org-1"
           totalEligibleMembers={1000}
           votesInFavor={450}
           votesAgainst={50}
@@ -187,7 +187,7 @@ describe('StrikeVoteJurisdictionInfo', () => {
       render(
         <StrikeVoteJurisdictionInfo
           voteId="vote-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           totalEligibleMembers={1000}
           votesInFavor={400}
           votesAgainst={100}
@@ -214,7 +214,7 @@ describe('StrikeVoteJurisdictionInfo', () => {
       render(
         <StrikeVoteJurisdictionInfo
           voteId="vote-1"
-          tenantId="tenant-1"
+           organizationId="org-1"
           totalEligibleMembers={1000}
           votesInFavor={600}
           votesAgainst={400}
@@ -241,7 +241,7 @@ describe('StrikeVoteJurisdictionInfo', () => {
       render(
         <StrikeVoteJurisdictionInfo
           voteId="vote-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           totalEligibleMembers={1000}
           votesInFavor={510}
           votesAgainst={490}
@@ -266,7 +266,7 @@ describe('StrikeVoteJurisdictionInfo', () => {
       render(
         <StrikeVoteJurisdictionInfo
           voteId="vote-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           totalEligibleMembers={1000}
           votesInFavor={500}
           votesAgainst={500}
@@ -293,7 +293,7 @@ describe('StrikeVoteJurisdictionInfo', () => {
       render(
         <StrikeVoteJurisdictionInfo
           voteId="vote-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           totalEligibleMembers={1000}
           votesInFavor={600}
           votesAgainst={400}
@@ -315,7 +315,7 @@ describe('StrikeVoteJurisdictionInfo', () => {
       render(
         <StrikeVoteJurisdictionInfo
           voteId="vote-1"
-          tenantId="tenant-1"
+           organizationId="org-1"
           totalEligibleMembers={1000}
           votesInFavor={600}
           votesAgainst={400}
@@ -338,7 +338,7 @@ describe('StrikeVoteJurisdictionInfo', () => {
       render(
         <StrikeVoteJurisdictionInfo
           voteId="vote-1"
-          tenantId="tenant-1"
+           organizationId="org-1"
           totalEligibleMembers={1000}
           votesInFavor={600}
           votesAgainst={400}
@@ -359,7 +359,7 @@ describe('StrikeVoteJurisdictionInfo', () => {
       render(
         <StrikeVoteJurisdictionInfo
           voteId="vote-1"
-          tenantId="tenant-1"
+           organizationId="org-1"
           totalEligibleMembers={1000}
           votesInFavor={600}
           votesAgainst={400}
@@ -380,7 +380,7 @@ describe('StrikeVoteJurisdictionInfo', () => {
       render(
         <StrikeVoteJurisdictionInfo
           voteId="vote-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           totalEligibleMembers={1000}
           votesInFavor={450}
           votesAgainst={350}
@@ -403,7 +403,7 @@ describe('StrikeVoteJurisdictionInfo', () => {
       render(
         <StrikeVoteJurisdictionInfo
           voteId="vote-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           totalEligibleMembers={1000}
           votesInFavor={600}
           votesAgainst={400}
@@ -426,7 +426,7 @@ describe('StrikeVoteJurisdictionInfo', () => {
       const { container } = render(
         <StrikeVoteJurisdictionInfo
           voteId="vote-1"
-          tenantId="tenant-1"
+           organizationId="org-1"
           totalEligibleMembers={1000}
           votesInFavor={600}
           votesAgainst={400}

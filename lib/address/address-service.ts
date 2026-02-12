@@ -313,7 +313,7 @@ export class AddressService {
    * Save international address
    */
   async saveAddress(data: {
-    tenantId: string;
+    organizationId: string;
     userId?: string;
     addressType: string;
     countryCode: string;
@@ -387,7 +387,7 @@ export class AddressService {
     const [address] = await db
       .insert(internationalAddresses)
       .values({
-        tenantId: data.tenantId,
+        tenantId: data.organizationId,
         userId: data.userId,
         addressType: data.addressType as any,
         countryCode: data.countryCode,

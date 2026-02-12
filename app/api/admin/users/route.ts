@@ -3,7 +3,7 @@
  * 
  * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
- * - RLS policies enforce tenant isolation at database level
+ * - RLS policies enforce organization isolation at database level
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -11,7 +11,7 @@ import { z } from "zod";
 import { getAdminUsers } from "@/actions/admin-actions";
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { organizationUsers } from "@/db/schema/domains/member";
-import { tenants } from "@/db/schema/tenant-management-schema";
+import { organizations } from "@/db/schema-organizations";
 import { eq } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { withSecureAPI, logApiAuditEvent } from "@/lib/middleware/api-security";
@@ -27,7 +27,7 @@ import {
  */
 const listUsersQuerySchema = z.object({
   search: z.string().optional(),
-  tenantId: z.string().uuid().optional(),
+  organizationId: z.string().uuid().optional(),
   role: z.enum(["admin", "officer", "member", "viewer"]).optional(),
   page: z.string().default("1").transform(v => parseInt(v)),
   limit: z.string().default("20").transform(v => parseInt(v)),
@@ -50,7 +50,7 @@ export const GET = withRoleAuth('admin', async (request, context) => {
   const query = parsed.data;
   const { userId, organizationId } = context;
 
-  const orgId = (query as Record<string, unknown>)["organizationId"] ?? (query as Record<string, unknown>)["orgId"] ?? (query as Record<string, unknown>)["organization_id"] ?? (query as Record<string, unknown>)["org_id"] ?? (query as Record<string, unknown>)["tenantId"] ?? (query as Record<string, unknown>)["tenant_id"] ?? (query as Record<string, unknown>)["unionId"] ?? (query as Record<string, unknown>)["union_id"] ?? (query as Record<string, unknown>)["localId"] ?? (query as Record<string, unknown>)["local_id"];
+  const orgId = (query as Record<string, unknown>)["organizationId"] ?? (query as Record<string, unknown>)["orgId"] ?? (query as Record<string, unknown>)["organization_id"] ?? (query as Record<string, unknown>)["org_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
     return standardErrorResponse(
       ErrorCode.FORBIDDEN,
@@ -59,7 +59,7 @@ export const GET = withRoleAuth('admin', async (request, context) => {
   }
 
 try {
-      // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+      // All database operations wrapped in withRLSContext - RLS policies handle organization isolation
       return withRLSContext(async (tx) => {
         // Verify admin role
         const adminCheck = await tx
@@ -84,7 +84,7 @@ try {
           );
         }
 
-        const { search, tenantId, role, page, limit } = query;
+        const { search, organizationId: organizationIdFilter, role, page, limit } = query;
 
         // Validate pagination
         if (page < 1 || limit < 1 || limit > 100) {
@@ -94,7 +94,7 @@ try {
     );
         }
 
-        const users = await getAdminUsers(tx, search, tenantId, role);
+        const users = await getAdminUsers(tx, search, organizationIdFilter, role);
 
         logApiAuditEvent({
           timestamp: new Date().toISOString(), userId,
@@ -104,7 +104,7 @@ try {
           severity: "low",
           details: { 
             resultCount: users.length,
-            filters: { search, tenantId, role },
+            filters: { search, organizationId: organizationIdFilter, role },
           },
         });
 
@@ -134,13 +134,13 @@ try {
 
 /**
  * POST /api/admin/users
- * Create new user or add user to tenant
+ * Create new user or add user to organization
  * Security: Admin role required + validated input
  */
 
 const createUserSchema = z.object({
   userId: z.string().uuid(),
-  tenantId: z.string().uuid(),
+  organizationId: z.string().uuid(),
   role: z.enum(["admin", "officer", "member", "viewer"]).default("member"),
 });
 
@@ -157,7 +157,7 @@ export const POST = withRoleAuth('admin', async (request, context) => {
   const query = parsed.data;
   const { userId, organizationId } = context;
 
-  const orgId = (query as Record<string, unknown>)["organizationId"] ?? (query as Record<string, unknown>)["orgId"] ?? (query as Record<string, unknown>)["organization_id"] ?? (query as Record<string, unknown>)["org_id"] ?? (query as Record<string, unknown>)["tenantId"] ?? (query as Record<string, unknown>)["tenant_id"] ?? (query as Record<string, unknown>)["unionId"] ?? (query as Record<string, unknown>)["union_id"] ?? (query as Record<string, unknown>)["localId"] ?? (query as Record<string, unknown>)["local_id"];
+  const orgId = (query as Record<string, unknown>)["organizationId"] ?? (query as Record<string, unknown>)["orgId"] ?? (query as Record<string, unknown>)["organization_id"] ?? (query as Record<string, unknown>)["org_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
     return standardErrorResponse(
       ErrorCode.FORBIDDEN,
@@ -188,9 +188,9 @@ try {
         );
       }
 
-      const { userId: targetUserId, tenantId, role } = bodyResult.data;
+      const { userId: targetUserId, organizationId: targetOrganizationId, role } = bodyResult.data;
 
-      // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+      // All database operations wrapped in withRLSContext - RLS policies handle organization isolation
       return withRLSContext(async (tx) => {
         // Verify admin role
         const adminCheck = await tx
@@ -215,26 +215,26 @@ try {
           );
         }
 
-        // Verify tenant exists
-        const [tenant] = await tx
+        // Verify organization exists
+        const [organization] = await tx
           .select()
-          .from(tenants)
-          .where(eq(tenants.tenantId, tenantId))
+          .from(organizations)
+          .where(eq(organizations.id, targetOrganizationId))
           .limit(1);
 
-        if (!tenant) {
+        if (!organization) {
           return standardErrorResponse(
       ErrorCode.RESOURCE_NOT_FOUND,
-      'Tenant not found'
+      'Organization not found'
     );
         }
 
-        // Add user to tenant
+        // Add user to organization
         const [newUser] = await tx
           .insert(organizationUsers)
           .values({
             userId: targetUserId,
-            organizationId: tenantId,
+            organizationId: targetOrganizationId,
             role,
             isActive: true,
             joinedAt: new Date(),
@@ -250,15 +250,15 @@ try {
           details: {
             adminId: userId,
             newUserId: targetUserId,
-            tenantId,
+            organizationId: targetOrganizationId,
             role,
           },
         });
 
-        logger.info("User added to tenant", {
+        logger.info("User added to organization", {
           adminId: userId,
           newUserId: targetUserId,
-          tenantId,
+          organizationId: targetOrganizationId,
           role,
         });
 

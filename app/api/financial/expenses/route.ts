@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/services/financial-service/src/db';
-import { expenseRequests, expenseApprovals, budgets, budgetLineItems } from '@/services/financial-service/src/db/schema';
-import { eq, and, desc, or, sql, inArray } from 'drizzle-orm';
+import { expenseRequests, expenseApprovals, budgetLineItems } from '@/services/financial-service/src/db/schema';
+import { eq, and, desc, sql, inArray } from 'drizzle-orm';
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { 
@@ -10,6 +10,17 @@ import {
   standardSuccessResponse, 
   ErrorCode 
 } from '@/lib/api/standardized-responses';
+
+interface AuthUser {
+  id: string;
+  roleLevel?: number;
+}
+
+interface RequestContext {
+  organizationId: string;
+}
+
+type SQLCondition = ReturnType<typeof eq> | ReturnType<typeof and> | ReturnType<typeof inArray>;
 
 const createExpenseSchema = z.object({
   expenseDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -25,7 +36,12 @@ const createExpenseSchema = z.object({
   paymentMethod: z.string().optional(),
   reimbursementRequired: z.boolean().default(true),
   receiptUrl: z.string().url().optional(),
-  attachments: z.array(z.any()).optional(),
+  attachments: z.array(z.object({
+    name: z.string(),
+    url: z.string(),
+    size: z.number().optional(),
+    type: z.string().optional(),
+  })).optional(),
   notes: z.string().optional(),
 });
 
@@ -40,7 +56,7 @@ export const GET = withApiAuth(async (request: NextRequest, context) => {
       return standardErrorResponse(ErrorCode.UNAUTHORIZED, 'Authentication required');
     }
 
-    const { organizationId } = context as any;
+    const { organizationId } = context as RequestContext;
     const { searchParams } = new URL(request.url);
     
     const status = searchParams.get('status');
@@ -50,9 +66,9 @@ export const GET = withApiAuth(async (request: NextRequest, context) => {
     const myExpenses = searchParams.get('myExpenses') === 'true';
     const pendingApproval = searchParams.get('pendingApproval') === 'true';
 
-    const userLevel = (user as any).roleLevel || 0;
+    const userLevel = (user as AuthUser).roleLevel || 0;
 
-    let conditions: any[] = [eq(expenseRequests.organizationId, organizationId)];
+    const conditions: SQLCondition[] = [eq(expenseRequests.organizationId, organizationId)];
 
     // If user is viewing their own expenses
     if (myExpenses) {
@@ -80,7 +96,7 @@ export const GET = withApiAuth(async (request: NextRequest, context) => {
     }
 
     if (status) {
-      conditions.push(eq(expenseRequests.status, status as any));
+      conditions.push(eq(expenseRequests.status, status));
     }
 
     if (requesterId) {
@@ -146,7 +162,7 @@ export const POST = withApiAuth(async (request: NextRequest, context) => {
       return standardErrorResponse(ErrorCode.UNAUTHORIZED, 'Authentication required');
     }
 
-    const { organizationId } = context as any;
+    const { organizationId } = context as RequestContext;
     const body = await request.json();
     
     const parsed = createExpenseSchema.safeParse(body);
@@ -237,8 +253,9 @@ export const POST = withApiAuth(async (request: NextRequest, context) => {
       message: 'Expense request created successfully',
     }, 201);
 
-  } catch (error: any) {
-    if (error?.message?.includes('unique_expense_request_number')) {
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'message' in error && 
+        typeof error.message === 'string' && error.message.includes('unique_expense_request_number')) {
       return standardErrorResponse(
         ErrorCode.DUPLICATE_ENTRY,
         'Request number conflict - please try again'

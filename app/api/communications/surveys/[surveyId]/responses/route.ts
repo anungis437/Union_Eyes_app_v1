@@ -32,13 +32,12 @@ export const GET = withApiAuth(async (
 ) => {
   try {
     const surveyId = params.surveyId;
-    const organizationId = (request.headers.get('x-organization-id') ?? request.headers.get('x-tenant-id'));
-    const tenantId = organizationId;
+    const organizationId = request.headers.get('x-organization-id');
     
-    if (!tenantId) {
+    if (!organizationId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID is required'
+      'Organization ID is required'
     );
     }
 
@@ -51,7 +50,7 @@ export const GET = withApiAuth(async (
     const [survey] = await db
       .select()
       .from(surveys)
-      .where(and(eq(surveys.id, surveyId), eq(surveys.tenantId, tenantId)))
+      .where(and(eq(surveys.id, surveyId), eq(surveys.organizationId, organizationId)))
       .limit(1);
 
     if (!survey) {
@@ -112,14 +111,13 @@ export const POST = withApiAuth(async (
 ) => {
   try {
     const surveyId = params.surveyId;
-    const organizationId = (request.headers.get('x-organization-id') ?? request.headers.get('x-tenant-id'));
-    const tenantId = organizationId;
+    const organizationId = request.headers.get('x-organization-id');
     const userId = request.headers.get('x-user-id') || null;
     
-    if (!tenantId) {
+    if (!organizationId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID is required'
+      'Organization ID is required'
     );
     }
 
@@ -239,7 +237,7 @@ export const POST = withApiAuth(async (
     const [response] = await db
       .insert(surveyResponses)
       .values({
-        tenantId,
+        organizationId,
         surveyId,
         userId,
         respondentName: data.respondentName,
@@ -252,7 +250,7 @@ export const POST = withApiAuth(async (
 
     // Create answers
     const answerValues = data.answers.map((answer) => ({
-      tenantId,
+      organizationId,
       responseId: response.id,
       questionId: answer.questionId,
       answerText: answer.answerText,

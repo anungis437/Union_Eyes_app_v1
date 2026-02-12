@@ -15,7 +15,7 @@ import {
   foreignKey,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { organizations } from "../schema-organizations";
+import { organizations } from "../../../schema-organizations";
 
 // Training Courses Table
 export const trainingCourses = pgTable("training_courses", {

@@ -56,7 +56,7 @@ interface WorkflowDefinition {
 }
 
 interface WorkflowBuilderProps {
-  tenantId: string;
+  organizationId: string;
   existingWorkflow?: WorkflowDefinition;
   onSave?: (workflow: WorkflowDefinition) => void;
   onTest?: (workflow: WorkflowDefinition) => void;
@@ -77,7 +77,7 @@ const nodeTypes = [
 ];
 
 export function WorkflowBuilder({
-  tenantId,
+  organizationId,
   existingWorkflow,
   onSave,
   onTest,
@@ -255,7 +255,7 @@ export function WorkflowBuilder({
         method: workflow.id ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Tenant-ID': tenantId,
+          'X-Organization-ID': organizationId,
         },
         body: JSON.stringify(workflow),
       });

@@ -21,7 +21,7 @@ import {
 } from '@/lib/api/standardized-responses';
 // PATCH /api/clause-library/[id]/share - Update sharing settings
 
-const clause-libraryShareSchema = z.object({
+const clauseLibraryShareSchema = z.object({
   sharingLevel: z.unknown().optional(),
   sharedWithOrgIds: z.string().uuid('Invalid sharedWithOrgIds'),
   isAnonymized: z.boolean().optional(),

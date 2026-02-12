@@ -6,7 +6,7 @@
  * - withRoleAuth: Role enforcement and hierarchy
  * - withEnhancedRoleAuth: Enhanced role checks with multi-role support
  * - withApiAuth: Basic authentication
- * - Tenant mismatch scenarios
+ * - Organization mismatch scenarios
  * - Allowlist behavior for public/cron routes
  */
 
@@ -78,7 +78,7 @@ describe('PR #3: Auth Guard Test Suite', () => {
     lastName: 'User',
     fullName: 'Test User',
     imageUrl: 'https://example.com/avatar.png',
-    publicMetadata: { tenantId: 'org_456', role: 'admin' },
+    publicMetadata: { organizationId: 'org_456', role: 'admin' },
     privateMetadata: {},
   };
 
@@ -436,10 +436,10 @@ describe('PR #3: Auth Guard Test Suite', () => {
   });
 
   // =========================================================================
-  // Tenant Mismatch Tests
+  // Organization Mismatch Tests
   // =========================================================================
 
-  describe('Tenant Isolation', () => {
+  describe('Organization Isolation', () => {
     it('should block access when user organization does not match resource organization', async () => {
       (auth as Mock).mockResolvedValue({
         userId: 'user_123',
@@ -457,7 +457,7 @@ describe('PR #3: Auth Guard Test Suite', () => {
         const resourceOrg = 'org_456';
         if (context.organizationId !== resourceOrg) {
           return NextResponse.json(
-            { error: 'Tenant mismatch' },
+            { error: 'Organization mismatch' },
             { status: 403 }
           );
         }
@@ -469,7 +469,7 @@ describe('PR #3: Auth Guard Test Suite', () => {
       const response = await guardedHandler(request, { organizationId: 'org_ATTACKER' });
 
       const body = await response.json();
-      expect(body.error).toContain('Tenant mismatch');
+      expect(body.error).toContain('Organization mismatch');
       expect(response.status).toBe(403);
     });
 
@@ -486,7 +486,7 @@ describe('PR #3: Auth Guard Test Suite', () => {
         const resourceOrg = 'org_456';
         if (context.organizationId !== resourceOrg) {
           return NextResponse.json(
-            { error: 'Tenant mismatch' },
+            { error: 'Organization mismatch' },
             { status: 403 }
           );
         }

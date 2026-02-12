@@ -57,11 +57,10 @@ export const GET = async (req: NextRequest) => {
   try {
       const { searchParams } = new URL(req.url);
       const action = searchParams.get('action');
-      const organizationId = (searchParams.get('organizationId') ?? searchParams.get('tenantId') ?? contextOrganizationId);
-      const tenantId = organizationId;
+      const organizationId = searchParams.get('organizationId') ?? contextOrganizationId;
       const campaignId = searchParams.get('campaignId');
 
-      if (!tenantId) {
+      if (!organizationId) {
         return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Missing organizationId parameter'
@@ -70,9 +69,9 @@ export const GET = async (req: NextRequest) => {
 
       switch (action) {
         case 'templates':
-          return getTemplates(tenantId);
+          return getTemplates(organizationId);
         case 'campaigns':
-          return getCampaigns(tenantId);
+          return getCampaigns(organizationId);
         case 'campaign-details':
           if (!campaignId) {
             return standardErrorResponse(
@@ -105,7 +104,6 @@ return NextResponse.json(
 const communicationsSmsSchema = z.object({
   action: z.unknown().optional(),
   organizationId: z.string().uuid('Invalid organizationId'),
-  tenantId: z.string().uuid('Invalid tenantId'),
   phoneNumber: z.string().min(10, 'Invalid phone number'),
   message: z.unknown().optional(),
   templateId: z.string().uuid('Invalid templateId'),
@@ -166,21 +164,21 @@ return NextResponse.json(
 // INTERNAL HANDLERS
 // ============================================================================
 
-async function getTemplates(tenantId: string) {
+async function getTemplates(organizationId: string) {
   const templates = await db
     .select()
     .from(smsTemplates)
-    .where(and(eq(smsTemplates.organizationId, tenantId), eq(smsTemplates.isActive, true)))
+    .where(and(eq(smsTemplates.organizationId, organizationId), eq(smsTemplates.isActive, true)))
     .orderBy(desc(smsTemplates.createdAt));
 
   return NextResponse.json({ templates });
 }
 
-async function getCampaigns(tenantId: string) {
+async function getCampaigns(organizationId: string) {
   const campaigns = await db
     .select()
     .from(smsCampaigns)
-    .where(eq(smsCampaigns.organizationId, tenantId))
+    .where(eq(smsCampaigns.organizationId, organizationId))
     .orderBy(desc(smsCampaigns.createdAt));
 
   return NextResponse.json({ campaigns });
@@ -219,11 +217,10 @@ async function getCampaignDetails(campaignId: string) {
 }
 
 async function sendSingleSms(userId: string, body: any) {
-  const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, phoneNumber, message, templateId, variables } = body;
-  const organizationId = organizationIdFromBody ?? tenantIdFromBody;
-  const tenantId = organizationId;
+  const { organizationId: organizationIdFromBody, phoneNumber, message, templateId, variables } = body;
+  const organizationId = organizationIdFromBody;
 
-  if (!tenantId || !phoneNumber || !message) {
+  if (!organizationId || !phoneNumber || !message) {
     return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Missing required fields: organizationId, phoneNumber, message'
@@ -271,11 +268,10 @@ async function sendSingleSms(userId: string, body: any) {
 }
 
 async function sendBulkSmsAction(userId: string, body: any) {
-  const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, recipients, message, templateId, campaignId } = body;
-  const organizationId = organizationIdFromBody ?? tenantIdFromBody;
-  const tenantId = organizationId;
+  const { organizationId: organizationIdFromBody, recipients, message, templateId, campaignId } = body;
+  const organizationId = organizationIdFromBody;
 
-  if (!tenantId || !recipients || !Array.isArray(recipients) || !message) {
+  if (!organizationId || !recipients || !Array.isArray(recipients) || !message) {
     return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Missing required fields: organizationId, recipients (array), message'
@@ -303,11 +299,10 @@ async function sendBulkSmsAction(userId: string, body: any) {
 }
 
 async function createTemplate(userId: string, contextOrganizationId: string, body: any) {
-  const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, name, description, messageTemplate, variables, category } = body;
-  const organizationId = organizationIdFromBody ?? tenantIdFromBody ?? contextOrganizationId;
-  const tenantId = organizationId;
+  const { organizationId: organizationIdFromBody, name, description, messageTemplate, variables, category } = body;
+  const organizationId = organizationIdFromBody ?? contextOrganizationId;
 
-  if (!tenantId || !name || !messageTemplate) {
+  if (!organizationId || !name || !messageTemplate) {
     return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Missing required fields: organizationId, name, messageTemplate'
@@ -323,7 +318,7 @@ async function createTemplate(userId: string, contextOrganizationId: string, bod
   }
 
   const newTemplate: NewSmsTemplate = {
-    organizationId: tenantId,
+    organizationId,
     name,
     description,
     messageTemplate,
@@ -333,7 +328,7 @@ async function createTemplate(userId: string, contextOrganizationId: string, bod
     createdBy: userId,
   };
 
-  const [template] = await withRLSContext({ organizationId: tenantId }, async (db) => {
+  const [template] = await withRLSContext({ organizationId }, async (db) => {
     return await db.insert(smsTemplates).values(newTemplate).returning();
   });
 
@@ -345,11 +340,10 @@ async function createTemplate(userId: string, contextOrganizationId: string, bod
 }
 
 async function createCampaign(userId: string, contextOrganizationId: string, body: any) {
-  const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, name, description, message, templateId, recipientFilter, scheduledFor } = body;
-  const organizationId = organizationIdFromBody ?? tenantIdFromBody ?? contextOrganizationId;
-  const tenantId = organizationId;
+  const { organizationId: organizationIdFromBody, name, description, message, templateId, recipientFilter, scheduledFor } = body;
+  const organizationId = organizationIdFromBody ?? contextOrganizationId;
 
-  if (!tenantId || !name || !message) {
+  if (!organizationId || !name || !message) {
     return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Missing required fields: organizationId, name, message'
@@ -358,7 +352,7 @@ async function createCampaign(userId: string, contextOrganizationId: string, bod
   }
 
   const newCampaign: NewSmsCampaign = {
-    organizationId: tenantId,
+    organizationId,
     name,
     description,
     message,
@@ -369,7 +363,7 @@ async function createCampaign(userId: string, contextOrganizationId: string, bod
     createdBy: userId,
   };
 
-  const [campaign] = await withRLSContext({ organizationId: tenantId }, async (db) => {
+  const [campaign] = await withRLSContext({ organizationId }, async (db) => {
     return await db.insert(smsCampaigns).values(newCampaign).returning();
   });
 

@@ -27,7 +27,7 @@ export class AccessibilityAuditManager {
    * Create a new audit
    */
   async createAudit(data: {
-    tenantId: string;
+    organizationId: string;
     auditName: string;
     auditType: "automated" | "manual" | "hybrid";
     targetUrl: string;
@@ -42,6 +42,7 @@ export class AccessibilityAuditManager {
       .insert(accessibilityAudits)
       .values({
         ...data,
+        tenantId: data.organizationId,
         conformanceLevel: (data.conformanceLevel as any) || "AA",
         status: "pending",
         startedAt: new Date(),
@@ -196,10 +197,10 @@ export class AccessibilityAuditManager {
   }
   
   /**
-   * Get open issues for tenant
+   * Get open issues for organization
    */
   async getOpenIssues(
-    tenantId: string,
+    organizationId: string,
     options: {
       severity?: string[];
       wcagCriteria?: string;
@@ -210,7 +211,7 @@ export class AccessibilityAuditManager {
     let query = db
       .select()
       .from(accessibilityIssues)
-      .where(eq(accessibilityIssues.tenantId, tenantId));
+      .where(eq(accessibilityIssues.tenantId, organizationId));
     
     if (options.severity && options.severity.length > 0) {
       query = query.where(
@@ -546,7 +547,7 @@ export class AccessibilityReportGenerator {
    * Generate WCAG 2.2 AA compliance report
    */
   async generateComplianceReport(
-    tenantId: string,
+    organizationId: string,
     options: {
       startDate?: Date;
       endDate?: Date;
@@ -570,11 +571,11 @@ export class AccessibilityReportGenerator {
     }>;
     recommendations: string[];
   }> {
-    // Get all issues for tenant
+    // Get all issues for organization
     const issues = await db
       .select()
       .from(accessibilityIssues)
-      .where(eq(accessibilityIssues.tenantId, tenantId));
+      .where(eq(accessibilityIssues.tenantId, organizationId));
     
     // Calculate summary
     const summary = {

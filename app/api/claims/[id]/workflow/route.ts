@@ -3,7 +3,7 @@
  * 
  * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
- * - RLS policies enforce tenant isolation at database level
+ * - RLS policies enforce organization isolation at database level
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -29,9 +29,9 @@ export const GET = withEnhancedRoleAuth(30, async (request, context) => {
   try {
     const claimNumber = params.id;
 
-    // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+    // All database operations wrapped in withRLSContext - RLS policies handle organization isolation
     return withRLSContext(async (tx) => {
-      // Get claim - RLS policies automatically enforce tenant filtering
+      // Get claim - RLS policies automatically enforce organization filtering
       const [claim] = await tx
         .select()
         .from(claims)

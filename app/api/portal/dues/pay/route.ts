@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { duesTransactions } from '@/db/schema/domains/finance';
 import { profilesTable } from '@/db/schema/domains/member';
-import { tenants } from '@/db/schema/tenant-management-schema';
+import { organizations } from '@/db/schema-organizations';
 import { eq, and } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
@@ -128,12 +128,12 @@ export const POST = async (request: NextRequest) => {
           .from(profilesTable)
           .where(eq(profilesTable.userId, userId));
         
-        // Get tenant/organization from first transaction
-        const tenantId = selectedTransactions[0].tenantId;
-        const [tenant] = await db
+        // Get organization from first transaction
+        const organizationId = selectedTransactions[0].organizationId;
+        const [organization] = await db
           .select()
-          .from(tenants)
-          .where(eq(tenants.tenantId, tenantId));
+          .from(organizations)
+          .where(eq(organizations.id, organizationId));
 
         // Update transactions as paid and generate receipts
         const receipts: string[] = [];
@@ -144,7 +144,7 @@ export const POST = async (request: NextRequest) => {
             transactionId: transaction.id,
             memberId: userId,
             memberName: profile?.email || userId,
-            organizationName: tenant?.tenantName || 'Union',
+            organizationName: organization?.name || 'Union',
             duesAmount: Number(transaction.duesAmount),
             copeAmount: Number(transaction.copeAmount),
             pacAmount: Number(transaction.pacAmount),

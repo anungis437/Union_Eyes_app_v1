@@ -6,7 +6,7 @@
  * - Engagement Scores: User-level engagement tracking across all channels
  * - Preferences: Consolidated communication preferences
  * 
- * Dependencies: tenants, profiles, newsletters, SMS, push notifications
+ * Dependencies: organizations, profiles, newsletters, SMS, push notifications
  * Version: 1.0.0
  * Created: December 6, 2025
  */

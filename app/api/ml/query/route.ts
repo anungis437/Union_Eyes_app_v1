@@ -64,7 +64,6 @@ export const POST = withRoleAuth(20, async (request: NextRequest, context) => {
     const { question, context: queryContext } = QuerySchema.parse(body);
 
     const organizationScopeId = organizationId || userId;
-    const tenantId = organizationScopeId;
 
     // Call AI service for natural language query
     const aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:3005';
@@ -74,12 +73,11 @@ export const POST = withRoleAuth(20, async (request: NextRequest, context) => {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${process.env.AI_SERVICE_TOKEN}`,
-        'X-Organization-ID': tenantId,
-        'X-Tenant-ID': tenantId
+        'X-Organization-ID': organizationScopeId
       },
       body: JSON.stringify({
         question,
-        tenantId,
+        organizationId: organizationScopeId,
         context: queryContext
       })
     });

@@ -81,11 +81,7 @@ export function IncidentListTable({
   const [totalPages, setTotalPages] = React.useState(1);
   const itemsPerPage = 10;
 
-  React.useEffect(() => {
-    loadIncidents();
-  }, [organizationId, statusFilter, severityFilter, currentPage, searchQuery]);
-
-  async function loadIncidents() {
+  const loadIncidents = React.useCallback(async () => {
     setIsLoading(true);
     try {
       const params = new URLSearchParams({
@@ -110,7 +106,7 @@ export function IncidentListTable({
       } else {
         throw new Error(data.error);
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to load incidents",
@@ -119,7 +115,11 @@ export function IncidentListTable({
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [organizationId, statusFilter, severityFilter, currentPage, searchQuery, toast]);
+
+  React.useEffect(() => {
+    loadIncidents();
+  }, [loadIncidents]);
 
   function handleViewDetails(incidentId: string) {
     if (onViewDetails) {

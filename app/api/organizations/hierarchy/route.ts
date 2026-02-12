@@ -2,7 +2,7 @@ import { requireUser } from '@/lib/api-auth-guard';
 /**
  * Organization Hierarchy API
  * Get hierarchical organization structure with RLS isolation
- * Phase 3: Multi-Tenant Architecture - FULLY SECURED
+ * Phase 3: Multi-Organization Architecture - FULLY SECURED
  */
 
 import { NextRequest, NextResponse } from 'next/server';

@@ -55,6 +55,7 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     const fund = funds[0];
+    const organizationId = fund.tenant_id;
 
     // Create Stripe payment intent
     const paymentIntent = await stripe.paymentIntents.create({
@@ -70,7 +71,7 @@ router.post('/', async (req: Request, res: Response) => {
         donorEmail: validatedData.donorEmail || '',
         isAnonymous: validatedData.isAnonymous.toString(),
         message: validatedData.message || '',
-        tenantId: fund.tenant_id,
+        organizationId,
       },
       description: `Donation to ${fund.fund_name}`,
       receipt_email: validatedData.donorEmail || undefined,
@@ -83,7 +84,7 @@ router.post('/', async (req: Request, res: Response) => {
         is_anonymous, payment_provider, payment_intent_id,
         status, message
       ) VALUES (
-        ${fund.tenant_id}, ${validatedData.fundId}, ${validatedData.amount.toString()},
+        ${organizationId}, ${validatedData.fundId}, ${validatedData.amount.toString()},
         ${validatedData.donorName || null}, ${validatedData.donorEmail || null},
         ${validatedData.isAnonymous}, 'stripe', ${paymentIntent.id},
         'pending', ${validatedData.message || null}

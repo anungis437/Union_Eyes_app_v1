@@ -44,7 +44,7 @@ function hasMinimumRole(userRole: string, requiredRole: string): boolean {
 
 /**
  * GET /api/members/[id]
- * Get member profile by ID with tenant isolation
+ * Get member profile by ID with organization isolation
  * All authenticated members can view profiles
  */
 export const GET = async (

@@ -86,7 +86,7 @@ export type RetentionPolicy = {
  */
 export async function uploadDocument(
   claimId: string,
-  tenantId: string,
+  organizationId: string,
   file: File,
   documentType: string,
   uploadedBy: string,
@@ -103,7 +103,7 @@ export async function uploadDocument(
     const [document] = await db
       .insert(grievanceDocuments)
       .values({
-        organizationId: tenantId,
+        organizationId,
         claimId,
         documentName: file.name,
         documentType,
@@ -147,7 +147,7 @@ return {
  */
 export async function uploadDocumentVersion(
   parentDocumentId: string,
-  tenantId: string,
+  organizationId: string,
   file: File,
   uploadedBy: string,
   changes?: string
@@ -157,7 +157,7 @@ export async function uploadDocumentVersion(
     const parentDoc = await db.query.grievanceDocuments.findFirst({
       where: and(
         eq(grievanceDocuments.id, parentDocumentId),
-        eq(grievanceDocuments.organizationId, tenantId)
+        eq(grievanceDocuments.organizationId, organizationId)
       ),
     });
 
@@ -198,7 +198,7 @@ export async function uploadDocumentVersion(
     const [newVersion] = await db
       .insert(grievanceDocuments)
       .values({
-        organizationId: tenantId,
+        organizationId,
         claimId: parentDoc.claimId,
         documentName: file.name,
         documentType: parentDoc.documentType,
@@ -243,14 +243,14 @@ return {
  */
 export async function getDocumentVersions(
   documentId: string,
-  tenantId: string
+  organizationId: string
 ): Promise<DocumentVersion[]> {
   try {
     // Get root document
     const rootDoc = await db.query.grievanceDocuments.findFirst({
       where: and(
         eq(grievanceDocuments.id, documentId),
-        eq(grievanceDocuments.organizationId, tenantId)
+        eq(grievanceDocuments.organizationId, organizationId)
       ),
     });
 
@@ -287,14 +287,14 @@ return [];
  */
 export async function restoreDocumentVersion(
   versionId: string,
-  tenantId: string,
+  organizationId: string,
   restoredBy: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const versionDoc = await db.query.grievanceDocuments.findFirst({
       where: and(
         eq(grievanceDocuments.id, versionId),
-        eq(grievanceDocuments.organizationId, tenantId)
+        eq(grievanceDocuments.organizationId, organizationId)
       ),
     });
 
@@ -341,7 +341,7 @@ return {
  * Search documents by name, content, or metadata
  */
 export async function searchDocuments(
-  tenantId: string,
+  organizationId: string,
   query: string,
   filters: {
     claimId?: string;
@@ -355,7 +355,7 @@ export async function searchDocuments(
 ): Promise<DocumentSearchResult[]> {
   try {
     let whereConditions = and(
-      eq(grievanceDocuments.organizationId, tenantId),
+      eq(grievanceDocuments.organizationId, organizationId),
       eq(grievanceDocuments.isLatestVersion, true)
     );
 
@@ -537,7 +537,7 @@ export async function requestESignature(
       .where(eq(grievanceDocuments.id, request.documentId));
 
     // Send notification to signer
-    await sendSignatureRequestNotification(request);
+    await sendSignatureRequestNotification(request, document.organizationId as string);
 
     return {
       success: true,
@@ -556,7 +556,7 @@ return {
  */
 export async function markDocumentSigned(
   documentId: string,
-  tenantId: string,
+  organizationId: string,
   signedBy: string,
   signatureData?: Partial<SignatureData>
 ): Promise<{ success: boolean; error?: string }> {
@@ -564,7 +564,7 @@ export async function markDocumentSigned(
     const document = await db.query.grievanceDocuments.findFirst({
       where: and(
         eq(grievanceDocuments.id, documentId),
-        eq(grievanceDocuments.organizationId, tenantId)
+        eq(grievanceDocuments.organizationId, organizationId)
       ),
     });
 
@@ -600,13 +600,13 @@ return {
  */
 export async function getSignatureStatus(
   documentId: string,
-  tenantId: string
+  organizationId: string
 ): Promise<ESignatureStatus | null> {
   try {
     const document = await db.query.grievanceDocuments.findFirst({
       where: and(
         eq(grievanceDocuments.id, documentId),
-        eq(grievanceDocuments.organizationId, tenantId)
+        eq(grievanceDocuments.organizationId, organizationId)
       ),
     });
 
@@ -635,7 +635,7 @@ return null;
  * Apply retention policy to documents
  */
 export async function applyRetentionPolicy(
-  tenantId: string,
+  organizationId: string,
   policy: RetentionPolicy
 ): Promise<{ archivedCount: number; deletedCount: number }> {
   try {
@@ -645,7 +645,7 @@ export async function applyRetentionPolicy(
     // Find documents matching policy
     const documents = await db.query.grievanceDocuments.findMany({
       where: and(
-        eq(grievanceDocuments.organizationId, tenantId),
+        eq(grievanceDocuments.organizationId, organizationId),
         eq(grievanceDocuments.documentType, policy.documentType),
         sql`${grievanceDocuments.uploadedAt} < ${cutoffDate.toISOString()}`
       ),
@@ -683,7 +683,7 @@ return { archivedCount: 0, deletedCount: 0 };
  */
 export async function archiveDocument(
   documentId: string,
-  tenantId: string
+  organizationId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     await db
@@ -692,7 +692,7 @@ export async function archiveDocument(
       .where(
         and(
           eq(grievanceDocuments.id, documentId),
-          eq(grievanceDocuments.organizationId, tenantId)
+          eq(grievanceDocuments.organizationId, organizationId)
         )
       );
 
@@ -710,7 +710,7 @@ return {
  */
 export async function getGrievanceDocuments(
   claimId: string,
-  tenantId: string,
+  organizationId: string,
   options: {
     includeArchived?: boolean;
     latestOnly?: boolean;
@@ -720,7 +720,7 @@ export async function getGrievanceDocuments(
   try {
     let whereConditions = and(
       eq(grievanceDocuments.claimId, claimId),
-      eq(grievanceDocuments.organizationId, tenantId)
+      eq(grievanceDocuments.organizationId, organizationId)
     );
 
     if (!options.includeArchived) {
@@ -812,12 +812,13 @@ return {
 import { NotificationService } from "@/lib/services/notification-service";
 
 async function sendSignatureRequestNotification(
-  request: ESignatureRequest
+  request: ESignatureRequest,
+  organizationId: string
 ): Promise<void> {
   try {
     const notificationService = new NotificationService();
     await notificationService.send({
-      organizationId: request.tenantId,
+      organizationId,
       recipientEmail: request.signerEmail,
       type: 'email',
       priority: 'normal',

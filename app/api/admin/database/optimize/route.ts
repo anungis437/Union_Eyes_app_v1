@@ -3,7 +3,7 @@
  * 
  * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
- * - RLS policies enforce tenant isolation at database level
+ * - RLS policies enforce organization isolation at database level
  */
 
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
@@ -20,7 +20,7 @@ export const POST = async (request: NextRequest) => {
     const { userId } = context;
 
   try {
-      // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+      // All database operations wrapped in withRLSContext - RLS policies handle organization isolation
       return withRLSContext(async (tx) => {
         // Check admin role
         const adminCheck = await tx

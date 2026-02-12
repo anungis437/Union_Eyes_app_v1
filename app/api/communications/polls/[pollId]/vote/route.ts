@@ -43,15 +43,14 @@ export const POST = withApiAuth(async (
 ) => {
   try {
     const pollId = params.pollId;
-    const organizationId = (request.headers.get('x-organization-id') ?? request.headers.get('x-tenant-id'));
-    const tenantId = organizationId;
+    const organizationId = request.headers.get('x-organization-id');
     const userId = request.headers.get('x-user-id') || null;
     const ipAddress = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
     
-    if (!tenantId) {
+    if (!organizationId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID is required'
+      'Organization ID is required'
     );
     }
 
@@ -139,9 +138,9 @@ export const POST = withApiAuth(async (
     }
 
     // Record vote
-    await withRLSContext({ organizationId: tenantId }, async (db) => {
+    await withRLSContext({ organizationId }, async (db) => {
       return await db.insert(pollVotes).values({
-        tenantId,
+        organizationId,
         pollId,
         optionId,
         userId,

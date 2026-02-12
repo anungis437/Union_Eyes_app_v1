@@ -38,7 +38,7 @@ vi.mock('@clerk/nextjs', () => ({
       lastName: 'User',
       fullName: 'Test User',
       emailAddresses: [{ emailAddress: 'test@example.com' }],
-      publicMetadata: { tenantId: 'test-tenant', role: 'admin' },
+      publicMetadata: { organizationId: 'test-org-id', role: 'admin' },
     },
   })),
   useOrganization: vi.fn(() => ({
@@ -61,7 +61,7 @@ vi.mock('@clerk/nextjs/server', () => ({
     lastName: 'User',
     fullName: 'Test User',
     emailAddresses: [{ emailAddress: 'test@example.com' }],
-    publicMetadata: { tenantId: 'test-tenant', role: 'admin' },
+    publicMetadata: { organizationId: 'test-org-id', role: 'admin' },
     privateMetadata: {},
     imageUrl: null,
   }),

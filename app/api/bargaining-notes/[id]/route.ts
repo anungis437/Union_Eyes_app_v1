@@ -48,7 +48,7 @@ return standardErrorResponse(
 };
 
 
-const bargaining-notesSchema = z.object({
+const bargainingNotesSchema = z.object({
   filename: z.string().min(1, 'filename is required'),
   url: z.string().url('Invalid URL'),
   fileType: z.unknown().optional(),

@@ -96,7 +96,7 @@ return standardErrorResponse(
 };
 
 
-const calendar-syncConnectionsSchema = z.object({
+const calendarSyncConnectionsSchema = z.object({
   syncEnabled: z.boolean().optional(),
   syncDirection: z.unknown().optional(),
   calendarMappings: z.unknown().optional(),

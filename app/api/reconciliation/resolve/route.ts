@@ -43,7 +43,7 @@ export const POST = async (req: NextRequest) => {
         );
       }
 
-      // Get member to verify tenant
+      // Get member to verify organization
       const [member] = await db
         .select()
         .from(members)
@@ -78,7 +78,7 @@ export const POST = async (req: NextRequest) => {
         .where(
           and(
             eq(employerRemittances.id, remittanceId),
-            eq(employerRemittances.tenantId, member.tenantId)
+            eq(employerRemittances.organizationId, member.organizationId)
           )
         )
         .limit(1);
@@ -121,7 +121,6 @@ export const POST = async (req: NextRequest) => {
           const [newMember] = await db
             .insert(members)
             .values({
-              tenantId: member.tenantId,
               organizationId: member.organizationId,
               userId: '', // Will be updated when user claims profile
               name: actionData.name,

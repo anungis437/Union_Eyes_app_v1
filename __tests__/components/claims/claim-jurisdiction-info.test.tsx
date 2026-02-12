@@ -5,7 +5,7 @@ import { ClaimJurisdictionInfo } from '@/components/claims/claim-jurisdiction-in
 
 // Mock the jurisdiction helpers
 vi.mock('@/lib/jurisdiction-helpers', () => ({
-  getTenantJurisdiction: vi.fn().mockResolvedValue('CA-FED'), 
+  getOrganizationJurisdiction: vi.fn().mockResolvedValue('CA-FED'), 
   getJurisdictionName: vi.fn((code) => {
     const names: Record<string, string> = {
       'CA-FED': 'Federal',
@@ -38,15 +38,14 @@ describe('ClaimJurisdictionInfo', () => {
         ok: true,
         json: async () => ({
           success: true,
-          jurisdiction: 'CA-FED',
-          jurisdictionName: 'Federal',
+          data: { jurisdiction: 'CA-FED' },
         }),
       });
 
       render(
         <ClaimJurisdictionInfo
           claimId="claim-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           claimType="general"
           status="open"
         />
@@ -62,7 +61,7 @@ describe('ClaimJurisdictionInfo', () => {
         ok: true,
         json: async () => ({
           success: true,
-          jurisdiction: 'CA-FED',
+          data: { jurisdiction: 'CA-FED' },
         }),
       });
 
@@ -81,7 +80,7 @@ describe('ClaimJurisdictionInfo', () => {
       render(
         <ClaimJurisdictionInfo
           claimId="claim-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           claimType="grievance"
           status="open"
           filedDate="2025-01-15"
@@ -108,7 +107,7 @@ describe('ClaimJurisdictionInfo', () => {
         ok: true,
         json: async () => ({
           success: true,
-          jurisdiction: 'CA-FED',
+          data: { jurisdiction: 'CA-FED' },
         }),
       });
 
@@ -126,7 +125,7 @@ describe('ClaimJurisdictionInfo', () => {
       render(
         <ClaimJurisdictionInfo
           claimId="claim-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           claimType="grievance"
           status="open"
           filedDate="2025-01-15"
@@ -145,7 +144,7 @@ describe('ClaimJurisdictionInfo', () => {
         ok: true,
         json: async () => ({
           success: true,
-          jurisdiction: 'CA-ON',
+          data: { jurisdiction: 'CA-ON' },
         }),
       });
 
@@ -163,7 +162,7 @@ describe('ClaimJurisdictionInfo', () => {
       render(
         <ClaimJurisdictionInfo
           claimId="claim-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           claimType="grievance"
           status="open"
           filedDate="2025-01-01"
@@ -181,7 +180,7 @@ describe('ClaimJurisdictionInfo', () => {
         ok: true,
         json: async () => ({
           success: true,
-          jurisdiction: 'CA-ON',
+          data: { jurisdiction: 'CA-ON' },
         }),
       });
 
@@ -198,7 +197,7 @@ describe('ClaimJurisdictionInfo', () => {
       render(
         <ClaimJurisdictionInfo
           claimId="claim-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           claimType="grievance"
           status="open"
           filedDate="2025-01-15"
@@ -216,7 +215,7 @@ describe('ClaimJurisdictionInfo', () => {
         ok: true,
         json: async () => ({
           success: true,
-          jurisdiction: 'CA-FED',
+          data: { jurisdiction: 'CA-FED' },
         }),
       });
 
@@ -233,7 +232,7 @@ describe('ClaimJurisdictionInfo', () => {
       render(
         <ClaimJurisdictionInfo
           claimId="claim-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           claimType="grievance"
           status="open"
           filedDate="2025-01-15"
@@ -251,7 +250,7 @@ describe('ClaimJurisdictionInfo', () => {
     it('should render deadline calculator section', async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ success: true, jurisdiction: 'CA-ON' }),
+        json: async () => ({ success: true, data: { jurisdiction: 'CA-ON' } }),
       });
 
       (global.fetch as any).mockResolvedValueOnce({
@@ -268,7 +267,7 @@ describe('ClaimJurisdictionInfo', () => {
       render(
         <ClaimJurisdictionInfo
           claimId="claim-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           claimType="grievance"
           status="open"
           filedDate="2025-01-15"
@@ -281,7 +280,7 @@ describe('ClaimJurisdictionInfo', () => {
     it('should render calculator header for deadlines', async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ success: true, jurisdiction: 'CA-ON' }),
+        json: async () => ({ success: true, data: { jurisdiction: 'CA-ON' } }),
       });
 
       (global.fetch as any).mockResolvedValueOnce({
@@ -298,7 +297,7 @@ describe('ClaimJurisdictionInfo', () => {
       render(
         <ClaimJurisdictionInfo
           claimId="claim-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           claimType="grievance"
           status="open"
           filedDate="2025-01-15"
@@ -316,7 +315,7 @@ describe('ClaimJurisdictionInfo', () => {
       const { container } = render(
         <ClaimJurisdictionInfo
           claimId="claim-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           claimType="grievance"
           status="open"
           filedDate="2025-01-15"
@@ -331,7 +330,7 @@ describe('ClaimJurisdictionInfo', () => {
     it('should handle deadline calculation failure gracefully', async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ success: true, jurisdiction: 'CA-ON' }),
+        json: async () => ({ success: true, data: { jurisdiction: 'CA-ON' } }),
       });
 
       (global.fetch as any).mockResolvedValueOnce({
@@ -342,7 +341,7 @@ describe('ClaimJurisdictionInfo', () => {
       render(
         <ClaimJurisdictionInfo
           claimId="claim-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           claimType="grievance"
           status="open"
           filedDate="2025-01-15"
@@ -358,13 +357,13 @@ describe('ClaimJurisdictionInfo', () => {
     it('should handle missing incident date', async () => {
       (global.fetch as any).mockResolvedValue({
         ok: true,
-        json: async () => ({ success: true, jurisdiction: 'CA-FED' }),
+        json: async () => ({ success: true, data: { jurisdiction: 'CA-FED' } }),
       });
 
       render(
         <ClaimJurisdictionInfo
           claimId="claim-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           claimType="grievance"
           status="open"
           filedDate={null}
@@ -388,7 +387,7 @@ describe('ClaimJurisdictionInfo', () => {
       render(
         <ClaimJurisdictionInfo
           claimId="claim-1"
-          tenantId="tenant-1"
+          organizationId="org-1"
           claimType="grievance"
           status="open"
           filedDate="2025-01-15"

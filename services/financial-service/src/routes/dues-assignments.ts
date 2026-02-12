@@ -34,10 +34,10 @@ const createAssignmentSchema = z.object({
  */
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const { tenantId } = (req as any).user;
+    const { organizationId } = (req as any).user;
     const { memberId, active } = req.query;
 
-    const conditions = [eq(schema.memberDuesAssignments.tenantId, tenantId)];
+    const conditions = [eq(schema.memberDuesAssignments.tenantId, organizationId)];
     
     if (memberId) {
       conditions.push(eq(schema.memberDuesAssignments.memberId, memberId as string));
@@ -78,7 +78,7 @@ router.get('/', async (req: Request, res: Response) => {
  */
 router.get('/:id', async (req: Request, res: Response) => {
   try {
-    const { tenantId } = (req as any).user;
+    const { organizationId } = (req as any).user;
     const { id } = req.params;
 
     const [assignment] = await db
@@ -93,7 +93,7 @@ router.get('/:id', async (req: Request, res: Response) => {
       )
       .where(and(
         eq(schema.memberDuesAssignments.id, id),
-        eq(schema.memberDuesAssignments.tenantId, tenantId)
+        eq(schema.memberDuesAssignments.tenantId, organizationId)
       ))
       .limit(1);
 
@@ -114,7 +114,7 @@ router.get('/:id', async (req: Request, res: Response) => {
  */
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const { tenantId, userId, role } = (req as any).user;
+    const { organizationId, userId, role } = (req as any).user;
 
     // Check permissions
     if (!['admin', 'financial_admin'].includes(role)) {
@@ -130,7 +130,7 @@ router.post('/', async (req: Request, res: Response) => {
       .from(schema.duesRules)
       .where(and(
         eq(schema.duesRules.id, validatedData.ruleId),
-        eq(schema.duesRules.tenantId, tenantId)
+        eq(schema.duesRules.tenantId, organizationId)
       ))
       .limit(1);
 
@@ -143,7 +143,7 @@ router.post('/', async (req: Request, res: Response) => {
       .insert(schema.memberDuesAssignments)
       .values({
         ...validatedData,
-        tenantId,
+        tenantId: organizationId,
       } as any)
       .returning();
 
@@ -163,7 +163,7 @@ router.post('/', async (req: Request, res: Response) => {
  */
 router.put('/:id', async (req: Request, res: Response) => {
   try {
-    const { tenantId, role } = (req as any).user;
+    const { organizationId, role } = (req as any).user;
     const { id } = req.params;
 
     // Check permissions
@@ -191,7 +191,7 @@ router.put('/:id', async (req: Request, res: Response) => {
       .set(updateData)
       .where(and(
         eq(schema.memberDuesAssignments.id, id),
-        eq(schema.memberDuesAssignments.tenantId, tenantId)
+        eq(schema.memberDuesAssignments.tenantId, organizationId)
       ))
       .returning();
 
@@ -215,7 +215,7 @@ router.put('/:id', async (req: Request, res: Response) => {
  */
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
-    const { tenantId, role } = (req as any).user;
+    const { organizationId, role } = (req as any).user;
     const { id } = req.params;
 
     // Check permissions
@@ -231,7 +231,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
       } as any)
       .where(and(
         eq(schema.memberDuesAssignments.id, id),
-        eq(schema.memberDuesAssignments.tenantId, tenantId)
+        eq(schema.memberDuesAssignments.tenantId, organizationId)
       ))
       .returning();
 

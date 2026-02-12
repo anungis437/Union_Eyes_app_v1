@@ -49,7 +49,7 @@ import {
 } from 'lucide-react';
 
 interface SurveyBuilderProps {
-  tenantId: string;
+  organizationId: string;
   surveyId?: string;
   onSave?: () => void;
   onCancel?: () => void;
@@ -104,7 +104,7 @@ const QUESTION_TYPES = [
   { value: 'yes_no', label: 'Yes/No', icon: CheckCircle, description: 'Binary choice' },
 ];
 
-export function SurveyBuilder({ tenantId, surveyId, onSave, onCancel }: SurveyBuilderProps) {
+export function SurveyBuilder({ organizationId, surveyId, onSave, onCancel }: SurveyBuilderProps) {
   const { toast } = useToast();
   const [mode, setMode] = useState<'edit' | 'preview'>('edit');
   const [isSaving, setIsSaving] = useState(false);
@@ -349,7 +349,7 @@ toast({
         method: surveyId ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tenantId,
+          organizationId,
           title,
           description,
           surveyType,

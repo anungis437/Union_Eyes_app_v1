@@ -12,14 +12,14 @@ import {
 } from '@/lib/api/standardized-responses';
 async function handler(req: NextRequest) {
   const user = await getCurrentUser();
-  if (!user || !user.tenantId) {
+  if (!user || !user.organizationId) {
     return standardErrorResponse(
       ErrorCode.AUTH_REQUIRED,
-      'Authentication and tenant context required'
+      'Authentication and organization context required'
     );
   }
   
-  const tenantId = user.tenantId;
+  const organizationId = user.organizationId;
   const searchParams = req.nextUrl.searchParams;
   const daysBack = parseInt(searchParams.get('days') || '30');
 
@@ -42,7 +42,7 @@ async function handler(req: NextRequest) {
       ), 0) as "avgResponseTime"
     FROM ${users} u
     LEFT JOIN ${claims} c ON u.id = c.assigned_to 
-      AND c.tenant_id = ${tenantId}
+      AND c.organization_id = ${organizationId}
       AND c.incident_date >= ${startDate.toISOString()}::timestamp
     LEFT JOIN claim_updates cu ON c.claim_id = cu.claim_id
       AND cu.update_type = 'status_change'
@@ -51,7 +51,7 @@ async function handler(req: NextRequest) {
         FROM claim_updates 
         WHERE claim_id = c.claim_id
       )
-    WHERE u.tenant_id = ${tenantId}
+    WHERE u.organization_id = ${organizationId}
       AND u.role = 'steward'
     GROUP BY u.id, u.name
     ORDER BY "activeCases" DESC

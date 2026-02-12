@@ -129,7 +129,7 @@ export const POST = withOrganizationAuth(async (
     }
 
     // Get profile emails
-    // Note: profiles table uses userId as PK and has no tenantId
+    // Note: profiles table uses userId as PK and has no organizationId
     const profilesData = await db
       .select()
       .from(profiles)
@@ -167,12 +167,27 @@ export const POST = withOrganizationAuth(async (
       201
     );
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return standardErrorResponse(
-      ErrorCode.VALIDATION_ERROR,
-      'Validation error',
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to add subscribers',
       error
     );
+  }
+});
+
+export const DELETE = withOrganizationAuth(async (
+  request: NextRequest,
+  context,
+  params?: { id: string }
+) => {
+  try {
+    const { organizationId } = context;
+
+    if (!params?.id) {
+      return standardErrorResponse(
+        ErrorCode.MISSING_REQUIRED_FIELD,
+        'List ID required'
+      );
     }
 
     const body = await request.json();
@@ -189,13 +204,7 @@ export const POST = withOrganizationAuth(async (
 
     return NextResponse.json({ success: true, removed: subscriberIds.length });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
-    }
-return standardErrorResponse(
+    return standardErrorResponse(
       ErrorCode.INTERNAL_ERROR,
       'Failed to remove subscribers',
       error

@@ -13,13 +13,13 @@ import {
  * GET /api/workflow/overdue
  * Get all overdue claims (requires admin/steward access)
  * 
- * GUARDED: requireApiAuth with tenant isolation
+ * GUARDED: requireApiAuth with organization isolation
  */
 export async function GET(request: NextRequest) {
   try {
-    // Authentication guard with tenant isolation
+    // Authentication guard with organization isolation
     const { userId, organizationId } = await requireApiAuth({
-      tenant: true,
+      organization: true,
       roles: ['admin', 'steward'],
     });
 

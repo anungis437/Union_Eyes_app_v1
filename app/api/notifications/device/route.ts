@@ -23,7 +23,6 @@ const deviceRegistrationSchema = z.object({
   appVersion: z.string().optional(),
   timezone: z.string().optional(),
   organizationId: z.string().uuid('Invalid organization ID').optional(),
-  tenantId: z.string().uuid('Invalid tenant ID').optional(),
 });
 
 export const POST = withEnhancedRoleAuth<{
@@ -53,10 +52,9 @@ export const POST = withEnhancedRoleAuth<{
       appVersion,
       timezone,
       organizationId,
-      tenantId,
     } = validation.data;
 
-    const resolvedOrgId = context.organizationId || organizationId || tenantId;
+    const resolvedOrgId = context.organizationId || organizationId;
 
     if (!resolvedOrgId) {
       return standardErrorResponse(

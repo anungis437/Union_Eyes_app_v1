@@ -3,7 +3,7 @@
  * 
  * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
- * - RLS policies enforce tenant isolation at database level
+ * - RLS policies enforce organization isolation at database level
  */
 
 import { z } from 'zod';
@@ -32,9 +32,9 @@ export const GET = async (
     const resolvedParams = await params;
     const claimId = resolvedParams.id;
 
-    // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+    // All database operations wrapped in withRLSContext - RLS policies handle organization isolation
     return withRLSContext(async (tx) => {
-      // Fetch updates - RLS policies automatically enforce tenant filtering
+      // Fetch updates - RLS policies automatically enforce organization filtering
       const updates = await tx
         .select()
         .from(claimUpdates)
@@ -88,9 +88,9 @@ export const POST = async (
     );
     }
 
-    // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+    // All database operations wrapped in withRLSContext - RLS policies handle organization isolation
     return withRLSContext(async (tx) => {
-      // Insert new update - RLS policies enforce tenant isolation
+      // Insert new update - RLS policies enforce organization isolation
       const [newUpdate] = await tx
         .insert(claimUpdates)
         .values({

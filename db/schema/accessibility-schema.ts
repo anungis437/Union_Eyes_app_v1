@@ -17,6 +17,7 @@ import {
   index,
   integer,
 } from "drizzle-orm/pg-core";
+import { organizations } from "../schema-organizations";
 import { profiles } from "./profiles-schema";
 
 // WCAG conformance level
@@ -55,7 +56,9 @@ export const accessibilityAudits = pgTable(
   "accessibility_audits",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    tenantId: text("tenant_id").notNull(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
     
     // Audit details
     auditName: text("audit_name").notNull(),
@@ -107,8 +110,8 @@ export const accessibilityAudits = pgTable(
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => ({
-    tenantIdIdx: index("accessibility_audits_tenant_id_idx").on(
-      table.tenantId
+    organizationIdIdx: index("accessibility_audits_organization_id_idx").on(
+      table.organizationId
     ),
     statusIdx: index("accessibility_audits_status_idx").on(table.status),
     createdAtIdx: index("accessibility_audits_created_at_idx").on(
@@ -128,7 +131,9 @@ export const accessibilityIssues = pgTable(
     auditId: uuid("audit_id")
       .notNull()
       .references(() => accessibilityAudits.id, { onDelete: "cascade" }),
-    tenantId: text("tenant_id").notNull(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
     
     // Issue details
     issueTitle: text("issue_title").notNull(),
@@ -185,8 +190,8 @@ export const accessibilityIssues = pgTable(
   },
   (table) => ({
     auditIdIdx: index("accessibility_issues_audit_id_idx").on(table.auditId),
-    tenantIdIdx: index("accessibility_issues_tenant_id_idx").on(
-      table.tenantId
+    organizationIdIdx: index("accessibility_issues_organization_id_idx").on(
+      table.organizationId
     ),
     statusIdx: index("accessibility_issues_status_idx").on(table.status),
     severityIdx: index("accessibility_issues_severity_idx").on(
@@ -252,7 +257,9 @@ export const accessibilityTestSuites = pgTable(
   "accessibility_test_suites",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    tenantId: text("tenant_id"),
+    organizationId: uuid("organization_id").references(() => organizations.id, {
+      onDelete: "cascade",
+    }),
     
     // Suite details
     suiteName: text("suite_name").notNull(),
@@ -294,8 +301,8 @@ export const accessibilityTestSuites = pgTable(
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
   (table) => ({
-    tenantIdIdx: index("accessibility_test_suites_tenant_id_idx").on(
-      table.tenantId
+    organizationIdIdx: index("accessibility_test_suites_organization_id_idx").on(
+      table.organizationId
     ),
     isActiveIdx: index("accessibility_test_suites_is_active_idx").on(
       table.isActive
@@ -311,7 +318,9 @@ export const accessibilityUserTesting = pgTable(
   "accessibility_user_testing",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    tenantId: text("tenant_id").notNull(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
     
     // Session details
     sessionName: text("session_name").notNull(),
@@ -362,8 +371,8 @@ export const accessibilityUserTesting = pgTable(
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => ({
-    tenantIdIdx: index("accessibility_user_testing_tenant_id_idx").on(
-      table.tenantId
+    organizationIdIdx: index("accessibility_user_testing_organization_id_idx").on(
+      table.organizationId
     ),
     sessionDateIdx: index("accessibility_user_testing_session_date_idx").on(
       table.sessionDate

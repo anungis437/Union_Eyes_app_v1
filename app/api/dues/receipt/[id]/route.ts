@@ -214,7 +214,7 @@ export const GET = async (
 
         if (format === 'pdf-url') {
           // Upload to blob storage and return URL
-          const filename = `receipts/${member.tenantId}/${receiptNumber}.pdf`;
+          const filename = `receipts/${member.organizationId}/${receiptNumber}.pdf`;
           const { url } = await put(filename, pdfBuffer, {
             access: 'public',
             contentType: 'application/pdf',

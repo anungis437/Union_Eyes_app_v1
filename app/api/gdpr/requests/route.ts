@@ -23,7 +23,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
 
     const { searchParams } = new URL(request.url);
     const organizationIdFromQuery =
-      searchParams.get("organizationId") ?? searchParams.get("tenantId");
+      searchParams.get("organizationId") ?? searchParams.get("orgId") ?? searchParams.get("organization_id") ?? searchParams.get("org_id");
     const requestType = searchParams.get("type") as GdprRequestType | null;
 
     if (!organizationIdFromQuery) {
@@ -35,7 +35,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
 
     const conditions = [
       eq(gdprDataRequests.userId, user.id),
-      eq(gdprDataRequests.tenantId, organizationIdFromQuery),
+      eq(gdprDataRequests.organizationId, organizationIdFromQuery),
     ];
 
     if (requestType) {

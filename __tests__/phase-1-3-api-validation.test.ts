@@ -554,11 +554,11 @@ export const testUtils = {
   /**
    * Create a test organization
    */
-  createTestOrganization: async (tenantId: string) => {
+  createTestOrganization: async (organizationId: string) => {
     // Creates a mock organization with required fields for testing
     return {
       id: `test-org-${Date.now()}`,
-      tenant_id: tenantId,
+      tenant_id: organizationId,
       name: 'Test Organization',
       type: 'LOCAL',
       jurisdiction: 'CA-ON',

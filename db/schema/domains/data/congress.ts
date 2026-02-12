@@ -14,7 +14,7 @@ import {
   jsonb,
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
-import { organizations } from "../schema-organizations";
+import { organizations } from "../../../schema-organizations";
 
 export const congressMembershipStatusEnum = pgEnum("congress_membership_status", [
   "active",

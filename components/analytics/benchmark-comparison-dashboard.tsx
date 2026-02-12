@@ -43,7 +43,7 @@ interface BenchmarkComparison {
   displayName: string;
   unitType: string;
   higherIsBetter: boolean;
-  tenantValue: number;
+  organizationValue: number;
   localAverage: number | null;
   regionalAverage: number | null;
   nationalAverage: number | null;
@@ -97,7 +97,7 @@ const SAMPLE_COMPARISONS: BenchmarkComparison[] = [
     displayName: "Dues Collection Rate",
     unitType: "percentage",
     higherIsBetter: true,
-    tenantValue: 94.5,
+    organizationValue: 94.5,
     localAverage: 91.2,
     regionalAverage: 89.8,
     nationalAverage: 88.5,
@@ -115,7 +115,7 @@ const SAMPLE_COMPARISONS: BenchmarkComparison[] = [
     displayName: "Grievance Resolution Time",
     unitType: "days",
     higherIsBetter: false,
-    tenantValue: 42,
+    organizationValue: 42,
     localAverage: 38,
     regionalAverage: 45,
     nationalAverage: 52,
@@ -133,7 +133,7 @@ const SAMPLE_COMPARISONS: BenchmarkComparison[] = [
     displayName: "Member Engagement Score",
     unitType: "score",
     higherIsBetter: true,
-    tenantValue: 72,
+    organizationValue: 72,
     localAverage: 75,
     regionalAverage: 71,
     nationalAverage: 68,
@@ -151,7 +151,7 @@ const SAMPLE_COMPARISONS: BenchmarkComparison[] = [
     displayName: "Training Completion Rate",
     unitType: "percentage",
     higherIsBetter: true,
-    tenantValue: 67.5,
+    organizationValue: 67.5,
     localAverage: 72.3,
     regionalAverage: 75.8,
     nationalAverage: 78.2,
@@ -169,7 +169,7 @@ const SAMPLE_COMPARISONS: BenchmarkComparison[] = [
     displayName: "Campaign Success Rate",
     unitType: "percentage",
     higherIsBetter: true,
-    tenantValue: 82.0,
+    organizationValue: 82.0,
     localAverage: 68.5,
     regionalAverage: 71.2,
     nationalAverage: 69.8,
@@ -187,7 +187,7 @@ const SAMPLE_COMPARISONS: BenchmarkComparison[] = [
     displayName: "Membership Growth Rate",
     unitType: "percentage",
     higherIsBetter: true,
-    tenantValue: 3.2,
+    organizationValue: 3.2,
     localAverage: 4.1,
     regionalAverage: 3.8,
     nationalAverage: 2.9,
@@ -477,7 +477,7 @@ export default function BenchmarkComparisonDashboard() {
                 </div>
                 <div className="text-right">
                   <div className="text-3xl font-bold mb-1">
-                    {formatValue(comparison.tenantValue, comparison.unitType)}
+                    {formatValue(comparison.organizationValue, comparison.unitType)}
                   </div>
                   <div className="text-sm text-muted-foreground">Your Performance</div>
                 </div>
@@ -525,7 +525,7 @@ export default function BenchmarkComparisonDashboard() {
                     <span className="text-sm font-medium text-blue-900">Your Union</span>
                   </div>
                   <div className="text-2xl font-bold text-blue-900 mb-1">
-                    {formatValue(comparison.tenantValue, comparison.unitType)}
+                    {formatValue(comparison.organizationValue, comparison.unitType)}
                   </div>
                   {comparison.varianceFromBenchmark !== 0 && (
                     <div
@@ -593,7 +593,7 @@ export default function BenchmarkComparisonDashboard() {
                   <div>
                     <div className="flex items-center justify-between mb-1 text-sm">
                       <span className="font-medium">Your Union</span>
-                      <span className="font-bold">{formatValue(comparison.tenantValue, comparison.unitType)}</span>
+                      <span className="font-bold">{formatValue(comparison.organizationValue, comparison.unitType)}</span>
                     </div>
                     <div className="h-8 bg-gray-200 rounded-full overflow-hidden">
                       <div
@@ -618,8 +618,8 @@ export default function BenchmarkComparisonDashboard() {
                           style={{
                             width: `${
                               comparison.higherIsBetter
-                                ? (comparison.localAverage / comparison.tenantValue) * comparison.percentileRank
-                                : (comparison.tenantValue / comparison.localAverage) * comparison.percentileRank
+                                ? (comparison.localAverage / comparison.organizationValue) * comparison.percentileRank
+                                : (comparison.organizationValue / comparison.localAverage) * comparison.percentileRank
                             }%`,
                           }}
                         />
@@ -640,8 +640,8 @@ export default function BenchmarkComparisonDashboard() {
                           style={{
                             width: `${
                               comparison.higherIsBetter
-                                ? (comparison.regionalAverage / comparison.tenantValue) * comparison.percentileRank
-                                : (comparison.tenantValue / comparison.regionalAverage) * comparison.percentileRank
+                                ? (comparison.regionalAverage / comparison.organizationValue) * comparison.percentileRank
+                                : (comparison.organizationValue / comparison.regionalAverage) * comparison.percentileRank
                             }%`,
                           }}
                         />
@@ -662,8 +662,8 @@ export default function BenchmarkComparisonDashboard() {
                           style={{
                             width: `${
                               comparison.higherIsBetter
-                                ? (comparison.nationalAverage / comparison.tenantValue) * comparison.percentileRank
-                                : (comparison.tenantValue / comparison.nationalAverage) * comparison.percentileRank
+                                ? (comparison.nationalAverage / comparison.organizationValue) * comparison.percentileRank
+                                : (comparison.organizationValue / comparison.nationalAverage) * comparison.percentileRank
                             }%`,
                           }}
                         />

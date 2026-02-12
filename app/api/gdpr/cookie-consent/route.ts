@@ -14,9 +14,9 @@ import {
   ErrorCode 
 } from '@/lib/api/standardized-responses';
 
-const gdprCookie-consentSchema = z.object({
+const gdprCookieConsentSchema = z.object({
   consentId: z.string().uuid('Invalid consentId'),
-  tenantId: z.string().uuid('Invalid tenantId'),
+  organizationId: z.string().uuid('Invalid organizationId'),
   essential: z.unknown().optional(),
   functional: z.unknown().optional(),
   analytics: z.unknown().optional(),
@@ -29,7 +29,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
     const user = await getCurrentUser();
     const body = await request.json();
     // Validate request body
-    const validation = gdprCookie-consentSchema.safeParse(body);
+    const validation = gdprCookieConsentSchema.safeParse(body);
     if (!validation.success) {
       return standardErrorResponse(
         ErrorCode.VALIDATION_ERROR,
@@ -38,19 +38,9 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       );
     }
     
-    const { consentId, tenantId, essential, functional, analytics, marketing, userAgent } = validation.data;
+    const { consentId, organizationId, essential, functional, analytics, marketing, userAgent } = validation.data;
 
-    const {
-      consentId,
-      tenantId,
-      essential,
-      functional,
-      analytics,
-      marketing,
-      userAgent,
-    } = body;
-
-    if (!consentId || !tenantId) {
+    if (!consentId || !organizationId) {
       return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Missing required fields'
@@ -64,7 +54,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
 
     const consent = await CookieConsentManager.saveCookieConsent({
       userId: user?.id || null,
-      tenantId,
+      organizationId,
       consentId,
       essential: essential ?? true,
       functional: functional ?? false,

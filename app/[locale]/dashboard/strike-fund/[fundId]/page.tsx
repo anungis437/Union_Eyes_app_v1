@@ -47,7 +47,7 @@ import { Progress } from "@/components/ui/progress";
 
 interface StrikeFund {
   id: string;
-  tenantId: string;
+  organizationId: string;
   fundName: string;
   fundCode: string;
   description: string | null;

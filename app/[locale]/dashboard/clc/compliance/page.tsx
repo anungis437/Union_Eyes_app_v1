@@ -10,7 +10,6 @@ import {
   AlertCircle,
   XCircle,
   TrendingUp,
-  TrendingDown,
   Calendar,
   FileText,
   Download,
@@ -18,13 +17,10 @@ import {
   Building2,
   DollarSign,
   Clock,
-  BarChart3,
-  Filter
+  BarChart3
 } from 'lucide-react';
 import Link from 'next/link';
-import { db } from '@/db';
 import { getUserRoleInOrganization } from '@/lib/organization-utils';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -32,6 +28,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+
+interface ProvincialComplianceData {
+  name: string;
+  affiliates: number;
+  complianceRate: number;
+  compliant: number;
+  code: string;
+}
+
+interface ComplianceIssue {
+  organization: string;
+  description: string;
+  severity: string;
+  daysOverdue: number;
+}
+
 import {
   Table,
   TableBody,
@@ -50,12 +62,12 @@ async function checkCLCAccess(userId: string, orgId: string): Promise<boolean> {
   try {
     const userRole = await getUserRoleInOrganization(userId, orgId);
     return ['clc_executive', 'clc_staff', 'system_admin'].includes(userRole || '');
-  } catch (error) {
+  } catch {
     return false;
   }
 }
 
-async function getComplianceMetrics(clcId: string) {
+async function getComplianceMetrics(_clcId: string) {
   try {
     // TODO: Replace with actual queries to per_capita_remittances and compliance tables
     
@@ -369,7 +381,7 @@ export default async function CLCCompliancePage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {metrics.provincialCompliance.map((province: any, index: number) => (
+              {metrics.provincialCompliance.map((province: ProvincialComplianceData, index: number) => (
                 <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center gap-4">
                     <MapPin className="h-5 w-5 text-muted-foreground" />
@@ -432,7 +444,7 @@ export default async function CLCCompliancePage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {metrics.recentIssues.map((issue: any, index: number) => (
+                {metrics.recentIssues.map((issue: ComplianceIssue, index: number) => (
                   <TableRow key={index}>
                     <TableCell className="font-medium">{issue.organization}</TableCell>
                     <TableCell>{issue.description}</TableCell>

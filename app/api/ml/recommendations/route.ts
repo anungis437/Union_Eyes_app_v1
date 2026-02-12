@@ -57,7 +57,6 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
 
   try {
     const organizationScopeId = organizationId || userId;
-    const tenantId = organizationScopeId;
     const searchParams = request.nextUrl.searchParams;
     const type = searchParams.get('type') || 'all';
     const claimId = searchParams.get('claimId');
@@ -66,25 +65,25 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
 
     // Steward assignment recommendations
     if (type === 'steward' || type === 'all') {
-      const stewardRecs = await generateStewardRecommendations(tenantId, claimId);
+      const stewardRecs = await generateStewardRecommendations(organizationScopeId, claimId);
       recommendations.push(...stewardRecs);
     }
 
     // Deadline recommendations
     if (type === 'deadline' || type === 'all') {
-      const deadlineRecs = await generateDeadlineRecommendations(tenantId, claimId);
+      const deadlineRecs = await generateDeadlineRecommendations(organizationScopeId, claimId);
       recommendations.push(...deadlineRecs);
     }
 
     // Strategy recommendations
     if (type === 'strategy' || type === 'all') {
-      const strategyRecs = await generateStrategyRecommendations(tenantId, claimId);
+      const strategyRecs = await generateStrategyRecommendations(organizationScopeId, claimId);
       recommendations.push(...strategyRecs);
     }
 
     // Priority recommendations
     if (type === 'priority' || type === 'all') {
-      const priorityRecs = await generatePriorityRecommendations(tenantId);
+      const priorityRecs = await generatePriorityRecommendations(organizationScopeId);
       recommendations.push(...priorityRecs);
     }
 
@@ -111,7 +110,7 @@ return standardErrorResponse(
  * Generate steward assignment recommendations
  */
 async function generateStewardRecommendations(
-  tenantId: string,
+  organizationId: string,
   claimId?: string | null
 ): Promise<any[]> {
   const recommendations: any[] = [];
@@ -119,10 +118,10 @@ async function generateStewardRecommendations(
   try {
     // Find unassigned claims
     const unassignedClaims = await withRLSContext(
-      { organizationId: tenantId },
+      { organizationId },
       async (db) => db.query.claims.findMany({
         where: and(
-          eq(claims.organizationId, tenantId),
+          eq(claims.organizationId, organizationId),
           isNull(claims.assignedTo),
           ne(claims.status, 'closed')
         )
@@ -139,7 +138,7 @@ async function generateStewardRecommendations(
         .from(claims)
         .where(
           and(
-            eq(claims.organizationId, tenantId),
+            eq(claims.organizationId, organizationId),
             ne(claims.status, 'closed')
           )
         )
@@ -178,7 +177,7 @@ async function generateStewardRecommendations(
       .innerJoin(users, eq(claims.assignedTo, users.userId))
       .where(
         and(
-          eq(claims.organizationId, tenantId),
+          eq(claims.organizationId, organizationId),
           ne(claims.status, 'closed')
         )
       )
@@ -212,7 +211,7 @@ async function generateStewardRecommendations(
  * Generate deadline recommendations
  */
 async function generateDeadlineRecommendations(
-  tenantId: string,
+  organizationId: string,
   claimId?: string | null
 ): Promise<any[]> {
   const recommendations: any[] = [];
@@ -222,10 +221,10 @@ async function generateDeadlineRecommendations(
     const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
 
     // Find upcoming deadlines
-    const upcomingDeadlines = await withRLSContext({ organizationId: tenantId }, async (db) => {
+    const upcomingDeadlines = await withRLSContext({ organizationId }, async (db) => {
       return await db.query.deadlines.findMany({
         where: and(
-          eq(deadlines.tenantId, tenantId),
+          eq(deadlines.organizationId, organizationId),
           lte(deadlines.dueDate, threeDaysFromNow),
           gte(deadlines.dueDate, now),
           isNull(deadlines.completedAt)
@@ -256,10 +255,10 @@ async function generateDeadlineRecommendations(
     }
 
     // Find overdue deadlines
-    const overdueDeadlines = await withRLSContext({ organizationId: tenantId }, async (db) => {
+    const overdueDeadlines = await withRLSContext({ organizationId }, async (db) => {
       return await db.query.deadlines.findMany({
         where: and(
-          eq(deadlines.tenantId, tenantId),
+          eq(deadlines.organizationId, organizationId),
           lte(deadlines.dueDate, now),
           isNull(deadlines.completedAt)
         )
@@ -293,7 +292,7 @@ async function generateDeadlineRecommendations(
  * Generate strategy recommendations
  */
 async function generateStrategyRecommendations(
-  tenantId: string,
+  organizationId: string,
   claimId?: string | null
 ): Promise<any[]> {
   const recommendations: any[] = [];
@@ -307,7 +306,7 @@ async function generateStrategyRecommendations(
         wonCount: sql<number>`count(*) filter (where status = 'won')::int`,
       })
       .from(claims)
-      .where(eq(claims.organizationId, tenantId))
+      .where(eq(claims.organizationId, organizationId))
       .groupBy(claims.claimType);
 
     // Find claim types with low win rates
@@ -347,7 +346,7 @@ async function generateStrategyRecommendations(
  * Generate priority recommendations
  */
 async function generatePriorityRecommendations(
-  tenantId: string
+  organizationId: string
 ): Promise<any[]> {
   const recommendations: any[] = [];
 
@@ -357,10 +356,10 @@ async function generatePriorityRecommendations(
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
     const oldOpenClaims = await withRLSContext(
-      { organizationId: tenantId },
+      { organizationId },
       async (db) => db.query.claims.findMany({
         where: and(
-          eq(claims.organizationId, tenantId),
+          eq(claims.organizationId, organizationId),
           ne(claims.status, 'closed'),
           lte(claims.createdAt, thirtyDaysAgo)
         ),

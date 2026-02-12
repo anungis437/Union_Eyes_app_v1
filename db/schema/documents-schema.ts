@@ -3,11 +3,14 @@
  * Database schema for general document management with folder support
  */
 import { pgTable, text, integer, timestamp, uuid, boolean, jsonb } from 'drizzle-orm/pg-core';
+import { organizations } from '../schema-organizations';
 
 // Document Folders Table
 export const documentFolders = pgTable('document_folders', {
   id: uuid('id').defaultRandom().primaryKey(),
-  tenantId: text('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   description: text('description'),
   parentFolderId: uuid('parent_folder_id'),
@@ -20,7 +23,9 @@ export const documentFolders = pgTable('document_folders', {
 // Documents Table
 export const documents = pgTable('documents', {
   id: uuid('id').defaultRandom().primaryKey(),
-  tenantId: text('tenant_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   folderId: uuid('folder_id').references(() => documentFolders.id),
   
   // File information

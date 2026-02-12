@@ -34,9 +34,9 @@ export const GET = withEnhancedRoleAuth(30, async (req: NextRequest, context) =>
   }
 
   try {
-    const tenantId = organizationId;
+    const organizationScopeId = organizationId;
     
-    if (!tenantId) {
+    if (!organizationScopeId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
       'Organization ID required'
@@ -50,7 +50,7 @@ export const GET = withEnhancedRoleAuth(30, async (req: NextRequest, context) =>
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - daysBack);
 
-    const analytics = await getMemberAnalytics(tenantId, { startDate, endDate });
+    const analytics = await getMemberAnalytics(organizationScopeId, { startDate, endDate });
 
     // Log audit event
     await logApiAuditEvent({

@@ -19,7 +19,7 @@ import {
   ErrorCode 
 } from '@/lib/api/standardized-responses';
 
-const taxRl-1GenerateSchema = z.object({
+const taxRl1GenerateSchema = z.object({
   year: z.unknown().optional(),
 });
 
@@ -43,9 +43,9 @@ export const POST = async (request: NextRequest) => {
         );
       }
 
-      const { year } = await request.json();
+      const body = await request.json();
     // Validate request body
-    const validation = taxRl-1GenerateSchema.safeParse(body);
+    const validation = taxRl1GenerateSchema.safeParse(body);
     if (!validation.success) {
       return standardErrorResponse(
         ErrorCode.VALIDATION_ERROR,

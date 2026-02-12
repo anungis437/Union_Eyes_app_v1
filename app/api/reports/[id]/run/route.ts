@@ -32,7 +32,7 @@ async function postHandler(
     // Get report config
     const reportResult = await db.execute(sql`
       SELECT * FROM reports 
-      WHERE id = ${params.id} AND tenant_id = ${context.organizationId}
+      WHERE id = ${params.id} AND organization_id = ${context.organizationId}
     `);
 
     if (!reportResult || reportResult.length === 0) {
@@ -55,25 +55,25 @@ async function postHandler(
       // Pre-built queries for claims
       queryResult = await db.execute(sql`
         SELECT * FROM claims
-        WHERE tenant_id = ${context.organizationId}
+        WHERE organization_id = ${context.organizationId}
         LIMIT 1000
       `);
     } else if (reportConfig.dataSource === 'members') {
       queryResult = await db.execute(sql`
         SELECT * FROM organization_members
-        WHERE tenant_id = ${context.organizationId}
+        WHERE organization_id = ${context.organizationId}
         LIMIT 1000
       `);
     } else if (reportConfig.dataSource === 'deadlines') {
       queryResult = await db.execute(sql`
         SELECT * FROM deadlines
-        WHERE tenant_id = ${context.organizationId}
+        WHERE organization_id = ${context.organizationId}
         LIMIT 1000
       `);
     } else if (reportConfig.dataSource === 'grievances') {
       queryResult = await db.execute(sql`
         SELECT * FROM grievances
-        WHERE tenant_id = ${context.organizationId}
+        WHERE organization_id = ${context.organizationId}
         LIMIT 1000
       `);
     } else {

@@ -65,7 +65,7 @@ export const GET = withRoleAuth('officer', async (request, _context) => {
     const riskLevel = searchParams.get('riskLevel'); // 'low', 'medium', 'high'
     const limit = parseInt(searchParams.get('limit') || '50');
     const organizationScopeId = organizationId || userId;
-    const tenantId = (searchParams.get('organizationId') ?? searchParams.get('tenantId')) || organizationScopeId;
+    const organizationIdParam = (searchParams.get('organizationId') ?? searchParams.get('orgId') ?? searchParams.get('organization_id') ?? searchParams.get('org_id')) || organizationScopeId;
 
     // SECURITY FIX: Validate riskLevel against allowlist to prevent SQL injection
     const ALLOWED_RISK_LEVELS = ['low', 'medium', 'high'];
@@ -73,7 +73,7 @@ export const GET = withRoleAuth('officer', async (request, _context) => {
 
     // Build base query
     const baseConditions = [
-      sql`p.tenant_id = ${tenantId}`,
+      sql`p.organization_id = ${organizationIdParam}`,
       sql`p.model_type = 'churn_risk'`,
       sql`p.predicted_at > NOW() - INTERVAL '7 days'`
     ];
@@ -166,10 +166,9 @@ export const GET = withRoleAuth('officer', async (request, _context) => {
 });
 
 
-const mlPredictionsChurn-riskSchema = z.object({
+const mlPredictionsChurnRiskSchema = z.object({
   memberId: z.string().uuid('Invalid memberId'),
   organizationId: z.string().uuid('Invalid organizationId'),
-  tenantId: z.string().uuid('Invalid tenantId'),
 });
 
 export const POST = withRoleAuth('officer', async (request, _context) => {
@@ -180,7 +179,7 @@ export const POST = withRoleAuth('officer', async (request, _context) => {
     try {
       const body = await request.json();
     // Validate request body
-    const validation = mlPredictionsChurn-riskSchema.safeParse(body);
+    const validation = mlPredictionsChurnRiskSchema.safeParse(body);
     if (!validation.success) {
       return standardErrorResponse(
         ErrorCode.VALIDATION_ERROR,
@@ -189,10 +188,8 @@ export const POST = withRoleAuth('officer', async (request, _context) => {
       );
     }
     
-    const { memberId, organizationId, tenantId } = validation.data;
-      const { memberId, organizationId: organizationIdFromBody, tenantId: tenantIdFromBody } = body;
+    const { memberId, organizationId: organizationIdFromBody } = validation.data;
     const organizationScopeId = organizationIdFromBody ?? organizationId ?? userId;
-    const tenantId = tenantIdFromBody ?? organizationScopeId;
 
     if (!memberId) {
       return standardErrorResponse(
@@ -206,7 +203,7 @@ export const POST = withRoleAuth('officer', async (request, _context) => {
       WITH member_features AS (
         SELECT 
           p.user_id,
-          p.tenant_id,
+          p.organization_id,
           p.full_name,
           p.union_tenure_years,
           p.member_age,
@@ -239,8 +236,8 @@ export const POST = withRoleAuth('officer', async (request, _context) => {
         FROM profiles p
         LEFT JOIN claims c ON c.member_id = p.user_id
         WHERE p.user_id = ${memberId}
-          AND p.tenant_id = ${tenantId}
-        GROUP BY p.user_id, p.tenant_id, p.full_name, p.union_tenure_years, p.member_age
+          AND p.organization_id = ${organizationScopeId}
+        GROUP BY p.user_id, p.organization_id, p.full_name, p.union_tenure_years, p.member_age
       )
       SELECT 
         user_id,
@@ -349,7 +346,7 @@ export const POST = withRoleAuth('officer', async (request, _context) => {
     // Save prediction
     await db.execute(sql`
       INSERT INTO ml_predictions (
-        tenant_id,
+        organization_id,
         user_id,
         model_type,
         model_version,
@@ -359,7 +356,7 @@ export const POST = withRoleAuth('officer', async (request, _context) => {
         response_time_ms,
         features_used
       ) VALUES (
-        ${tenantId},
+        ${organizationScopeId},
         ${memberId},
         'churn_risk',
         ${mlPrediction.modelVersion},

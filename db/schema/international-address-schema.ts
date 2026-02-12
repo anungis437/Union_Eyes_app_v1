@@ -17,6 +17,7 @@ import {
   index,
   integer,
 } from "drizzle-orm/pg-core";
+import { organizations } from "../schema-organizations";
 import { profiles } from "./profiles-schema";
 
 // Address type enum
@@ -45,7 +46,9 @@ export const internationalAddresses = pgTable(
   "international_addresses",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    tenantId: text("tenant_id").notNull(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
     userId: text("user_id").references(() => profiles.userId, {
       onDelete: "set null",
     }),
@@ -135,8 +138,8 @@ export const internationalAddresses = pgTable(
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
   (table) => ({
-    tenantIdIdx: index("international_addresses_tenant_id_idx").on(
-      table.tenantId
+    organizationIdIdx: index("international_addresses_organization_id_idx").on(
+      table.organizationId
     ),
     userIdIdx: index("international_addresses_user_id_idx").on(table.userId),
     countryCodeIdx: index("international_addresses_country_code_idx").on(

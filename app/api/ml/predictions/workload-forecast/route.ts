@@ -205,7 +205,7 @@ return standardErrorResponse(
 });
 
 
-const mlPredictionsWorkload-forecastSchema = z.object({
+const mlPredictionsWorkloadForecastSchema = z.object({
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional(),
   organizationId: z.string().uuid('Invalid organizationId'),

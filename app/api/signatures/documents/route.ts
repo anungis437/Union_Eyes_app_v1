@@ -32,7 +32,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
     const documentType = formData.get("documentType") as string;
-    const organizationId = (formData.get("organizationId") ?? formData.get("tenantId")) as string;
+    const organizationId = formData.get("organizationId") as string;
     const signersJson = formData.get("signers") as string;
     const provider = formData.get("provider") as any;
     const expirationDays = formData.get("expirationDays") as string;
@@ -61,7 +61,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
 
     // Create signature request
     const document = await SignatureService.createSignatureRequest({
-      tenantId: organizationId,
+      organizationId,
       title,
       description,
       documentType: documentType || "contract",
@@ -108,7 +108,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
     
     const userId = user.id;
     const { searchParams } = new URL(request.url);
-    const organizationId = (searchParams.get("organizationId") ?? searchParams.get("tenantId"));
+    const organizationId = searchParams.get("organizationId");
 
     if (!organizationId) {
       return standardErrorResponse(

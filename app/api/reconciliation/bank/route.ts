@@ -33,7 +33,7 @@ export const GET = async (req: NextRequest) => {
         );
       }
 
-      // Get member to verify tenant
+      // Get member to verify organization
       const [member] = await db
         .select()
         .from(members)
@@ -80,7 +80,7 @@ export const GET = async (req: NextRequest) => {
         .from(duesTransactions)
         .where(
           and(
-            eq(duesTransactions.tenantId, member.tenantId),
+            eq(duesTransactions.organizationId, member.organizationId),
             eq(duesTransactions.status, 'completed'),
             gte(duesTransactions.paymentDate, new Date(startDate)),
             lte(duesTransactions.paymentDate, new Date(endDate))

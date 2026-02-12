@@ -112,7 +112,7 @@ export const GET = withRoleAuth('member', async (request: NextRequest, context: 
 });
 
 
-const organizingWorkplace-mappingSchema = z.object({
+const organizingWorkplaceMappingSchema = z.object({
   campaignId: z.string().uuid('Invalid campaignId'),
   organizationId: z.string().uuid('Invalid organizationId'),
   jobTitle: z.string().min(1, 'jobTitle is required'),

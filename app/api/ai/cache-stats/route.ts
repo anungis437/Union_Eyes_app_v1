@@ -68,7 +68,7 @@ export const GET = withAdminAuth(async (_request: NextRequest) => {
  * Requires admin role
  */
 
-const aiCache-statsSchema = z.object({
+const aiCacheStatsSchema = z.object({
   action: z.unknown().optional(),
 });
 

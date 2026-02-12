@@ -144,7 +144,7 @@ export function PrivacySettingsPanel() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          tenantId: organizationId,
+          organizationId,
           consentType: purposeId,
           granted,
         }),

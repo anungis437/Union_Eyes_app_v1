@@ -12,7 +12,7 @@
  * - Two-way SMS conversation management
  * 
  * Security:
- * - Tenant isolation
+ * - Organization isolation
  * - Phone number validation (E.164)
  * - Twilio signature verification
  * - SQL injection prevention
@@ -68,7 +68,7 @@ const SMS_COST_PER_SEGMENT = 0.0075; // Twilio US pricing (~$0.0075 per SMS)
 
 export interface SendSmsOptions {
   organizationId?: string;
-  tenantId?: string;
+  tenantId?: string; // Legacy fallback for org scoping
   userId?: string;
   phoneNumber: string;
   message: string;
@@ -78,7 +78,7 @@ export interface SendSmsOptions {
 
 export interface SendBulkSmsOptions {
   organizationId?: string;
-  tenantId?: string;
+  tenantId?: string; // Legacy fallback for org scoping
   userId: string;
   recipients: Array<{ phoneNumber: string; userId?: string }>;
   message: string;
@@ -250,8 +250,8 @@ export function renderSmsTemplate(template: string, variables: Record<string, an
  * Send a single SMS message
  */
 export async function sendSms(options: SendSmsOptions): Promise<SmsServiceResult> {
-  const { organizationId: organizationIdInput, tenantId, userId, phoneNumber, message, templateId, campaignId } = options;
-  const organizationId = resolveOrganizationId({ organizationId: organizationIdInput, tenantId });
+  const { organizationId: organizationIdInput, tenantId: legacyTenantId, userId, phoneNumber, message, templateId, campaignId } = options;
+  const organizationId = resolveOrganizationId({ organizationId: organizationIdInput, tenantId: legacyTenantId });
 
   if (!organizationId) {
     return {
@@ -378,8 +378,8 @@ export async function sendBulkSms(options: SendBulkSmsOptions): Promise<{
   failed: number;
   errors: Array<{ phoneNumber: string; error: string }>;
 }> {
-  const { organizationId: organizationIdInput, tenantId, userId, recipients, message, templateId, campaignId } = options;
-  const organizationId = resolveOrganizationId({ organizationId: organizationIdInput, tenantId });
+  const { organizationId: organizationIdInput, tenantId: legacyTenantId, userId, recipients, message, templateId, campaignId } = options;
+  const organizationId = resolveOrganizationId({ organizationId: organizationIdInput, tenantId: legacyTenantId });
 
   if (!organizationId) {
     return {

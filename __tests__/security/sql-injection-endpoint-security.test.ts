@@ -25,7 +25,7 @@ describe('SQL Injection Security Tests', () => {
         ]
       };
 
-      const executor = new ReportExecutor('test-org', 'test-tenant');
+      const executor = new ReportExecutor('test-org', 'test-org');
       
       const result = await executor.execute(maliciousConfig);
       
@@ -45,7 +45,7 @@ describe('SQL Injection Security Tests', () => {
         ]
       };
 
-      const executor = new ReportExecutor('test-org', 'test-tenant');
+      const executor = new ReportExecutor('test-org', 'test-org');
       
       const result = await executor.execute(maliciousConfig);
       
@@ -243,7 +243,7 @@ describe('SQL Injection Security Tests', () => {
         ]
       };
 
-      const executor = new ReportExecutor('test-org', 'test-tenant');
+      const executor = new ReportExecutor('test-org', 'test-org');
       
       // Should fail at formula validation
       const result = await executor.execute(maliciousConfig);
@@ -320,7 +320,7 @@ describe('SQL Injection Security Tests', () => {
         ]
       };
 
-      const executor = new ReportExecutor('test-org', 'test-tenant');
+      const executor = new ReportExecutor('test-org', 'test-org');
       
       const result = await executor.execute(maliciousConfig);
       
@@ -337,7 +337,7 @@ describe('SQL Injection Security Tests', () => {
       // This test ensures the execute route refactoring is in place
       // The route should now use ReportExecutor instead of building SQL directly
       
-      const executor = new ReportExecutor('test-org', 'test-tenant');
+      const executor = new ReportExecutor('test-org', 'test-org');
       expect(executor).toBeDefined();
       expect(typeof executor.execute).toBe('function');
     });

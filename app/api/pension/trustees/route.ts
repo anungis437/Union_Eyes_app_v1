@@ -77,14 +77,12 @@ const pensionTrusteesSchema = z.object({
   trustBoardId: z.string().uuid('Invalid trustBoardId'),
   userId: z.string().uuid('Invalid userId'),
   trusteeName: z.string().min(1, 'trusteeName is required'),
-  trusteeType: z.unknown().optional(),
-  // 'employer' | 'union' | 'independent'
-        position: z.string().min(1, '// 'employer' | 'union' | 'independent'
-        position is required'),
+  trusteeType: z.unknown().optional(), // 'employer' | 'union' | 'independent'
+  position: z.string().min(1, 'position is required'),
   termStartDate: z.string().datetime().optional(),
   termEndDate: z.string().datetime().optional(),
-  termLengthYears = 3: z.unknown().optional(),
-  isVotingMember = true: z.boolean().optional(),
+  termLengthYears: z.unknown().optional().default(3),
+  isVotingMember: z.boolean().optional().default(true),
   representingOrganization: z.unknown().optional(),
   representingOrganizationId: z.string().uuid('Invalid representingOrganizationId'),
   email: z.string().email('Invalid email address'),

@@ -10,7 +10,7 @@ import {
 import { eq, and, sql, lte, gte, or, isNull, desc } from 'drizzle-orm';
 
 interface DuesCalculationParams {
-  tenantId: string;
+  organizationId: string;
   memberId: string;
   periodStart: Date;
   periodEnd: Date;
@@ -48,7 +48,7 @@ export class DuesCalculationEngine {
   static async calculateMemberDues(
     params: DuesCalculationParams
   ): Promise<DuesCalculationResult | null> {
-    const { tenantId, memberId, periodStart, periodEnd, memberData } = params;
+    const { organizationId, memberId, periodStart, periodEnd, memberData } = params;
 
     // Get active dues assignment for member
     const [assignment] = await db
@@ -61,7 +61,7 @@ export class DuesCalculationEngine {
       .where(
         and(
           eq(memberDuesAssignments.memberId, memberId),
-          eq(memberDuesAssignments.tenantId, tenantId),
+          eq(memberDuesAssignments.organizationId, organizationId),
           eq(memberDuesAssignments.isActive, true),
           lte(memberDuesAssignments.effectiveDate, periodStart.toISOString().split('T')[0]),
           or(
@@ -345,7 +345,7 @@ return 0;
   }
 
   private static async resolveMemberData(
-    tenantId: string,
+    organizationId: string,
     memberId: string
   ): Promise<DuesCalculationParams['memberData'] | undefined> {
     try {
@@ -354,7 +354,7 @@ return 0;
         .from(duesTransactions)
         .where(
           and(
-            eq(duesTransactions.tenantId, tenantId),
+            eq(duesTransactions.organizationId, organizationId),
             eq(duesTransactions.memberId, memberId)
           )
         )
@@ -400,7 +400,7 @@ return undefined;
   /**
    * Generate dues transactions for all members for a billing period
    */
-  static async generateBillingCycle(tenantId: string, periodStart: Date, periodEnd: Date) {
+  static async generateBillingCycle(organizationId: string, periodStart: Date, periodEnd: Date) {
     try {
       // Get all active members with dues assignments
       const activeMembers = await db
@@ -418,7 +418,7 @@ return undefined;
         )
         .where(
           and(
-            eq(members.tenantId, tenantId),
+            eq(members.organizationId, organizationId),
             eq(members.status, 'active')
           )
         );
@@ -447,11 +447,11 @@ continue;
 
         // Calculate dues
         const calculation = await this.calculateMemberDues({
-          tenantId,
+          organizationId,
           memberId: member.id,
           periodStart,
           periodEnd,
-          memberData: await this.resolveMemberData(tenantId, member.id),
+          memberData: await this.resolveMemberData(organizationId, member.id),
         });
 
         if (!calculation) {
@@ -459,7 +459,7 @@ continue;
         }
 
         transactionsToCreate.push({
-          tenantId,
+          organizationId,
           memberId: member.id,
           assignmentId: assignment.id,
           ruleId: calculation.ruleId,
@@ -496,7 +496,7 @@ throw error;
   /**
    * Calculate late fees for overdue transactions
    */
-  static async calculateLateFees(tenantId: string, lateFeeRate: number = 0.02) {
+  static async calculateLateFees(organizationId: string, lateFeeRate: number = 0.02) {
     try {
       const today = new Date().toISOString().split('T')[0];
 
@@ -506,7 +506,7 @@ throw error;
         .from(duesTransactions)
         .where(
           and(
-            eq(duesTransactions.tenantId, tenantId),
+            eq(duesTransactions.organizationId, organizationId),
             eq(duesTransactions.status, 'pending'),
             sql`${duesTransactions.dueDate} < ${today}`,
             sql`CAST(${duesTransactions.lateFeeAmount} AS DECIMAL) = 0`

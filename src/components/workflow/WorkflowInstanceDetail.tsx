@@ -60,7 +60,7 @@ interface WorkflowInstance {
 
 interface WorkflowInstanceDetailProps {
   instanceId: string;
-  tenantId: string;
+  organizationId: string;
   onBack?: () => void;
   className?: string;
 }
@@ -77,7 +77,7 @@ const statusConfig = {
 
 export function WorkflowInstanceDetail({
   instanceId,
-  tenantId,
+  organizationId,
   onBack,
   className = '',
 }: WorkflowInstanceDetailProps) {
@@ -90,7 +90,7 @@ export function WorkflowInstanceDetail({
     try {
       const response = await fetch(`/api/workflow-instances/${instanceId}`, {
         headers: {
-          'X-Tenant-ID': tenantId,
+          'X-Organization-ID': organizationId,
         },
       });
 
@@ -102,7 +102,7 @@ export function WorkflowInstanceDetail({
     } finally {
       setLoading(false);
     }
-  }, [instanceId, tenantId]);
+  }, [instanceId, organizationId]);
 
   useEffect(() => {
     fetchInstanceDetails();

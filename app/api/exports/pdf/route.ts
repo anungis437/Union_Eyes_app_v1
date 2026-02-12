@@ -18,13 +18,12 @@ import {
 async function postHandler(req: NextRequest, context) {
   try {
     const organizationId = context.organizationId;
-    const tenantId = organizationId;
     const userId = context.userId;
     
-    if (!tenantId || !userId) {
+    if (!organizationId || !userId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID and User ID required'
+      'Organization ID and User ID required'
     );
     }
 
@@ -38,7 +37,7 @@ async function postHandler(req: NextRequest, context) {
     }
 
     // Create export job
-    const job = await createExportJob(tenantId, userId, {
+    const job = await createExportJob(organizationId, userId, {
       reportId: body.reportId,
       exportType: 'pdf',
     });

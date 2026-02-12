@@ -17,6 +17,9 @@ import { logger } from '@/lib/logger';
 
 const router = Router();
 
+const getOrganizationIdFromHeaders = (req: Request): string | undefined =>
+  (req.headers['x-organization-id'] as string) || (req.headers['x-tenant-id'] as string);
+
 // ============================================================================
 // VALIDATION SCHEMAS
 // ============================================================================
@@ -55,18 +58,18 @@ const UpdatePreferencesSchema = z.object({
  */
 router.post('/queue', async (req: Request, res: Response) => {
   try {
-    const tenantId = req.headers['x-tenant-id'] as string;
-    if (!tenantId) {
+    const organizationId = getOrganizationIdFromHeaders(req);
+    if (!organizationId) {
       return res.status(400).json({
         success: false,
-        error: 'Missing x-tenant-id header',
+        error: 'Missing x-organization-id header',
       });
     }
 
     const body = QueueNotificationSchema.parse(req.body);
 
     const notificationId = await queueNotification({
-      tenantId,
+      organizationId,
       userId: body.userId,
       type: body.type,
       channels: body.channels,
@@ -95,17 +98,17 @@ router.post('/queue', async (req: Request, res: Response) => {
  */
 router.get('/preferences', async (req: Request, res: Response) => {
   try {
-    const tenantId = req.headers['x-tenant-id'] as string;
+    const organizationId = getOrganizationIdFromHeaders(req);
     const userId = req.query.userId as string;
 
-    if (!tenantId || !userId) {
+    if (!organizationId || !userId) {
       return res.status(400).json({
         success: false,
-        error: 'Missing tenantId or userId',
+        error: 'Missing organizationId or userId',
       });
     }
 
-    const preferences = await getUserNotificationPreferences(tenantId, userId);
+    const preferences = await getUserNotificationPreferences(organizationId, userId);
 
     res.json({
       success: true,
@@ -126,19 +129,19 @@ router.get('/preferences', async (req: Request, res: Response) => {
  */
 router.put('/preferences', async (req: Request, res: Response) => {
   try {
-    const tenantId = req.headers['x-tenant-id'] as string;
+    const organizationId = getOrganizationIdFromHeaders(req);
     const userId = req.body.userId as string;
 
-    if (!tenantId || !userId) {
+    if (!organizationId || !userId) {
       return res.status(400).json({
         success: false,
-        error: 'Missing tenantId or userId',
+        error: 'Missing organizationId or userId',
       });
     }
 
     const { preferences } = UpdatePreferencesSchema.parse(req.body);
 
-    await updateUserNotificationPreferences(tenantId, userId, preferences);
+    await updateUserNotificationPreferences(organizationId, userId, preferences);
 
     res.json({
       success: true,
@@ -159,18 +162,18 @@ router.put('/preferences', async (req: Request, res: Response) => {
  */
 router.get('/history', async (req: Request, res: Response) => {
   try {
-    const tenantId = req.headers['x-tenant-id'] as string;
+    const organizationId = getOrganizationIdFromHeaders(req);
     const userId = req.query.userId as string;
     const limit = parseInt(req.query.limit as string) || 50;
 
-    if (!tenantId || !userId) {
+    if (!organizationId || !userId) {
       return res.status(400).json({
         success: false,
-        error: 'Missing tenantId or userId',
+        error: 'Missing organizationId or userId',
       });
     }
 
-    const history = await getNotificationHistory(tenantId, userId, limit);
+    const history = await getNotificationHistory(organizationId, userId, limit);
 
     res.json({
       success: true,
@@ -244,16 +247,16 @@ router.post('/retry-failed', async (req: Request, res: Response) => {
  */
 router.post('/test', async (req: Request, res: Response) => {
   try {
-    const tenantId = req.headers['x-tenant-id'] as string;
-    if (!tenantId) {
+    const organizationId = getOrganizationIdFromHeaders(req);
+    if (!organizationId) {
       return res.status(400).json({
         success: false,
-        error: 'Missing x-tenant-id header',
+        error: 'Missing x-organization-id header',
       });
     }
 
     const notificationId = await queueNotification({
-      tenantId,
+      organizationId,
       userId: req.body.userId || '00000000-0000-0000-0000-000000000000',
       type: 'payment_confirmation',
       channels: ['email'],

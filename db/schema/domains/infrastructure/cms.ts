@@ -1,7 +1,7 @@
 import { pgTable, uuid, text, timestamp, boolean, integer, decimal, jsonb, date, uniqueIndex, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
-import { organizations } from '../schema-organizations';
-import { profiles } from './profiles-schema';
+import { organizations } from '../../../schema-organizations';
+import { profiles } from '../../profiles-schema';
 
 // =============================================
 // CMS SYSTEM

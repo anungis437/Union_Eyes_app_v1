@@ -22,8 +22,8 @@ import {
   index,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
-import { organizations } from '../schema-organizations';
-import { profiles } from './profiles-schema';
+import { organizations } from '../../../schema-organizations';
+import { profiles } from '../../profiles-schema';
 
 // =====================================================================================
 // TABLE: organizing_campaigns

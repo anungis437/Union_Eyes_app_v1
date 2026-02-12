@@ -56,7 +56,6 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
 
   try {
     const organizationScopeId = organizationId || userId;
-    const tenantId = organizationScopeId;
     const { searchParams } = new URL(request.url);
     const days = parseInt(searchParams.get('days') || '30');
 
@@ -75,7 +74,7 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
         COUNT(*) as predictions,
         AVG(response_time_ms) as avg_response_time
       FROM ml_predictions
-      WHERE tenant_id = ${tenantId}
+      WHERE organization_id = ${organizationScopeId}
         AND predicted_at >= NOW() - INTERVAL '${days} days'
       GROUP BY DATE(predicted_at)
       ORDER BY date DESC
@@ -103,7 +102,7 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
         COUNT(*) as uses,
         COUNT(DISTINCT user_id) as unique_users
       FROM ml_predictions
-      WHERE tenant_id = ${tenantId}
+      WHERE organization_id = ${organizationScopeId}
         AND predicted_at >= NOW() - INTERVAL '${days} days'
       GROUP BY model_type
       ORDER BY uses DESC
@@ -120,13 +119,13 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
       WITH active_stewards AS (
         SELECT COUNT(DISTINCT user_id) as total
         FROM claims
-        WHERE tenant_id = ${tenantId}
+        WHERE organization_id = ${organizationScopeId}
           AND created_at >= NOW() - INTERVAL '30 days'
       ),
       ai_users AS (
         SELECT COUNT(DISTINCT user_id) as total
         FROM ml_predictions
-        WHERE tenant_id = ${tenantId}
+        WHERE organization_id = ${organizationScopeId}
           AND predicted_at >= NOW() - INTERVAL '30 days'
       )
       SELECT 

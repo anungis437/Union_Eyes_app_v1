@@ -41,10 +41,10 @@ const reconcileSchema = z.object({
  */
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const { tenantId } = (req as any).user;
+    const { organizationId } = (req as any).user;
     const { employerId, status, batchNumber } = req.query;
 
-    const conditions = [eq(schema.employerRemittances.tenantId, tenantId)];
+    const conditions = [eq(schema.employerRemittances.tenantId, organizationId)];
 
     if (employerId) {
       conditions.push(eq(schema.employerRemittances.employerId, employerId as string));
@@ -78,7 +78,7 @@ router.get('/', async (req: Request, res: Response) => {
  */
 router.get('/:id', async (req: Request, res: Response) => {
   try {
-    const { tenantId } = (req as any).user;
+    const { organizationId } = (req as any).user;
     const { id } = req.params;
 
     const [remittance] = await db
@@ -87,7 +87,7 @@ router.get('/:id', async (req: Request, res: Response) => {
       .where(
         and(
           eq(schema.employerRemittances.id, id),
-          eq(schema.employerRemittances.tenantId, tenantId)
+          eq(schema.employerRemittances.tenantId, organizationId)
         )
       )
       .limit(1);
@@ -124,7 +124,7 @@ router.get('/:id', async (req: Request, res: Response) => {
  */
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const { tenantId, userId, role } = (req as any).user;
+    const { organizationId, userId, role } = (req as any).user;
 
     if (!['admin', 'financial_admin'].includes(role)) {
       return res.status(403).json({
@@ -141,7 +141,7 @@ router.post('/', async (req: Request, res: Response) => {
     const [remittance] = await db
       .insert(schema.employerRemittances)
       .values({
-        tenantId,
+        tenantId: organizationId,
         employerName: validatedData.employerName,
         employerId: validatedData.employerId,
         remittancePeriodStart: validatedData.remittancePeriodStart || validatedData.billingPeriodStart,
@@ -181,7 +181,7 @@ router.post('/', async (req: Request, res: Response) => {
  */
 router.post('/:id/reconcile', async (req: Request, res: Response) => {
   try {
-    const { tenantId, userId, role } = (req as any).user;
+    const { organizationId, userId, role } = (req as any).user;
     const { id } = req.params;
 
     if (!['admin', 'financial_admin'].includes(role)) {
@@ -200,7 +200,7 @@ router.post('/:id/reconcile', async (req: Request, res: Response) => {
       .where(
         and(
           eq(schema.employerRemittances.id, id),
-          eq(schema.employerRemittances.tenantId, tenantId)
+          eq(schema.employerRemittances.tenantId, organizationId)
         )
       )
       .limit(1);
@@ -228,7 +228,7 @@ router.post('/:id/reconcile', async (req: Request, res: Response) => {
         .from(schema.duesTransactions)
         .where(
           and(
-            eq(schema.duesTransactions.tenantId, tenantId),
+            eq(schema.duesTransactions.tenantId, organizationId),
             sql`${schema.duesTransactions.id} = ANY(${validatedData.transactionIds})`
           )
         );
@@ -239,7 +239,7 @@ router.post('/:id/reconcile', async (req: Request, res: Response) => {
         .from(schema.duesTransactions)
         .where(
           and(
-            eq(schema.duesTransactions.tenantId, tenantId),
+            eq(schema.duesTransactions.tenantId, organizationId),
             eq(schema.duesTransactions.periodStart, remittance.remittancePeriodStart),
             eq(schema.duesTransactions.periodEnd, remittance.remittancePeriodEnd)
           )
@@ -271,7 +271,7 @@ router.post('/:id/reconcile', async (req: Request, res: Response) => {
       } as any)
       .where(
         and(
-          eq(schema.duesTransactions.tenantId, tenantId),
+          eq(schema.duesTransactions.tenantId, organizationId),
           sql`${schema.duesTransactions.id} = ANY(${transactionsToMatch.map((t) => t.id)})`
         )
       );
@@ -327,7 +327,7 @@ router.post('/:id/reconcile', async (req: Request, res: Response) => {
  */
 router.put('/:id', async (req: Request, res: Response) => {
   try {
-    const { tenantId, userId, role } = (req as any).user;
+    const { organizationId, userId, role } = (req as any).user;
     const { id } = req.params;
 
     if (!['admin', 'financial_admin'].includes(role)) {
@@ -353,7 +353,7 @@ router.put('/:id', async (req: Request, res: Response) => {
       .where(
         and(
           eq(schema.employerRemittances.id, id),
-          eq(schema.employerRemittances.tenantId, tenantId)
+          eq(schema.employerRemittances.tenantId, organizationId)
         )
       )
       .returning();
@@ -390,7 +390,7 @@ router.put('/:id', async (req: Request, res: Response) => {
  */
 router.post('/upload', upload.single('file'), async (req: Request, res: Response) => {
   try {
-    const { tenantId, userId, role } = (req as any).user;
+    const { organizationId, userId, role } = (req as any).user;
 
     if (!['admin', 'financial_admin'].includes(role)) {
       return res.status(403).json({
@@ -453,7 +453,8 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
  */
 router.post('/:id/reconcile', async (req: Request, res: Response) => {
   try {
-    const { tenantId, userId, role } = (req as any).user;
+    const { organizationId: organizationIdFromUser, tenantId: legacyTenantId, userId, role } = (req as any).user;
+    const organizationId = organizationIdFromUser ?? legacyTenantId;
     const { id } = req.params;
 
     if (!['admin', 'financial_admin'].includes(role)) {
@@ -470,7 +471,7 @@ router.post('/:id/reconcile', async (req: Request, res: Response) => {
       .where(
         and(
           eq(schema.employerRemittances.id, id),
-          eq(schema.employerRemittances.tenantId, tenantId)
+          eq(schema.employerRemittances.tenantId, organizationId)
         )
       )
       .limit(1);
@@ -499,7 +500,7 @@ router.post('/:id/reconcile', async (req: Request, res: Response) => {
       .from(schema.duesTransactions)
       .where(
         and(
-          eq(schema.duesTransactions.tenantId, tenantId),
+          eq(schema.duesTransactions.tenantId, organizationId),
           eq(schema.duesTransactions.transactionType, 'charge'),
           sql`${schema.duesTransactions.periodStart} >= ${remittance.remittancePeriodStart}`,
           sql`${schema.duesTransactions.periodEnd} <= ${remittance.remittancePeriodEnd}`
@@ -518,7 +519,7 @@ router.post('/:id/reconcile', async (req: Request, res: Response) => {
         periodStart: t.periodStart,
         periodEnd: t.periodEnd,
       })) as any[],
-      tenantId,
+      tenantId: organizationId,
     });
 
     // If auto-apply is enabled, update matched transactions
@@ -571,7 +572,7 @@ router.post('/:id/reconcile', async (req: Request, res: Response) => {
  */
 router.get('/:id/report', async (req: Request, res: Response) => {
   try {
-    const { tenantId } = (req as any).user;
+    const { organizationId } = (req as any).user;
     const { id } = req.params;
     const { format = 'json' } = req.query;
 
@@ -582,7 +583,7 @@ router.get('/:id/report', async (req: Request, res: Response) => {
       .where(
         and(
           eq(schema.employerRemittances.id, id),
-          eq(schema.employerRemittances.tenantId, tenantId)
+          eq(schema.employerRemittances.tenantId, organizationId)
         )
       )
       .limit(1);

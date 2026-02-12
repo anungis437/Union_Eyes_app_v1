@@ -17,7 +17,6 @@ import { withRLSContext } from '@/lib/db/with-rls-context';
 import { checkRateLimit, createRateLimitHeaders } from '@/lib/rate-limiter';
 import {
   standardErrorResponse,
-  standardSuccessResponse,
   ErrorCode,
 } from '@/lib/api/standardized-responses';
 
@@ -145,7 +144,7 @@ export const GET = async (
         ];
 
         if (orgType) {
-          affiliateConditions.push(eq(organizations.organizationType, orgType as any));
+          affiliateConditions.push(eq(organizations.organizationType, orgType));
         }
 
         if (affiliationStatus) {

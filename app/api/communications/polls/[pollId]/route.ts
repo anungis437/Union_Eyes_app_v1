@@ -29,14 +29,13 @@ export const GET = withApiAuth(async (
 ) => {
   try {
     const pollId = params.pollId;
-    const organizationId = (request.headers.get('x-organization-id') ?? request.headers.get('x-tenant-id'));
-    const tenantId = organizationId;
+    const organizationId = request.headers.get('x-organization-id');
     const userId = request.headers.get('x-user-id') || null;
     
-    if (!tenantId) {
+    if (!organizationId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID is required'
+      'Organization ID is required'
     );
     }
 
@@ -44,7 +43,7 @@ export const GET = withApiAuth(async (
     const [poll] = await db
       .select()
       .from(polls)
-      .where(and(eq(polls.id, pollId), eq(polls.tenantId, tenantId)))
+      .where(and(eq(polls.id, pollId), eq(polls.organizationId, organizationId)))
       .limit(1);
 
     if (!poll) {
@@ -95,14 +94,13 @@ export const PUT = withApiAuth(async (
 ) => {
   try {
     const pollId = params.pollId;
-    const organizationId = (request.headers.get('x-organization-id') ?? request.headers.get('x-tenant-id'));
-    const tenantId = organizationId;
+    const organizationId = request.headers.get('x-organization-id');
     const userId = request.headers.get('x-user-id');
     
-    if (!tenantId || !userId) {
+    if (!organizationId || !userId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID and User ID are required'
+      'Organization ID and User ID are required'
     );
     }
 
@@ -146,7 +144,7 @@ export const PUT = withApiAuth(async (
     const [updatedPoll] = await db
       .update(polls)
       .set(updateData)
-      .where(and(eq(polls.id, pollId), eq(polls.tenantId, tenantId)))
+      .where(and(eq(polls.id, pollId), eq(polls.organizationId, organizationId)))
       .returning();
 
     return NextResponse.json({
@@ -169,13 +167,12 @@ export const DELETE = withApiAuth(async (
 ) => {
   try {
     const pollId = params.pollId;
-    const organizationId = (request.headers.get('x-organization-id') ?? request.headers.get('x-tenant-id'));
-    const tenantId = organizationId;
+    const organizationId = request.headers.get('x-organization-id');
     
-    if (!tenantId) {
+    if (!organizationId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID is required'
+      'Organization ID is required'
     );
     }
 
@@ -183,7 +180,7 @@ export const DELETE = withApiAuth(async (
     const [existingPoll] = await db
       .select()
       .from(polls)
-      .where(and(eq(polls.id, pollId), eq(polls.tenantId, tenantId)))
+      .where(and(eq(polls.id, pollId), eq(polls.organizationId, organizationId)))
       .limit(1);
 
     if (!existingPoll) {
@@ -209,7 +206,7 @@ export const DELETE = withApiAuth(async (
     // Delete poll
     await db
       .delete(polls)
-      .where(and(eq(polls.id, pollId), eq(polls.tenantId, tenantId)));
+      .where(and(eq(polls.id, pollId), eq(polls.organizationId, organizationId)));
 
     return NextResponse.json({
       message: 'Poll deleted successfully',

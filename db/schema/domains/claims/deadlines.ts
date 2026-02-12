@@ -13,6 +13,7 @@
 
 import { pgTable, uuid, text, timestamp, boolean, integer, varchar, pgEnum } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
+import { organizations } from '../../../schema-organizations';
 
 // ============================================================================
 // ENUMS
@@ -68,7 +69,9 @@ export const deliveryStatusEnum = pgEnum('delivery_status', [
 
 export const deadlineRules = pgTable('deadline_rules', {
   id: uuid('id').defaultRandom().primaryKey(),
-  tenantId: varchar('tenant_id', { length: 255 }).notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   ruleName: varchar('rule_name', { length: 255 }).notNull(),
   ruleCode: varchar('rule_code', { length: 100 }).notNull(),
   description: text('description'),
@@ -96,7 +99,9 @@ export const deadlineRules = pgTable('deadline_rules', {
 export const deadlines = pgTable('claim_deadlines', {
   id: uuid('id').defaultRandom().primaryKey(),
   claimId: uuid('claim_id').notNull(),
-  organizationId: uuid('organization_id').notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   deadlineRuleId: uuid('deadline_rule_id'),
   deadlineName: varchar('deadline_name', { length: 255 }).notNull(),
   deadlineType: varchar('deadline_type', { length: 100 }).notNull(),
@@ -130,7 +135,9 @@ export const deadlines = pgTable('claim_deadlines', {
 export const deadlineExtensions = pgTable('deadline_extensions', {
   id: uuid('id').defaultRandom().primaryKey(),
   deadlineId: uuid('deadline_id').notNull(),
-  tenantId: varchar('tenant_id', { length: 255 }).notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   requestedBy: varchar('requested_by', { length: 255 }).notNull(), // User ID - matches users.userId VARCHAR(255)
   requestedAt: timestamp('requested_at').notNull().defaultNow(),
   requestedDays: integer('requested_days').notNull(),
@@ -152,7 +159,9 @@ export const deadlineExtensions = pgTable('deadline_extensions', {
 export const deadlineAlerts = pgTable('deadline_alerts', {
   id: uuid('id').defaultRandom().primaryKey(),
   deadlineId: uuid('deadline_id').notNull(),
-  tenantId: varchar('tenant_id', { length: 255 }).notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   alertType: varchar('alert_type', { length: 100 }).notNull(),
   alertSeverity: alertSeverityEnum('alert_severity').notNull(),
   alertTrigger: varchar('alert_trigger', { length: 100 }).notNull(),
@@ -179,7 +188,9 @@ export const deadlineAlerts = pgTable('deadline_alerts', {
 
 export const holidays = pgTable('holidays', {
   id: uuid('id').defaultRandom().primaryKey(),
-  tenantId: varchar('tenant_id', { length: 255 }),
+  organizationId: uuid('organization_id').references(() => organizations.id, {
+    onDelete: 'cascade',
+  }),
   holidayDate: timestamp('holiday_date').notNull(),
   holidayName: varchar('holiday_name', { length: 255 }).notNull(),
   holidayType: varchar('holiday_type', { length: 100 }).notNull(),

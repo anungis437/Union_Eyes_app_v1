@@ -172,7 +172,7 @@ export const createTestUser = (overrides = {}) => ({
   firstName: 'Test',
   lastName: 'User',
   role: 'member',
-  tenantId: 'test-tenant',
+  organizationId: 'test-org-id',
   isActive: true,
   createdAt: new Date('2026-01-01'),
   ...overrides,

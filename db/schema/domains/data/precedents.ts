@@ -16,8 +16,8 @@ import {
   index
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { organizations } from "../schema-organizations";
-import { arbitrationDecisions } from "./cba-intelligence-schema";
+import { organizations } from "../../../schema-organizations";
+import { arbitrationDecisions } from "../../cba-intelligence-schema";
 
 // ============================================================================
 // ARBITRATION PRECEDENTS

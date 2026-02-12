@@ -21,13 +21,16 @@ import {
   standardSuccessResponse, 
   ErrorCode 
 } from '@/lib/api/standardized-responses';
-export const GET = async (request: NextRequest) => {
-  return withRoleAuth(90, async (request, context) => {
-    const { userId } = context;
 
+export const GET = withRoleAuth(90, async (request: NextRequest, context) => {
   try {
-        // Rate limiting: 50 CLC operations per hour per user
-        const rateLimitResult = await checkRateLimit(userId, RATE_LIMITS.CLC_OPERATIONS);
+    const user = await getCurrentUser();
+    if (!user) {
+      return standardErrorResponse(ErrorCode.UNAUTHORIZED, 'Authentication required');
+    }
+
+    // Rate limiting: 50 CLC operations per hour per user
+    const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.CLC_OPERATIONS);
         if (!rateLimitResult.allowed) {
           return NextResponse.json(
             { 
@@ -78,21 +81,13 @@ export const GET = async (request: NextRequest) => {
         });
 
       } catch (error) {
-        logApiAuditEvent({
-          timestamp: new Date().toISOString(), userId,
-          endpoint: '/api/admin/clc/analytics/anomalies',
-          method: 'GET',
-          eventType: 'server_error',
-          severity: 'high',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
-        });
-return standardErrorResponse(
-      ErrorCode.INTERNAL_ERROR,
-      'Failed to fetch anomaly data',
-      error
-    );
+        console.error('Anomaly detection error:', error);
+        return standardErrorResponse(
+          ErrorCode.INTERNAL_ERROR,
+          'Failed to fetch anomaly data',
+          error
+        );
       }
-      })(request);
-};
+});
 
 

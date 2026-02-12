@@ -17,13 +17,12 @@ export const GET = withApiAuth(async (
 ) => {
   try {
     const surveyId = params.surveyId;
-    const organizationId = (request.headers.get('x-organization-id') ?? request.headers.get('x-tenant-id'));
-    const tenantId = organizationId;
+    const organizationId = request.headers.get('x-organization-id');
     
-    if (!tenantId) {
+    if (!organizationId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID is required'
+      'Organization ID is required'
     );
     }
 
@@ -34,7 +33,7 @@ export const GET = withApiAuth(async (
     const [survey] = await db
       .select()
       .from(surveys)
-      .where(and(eq(surveys.id, surveyId), eq(surveys.tenantId, tenantId)))
+      .where(and(eq(surveys.id, surveyId), eq(surveys.organizationId, organizationId)))
       .limit(1);
 
     if (!survey) {

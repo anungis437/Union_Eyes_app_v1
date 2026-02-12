@@ -36,12 +36,10 @@ export interface TimelineEvent {
 }
 
 export interface IncidentTimelineViewerProps {
-  incidentId: string;
   timeline: TimelineEvent[];
 }
 
 export function IncidentTimelineViewer({
-  incidentId,
   timeline
 }: IncidentTimelineViewerProps) {
   const getEventIcon = (type?: string) => {

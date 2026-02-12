@@ -23,7 +23,7 @@ import {
   ErrorCode 
 } from '@/lib/api/standardized-responses';
 
-const onboardingSuggest-clausesSchema = z.object({
+const onboardingSuggestClausesSchema = z.object({
   organizationId: z.string().uuid('Invalid organizationId'),
 });
 

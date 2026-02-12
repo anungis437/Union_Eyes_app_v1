@@ -45,7 +45,7 @@ interface WorkflowTemplate {
 }
 
 interface WorkflowTemplateGalleryProps {
-  tenantId: string;
+  organizationId: string;
   onCreateFromTemplate?: (templateId: string, customizations: any) => void;
   onPreview?: (template: WorkflowTemplate) => void;
   className?: string;
@@ -73,7 +73,7 @@ const categoryLabels = {
 };
 
 export function WorkflowTemplateGallery({
-  tenantId,
+  organizationId,
   onCreateFromTemplate,
   onPreview,
   className = '',
@@ -104,7 +104,7 @@ export function WorkflowTemplateGallery({
         `/api/workflow-templates?${params.toString()}`,
         {
           headers: {
-            'X-Tenant-ID': tenantId,
+            'X-Organization-ID': organizationId,
           },
         }
       );
@@ -118,7 +118,7 @@ export function WorkflowTemplateGallery({
     } finally {
       setLoading(false);
     }
-  }, [tenantId, categoryFilter]);
+  }, [organizationId, categoryFilter]);
 
   useEffect(() => {
     fetchTemplates();
@@ -146,7 +146,7 @@ export function WorkflowTemplateGallery({
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-Tenant-ID': tenantId,
+            'X-Organization-ID': organizationId,
           },
           body: JSON.stringify(customizations),
         }

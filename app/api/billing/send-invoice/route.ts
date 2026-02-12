@@ -7,7 +7,7 @@ import {
   members,
   billingTemplates,
   duesTransactions,
-  tenants,
+  organizations,
 } from "@/services/financial-service/src/db/schema";
 import { eq, and } from "drizzle-orm";
 import { renderToBuffer } from "@react-pdf/renderer";
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
       .where(
         and(
           eq(billingTemplates.id, templateId),
-          eq(billingTemplates.tenantId, currentMember.tenantId)
+          eq(billingTemplates.organizationId, currentMember.organizationId)
         )
       )
       .limit(1);
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
       .where(
         and(
           eq(members.id, memberId),
-          eq(members.tenantId, currentMember.tenantId)
+          eq(members.organizationId, currentMember.organizationId)
         )
       )
       .limit(1);
@@ -110,10 +110,10 @@ export async function POST(req: NextRequest) {
     );
     }
 
-    const [tenant] = await db
+    const [organization] = await db
       .select()
-      .from(tenants)
-      .where(eq(tenants.tenantId, currentMember.tenantId))
+      .from(organizations)
+      .where(eq(organizations.id, currentMember.organizationId))
       .limit(1);
 
     let renderData = {
@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
       city: "",
       state: "",
       zip: "",
-      union_name: tenant?.name || "Union Local",
+      union_name: organization?.name || "Union Local",
       union_address: "",
       contact_email: process.env.RESEND_FROM_EMAIL || "billing@unioneyes.com",
       contact_phone: "",
@@ -244,7 +244,7 @@ export async function POST(req: NextRequest) {
 
     if (job?.id) {
       await db.insert(notificationLog).values({
-        organizationId: currentMember.tenantId,
+        organizationId: currentMember.organizationId,
         type: "billing",
         priority: "normal",
         channel: "email",

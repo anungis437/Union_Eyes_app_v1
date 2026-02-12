@@ -3,7 +3,7 @@
  * 
  * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
- * - RLS policies enforce tenant isolation at database level
+ * - RLS policies enforce organization isolation at database level
  */
 
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
@@ -24,7 +24,7 @@ export const GET = async (request: NextRequest, { params }: { params: { clauseId
   try {
       const { clauseId } = params;
 
-      // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+      // All database operations wrapped in withRLSContext - RLS policies handle organization isolation
       return withRLSContext(async (tx) => {
         // Get outgoing footnotes (this clause references others)
         const outgoingFootnotes = await tx

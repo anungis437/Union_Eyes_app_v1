@@ -29,7 +29,7 @@ const checkInSchema = z.object({
  */
 router.post('/:fundId/check-in', async (req: Request, res: Response) => {
   try {
-    const { tenantId, userId } = (req as any).user;
+    const { organizationId, userId } = (req as any).user;
     const { fundId } = req.params;
     const validatedData = checkInSchema.parse(req.body);
 
@@ -83,7 +83,7 @@ router.post('/:fundId/check-in', async (req: Request, res: Response) => {
         device_id, nfc_tag_uid, qr_code_data,
         location_verified, coordinator_override, notes, created_by
       ) VALUES (
-        ${tenantId}, ${fundId}, ${userId}, ${validatedData.picketLocationId},
+        ${organizationId}, ${fundId}, ${userId}, ${validatedData.picketLocationId},
         NOW(), ${validatedData.checkInMethod}, 
         ${checkInLocation ? sql`ST_GeogFromText(${checkInLocation})` : null},
         ${validatedData.deviceId}, ${validatedData.nfcTagUid}, ${validatedData.qrCodeData},
@@ -122,7 +122,7 @@ router.post('/:fundId/check-in', async (req: Request, res: Response) => {
  */
 router.post('/:fundId/check-out', async (req: Request, res: Response) => {
   try {
-    const { tenantId, userId } = (req as any).user;
+    const { organizationId, userId } = (req as any).user;
     const { fundId } = req.params;
 
     const checkOutSchema = z.object({
@@ -148,7 +148,7 @@ router.post('/:fundId/check-out', async (req: Request, res: Response) => {
         updated_at = NOW()
       WHERE id = ${validatedData.attendanceId}
         AND member_id = ${userId}
-        AND tenant_id = ${tenantId}
+        AND tenant_id = ${organizationId}
         AND check_out_time IS NULL
       RETURNING *
     `);
@@ -185,7 +185,7 @@ router.post('/:fundId/check-out', async (req: Request, res: Response) => {
  */
 router.post('/:fundId/stipends/calculate', async (req: Request, res: Response) => {
   try {
-    const { tenantId, userId, role } = (req as any).user;
+    const { organizationId, userId, role } = (req as any).user;
     const { fundId } = req.params;
 
     if (!['admin', 'financial_admin'].includes(role)) {
@@ -228,7 +228,7 @@ router.post('/:fundId/stipends/calculate', async (req: Request, res: Response) =
           tenant_id, fund_id, member_id, week_start, week_end,
           hours_worked, total_amount, status, created_by
         ) VALUES (
-          ${tenantId}, ${fundId}, ${row.member_id}, 
+          ${organizationId}, ${fundId}, ${row.member_id}, 
           ${validatedData.weekStart}, ${validatedData.weekEnd},
           ${row.hours_worked}, ${row.stipend_amount}, 
           'pending', ${userId}
@@ -266,11 +266,11 @@ router.post('/:fundId/stipends/calculate', async (req: Request, res: Response) =
  */
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const { tenantId } = (req as any).user;
+    const { organizationId } = (req as any).user;
     
     const result: any = await db.execute(sql`
       SELECT * FROM strike_funds 
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
       ORDER BY created_at DESC
     `);
 
@@ -292,7 +292,7 @@ router.get('/', async (req: Request, res: Response) => {
  */
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const { tenantId, userId, role } = (req as any).user;
+    const { organizationId, userId, role } = (req as any).user;
 
     if (!['admin'].includes(role)) {
       return res.status(403).json({
@@ -317,7 +317,7 @@ router.post('/', async (req: Request, res: Response) => {
         current_balance, weekly_stipend_amount, start_date,
         status, created_by
       ) VALUES (
-        ${tenantId}, ${validatedData.name}, ${validatedData.description},
+        ${organizationId}, ${validatedData.name}, ${validatedData.description},
         ${validatedData.targetAmount.toString()}, '0',
         ${validatedData.weeklyStipendAmount.toString()}, ${validatedData.startDate},
         'active', ${userId}

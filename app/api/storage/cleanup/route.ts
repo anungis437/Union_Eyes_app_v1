@@ -19,7 +19,7 @@ import {
   ErrorCode 
 } from '@/lib/api/standardized-responses';
 interface CleanupOptions {
-  tenantId: string;
+  organizationId: string;
   daysOld?: number;
   dryRun?: boolean;
 }
@@ -29,13 +29,13 @@ interface CleanupOptions {
  * Clean up deleted documents permanently
  * 
  * Body:
- * - tenantId: string (required) - Organization ID
+ * - organizationId: string (required) - Organization ID
  * - daysOld: number (optional) - Delete files older than X days (default: 30)
  * - dryRun: boolean (optional) - Preview cleanup without actually deleting
  */
 
 const storageCleanupSchema = z.object({
-  tenantId: z.string().uuid('Invalid tenantId'),
+  organizationId: z.string().uuid('Invalid organizationId'),
   daysOld: z.unknown().optional(),
   dryRun: z.unknown().optional(),
 });
@@ -100,11 +100,11 @@ export const POST = withRoleAuth(90, async (request, context) => {
     }
 
     const body = rawBody as CleanupOptions;
-    const tenantId = body.tenantId || organizationId;
+    const organizationIdParam = body.organizationId || organizationId;
     const daysOld = body.daysOld || 30;
     const dryRun = body.dryRun || false;
 
-    if (!tenantId) {
+    if (!organizationIdParam) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),
         userId,
@@ -113,17 +113,17 @@ export const POST = withRoleAuth(90, async (request, context) => {
         eventType: 'validation_failed',
         severity: 'low',
         dataType: 'DOCUMENTS',
-        details: { reason: 'tenantId is required' },
+        details: { reason: 'organizationId is required' },
       });
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'tenantId is required',
+      'organizationId is required',
       error
     );
     }
 
     // Verify organization access (admin only)
-    if (tenantId !== organizationId) {
+    if (organizationIdParam !== organizationId) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),
         userId,
@@ -151,7 +151,7 @@ export const POST = withRoleAuth(90, async (request, context) => {
       .from(documents)
       .where(
         and(
-          eq(documents.tenantId, tenantId),
+          eq(documents.organizationId, organizationIdParam),
           lte(documents.deletedAt, cutoffDate)
         )
       );
@@ -214,7 +214,7 @@ export const POST = withRoleAuth(90, async (request, context) => {
       severity: 'high',
       dataType: 'DOCUMENTS',
       details: {
-        tenantId,
+        organizationId: organizationIdParam,
         dryRun,
         daysOld,
         documentsFound: cleanupStats.documentsFound,

@@ -77,7 +77,7 @@ interface SeasonalPattern {
  * Get historical burn rate data for a strike fund
  */
 export async function getHistoricalBurnRate(
-  tenantId: string,
+  organizationId: string,
   fundId: string,
   startDate: Date,
   endDate: Date
@@ -91,7 +91,7 @@ export async function getHistoricalBurnRate(
     .from(donations)
     .where(
       and(
-        eq(donations.tenantId, tenantId),
+        eq(donations.tenantId, organizationId),
         eq(donations.strikeFundId, fundId),
         eq(donations.status, 'completed'),
         gte(donations.createdAt, startDate.toISOString()),
@@ -109,7 +109,7 @@ export async function getHistoricalBurnRate(
     .from(stipendDisbursements)
     .where(
       and(
-        eq(stipendDisbursements.tenantId, tenantId),
+        eq(stipendDisbursements.tenantId, organizationId),
         eq(stipendDisbursements.strikeFundId, fundId),
         eq(stipendDisbursements.status, 'paid'),
         gte(stipendDisbursements.createdAt, startDate.toISOString()),
@@ -178,7 +178,7 @@ export async function getHistoricalBurnRate(
  * Detect seasonal patterns in burn rate
  */
 export async function detectSeasonalPatterns(
-  tenantId: string,
+  organizationId: string,
   fundId: string
 ): Promise<SeasonalPattern[]> {
   // Get 12 months of historical data
@@ -186,7 +186,7 @@ export async function detectSeasonalPatterns(
   const startDate = new Date();
   startDate.setMonth(startDate.getMonth() - 12);
 
-  const historicalData = await getHistoricalBurnRate(tenantId, fundId, startDate, endDate);
+  const historicalData = await getHistoricalBurnRate(organizationId, fundId, startDate, endDate);
 
   // Group by month
   const monthlyData = new Map<number, { burnRates: number[]; donations: number[] }>();
@@ -232,7 +232,7 @@ export async function detectSeasonalPatterns(
  * Generate multi-scenario forecast
  */
 export async function generateBurnRateForecast(
-  tenantId: string,
+  organizationId: string,
   fundId: string,
   forecastDays: number = 90
 ): Promise<BurnRateForecast> {
@@ -240,7 +240,7 @@ export async function generateBurnRateForecast(
   const [fund] = await db
     .select()
     .from(strikeFunds)
-    .where(and(eq(strikeFunds.tenantId, tenantId), eq(strikeFunds.id, fundId)))
+    .where(and(eq(strikeFunds.tenantId, organizationId), eq(strikeFunds.id, fundId)))
     .limit(1);
 
   if (!fund) {
@@ -257,12 +257,12 @@ export async function generateBurnRateForecast(
     .leftJoin(
       stipendDisbursements,
       and(
-        eq(stipendDisbursements.tenantId, tenantId),
+        eq(stipendDisbursements.tenantId, organizationId),
         eq(stipendDisbursements.strikeFundId, fundId),
         eq(stipendDisbursements.status, 'paid')
       )
     )
-    .where(and(eq(donations.tenantId, tenantId), eq(donations.strikeFundId, fundId), eq(donations.status, 'completed')));
+    .where(and(eq(donations.tenantId, organizationId), eq(donations.strikeFundId, fundId), eq(donations.status, 'completed')));
 
   const currentBalance = Number(balanceResult.totalDonations) - Number(balanceResult.totalStipends);
   const targetAmount = fund.targetAmount ? Number(fund.targetAmount) : currentBalance * 2; // Default to 2x current if not set
@@ -272,8 +272,8 @@ export async function generateBurnRateForecast(
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - 90);
 
-  const historicalData = await getHistoricalBurnRate(tenantId, fundId, startDate, endDate);
-  const seasonalPatterns = await detectSeasonalPatterns(tenantId, fundId);
+  const historicalData = await getHistoricalBurnRate(organizationId, fundId, startDate, endDate);
+  const seasonalPatterns = await detectSeasonalPatterns(organizationId, fundId);
 
   // Calculate historical averages
   const avgDailyBurnRate =
@@ -520,32 +520,32 @@ function generateAlerts(
 /**
  * Check all funds and send alerts if needed
  */
-export async function processAutomatedAlerts(params: { tenantId: string }): Promise<{
+export async function processAutomatedAlerts(params: { organizationId: string }): Promise<{
   success: boolean;
   alertsSent: number;
   alerts?: Array<{ fundId: string; fundName: string; severity: string; message: string }>;
 }> {
-  const { tenantId } = params;
+  const { organizationId } = params;
   
   // Get all strike funds
   const activeFunds = await db
     .select()
     .from(strikeFunds)
-    .where(eq(strikeFunds.tenantId, tenantId));
+    .where(eq(strikeFunds.tenantId, organizationId));
 
   let alertsSent = 0;
   const allAlerts: Array<{ fundId: string; fundName: string; severity: string; message: string }> = [];
 
   for (const fund of activeFunds) {
     try {
-      const forecast = await generateBurnRateForecast(tenantId, fund.id);
+      const forecast = await generateBurnRateForecast(organizationId, fund.id);
 
       // Send alerts for critical and warning severities
       for (const alert of forecast.alerts) {
         if (alert.severity === 'critical' || alert.severity === 'warning') {
           // Queue notification to fund administrators
           await queueNotification({
-            tenantId,
+            organizationId,
             userId: fund.createdBy || 'admin', // Send to fund creator or admin
             type: 'low_balance_alert',
             channels: ['email', 'sms'],
@@ -568,7 +568,7 @@ export async function processAutomatedAlerts(params: { tenantId: string }): Prom
         }
       }
     } catch (error) {
-      logger.error('Error processing alerts for fund', { error, fundId: fund.id, tenantId });
+      logger.error('Error processing alerts for fund', { error, fundId: fund.id, organizationId });
     }
   }
 
@@ -583,7 +583,7 @@ export async function processAutomatedAlerts(params: { tenantId: string }): Prom
  * Generate weekly forecast report for all funds
  */
 export async function generateWeeklyForecastReport(params: {
-  tenantId: string;
+  organizationId: string;
   recipientUserId?: string;
 }): Promise<{
   success: boolean;
@@ -592,14 +592,14 @@ export async function generateWeeklyForecastReport(params: {
   criticalFunds: number;
   warningFunds: number;
 }> {
-  const { tenantId, recipientUserId = 'admin' } = params;
+  const { organizationId, recipientUserId = 'admin' } = params;
   const activeFunds = await db
     .select()
     .from(strikeFunds)
-    .where(eq(strikeFunds.tenantId, tenantId));
+    .where(eq(strikeFunds.tenantId, organizationId));
 
   const forecasts = await Promise.all(
-    activeFunds.map((fund) => generateBurnRateForecast(tenantId, fund.id))
+    activeFunds.map((fund) => generateBurnRateForecast(organizationId, fund.id))
   );
 
   // Generate report summary
@@ -625,7 +625,7 @@ export async function generateWeeklyForecastReport(params: {
 
   // Send weekly report via email
   await queueNotification({
-    tenantId,
+    organizationId,
     userId: recipientUserId,
     type: 'strike_announcement', // Reusing type for report
     channels: ['email'],

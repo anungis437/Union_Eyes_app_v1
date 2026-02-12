@@ -7,8 +7,8 @@
 
 import { pgTable, pgEnum, uuid, text, timestamp, integer, decimal, boolean, date, jsonb, unique, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
-import { organizations } from '../schema-organizations';
-import { profiles } from './profiles-schema';
+import { organizations } from '../../../schema-organizations';
+import { profiles } from '../../profiles-schema';
 
 // ================================================================
 // ENUMS

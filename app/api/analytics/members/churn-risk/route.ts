@@ -28,12 +28,11 @@ interface ChurnRiskMember {
 async function handler(req: NextRequest, context) {
   try {
     const organizationId = context.organizationId;
-    const tenantId = organizationId;
     
-    if (!tenantId) {
+    if (!organizationId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID required'
+      'Organization ID required'
     );
     }
 
@@ -56,8 +55,8 @@ async function handler(req: NextRequest, context) {
           COUNT(c.id) FILTER (WHERE c.created_at >= NOW() - INTERVAL '30 days') AS claims_last_30_days,
           COUNT(c.id) FILTER (WHERE c.created_at >= NOW() - INTERVAL '90 days') AS claims_last_90_days
         FROM organization_members om
-        LEFT JOIN claims c ON c.member_id = om.id AND c.tenant_id = om.tenant_id
-        WHERE om.tenant_id = ${tenantId}
+        LEFT JOIN claims c ON c.member_id = om.id AND c.organization_id = om.organization_id
+        WHERE om.organization_id = ${organizationId}
           AND om.status = 'active'
         GROUP BY om.id, om.first_name, om.last_name
         HAVING MAX(c.created_at) IS NOT NULL

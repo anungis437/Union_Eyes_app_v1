@@ -162,7 +162,7 @@ return NextResponse.json(
 };
 
 
-const social-mediaFeedSchema = z.object({
+const socialMediaFeedSchema = z.object({
   account_ids: z.string().uuid('Invalid account_ids'),
 });
 

@@ -22,7 +22,7 @@ import {
 } from '@/lib/api/standardized-responses';
 // POST /api/clause-library/search - Advanced search with full-text
 
-const clause-librarySearchSchema = z.object({
+const clauseLibrarySearchSchema = z.object({
   query: z.unknown().optional(),
   clauseTypes: z.unknown().optional(),
   sectors: z.unknown().optional(),
@@ -32,11 +32,11 @@ const clause-librarySearchSchema = z.object({
   effectiveDateFrom: z.string().datetime().optional(),
   effectiveDateTo: z.string().datetime().optional(),
   organizationIds: z.string().uuid('Invalid organizationIds'),
-  includeExpired = false: z.unknown().optional(),
-  page = 1: z.unknown().optional(),
-  limit = 20: z.unknown().optional(),
-  sortBy = "createdAt": z.unknown().optional(),
-  sortOrder = "desc": z.unknown().optional(),
+  includeExpired: z.unknown().optional().default(false),
+  page: z.unknown().optional().default(1),
+  limit: z.unknown().optional().default(20),
+  sortBy: z.unknown().optional().default("createdAt"),
+  sortOrder: z.unknown().optional().default("desc"),
 });
 
 export const POST = async (request: NextRequest) => {

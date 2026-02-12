@@ -63,7 +63,7 @@ return standardErrorResponse(
 };
 
 
-const calendar-syncConnectionsSchema = z.object({
+const calendarSyncConnectionsSchema = z.object({
   provider: z.string().uuid('Invalid provider'),
 });
 

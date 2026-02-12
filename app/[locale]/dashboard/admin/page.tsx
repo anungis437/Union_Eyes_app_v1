@@ -57,8 +57,8 @@ interface SystemUser {
   name: string;
   email: string;
   role: "admin" | "lro" | "steward" | "member";
-  tenantId: string;
-  tenantName: string;
+  organizationId: string;
+  organizationName: string;
   local?: string;
   status: "active" | "inactive";
   lastLogin: string | null;
@@ -170,12 +170,12 @@ toast.error("Failed to load organizations");
     }
   }, [searchQuery]);
 
-  const handleDeleteUser = async (userId: string, tenantId: string) => {
+  const handleDeleteUser = async (userId: string, organizationId: string) => {
     if (!confirm("Are you sure you want to remove this user?")) return;
 
     try {
       const response = await fetch(
-        `/api/admin/users/${userId}?tenantId=${tenantId}`,
+        `/api/admin/users/${userId}?organizationId=${organizationId}`,
         { method: "DELETE" }
       );
       const data = await response.json();
@@ -190,12 +190,12 @@ toast.error("Failed to remove user");
     }
   };
 
-  const handleToggleUserStatus = async (userId: string, tenantId: string) => {
+  const handleToggleUserStatus = async (userId: string, organizationId: string) => {
     try {
       const response = await fetch(`/api/admin/users/${userId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tenantId, action: "toggleStatus" }),
+        body: JSON.stringify({ organizationId, action: "toggleStatus" }),
       });
       const data = await response.json();
       if (data.success) {
@@ -312,8 +312,8 @@ toast.error("Failed to optimize database");
       name: "Sarah Johnson",
       email: "sarah.johnson@union.ca",
       role: "lro",
-      tenantId: "tenant-1",
-      tenantName: "301 - Toronto Central",
+      organizationId: "org-1",
+      organizationName: "301 - Toronto Central",
       local: "301 - Toronto Central",
       status: "active",
       lastLogin: "2025-11-13T09:30:00",
@@ -323,8 +323,8 @@ toast.error("Failed to optimize database");
       name: "Mike Chen",
       email: "mike.chen@union.ca",
       role: "lro",
-      tenantId: "tenant-2",
-      tenantName: "302 - Ottawa Valley",
+      organizationId: "org-2",
+      organizationName: "302 - Ottawa Valley",
       local: "302 - Ottawa Valley",
       status: "active",
       lastLogin: "2025-11-13T08:15:00",
@@ -334,8 +334,8 @@ toast.error("Failed to optimize database");
       name: "Admin User",
       email: "admin@union.ca",
       role: "admin",
-      tenantId: "tenant-national",
-      tenantName: "National",
+      organizationId: "org-national",
+      organizationName: "National",
       local: "National",
       status: "active",
       lastLogin: "2025-11-13T10:00:00",
@@ -345,8 +345,8 @@ toast.error("Failed to optimize database");
       name: "Emily Davis",
       email: "emily.davis@union.ca",
       role: "steward",
-      tenantId: "tenant-1",
-      tenantName: "301 - Toronto Central",
+      organizationId: "org-1",
+      organizationName: "301 - Toronto Central",
       local: "301 - Toronto Central",
       status: "active",
       lastLogin: "2025-11-12T16:45:00",
@@ -499,7 +499,7 @@ toast.error("Failed to optimize database");
                       {t('admin.overview.localSections')}
                     </p>
                     <p className="text-3xl font-bold text-gray-900">
-                      {systemStats ? systemStats.activeTenants : "..."}
+                      {systemStats ? (systemStats.activeOrganizations ?? systemStats.activeTenants) : "..."}
                     </p>
                   </div>
                   <div className="w-14 h-14 bg-green-100 rounded-lg flex items-center justify-center">
@@ -507,7 +507,7 @@ toast.error("Failed to optimize database");
                   </div>
                 </div>
                 <p className="text-xs text-gray-600 font-medium">
-                  {systemStats && `${systemStats.totalTenants} total organizations`}
+                  {systemStats && `${systemStats.totalOrganizations ?? systemStats.totalTenants} total organizations`}
                 </p>
               </Card>
 
@@ -524,7 +524,7 @@ toast.error("Failed to optimize database");
                   </div>
                 </div>
                 <p className="text-xs text-gray-600 font-medium">
-                  Across all tenants
+                  Across all organizations
                 </p>
               </Card>
 
@@ -563,7 +563,7 @@ toast.error("Failed to optimize database");
                           {item.action}
                         </p>
                         <p className="text-xs text-gray-600">
-                          {item.user} â€¢ {item.tenant}
+                          {item.user} - {item.organization ?? item.organizationName ?? 'Organization'}
                         </p>
                       </div>
                       <p className="text-xs text-gray-500">
@@ -654,7 +654,7 @@ toast.error("Failed to optimize database");
                     <tbody>
                       {users.map((user) => (
                         <tr
-                          key={`${user.id}-${user.tenantId}`}
+                          key={`${user.id}-${user.organizationId}`}
                           className="border-b border-gray-100 hover:bg-gray-50"
                         >
                           <td className="py-3 px-4 text-sm font-medium text-gray-900">
@@ -673,14 +673,14 @@ toast.error("Failed to optimize database");
                             </span>
                           </td>
                           <td className="py-3 px-4 text-sm text-gray-600">
-                            {user.tenantName}
+                            {user.organizationName}
                           </td>
                           <td className="py-3 px-4 text-sm text-gray-600">
                             {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : "Never"}
                           </td>
                           <td className="py-3 px-4">
                             <button
-                              onClick={() => handleToggleUserStatus(user.id, user.tenantId)}
+                              onClick={() => handleToggleUserStatus(user.id, user.organizationId)}
                               className={`px-2 py-1 rounded-full text-xs font-medium cursor-pointer hover:opacity-80 ${
                                 user.status === "active"
                                   ? "bg-green-100 text-green-700"
@@ -702,7 +702,7 @@ toast.error("Failed to optimize database");
                               <button 
                                 className="p-1 text-red-600 hover:bg-red-50 rounded" 
                                 aria-label="Delete user"
-                                onClick={() => handleDeleteUser(user.id, user.tenantId)}
+                                onClick={() => handleDeleteUser(user.id, user.organizationId)}
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
@@ -1202,7 +1202,7 @@ toast.error("Failed to optimize database");
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">ðŸ“Š Test Data Reference</h3>
                 <div className="space-y-2 text-sm text-gray-700">
                   <p><strong>Query ID:</strong> <code className="bg-white px-2 py-1 rounded">7ba567db-5c19-4f61-b492-385ca10d8ba0</code></p>
-                  <p><strong>Tenant ID:</strong> <code className="bg-white px-2 py-1 rounded">test-tenant-001</code></p>
+                  <p><strong>Organization ID:</strong> <code className="bg-white px-2 py-1 rounded">test-org-001</code></p>
                   <p><strong>Documents:</strong> 3 legal documents (NLRA, Unfair Labor Practice, CBA)</p>
                   <p><strong>Chunks:</strong> 5 searchable text chunks</p>
                   <p><strong>Existing Feedback:</strong> 2 records with rating=&apos;good&apos;</p>
@@ -1324,7 +1324,7 @@ toast.error("Failed to optimize database");
                     <div className="p-4 border border-gray-200 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
                         <Check className="w-5 h-5 text-green-600" />
-                        <p className="font-medium text-gray-900">Tenant Isolation</p>
+                        <p className="font-medium text-gray-900">Organization Isolation</p>
                       </div>
                       <p className="text-sm text-gray-600">Data filtered by organization</p>
                     </div>
@@ -1436,7 +1436,7 @@ toast.error("Failed to optimize database");
                     <div className="flex items-center gap-3">
                       <FileText className="w-5 h-5 text-gray-600" />
                       <div>
-                        <p className="font-medium text-gray-900">Active Users by Tenant</p>
+                        <p className="font-medium text-gray-900">Active Users by Organization</p>
                         <p className="text-sm text-gray-600">Last 30 days activity by organization</p>
                       </div>
                     </div>
@@ -1505,7 +1505,7 @@ toast.error("Failed to optimize database");
                     <Check className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                     <div>
                       <p className="font-medium text-gray-900">Custom Filters</p>
-                      <p className="text-sm text-gray-600">Filter by date range, tenant, role, and more</p>
+                      <p className="text-sm text-gray-600">Filter by date range, organization, role, and more</p>
                     </div>
                   </div>
                 </div>
@@ -1652,10 +1652,10 @@ toast.error("Failed to optimize database");
                     </div>
                     <p className="text-sm text-gray-600 mb-2">Core application tables</p>
                     <div className="flex flex-wrap gap-2">
-                      <span className="px-2 py-1 bg-white border border-gray-200 rounded text-xs font-mono">tenants</span>
+                      <span className="px-2 py-1 bg-white border border-gray-200 rounded text-xs font-mono">organizations</span>
                       <span className="px-2 py-1 bg-white border border-gray-200 rounded text-xs font-mono">organization_users</span>
-                      <span className="px-2 py-1 bg-white border border-gray-200 rounded text-xs font-mono">tenant_configurations</span>
-                      <span className="px-2 py-1 bg-white border border-gray-200 rounded text-xs font-mono">tenant_usage</span>
+                      <span className="px-2 py-1 bg-white border border-gray-200 rounded text-xs font-mono">organization_configurations</span>
+                      <span className="px-2 py-1 bg-white border border-gray-200 rounded text-xs font-mono">organization_usage</span>
                       <span className="px-2 py-1 bg-white border border-gray-200 rounded text-xs font-mono">claims</span>
                       <span className="px-2 py-1 bg-white border border-gray-200 rounded text-xs font-mono">notifications</span>
                     </div>
@@ -1716,7 +1716,7 @@ toast.error("Failed to optimize database");
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-blue-600 font-bold mt-0.5">â€¢</span>
-                      <span>Add indexes on frequently filtered columns (status, createdAt, tenantId)</span>
+                      <span>Add indexes on frequently filtered columns (status, createdAt, organizationId)</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-blue-600 font-bold mt-0.5">â€¢</span>

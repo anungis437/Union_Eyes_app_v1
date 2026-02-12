@@ -70,7 +70,7 @@ const arrearsDetectionSchema = z.object({
  */
 router.post('/detect', async (req: Request, res: Response) => {
   try {
-    const { tenantId, userId, role } = (req as any).user;
+    const { organizationId, userId, role } = (req as any).user;
 
     if (!['admin', 'financial_admin'].includes(role)) {
       return res.status(403).json({
@@ -82,7 +82,7 @@ router.post('/detect', async (req: Request, res: Response) => {
     const validatedData = arrearsDetectionSchema.parse(req.body);
 
     const config: ArrearsDetectionConfig = {
-      tenantId,
+      organizationId,
       gracePeriodDays: validatedData.gracePeriodDays,
       escalationThresholds: validatedData.escalationThresholds,
     };
@@ -133,10 +133,10 @@ router.post('/detect', async (req: Request, res: Response) => {
  */
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const { tenantId } = (req as any).user;
+    const { organizationId } = (req as any).user;
     const { memberId, status } = req.query;
 
-    const conditions = [eq(schema.arrearsCases.tenantId, tenantId)];
+    const conditions = [eq(schema.arrearsCases.organizationId, organizationId)];
 
     if (memberId) {
       conditions.push(eq(schema.arrearsCases.memberId, memberId as string));
@@ -170,7 +170,7 @@ router.get('/', async (req: Request, res: Response) => {
  */
 router.get('/:id', async (req: Request, res: Response) => {
   try {
-    const { tenantId } = (req as any).user;
+    const { organizationId } = (req as any).user;
     const { id } = req.params;
 
     const [arrearsCase] = await db
@@ -179,7 +179,7 @@ router.get('/:id', async (req: Request, res: Response) => {
       .where(
         and(
           eq(schema.arrearsCases.id, id),
-          eq(schema.arrearsCases.tenantId, tenantId)
+          eq(schema.arrearsCases.organizationId, organizationId)
         )
       )
       .limit(1);
@@ -201,7 +201,7 @@ router.get('/:id', async (req: Request, res: Response) => {
         .from(schema.duesTransactions)
         .where(
           and(
-            eq(schema.duesTransactions.tenantId, tenantId),
+            eq(schema.duesTransactions.organizationId, organizationId),
             sql`${schema.duesTransactions.id} = ANY(${transactionIds})`
           )
         );
@@ -228,7 +228,7 @@ router.get('/:id', async (req: Request, res: Response) => {
  */
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const { tenantId, userId, role } = (req as any).user;
+    const { organizationId, userId, role } = (req as any).user;
 
     if (!['admin', 'financial_admin'].includes(role)) {
       return res.status(403).json({
@@ -245,7 +245,7 @@ router.post('/', async (req: Request, res: Response) => {
       .from(schema.arrearsCases)
       .where(
         and(
-          eq(schema.arrearsCases.tenantId, tenantId),
+          eq(schema.arrearsCases.organizationId, organizationId),
           eq(schema.arrearsCases.memberId, validatedData.memberId),
           eq(schema.arrearsCases.status, 'active')
         )
@@ -262,7 +262,7 @@ router.post('/', async (req: Request, res: Response) => {
     const [arrearsCase] = await db
       .insert(schema.arrearsCases)
       .values({
-        tenantId,
+        organizationId,
         memberId: validatedData.memberId,
         transactionIds: validatedData.transactionIds,
         totalAmount: validatedData.totalAmount.toString(),
@@ -300,7 +300,7 @@ router.post('/', async (req: Request, res: Response) => {
  */
 router.post('/:id/payment-plan', async (req: Request, res: Response) => {
   try {
-    const { tenantId, userId, role } = (req as any).user;
+    const { organizationId, userId, role } = (req as any).user;
     const { id } = req.params;
 
     if (!['admin', 'financial_admin'].includes(role)) {
@@ -319,7 +319,7 @@ router.post('/:id/payment-plan', async (req: Request, res: Response) => {
       .where(
         and(
           eq(schema.arrearsCases.id, id),
-          eq(schema.arrearsCases.tenantId, tenantId)
+          eq(schema.arrearsCases.organizationId, organizationId)
         )
       )
       .limit(1);
@@ -398,7 +398,7 @@ router.post('/:id/payment-plan', async (req: Request, res: Response) => {
  */
 router.put('/:id/status', async (req: Request, res: Response) => {
   try {
-    const { tenantId, userId, role } = (req as any).user;
+    const { organizationId, userId, role } = (req as any).user;
     const { id } = req.params;
 
     if (!['admin', 'financial_admin'].includes(role)) {
@@ -431,7 +431,7 @@ router.put('/:id/status', async (req: Request, res: Response) => {
       .where(
         and(
           eq(schema.arrearsCases.id, id),
-          eq(schema.arrearsCases.tenantId, tenantId)
+          eq(schema.arrearsCases.organizationId, organizationId)
         )
       )
       .returning();
@@ -468,7 +468,7 @@ router.put('/:id/status', async (req: Request, res: Response) => {
  */
 router.post('/:id/contact', async (req: Request, res: Response) => {
   try {
-    const { tenantId, userId } = (req as any).user;
+    const { organizationId, userId } = (req as any).user;
     const { id } = req.params;
 
     const validatedData = contactLogSchema.parse(req.body);
@@ -480,7 +480,7 @@ router.post('/:id/contact', async (req: Request, res: Response) => {
       .where(
         and(
           eq(schema.arrearsCases.id, id),
-          eq(schema.arrearsCases.tenantId, tenantId)
+          eq(schema.arrearsCases.organizationId, organizationId)
         )
       )
       .limit(1);
@@ -537,7 +537,7 @@ router.post('/:id/contact', async (req: Request, res: Response) => {
  */
 router.post('/:id/payment', async (req: Request, res: Response) => {
   try {
-    const { tenantId, userId } = (req as any).user;
+    const { organizationId, userId } = (req as any).user;
     const { id } = req.params;
 
     const paymentSchema = z.object({
@@ -556,7 +556,7 @@ router.post('/:id/payment', async (req: Request, res: Response) => {
       .where(
         and(
           eq(schema.arrearsCases.id, id),
-          eq(schema.arrearsCases.tenantId, tenantId)
+          eq(schema.arrearsCases.organizationId, organizationId)
         )
       )
       .limit(1);

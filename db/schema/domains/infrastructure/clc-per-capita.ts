@@ -19,7 +19,7 @@ import {
   unique,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
-import { organizations } from '../schema-organizations';
+import { organizations } from '../../../schema-organizations';
 
 /**
  * Per-Capita Remittances Table

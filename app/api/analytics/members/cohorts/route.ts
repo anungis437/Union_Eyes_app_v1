@@ -43,9 +43,9 @@ export const GET = withEnhancedRoleAuth(40, async (req: NextRequest, context) =>
   }
 
   try {
-    const tenantId = organizationId;
+    const organizationScopeId = organizationId;
     
-    if (!tenantId) {
+    if (!organizationScopeId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
       'Organization ID required'
@@ -64,7 +64,7 @@ export const GET = withEnhancedRoleAuth(40, async (req: NextRequest, context) =>
           TO_CHAR(created_at, 'YYYY-MM') AS cohort_month,
           created_at
         FROM organization_members
-        WHERE tenant_id = ${tenantId}
+        WHERE organization_id = ${organizationScopeId}
           AND created_at >= DATE_TRUNC('month', NOW()) - INTERVAL '${monthsBack} months'
       ),
       member_activity AS (
@@ -78,7 +78,7 @@ export const GET = withEnhancedRoleAuth(40, async (req: NextRequest, context) =>
             ELSE false
           END AS is_active
         FROM cohort_members cm
-        LEFT JOIN claims c ON c.member_id = cm.id AND c.tenant_id = ${tenantId}
+        LEFT JOIN claims c ON c.member_id = cm.id AND c.organization_id = ${organizationScopeId}
         GROUP BY cm.id, cm.cohort_month
       )
       SELECT 

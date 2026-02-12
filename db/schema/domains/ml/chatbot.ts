@@ -18,7 +18,8 @@ import {
   integer,
   vector,
 } from "drizzle-orm/pg-core";
-import { profiles } from "./profiles-schema";
+import { organizations } from "../../../schema-organizations";
+import { profiles } from "../../profiles-schema";
 
 // Chat session status enum
 export const chatSessionStatusEnum = pgEnum("chat_session_status", [
@@ -65,7 +66,9 @@ export const chatSessions = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => profiles.userId, { onDelete: "cascade" }),
-    tenantId: text("tenant_id").notNull(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
     
     // Session details
     title: text("title").notNull(), // Auto-generated from first message
@@ -94,7 +97,9 @@ export const chatSessions = pgTable(
   },
   (table) => ({
     userIdIdx: index("chat_sessions_user_id_idx").on(table.userId),
-    tenantIdIdx: index("chat_sessions_tenant_id_idx").on(table.tenantId),
+    organizationIdIdx: index("chat_sessions_organization_id_idx").on(
+      table.organizationId
+    ),
     statusIdx: index("chat_sessions_status_idx").on(table.status),
     createdAtIdx: index("chat_sessions_created_at_idx").on(table.createdAt),
   })
@@ -177,7 +182,9 @@ export const knowledgeBase = pgTable(
   "knowledge_base",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    tenantId: text("tenant_id").notNull(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
     
     // Document details
     title: text("title").notNull(),
@@ -205,7 +212,7 @@ export const knowledgeBase = pgTable(
     
     // Access control
     isPublic: boolean("is_public").notNull().default(false),
-    allowedTenants: jsonb("allowed_tenants").$type<string[]>(),
+    allowedOrganizations: jsonb("allowed_organizations").$type<string[]>(),
     
     // Usage statistics
     viewCount: integer("view_count").notNull().default(0),
@@ -222,7 +229,9 @@ export const knowledgeBase = pgTable(
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
   (table) => ({
-    tenantIdIdx: index("knowledge_base_tenant_id_idx").on(table.tenantId),
+    organizationIdIdx: index("knowledge_base_organization_id_idx").on(
+      table.organizationId
+    ),
     documentTypeIdx: index("knowledge_base_document_type_idx").on(
       table.documentType
     ),
@@ -242,7 +251,9 @@ export const chatbotSuggestions = pgTable(
   "chatbot_suggestions",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    tenantId: text("tenant_id").notNull(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
     
     // Suggestion details
     category: text("category").notNull(), // grievance, rights, contract, etc.
@@ -268,8 +279,8 @@ export const chatbotSuggestions = pgTable(
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
   (table) => ({
-    tenantIdIdx: index("chatbot_suggestions_tenant_id_idx").on(
-      table.tenantId
+    organizationIdIdx: index("chatbot_suggestions_organization_id_idx").on(
+      table.organizationId
     ),
     categoryIdx: index("chatbot_suggestions_category_idx").on(table.category),
     isActiveIdx: index("chatbot_suggestions_is_active_idx").on(
@@ -286,7 +297,9 @@ export const chatbotAnalytics = pgTable(
   "chatbot_analytics",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    tenantId: text("tenant_id").notNull(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
     
     // Time period
     periodStart: timestamp("period_start").notNull(),
@@ -322,7 +335,9 @@ export const chatbotAnalytics = pgTable(
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => ({
-    tenantIdIdx: index("chatbot_analytics_tenant_id_idx").on(table.tenantId),
+    organizationIdIdx: index("chatbot_analytics_organization_id_idx").on(
+      table.organizationId
+    ),
     periodIdx: index("chatbot_analytics_period_idx").on(
       table.periodStart,
       table.periodEnd

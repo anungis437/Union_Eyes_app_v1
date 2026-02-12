@@ -20,7 +20,7 @@ export function withAnalyticsCache<T>(
   ttl: number = 5 * 60 * 1000 // 5 minutes default
 ) {
   return async (req: NextRequest) => {
-    const organizationId = (req as any).organizationId ?? (req as any).tenantId;
+    const organizationId = (req as any).organizationId;
     if (!organizationId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -86,7 +86,7 @@ export async function getAnalyticsDashboard(organizationId: string) {
     'dashboard',
     {},
     async () => {
-      return await aggregationService.computeTenantMetrics(organizationId);
+      return await aggregationService.computeOrganizationMetrics(organizationId);
     },
     2 * 60 * 1000 // 2 minutes TTL for dashboard
   );

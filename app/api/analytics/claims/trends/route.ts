@@ -27,12 +27,11 @@ interface TrendDataPoint {
 async function handler(req: NextRequest, context) {
   try {
     const organizationId = context.organizationId;
-    const tenantId = organizationId;
     
-    if (!tenantId) {
+    if (!organizationId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID required'
+      'Organization ID required'
     );
     }
 
@@ -80,10 +79,10 @@ async function handler(req: NextRequest, context) {
         COALESCE(AVG(EXTRACT(EPOCH FROM (c2.resolved_at - c2.created_at))/86400.0), 0) AS avg_resolution_days
       FROM date_series ds
       LEFT JOIN claims c1 ON 
-        c1.tenant_id = ${tenantId} AND
+        c1.organization_id = ${organizationId} AND
         TO_CHAR(c1.created_at, ${dateFormat}) = TO_CHAR(ds.report_date, ${dateFormat})
       LEFT JOIN claims c2 ON 
-        c2.tenant_id = ${tenantId} AND
+        c2.organization_id = ${organizationId} AND
         c2.resolved_at IS NOT NULL AND
         TO_CHAR(c2.resolved_at, ${dateFormat}) = TO_CHAR(ds.report_date, ${dateFormat})
       GROUP BY ds.report_date

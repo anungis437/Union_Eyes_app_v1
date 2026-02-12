@@ -17,14 +17,14 @@ export const dynamic = 'force-dynamic';
 export const GET = withApiAuth(async (request: NextRequest) => {
   try {
     const user = await getCurrentUser();
-    if (!user || !user.tenantId) {
+    if (!user || !user.organizationId) {
       return standardErrorResponse(
       ErrorCode.AUTH_REQUIRED,
-      'Authentication and tenant context required'
+      'Authentication and organization context required'
     );
     }
     
-    const tenantId = user.tenantId;
+    const organizationId = user.organizationId;
     const searchParams = request.nextUrl.searchParams;
 
     // Get search query and filters
@@ -40,7 +40,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
     if (department) filters.department = department;
 
     // Search members
-    const members = await searchMembers(tenantId, query, Object.keys(filters).length > 0 ? filters : undefined);
+    const members = await searchMembers(organizationId, query, Object.keys(filters).length > 0 ? filters : undefined);
 
     return NextResponse.json({
       success: true,

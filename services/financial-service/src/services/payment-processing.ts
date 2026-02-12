@@ -40,7 +40,7 @@ export type StripePaymentMethod = 'card' | 'bank_account' | 'us_bank_account';
  */
 
 export interface CreateDuesPaymentRequest {
-  tenantId: string;
+  organizationId: string;
   memberId: string;
   amount: number;
   currency?: string;
@@ -64,7 +64,7 @@ export async function createDuesPaymentIntent(
   request: CreateDuesPaymentRequest
 ): Promise<DuesPaymentIntent> {
   try {
-    const { tenantId, memberId, amount, currency = 'usd', paymentMethod, description, metadata } = request;
+    const { organizationId, memberId, amount, currency = 'usd', paymentMethod, description, metadata } = request;
 
     // Validate amount (minimum $0.50 for Stripe)
     if (amount < 0.50) {
@@ -81,7 +81,7 @@ export async function createDuesPaymentIntent(
       payment_method_types: [paymentMethod],
       description: description || `Union dues payment for member ${memberId}`,
       metadata: {
-        tenantId,
+        organizationId,
         memberId,
         type: 'dues_payment',
         ...metadata,
@@ -96,13 +96,13 @@ export async function createDuesPaymentIntent(
       status: paymentIntent.status,
     };
   } catch (error) {
-    logger.error('Error creating dues payment intent', { error, tenantId: request.tenantId, memberId: request.memberId });
+    logger.error('Error creating dues payment intent', { error, organizationId: request.organizationId, memberId: request.memberId });
     throw new Error(`Failed to create payment intent: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
 export interface ConfirmDuesPaymentRequest {
-  tenantId: string;
+  organizationId: string;
   paymentIntentId: string;
   transactionId: string;
 }
@@ -113,7 +113,7 @@ export interface ConfirmDuesPaymentRequest {
 export async function confirmDuesPayment(
   request: ConfirmDuesPaymentRequest
 ): Promise<void> {
-  const { tenantId, paymentIntentId, transactionId } = request;
+  const { organizationId, paymentIntentId, transactionId } = request;
 
   try {
     // Retrieve payment intent from Stripe
@@ -134,11 +134,11 @@ export async function confirmDuesPayment(
       } as any)
       .where(and(
         eq(schema.duesTransactions.id, transactionId),
-        eq(schema.duesTransactions.tenantId, tenantId)
+        eq(schema.duesTransactions.tenantId, organizationId)
       ));
 
   } catch (error) {
-    logger.error('Error confirming dues payment', { error, tenantId, transactionId });
+    logger.error('Error confirming dues payment', { error, organizationId, transactionId });
     throw error;
   }
 }
@@ -148,7 +148,7 @@ export async function confirmDuesPayment(
  */
 
 export interface CreateStipendPayoutRequest {
-  tenantId: string;
+  organizationId: string;
   disbursementId: string;
   amount: number;
   recipientBankAccount: {
@@ -176,7 +176,7 @@ export interface StipendPayoutResult {
 export async function createStipendPayout(
   request: CreateStipendPayoutRequest
 ): Promise<StipendPayoutResult> {
-  const { tenantId, disbursementId, amount, recipientBankAccount, description } = request;
+  const { organizationId, disbursementId, amount, recipientBankAccount, description } = request;
 
   try {
     // Validate amount
@@ -204,7 +204,7 @@ export async function createStipendPayout(
       } as any)
       .where(and(
         eq(schema.stipendDisbursements.id, disbursementId),
-        eq(schema.stipendDisbursements.tenantId, tenantId)
+        eq(schema.stipendDisbursements.tenantId, organizationId)
       ));
 
     return {
@@ -215,13 +215,13 @@ export async function createStipendPayout(
     };
 
   } catch (error) {
-    logger.error('Error creating stipend payout', { error, tenantId, disbursementId });
+    logger.error('Error creating stipend payout', { error, organizationId, disbursementId });
     throw new Error(`Failed to create payout: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
 export interface BatchStipendPayoutRequest {
-  tenantId: string;
+  organizationId: string;
   strikeFundId: string;
   disbursementIds: string[];
 }
@@ -243,7 +243,7 @@ export interface BatchPayoutResult {
 export async function batchProcessStipendPayouts(
   request: BatchStipendPayoutRequest
 ): Promise<BatchPayoutResult> {
-  const { tenantId, strikeFundId, disbursementIds } = request;
+  const { organizationId, strikeFundId, disbursementIds } = request;
 
   const results: BatchPayoutResult['results'] = [];
   let successful = 0;
@@ -256,7 +256,7 @@ export async function batchProcessStipendPayouts(
         .from(schema.stipendDisbursements)
         .where(and(
           eq(schema.stipendDisbursements.id, disbursementId),
-          eq(schema.stipendDisbursements.tenantId, tenantId),
+          eq(schema.stipendDisbursements.tenantId, organizationId),
           eq(schema.stipendDisbursements.status, 'approved')
         ))
         .limit(1);
@@ -313,7 +313,7 @@ export async function batchProcessStipendPayouts(
  */
 
 export interface CreateDonationPaymentRequest {
-  tenantId: string;
+  organizationId: string;
   strikeFundId: string;
   amount: number;
   currency?: string;
@@ -341,7 +341,7 @@ export async function createDonationPaymentIntent(
 ): Promise<DonationPaymentIntent> {
   try {
     const {
-      tenantId,
+      organizationId,
       strikeFundId,
       amount,
       currency = 'usd',
@@ -367,7 +367,7 @@ export async function createDonationPaymentIntent(
       payment_method_types: [paymentMethod],
       description: `Donation to strike fund`,
       metadata: {
-        tenantId,
+        organizationId,
         strikeFundId,
         type: 'donation',
         donorEmail: donorEmail || '',
@@ -386,13 +386,13 @@ export async function createDonationPaymentIntent(
       status: paymentIntent.status,
     };
   } catch (error) {
-    logger.error('Error creating donation payment intent', { error, tenantId, strikeFundId });
+    logger.error('Error creating donation payment intent', { error, organizationId, strikeFundId });
     throw new Error(`Failed to create donation: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
 export interface ConfirmDonationRequest {
-  tenantId: string;
+  organizationId: string;
   paymentIntentId: string;
 }
 
@@ -402,7 +402,7 @@ export interface ConfirmDonationRequest {
 export async function confirmDonationPayment(
   request: ConfirmDonationRequest
 ): Promise<string> {
-  const { tenantId, paymentIntentId } = request;
+  const { organizationId, paymentIntentId } = request;
 
   try {
     // Retrieve payment intent from Stripe
@@ -418,7 +418,7 @@ export async function confirmDonationPayment(
     // Create donation record
     const [donation] = await db.insert(schema.donations)
       .values({
-        tenantId,
+        tenantId: organizationId,
         strikeFundId: metadata.strikeFundId,
         amount: amount.toString(),
         donorName: metadata.donorName || 'Anonymous',
@@ -435,7 +435,7 @@ export async function confirmDonationPayment(
     return donation.id;
 
   } catch (error) {
-    logger.error('Error confirming donation payment', { error, tenantId, paymentIntentId });
+    logger.error('Error confirming donation payment', { error, organizationId, paymentIntentId });
     throw error;
   }
 }
@@ -507,9 +507,10 @@ async function handlePaymentIntentSucceeded(paymentIntent: any): Promise<void> {
     // Create or update donation record
     const amount = paymentIntent.amount / 100;
     
+    const organizationId = metadata.organizationId || metadata.tenantId;
     await db.insert(schema.donations)
       .values({
-        tenantId: metadata.tenantId,
+        tenantId: organizationId,
         strikeFundId: metadata.strikeFundId,
         amount: amount.toString(),
         donorName: metadata.donorName || 'Anonymous',
@@ -586,7 +587,7 @@ export interface PaymentSummary {
  * Get payment summary for a strike fund
  */
 export async function getPaymentSummary(
-  tenantId: string,
+  organizationId: string,
   strikeFundId: string,
   startDate?: Date,
   endDate?: Date
@@ -599,7 +600,7 @@ export async function getPaymentSummary(
   })
   .from(schema.duesTransactions)
   .where(and(
-    eq(schema.duesTransactions.tenantId, tenantId),
+    eq(schema.duesTransactions.tenantId, organizationId),
     eq(schema.duesTransactions.status, 'paid')
   ));
 
@@ -611,7 +612,7 @@ export async function getPaymentSummary(
   })
   .from(schema.donations)
   .where(and(
-    eq(schema.donations.tenantId, tenantId),
+    eq(schema.donations.tenantId, organizationId),
     eq(schema.donations.strikeFundId, strikeFundId),
     eq(schema.donations.status, 'completed')
   ));
@@ -624,7 +625,7 @@ export async function getPaymentSummary(
   })
   .from(schema.stipendDisbursements)
   .where(and(
-    eq(schema.stipendDisbursements.tenantId, tenantId),
+    eq(schema.stipendDisbursements.tenantId, organizationId),
     eq(schema.stipendDisbursements.strikeFundId, strikeFundId),
     eq(schema.stipendDisbursements.status, 'paid')
   ));

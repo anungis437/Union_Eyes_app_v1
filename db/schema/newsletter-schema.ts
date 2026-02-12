@@ -8,7 +8,7 @@
  * - Recipients: Individual delivery records
  * - Engagement: Opens, clicks, unsubscribes, spam reports
  * 
- * Dependencies: tenants, profiles from base schema
+ * Dependencies: organizations, profiles from base schema
  * Version: 1.0.0
  * Created: December 6, 2025
  */

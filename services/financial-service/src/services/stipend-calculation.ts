@@ -18,7 +18,7 @@ const DEFAULT_MINIMUM_HOURS_PER_WEEK = 20; // Minimum hours to qualify for stipe
 const DEFAULT_HOURLY_STIPEND_RATE = 15; // $ per hour
 
 export interface StipendCalculationRequest {
-  tenantId: string;
+  organizationId: string;
   strikeFundId: string;
   weekStartDate: Date;
   weekEndDate: Date;
@@ -35,7 +35,7 @@ export interface StipendEligibility {
 }
 
 export interface DisbursementRequest {
-  tenantId: string;
+  organizationId: string;
   strikeFundId: string;
   memberId: string;
   amount: number;
@@ -59,7 +59,7 @@ export async function calculateWeeklyStipends(
   request: StipendCalculationRequest
 ): Promise<StipendEligibility[]> {
   try {
-    const { tenantId, strikeFundId, weekStartDate, weekEndDate } = request;
+    const { organizationId, strikeFundId, weekStartDate, weekEndDate } = request;
     const minimumHours = request.minimumHours || DEFAULT_MINIMUM_HOURS_PER_WEEK;
     const hourlyRate = request.hourlyRate || DEFAULT_HOURLY_STIPEND_RATE;
 
@@ -70,7 +70,7 @@ export async function calculateWeeklyStipends(
       .where(
         and(
           eq(schema.strikeFunds.id, strikeFundId),
-          eq(schema.strikeFunds.tenantId, tenantId)
+          eq(schema.strikeFunds.tenantId, organizationId)
         )
       )
       .limit(1);
@@ -96,7 +96,7 @@ export async function calculateWeeklyStipends(
       .from(schema.picketAttendance)
       .where(
         and(
-          eq(schema.picketAttendance.tenantId, tenantId),
+          eq(schema.picketAttendance.tenantId, organizationId),
           eq(schema.picketAttendance.strikeFundId, strikeFundId),
           between(schema.picketAttendance.checkInTime, weekStartDate.toISOString(), weekEndDate.toISOString()),
           sql`${schema.picketAttendance.checkOutTime} IS NOT NULL` // Only count completed shifts
@@ -123,7 +123,7 @@ export async function calculateWeeklyStipends(
 
     return eligibilityResults;
   } catch (error: any) {
-    logger.error('Stipend calculation error', { error, tenantId: request.tenantId, strikeFundId: request.strikeFundId });
+    logger.error('Stipend calculation error', { error, organizationId: request.organizationId, strikeFundId: request.strikeFundId });
     throw new Error(`Failed to calculate stipends: ${error.message}`);
   }
 }
@@ -138,7 +138,7 @@ export async function createDisbursement(
     const [disbursement] = await db
       .insert(schema.stipendDisbursements)
       .values({
-        tenantId: request.tenantId,
+        tenantId: request.organizationId,
         strikeFundId: request.strikeFundId,
         memberId: request.memberId,
         amount: request.amount.toString(),
@@ -167,7 +167,7 @@ export async function createDisbursement(
  * Approve a pending disbursement
  */
 export async function approveDisbursement(
-  tenantId: string,
+  organizationId: string,
   approval: DisbursementApproval
 ): Promise<{ success: boolean; error?: string }> {
   try {
@@ -177,7 +177,7 @@ export async function approveDisbursement(
       .where(
         and(
           eq(schema.stipendDisbursements.id, approval.disbursementId),
-          eq(schema.stipendDisbursements.tenantId, tenantId)
+          eq(schema.stipendDisbursements.tenantId, organizationId)
         )
       )
       .limit(1);
@@ -214,7 +214,7 @@ export async function approveDisbursement(
  * Mark a disbursement as paid
  */
 export async function markDisbursementPaid(
-  tenantId: string,
+  organizationId: string,
   disbursementId: string,
   transactionId: string,
   paidBy: string
@@ -226,7 +226,7 @@ export async function markDisbursementPaid(
       .where(
         and(
           eq(schema.stipendDisbursements.id, disbursementId),
-          eq(schema.stipendDisbursements.tenantId, tenantId)
+          eq(schema.stipendDisbursements.tenantId, organizationId)
         )
       )
       .limit(1);
@@ -261,13 +261,13 @@ export async function markDisbursementPaid(
  * Get disbursement history for a member
  */
 export async function getMemberDisbursements(
-  tenantId: string,
+  organizationId: string,
   memberId: string,
   strikeFundId?: string
 ): Promise<any[]> {
   try {
     const conditions = [
-      eq(schema.stipendDisbursements.tenantId, tenantId),
+      eq(schema.stipendDisbursements.tenantId, organizationId),
       eq(schema.stipendDisbursements.memberId, memberId),
     ];
 
@@ -286,7 +286,7 @@ export async function getMemberDisbursements(
       amount: parseFloat(d.totalAmount),
     }));
   } catch (error: any) {
-    logger.error('Get disbursements error', { error, tenantId, memberId, strikeFundId });
+    logger.error('Get disbursements error', { error, organizationId, memberId, strikeFundId });
     return [];
   }
 }
@@ -295,7 +295,7 @@ export async function getMemberDisbursements(
  * Get pending disbursements for approval
  */
 export async function getPendingDisbursements(
-  tenantId: string,
+  organizationId: string,
   strikeFundId: string
 ): Promise<any[]> {
   try {
@@ -304,7 +304,7 @@ export async function getPendingDisbursements(
       .from(schema.stipendDisbursements)
       .where(
         and(
-          eq(schema.stipendDisbursements.tenantId, tenantId),
+          eq(schema.stipendDisbursements.tenantId, organizationId),
           eq(schema.stipendDisbursements.strikeFundId, strikeFundId),
           eq(schema.stipendDisbursements.status, 'pending')
         )
@@ -316,7 +316,7 @@ export async function getPendingDisbursements(
       amount: parseFloat(d.totalAmount),
     }));
   } catch (error: any) {
-    logger.error('Get pending disbursements error', { error, tenantId, strikeFundId });
+    logger.error('Get pending disbursements error', { error, organizationId, strikeFundId });
     return [];
   }
 }
@@ -325,7 +325,7 @@ export async function getPendingDisbursements(
  * Get total disbursed amount for a strike fund
  */
 export async function getStrikeFundDisbursementSummary(
-  tenantId: string,
+  organizationId: string,
   strikeFundId: string
 ): Promise<{
   totalPending: number;
@@ -343,7 +343,7 @@ export async function getStrikeFundDisbursementSummary(
       .from(schema.stipendDisbursements)
       .where(
         and(
-          eq(schema.stipendDisbursements.tenantId, tenantId),
+          eq(schema.stipendDisbursements.tenantId, organizationId),
           eq(schema.stipendDisbursements.strikeFundId, strikeFundId)
         )
       )
@@ -366,7 +366,7 @@ export async function getStrikeFundDisbursementSummary(
 
     return summary;
   } catch (error: any) {
-    logger.error('Get disbursement summary error', { error, tenantId, strikeFundId });
+    logger.error('Get disbursement summary error', { error, organizationId, strikeFundId });
     return {
       totalPending: 0,
       totalApproved: 0,
@@ -397,7 +397,7 @@ export async function batchCreateDisbursements(
 
     for (const member of eligible) {
       const result = await createDisbursement({
-        tenantId: request.tenantId,
+        tenantId: request.organizationId,
         strikeFundId: request.strikeFundId,
         memberId: member.memberId,
         amount: member.stipendAmount,

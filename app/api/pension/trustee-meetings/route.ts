@@ -65,13 +65,13 @@ export const GET = async (request: NextRequest) => {
 };
 
 
-const pensionTrustee-meetingsSchema = z.object({
+const pensionTrusteeMeetingsSchema = z.object({
   trustBoardId: z.string().uuid('Invalid trustBoardId'),
   meetingDate: z.string().datetime().optional(),
   meetingType: z.unknown().optional(),
   location: z.unknown().optional(),
   agendaItems: z.unknown().optional(),
-  attendeeIds = []: z.string().uuid('Invalid attendeeIds = []'),
+  attendeeIds: z.array(z.string().uuid('Invalid attendee ID')).optional().default([]),
   quorumMet: z.unknown().optional(),
   minutesDocument: z.unknown().optional(),
   votingRecords: z.unknown().optional(),

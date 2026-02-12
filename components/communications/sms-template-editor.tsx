@@ -31,7 +31,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Save, X, Plus, AlertCircle, MessageSquare } from 'lucide-react';
 
 interface SmsTemplateEditorProps {
-  tenantId: string;
+  organizationId: string;
   templateId?: string;
   initialData?: {
     name: string;
@@ -68,7 +68,7 @@ const SMS_SINGLE_SEGMENT = 160;
 const SMS_MULTI_SEGMENT = 153;
 
 export function SmsTemplateEditor({
-  tenantId,
+  organizationId,
   templateId,
   initialData,
   onSave,
@@ -175,7 +175,7 @@ export function SmsTemplateEditor({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tenantId,
+          organizationId,
           name,
           description,
           messageTemplate,

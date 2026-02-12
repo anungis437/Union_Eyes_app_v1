@@ -33,20 +33,19 @@ async function getHandler(
   const reportId = params?.id || context?.params?.id;
   try {
     const organizationId = context.organizationId;
-    const tenantId = organizationId;
     const userId = context.userId;
     
-    if (!tenantId || !userId) {
+    if (!organizationId || !userId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID and User ID required'
+      'Organization ID and User ID required'
     );
     }
 
     // Verify user owns the report
     const report = await db.execute(sql`
       SELECT * FROM reports
-      WHERE id = ${reportId} AND tenant_id = ${tenantId} AND created_by = ${userId}
+      WHERE id = ${reportId} AND organization_id = ${organizationId} AND created_by = ${userId}
     `);
 
     if (report.length === 0) {
@@ -65,7 +64,7 @@ async function getHandler(
         u.last_name
       FROM report_shares rs
       LEFT JOIN users u ON u.id = rs.shared_with
-      WHERE rs.report_id = ${reportId} AND rs.tenant_id = ${tenantId}
+      WHERE rs.report_id = ${reportId} AND rs.organization_id = ${organizationId}
       ORDER BY rs.created_at DESC
     `);
 
@@ -94,13 +93,12 @@ async function postHandler(
   const reportId = params?.id || context?.params?.id;
   try {
     const organizationId = context.organizationId;
-    const tenantId = organizationId;
     const userId = context.userId;
     
-    if (!tenantId || !userId) {
+    if (!organizationId || !userId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID and User ID required'
+      'Organization ID and User ID required'
     );
     }
 
@@ -117,7 +115,7 @@ async function postHandler(
     // Verify user owns the report
     const report = await db.execute(sql`
       SELECT * FROM reports
-      WHERE id = ${reportId} AND tenant_id = ${tenantId} AND created_by = ${userId}
+      WHERE id = ${reportId} AND organization_id = ${organizationId} AND created_by = ${userId}
     `);
 
     if (report.length === 0) {
@@ -137,7 +135,7 @@ async function postHandler(
         SELECT id FROM report_shares
         WHERE report_id = ${reportId} 
           AND shared_with = ${sharedWithId}
-          AND tenant_id = ${tenantId}
+          AND organization_id = ${organizationId}
       `);
 
       if (existing.length > 0) {
@@ -154,10 +152,10 @@ async function postHandler(
         // Create new share
         const result = await db.execute(sql`
           INSERT INTO report_shares (
-            report_id, tenant_id, shared_by, shared_with,
+            report_id, organization_id, shared_by, shared_with,
             can_edit, can_execute, expires_at
           ) VALUES (
-            ${reportId}, ${tenantId}, ${userId}, ${sharedWithId},
+            ${reportId}, ${organizationId}, ${userId}, ${sharedWithId},
             ${body.canEdit || false}, ${body.canExecute !== false}, ${body.expiresAt || null}
           )
           RETURNING *
@@ -185,7 +183,7 @@ async function postHandler(
           const sharer = sharerResult.length > 0 ? (sharerResult[0] as any) : { first_name: 'A user' };
           
           await notificationService.send({
-            organizationId: tenantId,
+            organizationId,
             recipientId: sharedWithId,
             recipientEmail: user.email,
             type: 'email',
@@ -241,13 +239,12 @@ async function deleteHandler(
   const reportId = params?.id || context?.params?.id;
   try {
     const organizationId = context.organizationId;
-    const tenantId = organizationId;
     const userId = context.userId;
     
-    if (!tenantId || !userId) {
+    if (!organizationId || !userId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID and User ID required'
+      'Organization ID and User ID required'
     );
     }
 
@@ -264,7 +261,7 @@ async function deleteHandler(
     // Verify user owns the report
     const report = await db.execute(sql`
       SELECT * FROM reports
-      WHERE id = ${reportId} AND tenant_id = ${tenantId} AND created_by = ${userId}
+      WHERE id = ${reportId} AND organization_id = ${organizationId} AND created_by = ${userId}
     `);
 
     if (report.length === 0) {
@@ -279,7 +276,7 @@ async function deleteHandler(
       DELETE FROM report_shares
       WHERE id = ${shareId} 
         AND report_id = ${reportId}
-        AND tenant_id = ${tenantId}
+        AND organization_id = ${organizationId}
     `);
 
     return NextResponse.json({ 

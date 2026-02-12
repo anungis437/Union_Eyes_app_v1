@@ -158,7 +158,7 @@ export function FeatureFlagsAdmin() {
             Percentage ({groupedFlags.percentage.length})
           </TabsTrigger>
           <TabsTrigger value="tenant">
-            Tenant ({groupedFlags.tenant.length})
+            Organization ({groupedFlags.tenant.length})
           </TabsTrigger>
         </TabsList>
 
@@ -240,7 +240,7 @@ function FlagCard({
             
             {flag.allowedTenants && flag.allowedTenants.length > 0 && (
               <div>
-                <dt className="font-medium text-muted-foreground">Allowed Tenants</dt>
+                <dt className="font-medium text-muted-foreground">Allowed Organizations</dt>
                 <dd className="mt-1">{flag.allowedTenants.length} organizations</dd>
               </div>
             )}

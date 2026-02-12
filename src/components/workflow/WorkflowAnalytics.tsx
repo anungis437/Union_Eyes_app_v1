@@ -56,13 +56,13 @@ interface OverviewAnalytics {
 }
 
 interface WorkflowAnalyticsProps {
-  tenantId: string;
+  organizationId: string;
   workflowId?: string;
   className?: string;
 }
 
 export function WorkflowAnalytics({
-  tenantId,
+  organizationId,
   workflowId,
   className = '',
 }: WorkflowAnalyticsProps) {
@@ -80,7 +80,7 @@ export function WorkflowAnalytics({
     try {
       const response = await fetch('/api/workflows', {
         headers: {
-          'X-Tenant-ID': tenantId,
+          'X-Organization-ID': organizationId,
         },
       });
 
@@ -90,14 +90,14 @@ export function WorkflowAnalytics({
       setWorkflows(data.map((w: any) => ({ id: w.id, name: w.name })));
     } catch (error) {
     }
-  }, [tenantId]);
+  }, [organizationId]);
 
   // Fetch workflow analytics
   const fetchWorkflowAnalytics = useCallback(async (wfId: string) => {
     try {
       const response = await fetch(`/api/workflows/${wfId}/analytics`, {
         headers: {
-          'X-Tenant-ID': tenantId,
+          'X-Organization-ID': organizationId,
         },
       });
 
@@ -107,14 +107,14 @@ export function WorkflowAnalytics({
       setAnalytics(data);
     } catch (error) {
     }
-  }, [tenantId]);
+  }, [organizationId]);
 
   // Fetch overview analytics
   const fetchOverviewAnalytics = useCallback(async () => {
     try {
       const response = await fetch('/api/analytics/overview', {
         headers: {
-          'X-Tenant-ID': tenantId,
+          'X-Organization-ID': organizationId,
         },
       });
 
@@ -124,7 +124,7 @@ export function WorkflowAnalytics({
       setOverview(data);
     } catch (error) {
     }
-  }, [tenantId]);
+  }, [organizationId]);
 
   // Fetch data based on selection
   const fetchData = useCallback(async () => {

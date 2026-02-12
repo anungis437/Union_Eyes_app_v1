@@ -34,14 +34,14 @@ interface ClaimData {
 }
 
 interface SettlementCalculatorProps {
-  tenantId: string;
+  organizationId: string;
   initialData?: Partial<ClaimData>;
   onCalculate?: (estimate: SettlementEstimate) => void;
   className?: string;
 }
 
 export function SettlementCalculator({
-  tenantId,
+  organizationId,
   initialData,
   onCalculate,
   className = '',
@@ -73,7 +73,7 @@ export function SettlementCalculator({
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'X-Tenant-ID': tenantId,
+          'X-Organization-ID': organizationId,
         },
         body: JSON.stringify(claimData),
       });
@@ -96,7 +96,7 @@ export function SettlementCalculator({
     } finally {
       setIsCalculating(false);
     }
-  }, [claimData, tenantId, onCalculate]);
+  }, [claimData, organizationId, onCalculate]);
 
   useEffect(() => {
     // Auto-calculate when significant fields change
@@ -116,7 +116,7 @@ export function SettlementCalculator({
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'X-Tenant-ID': tenantId,
+            'X-Organization-ID': organizationId,
           },
         }
       );

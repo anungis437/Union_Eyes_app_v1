@@ -6,14 +6,14 @@ import { standardErrorResponse, standardSuccessResponse, ErrorCode } from '@/lib
 async function handler(req: NextRequest, context?: any) {
   try {
     const user = context || await getCurrentUser();
-    if (!user || !user.tenantId) {
+    if (!user || !user.organizationId) {
       return standardErrorResponse(
         ErrorCode.AUTH_REQUIRED,
-        'Authentication and tenant context required'
+        'Authentication and organization context required'
       );
     }
     
-    const tenantId = user.tenantId;
+    const organizationId = user.organizationId;
     const searchParams = req.nextUrl.searchParams;
     const days = parseInt(searchParams.get('days') || '90');
 
@@ -24,7 +24,7 @@ async function handler(req: NextRequest, context?: any) {
     const totalResult = await client`
       SELECT COALESCE(SUM(c.legal_costs + COALESCE(c.court_costs, 0)), 0) as total
       FROM claims c
-      WHERE c.tenant_id = ${tenantId}
+      WHERE c.organization_id = ${organizationId}
         AND c.filed_date >= ${startDate.toISOString()}
     `;
 
@@ -37,7 +37,7 @@ async function handler(req: NextRequest, context?: any) {
           'Legal Fees' as category,
           COALESCE(SUM(c.legal_costs), 0) as amount
         FROM claims c
-        WHERE c.tenant_id = ${tenantId}
+        WHERE c.organization_id = ${organizationId}
           AND c.filed_date >= ${startDate.toISOString()}
         
         UNION ALL
@@ -46,7 +46,7 @@ async function handler(req: NextRequest, context?: any) {
           'Court Costs' as category,
           COALESCE(SUM(c.court_costs), 0) as amount
         FROM claims c
-        WHERE c.tenant_id = ${tenantId}
+        WHERE c.organization_id = ${organizationId}
           AND c.filed_date >= ${startDate.toISOString()}
         
         UNION ALL
@@ -55,7 +55,7 @@ async function handler(req: NextRequest, context?: any) {
           'Administrative' as category,
           COALESCE(SUM(c.legal_costs), 0) * 0.15 as amount
         FROM claims c
-        WHERE c.tenant_id = ${tenantId}
+        WHERE c.organization_id = ${organizationId}
           AND c.filed_date >= ${startDate.toISOString()}
       )
       SELECT

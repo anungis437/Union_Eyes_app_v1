@@ -13,7 +13,7 @@
  * - analytics:metrics:{endpoint}:{date} - Sorted set of query durations
  * - analytics:slow:{date} - Sorted set of slow queries
  * - analytics:summary:{date} - Hash of daily summaries
- * - analytics:tenant:{organizationId}:{date} - Tenant-specific metrics
+ * - analytics:organization:{organizationId}:{date} - Organization-specific metrics
  * 
  * TTL: 30 days (configurable via ANALYTICS_RETENTION_DAYS)
  */
@@ -27,7 +27,6 @@ interface QueryMetric {
   timestamp: Date;
   cached: boolean;
   organizationId: string;
-  tenantId?: string;
 }
 
 interface PerformanceReport {
@@ -49,7 +48,7 @@ interface PerformanceSummary {
   cacheHitRate: number;
   slowQueryRate: number;
   uniqueEndpoints: number;
-  uniqueTenants: number;
+  uniqueOrganizations: number;
 }
 
 // Initialize Redis client (same as rate-limiter)
@@ -111,7 +110,6 @@ class RedisAnalyticsPerformanceMonitor {
         timestamp: new Date(),
         cached,
         organizationId,
-        tenantId: organizationId,
       };
 
       const pipeline = redis.pipeline();
@@ -154,18 +152,18 @@ class RedisAnalyticsPerformanceMonitor {
       }
       pipeline.expire(summaryKey, ttl);
 
-      // 4. Track unique endpoints and tenants
+      // 4. Track unique endpoints and organizations
       const endpointsKey = `analytics:endpoints:${dateKey}`;
-      const tenantsKey = `analytics:tenants:${dateKey}`;
+      const organizationsKey = `analytics:organizations:${dateKey}`;
       pipeline.sadd(endpointsKey, endpoint);
-      pipeline.sadd(tenantsKey, organizationId);
+      pipeline.sadd(organizationsKey, organizationId);
       pipeline.expire(endpointsKey, ttl);
-      pipeline.expire(tenantsKey, ttl);
+      pipeline.expire(organizationsKey, ttl);
 
-      // 5. Store tenant-specific metric
-      const tenantKey = `analytics:tenant:${organizationId}:${dateKey}`;
-      pipeline.zadd(tenantKey, { score: now, member: JSON.stringify(metric) });
-      pipeline.expire(tenantKey, ttl);
+      // 5. Store organization-specific metric
+      const organizationKey = `analytics:organization:${organizationId}:${dateKey}`;
+      pipeline.zadd(organizationKey, { score: now, member: JSON.stringify(metric) });
+      pipeline.expire(organizationKey, ttl);
 
       await pipeline.exec();
 
@@ -292,16 +290,16 @@ class RedisAnalyticsPerformanceMonitor {
   }
 
   /**
-   * Get metrics for a specific tenant
+   * Get metrics for a specific organization
    */
-  async getTenantMetrics(organizationId: string, dateKey?: string): Promise<QueryMetric[]> {
+  async getOrganizationMetrics(organizationId: string, dateKey?: string): Promise<QueryMetric[]> {
     if (!this.enabled || !redis) return [];
 
     try {
       const date = dateKey || this.getDateKey();
-      const tenantKey = `analytics:tenant:${organizationId}:${date}`;
+      const organizationKey = `analytics:organization:${organizationId}:${date}`;
 
-      const metricsData = await redis.zrange(tenantKey, 0, -1);
+      const metricsData = await redis.zrange(organizationKey, 0, -1);
       
       if (!metricsData || metricsData.length === 0) {
         return [];
@@ -316,7 +314,7 @@ class RedisAnalyticsPerformanceMonitor {
       }).filter((m): m is QueryMetric => m !== null);
 
     } catch (error) {
-      logger.error('Failed to get tenant metrics', error as Error, { organizationId, dateKey });
+      logger.error('Failed to get organization metrics', error as Error, { organizationId, dateKey });
       return [];
     }
   }
@@ -331,12 +329,12 @@ class RedisAnalyticsPerformanceMonitor {
       const date = dateKey || this.getDateKey();
       const summaryKey = `analytics:summary:${date}`;
       const endpointsKey = `analytics:endpoints:${date}`;
-      const tenantsKey = `analytics:tenants:${date}`;
+      const organizationsKey = `analytics:organizations:${date}`;
 
-      const [summary, endpointCount, tenantCount] = await Promise.all([
+      const [summary, endpointCount, organizationCount] = await Promise.all([
         redis.hgetall(summaryKey),
         redis.scard(endpointsKey),
-        redis.scard(tenantsKey),
+        redis.scard(organizationsKey),
       ]);
 
       if (!summary || !summary.totalQueries) {
@@ -361,7 +359,7 @@ class RedisAnalyticsPerformanceMonitor {
         cacheHitRate: cachedQueries / totalQueries,
         slowQueryRate: slowQueries / totalQueries,
         uniqueEndpoints: endpointCount || 0,
-        uniqueTenants: tenantCount || 0,
+        uniqueOrganizations: organizationCount || 0,
       };
 
     } catch (error) {
@@ -394,18 +392,18 @@ class RedisAnalyticsPerformanceMonitor {
       const endpointsKey = `analytics:endpoints:${dateKey}`;
       const endpoints = await redis.smembers(endpointsKey);
 
-      // Get all tenants for this date
-      const tenantsKey = `analytics:tenants:${dateKey}`;
-      const tenants = await redis.smembers(tenantsKey);
+      // Get all organizations for this date
+      const organizationsKey = `analytics:organizations:${dateKey}`;
+      const organizations = await redis.smembers(organizationsKey);
 
       // Delete all keys for this date
       const keysToDelete = [
         `analytics:slow:${dateKey}`,
         `analytics:summary:${dateKey}`,
         endpointsKey,
-        tenantsKey,
+        organizationsKey,
         ...((endpoints || []) as string[]).map(ep => `analytics:metrics:${ep}:${dateKey}`),
-        ...((tenants || []) as string[]).map(tid => `analytics:tenant:${tid}:${dateKey}`),
+        ...((organizations || []) as string[]).map(oid => `analytics:organization:${oid}:${dateKey}`),
       ];
 
       await Promise.all(keysToDelete.map(key => redis.del(key)));

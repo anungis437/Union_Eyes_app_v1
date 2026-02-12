@@ -22,9 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { 
   Shield, 
   AlertTriangle, 
-  ClipboardCheck, 
-  TrendingDown, 
-  TrendingUp,
+  ClipboardCheck,
   Users,
   Calendar,
   FileWarning,
@@ -66,13 +64,9 @@ export function HealthSafetyDashboard({
   const [metrics, setMetrics] = React.useState<SafetyMetrics | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
-  const [selectedPeriod, setSelectedPeriod] = React.useState(period);
+  const [selectedPeriod] = React.useState(period);
 
-  React.useEffect(() => {
-    loadDashboardData();
-  }, [organizationId, selectedPeriod]);
-
-  async function loadDashboardData() {
+  const loadDashboardData = React.useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch(
@@ -89,7 +83,7 @@ export function HealthSafetyDashboard({
       } else {
         throw new Error(data.error || "Failed to load metrics");
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to load health & safety dashboard",
@@ -98,7 +92,11 @@ export function HealthSafetyDashboard({
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [organizationId, selectedPeriod, toast]);
+
+  React.useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData]);
 
   async function refreshDashboard() {
     setIsRefreshing(true);
@@ -130,7 +128,7 @@ export function HealthSafetyDashboard({
         title: "Report Exported",
         description: "Your health & safety report has been downloaded"
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Export Failed",
         description: "Unable to export report",

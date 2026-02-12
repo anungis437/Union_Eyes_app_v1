@@ -140,12 +140,27 @@ export const PUT = withOrganizationAuth(async (
 
     return NextResponse.json({ template });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return standardErrorResponse(
-      ErrorCode.VALIDATION_ERROR,
-      'Validation error',
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update template',
       error
     );
+  }
+});
+
+export const DELETE = withOrganizationAuth(async (
+  request: NextRequest,
+  context,
+  params?: { id: string }
+) => {
+  try {
+    const { organizationId } = context;
+
+    if (!params?.id) {
+      return standardErrorResponse(
+        ErrorCode.MISSING_REQUIRED_FIELD,
+        'Template ID required'
+      );
     }
 
     // Check if template exists and is not a system template
@@ -161,10 +176,9 @@ export const PUT = withOrganizationAuth(async (
 
     if (!existing) {
       return standardErrorResponse(
-      ErrorCode.RESOURCE_NOT_FOUND,
-      'Template not found',
-      error
-    );
+        ErrorCode.RESOURCE_NOT_FOUND,
+        'Template not found'
+      );
     }
 
     if (existing.isSystem) {
@@ -180,7 +194,7 @@ export const PUT = withOrganizationAuth(async (
 
     return NextResponse.json({ success: true });
   } catch (error) {
-return standardErrorResponse(
+    return standardErrorResponse(
       ErrorCode.INTERNAL_ERROR,
       'Failed to delete template',
       error

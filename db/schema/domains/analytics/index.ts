@@ -15,6 +15,6 @@
  */
 
 // Export all analytics-related schemas from consolidated domain location
-export * from './analytics';
+export * from '../../analytics';
 export * from './reporting';
 export * from './reports';

@@ -11,12 +11,11 @@ import {
 async function handler(req: NextRequest, context) {
   try {
     const organizationId = context.organizationId;
-    const tenantId = organizationId;
     
-    if (!tenantId) {
+    if (!organizationId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID required'
+      'Organization ID required'
     );
     }
 
@@ -41,7 +40,7 @@ async function handler(req: NextRequest, context) {
           ELSE 0
         END::float as roi
       FROM claims c
-      WHERE c.tenant_id = ${tenantId}
+      WHERE c.organization_id = ${organizationId}
         AND c.filed_date >= ${startDate.toISOString()}
       GROUP BY c.claim_type
       ORDER BY "totalValue" DESC

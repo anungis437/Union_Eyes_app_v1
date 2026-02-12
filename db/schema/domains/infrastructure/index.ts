@@ -57,6 +57,7 @@ export * from './social-media';
 export * from './trust-fmv';
 export * from './defensibility';
 export * from './accessibility';
+export * from './support';
 
 // Explicit re-exports to resolve ambiguities
 // automationRules and AutomationRule - use automation.ts (primary definition)

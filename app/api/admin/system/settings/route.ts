@@ -3,7 +3,7 @@
  * 
  * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
- * - RLS policies enforce tenant isolation at database level
+ * - RLS policies enforce organization isolation at database level
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -30,7 +30,7 @@ const getSettingsSchema = z.object({
 });
 
 const updateSettingsSchema = z.object({
-  tenantId: z.string().uuid(),
+  organizationId: z.string().uuid(),
   category: z.string().min(1),
   key: z.string().min(1),
   value: z.unknown(),
@@ -87,7 +87,7 @@ export const GET = withRoleAuth(90, async (request, context) => {
     );
   }
 
-  const orgId = (query as Record<string, unknown>)["organizationId"] ?? (query as Record<string, unknown>)["orgId"] ?? (query as Record<string, unknown>)["organization_id"] ?? (query as Record<string, unknown>)["org_id"] ?? (query as Record<string, unknown>)["tenantId"] ?? (query as Record<string, unknown>)["tenant_id"] ?? (query as Record<string, unknown>)["unionId"] ?? (query as Record<string, unknown>)["union_id"] ?? (query as Record<string, unknown>)["localId"] ?? (query as Record<string, unknown>)["local_id"];
+  const orgId = (query as Record<string, unknown>)["organizationId"] ?? (query as Record<string, unknown>)["orgId"] ?? (query as Record<string, unknown>)["organization_id"] ?? (query as Record<string, unknown>)["org_id"] ?? (query as Record<string, unknown>)["unionId"] ?? (query as Record<string, unknown>)["union_id"] ?? (query as Record<string, unknown>)["localId"] ?? (query as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
     return standardErrorResponse(
       ErrorCode.FORBIDDEN,
@@ -192,7 +192,7 @@ export const PUT = withRoleAuth(90, async (request, context) => {
     );
   }
 
-  const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
+  const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
     return standardErrorResponse(
       ErrorCode.FORBIDDEN,
@@ -219,11 +219,10 @@ try {
         );
       }
 
-      const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, category, key, value } = body;
-      const organizationId = organizationIdFromBody ?? tenantIdFromBody;
-      const tenantId = organizationId;
+      const { organizationId: organizationIdFromBody, category, key, value } = body;
+      const organizationId = organizationIdFromBody;
 
-      await updateSystemConfig(tx, tenantId, category, key, value);
+      await updateSystemConfig(tx, organizationId, category, key, value);
 
       logApiAuditEvent({
         timestamp: new Date().toISOString(), userId,
@@ -233,7 +232,7 @@ try {
         severity: 'high',
         details: {
           adminId: userId,
-          tenantId,
+          organizationId,
           category,
           key,
         },

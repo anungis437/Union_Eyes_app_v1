@@ -73,7 +73,7 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
     );
   }
 
-  const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
+  const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
     return standardErrorResponse(
       ErrorCode.FORBIDDEN,
@@ -133,7 +133,7 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
           name: member.name,
           metadata: {
             memberId: member.id,
-            tenantId: member.tenantId,
+            organizationId: member.organizationId,
           },
         });
         customerId = customer.id;
@@ -159,7 +159,7 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
         setup_future_usage: savePaymentMethod ? 'off_session' : undefined,
         metadata: {
           memberId: member.id,
-          tenantId: member.tenantId,
+          organizationId: member.organizationId,
           type: 'dues_payment',
         },
       });

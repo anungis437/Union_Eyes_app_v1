@@ -8,7 +8,7 @@
  * - Recipients: Individual delivery records
  * - Engagement: Opens, clicks, unsubscribes, spam reports
  * 
- * Dependencies: tenants, profiles from base schema
+ * Dependencies: organizations, profiles from base schema
  * Version: 1.0.0
  * Created: December 6, 2025
  */
@@ -26,8 +26,8 @@ import {
   varchar,
   inet,
 } from 'drizzle-orm/pg-core';
-import { profiles } from './profiles-schema';
-import { organizations } from '../schema-organizations';
+import { profiles } from '../../profiles-schema';
+import { organizations } from '../../../schema-organizations';
 
 // ============================================================================
 // ENUMS
@@ -151,7 +151,7 @@ export const newsletterListSubscribers = pgTable(
       .references(() => newsletterDistributionLists.id, {
         onDelete: 'cascade',
       }),
-    profileId: uuid('profile_id')
+    profileId: text('profile_id')
       .notNull()
       .references(() => profiles.userId, { onDelete: 'cascade' }),
     email: varchar('email', { length: 255 }).notNull(),

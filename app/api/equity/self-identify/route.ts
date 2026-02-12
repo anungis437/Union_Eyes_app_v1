@@ -21,27 +21,25 @@ import {
 export const dynamic = 'force-dynamic';
 
 
-const equitySelf-identifySchema = z.object({
+const equitySelfIdentifySchema = z.object({
   memberId: z.string().uuid('Invalid memberId'),
   organizationId: z.string().uuid('Invalid organizationId'),
   // Consent (REQUIRED)
         dataCollectionConsent: z.unknown().optional(),
-  consentType = 'explicit': z.unknown().optional(),
+  consentType: z.unknown().optional().default('explicit'),
   consentPurpose: z.string().min(1, 'consentPurpose is required'),
-  dataRetentionYears = 7: z.unknown().optional(),
+  dataRetentionYears: z.unknown().optional().default(7),
   // Equity groups
-        equityGroups = []: z.unknown().optional(),
+        equityGroups: z.unknown().optional().default([]),
   // Gender identity
-        genderIdentity: z.string().uuid('Invalid // Gender identity
-        genderIdentity'),
+        genderIdentity: z.string().uuid('Invalid genderIdentity'),
   genderIdentityOther: z.string().uuid('Invalid genderIdentityOther'),
   // Indigenous identity (OCAP)
-        isIndigenous: z.string().uuid('Invalid // Indigenous identity (OCAP)
-        isIndigenous'),
+        isIndigenous: z.string().uuid('Invalid isIndigenous'),
   indigenousIdentity: z.string().uuid('Invalid indigenousIdentity'),
   indigenousNation: z.unknown().optional(),
   indigenousTreatyNumber: z.unknown().optional(),
-  indigenousDataGovernanceConsent = false: z.unknown().optional(),
+  indigenousDataGovernanceConsent: z.unknown().optional().default(false),
   // Visible minority
         isVisibleMinority: z.boolean().optional(),
   visibleMinorityGroups: z.boolean().optional(),
@@ -70,9 +68,9 @@ const equitySelf-identifySchema = z.object({
   translationLanguage: z.unknown().optional(),
   needsMobilityAccommodation: z.unknown().optional(),
   // Privacy controls
-        allowAggregateReporting = true: z.unknown().optional(),
-  allowResearchParticipation = false: z.unknown().optional(),
-  allowExternalReporting = false: z.unknown().optional(),
+        allowAggregateReporting: z.unknown().optional().default(true),
+  allowResearchParticipation: z.unknown().optional().default(false),
+  allowExternalReporting: z.unknown().optional().default(false),
 });
 
 export const POST = async (request: NextRequest) => {

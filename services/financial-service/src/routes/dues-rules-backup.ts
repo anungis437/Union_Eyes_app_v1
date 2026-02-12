@@ -68,11 +68,11 @@ const createDuesRuleSchema = z.object({
  */
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const { tenantId } = (req as any).user;
+    const { organizationId } = (req as any).user;
     const { active } = req.query;
     
     // Build where conditions
-    const conditions = [eq(duesRules.tenantId, tenantId)];
+    const conditions = [eq(duesRules.tenantId, organizationId)];
     
     if (active === 'true') {
       conditions.push(eq(duesRules.isActive, true));
@@ -103,13 +103,13 @@ router.get('/', async (req: Request, res: Response) => {
  */
 router.get('/:id', async (req: Request, res: Response) => {
   try {
-    const { tenantId } = (req as any).user;
+    const { organizationId } = (req as any).user;
     const { id } = req.params;
     
     const rules = await db
       .select()
       .from(duesRules)
-      .where(and(eq(duesRules.id, id), eq(duesRules.tenantId, tenantId)))
+      .where(and(eq(duesRules.id, id), eq(duesRules.tenantId, organizationId)))
       .limit(1);
     
     const rule = rules[0];
@@ -139,7 +139,7 @@ router.get('/:id', async (req: Request, res: Response) => {
  */
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const { tenantId, role } = (req as any).user;
+    const { organizationId, role } = (req as any).user;
     
     // Check permissions
     if (!['admin', 'financial_admin'].includes(role)) {
@@ -154,7 +154,7 @@ router.post('/', async (req: Request, res: Response) => {
     
     // Map validation schema to database schema
     const dbData = {
-      tenantId,
+      tenantId: organizationId,
       ruleName: validatedData.ruleName,
       ruleCode: validatedData.ruleCode,
       description: validatedData.description,
@@ -201,7 +201,7 @@ router.post('/', async (req: Request, res: Response) => {
  */
 router.put('/:id', async (req: Request, res: Response) => {
   try {
-    const { tenantId, role } = (req as any).user;
+    const { organizationId, role } = (req as any).user;
     const { id } = req.params;
     
     // Check permissions
@@ -237,7 +237,7 @@ router.put('/:id', async (req: Request, res: Response) => {
     const updatedRule = await db
       .update(duesRules)
       .set(dbData)
-      .where(and(eq(duesRules.id, id), eq(duesRules.tenantId, tenantId)))
+      .where(and(eq(duesRules.id, id), eq(duesRules.tenantId, organizationId)))
       .returning();
     
     if (updatedRule.length === 0) {
@@ -274,7 +274,7 @@ router.put('/:id', async (req: Request, res: Response) => {
  */
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
-    const { tenantId, role } = (req as any).user;
+    const { organizationId, role } = (req as any).user;
     const { id } = req.params;
     
     // Check permissions - only admin can delete
@@ -291,7 +291,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
         isActive: false,
         updatedAt: new Date().toISOString(),
       })
-      .where(and(eq(duesRules.id, id), eq(duesRules.tenantId, tenantId)))
+      .where(and(eq(duesRules.id, id), eq(duesRules.tenantId, organizationId)))
       .returning();
     
     if (result.length === 0) {
@@ -319,7 +319,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
  */
 router.post('/:id/duplicate', async (req: Request, res: Response) => {
   try {
-    const { tenantId, role } = (req as any).user;
+    const { organizationId, role } = (req as any).user;
     const { id } = req.params;
     const { newRuleCode, newRuleName } = req.body;
     
@@ -335,7 +335,7 @@ router.post('/:id/duplicate', async (req: Request, res: Response) => {
     const existingRules = await db
       .select()
       .from(duesRules)
-      .where(and(eq(duesRules.id, id), eq(duesRules.tenantId, tenantId)))
+      .where(and(eq(duesRules.id, id), eq(duesRules.tenantId, organizationId)))
       .limit(1);
     
     const existingRule = existingRules[0];
@@ -349,7 +349,7 @@ router.post('/:id/duplicate', async (req: Request, res: Response) => {
     
     // Create new rule with modified code/name
     const duplicatedRule = await db.insert(duesRules).values({
-      tenantId,
+      tenantId: organizationId,
       ruleName: newRuleName || `${existingRule.ruleName} (Copy)`,
       ruleCode: newRuleCode || `${existingRule.ruleCode}_COPY`,
       description: existingRule.description,

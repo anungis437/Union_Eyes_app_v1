@@ -15,22 +15,23 @@ import { db } from '@/db';
 import { organizationMembers } from '@/db/schema';
 import { eq, and, desc, sql, or, isNull } from 'drizzle-orm';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
+import { getCurrentUser } from '@/lib/api-auth-guard';
 
-export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
+export const GET = withEnhancedRoleAuth(10, async (request: NextRequest, context) => {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return standardErrorResponse(ErrorCode.UNAUTHORIZED, 'Authentication required');
+    }
       // Get query parameters
       const searchParams = request.nextUrl.searchParams;
-      const organizationId = (searchParams.get('organizationId') ?? searchParams.get('tenantId'));
-      const tenantId = organizationId;
+      const organizationId = searchParams.get('organizationId');
       const limit = parseInt(searchParams.get('limit') || '10');
 
-      if (!tenantId) {
+      if (!organizationId) {
         return standardErrorResponse(
           ErrorCode.MISSING_REQUIRED_FIELD,
-          'tenantId parameter is required'
+          'organizationId parameter is required'
         );
       }
 // Get recent member additions (simplified approach for now)
@@ -50,7 +51,7 @@ export const GET = async (request: NextRequest) => {
         .from(organizationMembers)
         .where(
           and(
-            eq(organizationMembers.organizationId, tenantId),
+            eq(organizationMembers.organizationId, organizationId),
             or(
               isNull(organizationMembers.deletedAt),
               sql`${organizationMembers.deletedAt} IS NULL`
@@ -85,6 +86,5 @@ return standardErrorResponse(
         error
       );
     }
-    })(request);
-};
+});
 

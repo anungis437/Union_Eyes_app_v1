@@ -6,7 +6,7 @@
  * - Survey management with 6 question types
  * - Response tracking and analytics
  * - Quick poll system
- * - RLS tenant isolation
+ * - RLS organization isolation
  */
 
 import {
@@ -24,7 +24,7 @@ import {
   unique,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
-import { tenants } from './tenant-management-schema';
+import { organizations } from '../schema-organizations';
 import { profiles } from './profiles-schema';
 
 // =====================================================
@@ -35,9 +35,9 @@ export const surveys = pgTable(
   'surveys',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    tenantId: uuid('tenant_id')
+    organizationId: uuid('organization_id')
       .notNull()
-      .references(() => tenants.tenantId, { onDelete: 'cascade' }),
+      .references(() => organizations.id, { onDelete: 'cascade' }),
 
     // Survey metadata
     title: varchar('title', { length: 255 }).notNull(),
@@ -71,7 +71,7 @@ export const surveys = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    tenantIdx: index('idx_surveys_tenant').on(table.tenantId),
+    organizationIdx: index('idx_surveys_organization').on(table.organizationId),
     statusIdx: index('idx_surveys_status').on(table.status),
     publishedIdx: index('idx_surveys_published').on(table.publishedAt),
     closesIdx: index('idx_surveys_closes').on(table.closesAt),
@@ -86,9 +86,9 @@ export const surveyQuestions = pgTable(
   'survey_questions',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    tenantId: uuid('tenant_id')
+    organizationId: uuid('organization_id')
       .notNull()
-      .references(() => tenants.tenantId, { onDelete: 'cascade' }),
+      .references(() => organizations.id, { onDelete: 'cascade' }),
     surveyId: uuid('survey_id')
       .notNull()
       .references(() => surveys.id, { onDelete: 'cascade' }),
@@ -132,7 +132,7 @@ export const surveyQuestions = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    tenantIdx: index('idx_survey_questions_tenant').on(table.tenantId),
+    organizationIdx: index('idx_survey_questions_organization').on(table.organizationId),
     surveyIdx: index('idx_survey_questions_survey').on(table.surveyId),
     orderIdx: index('idx_survey_questions_order').on(table.surveyId, table.orderIndex),
     typeIdx: index('idx_survey_questions_type').on(table.questionType),
@@ -147,9 +147,9 @@ export const surveyResponses = pgTable(
   'survey_responses',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    tenantId: uuid('tenant_id')
+    organizationId: uuid('organization_id')
       .notNull()
-      .references(() => tenants.tenantId, { onDelete: 'cascade' }),
+      .references(() => organizations.id, { onDelete: 'cascade' }),
     surveyId: uuid('survey_id')
       .notNull()
       .references(() => surveys.id, { onDelete: 'cascade' }),
@@ -176,7 +176,7 @@ export const surveyResponses = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    tenantIdx: index('idx_survey_responses_tenant').on(table.tenantId),
+    organizationIdx: index('idx_survey_responses_organization').on(table.organizationId),
     surveyIdx: index('idx_survey_responses_survey').on(table.surveyId),
     userIdx: index('idx_survey_responses_user').on(table.userId),
     statusIdx: index('idx_survey_responses_status').on(table.status),
@@ -192,9 +192,9 @@ export const surveyAnswers = pgTable(
   'survey_answers',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    tenantId: uuid('tenant_id')
+    organizationId: uuid('organization_id')
       .notNull()
-      .references(() => tenants.tenantId, { onDelete: 'cascade' }),
+      .references(() => organizations.id, { onDelete: 'cascade' }),
     responseId: uuid('response_id')
       .notNull()
       .references(() => surveyResponses.id, { onDelete: 'cascade' }),
@@ -212,7 +212,7 @@ export const surveyAnswers = pgTable(
     answeredAt: timestamp('answered_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    tenantIdx: index('idx_survey_answers_tenant').on(table.tenantId),
+    organizationIdx: index('idx_survey_answers_organization').on(table.organizationId),
     responseIdx: index('idx_survey_answers_response').on(table.responseId),
     questionIdx: index('idx_survey_answers_question').on(table.questionId),
     responseQuestionUnique: unique('survey_answers_response_question_unique').on(
@@ -230,9 +230,9 @@ export const polls = pgTable(
   'polls',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    tenantId: uuid('tenant_id')
+    organizationId: uuid('organization_id')
       .notNull()
-      .references(() => tenants.tenantId, { onDelete: 'cascade' }),
+      .references(() => organizations.id, { onDelete: 'cascade' }),
 
     // Poll content
     question: text('question').notNull(),
@@ -263,7 +263,7 @@ export const polls = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    tenantIdx: index('idx_polls_tenant').on(table.tenantId),
+    organizationIdx: index('idx_polls_organization').on(table.organizationId),
     statusIdx: index('idx_polls_status').on(table.status),
     publishedIdx: index('idx_polls_published').on(table.publishedAt),
     closesIdx: index('idx_polls_closes').on(table.closesAt),
@@ -278,9 +278,9 @@ export const pollVotes = pgTable(
   'poll_votes',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    tenantId: uuid('tenant_id')
+    organizationId: uuid('organization_id')
       .notNull()
-      .references(() => tenants.tenantId, { onDelete: 'cascade' }),
+      .references(() => organizations.id, { onDelete: 'cascade' }),
     pollId: uuid('poll_id')
       .notNull()
       .references(() => polls.id, { onDelete: 'cascade' }),
@@ -300,7 +300,7 @@ export const pollVotes = pgTable(
     votedAt: timestamp('voted_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    tenantIdx: index('idx_poll_votes_tenant').on(table.tenantId),
+    organizationIdx: index('idx_poll_votes_organization').on(table.organizationId),
     pollIdx: index('idx_poll_votes_poll').on(table.pollId),
     userIdx: index('idx_poll_votes_user').on(table.userId),
     optionIdx: index('idx_poll_votes_option').on(table.pollId, table.optionId),
@@ -313,9 +313,9 @@ export const pollVotes = pgTable(
 // =====================================================
 
 export const surveysRelations = relations(surveys, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [surveys.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [surveys.organizationId],
+    references: [organizations.id],
   }),
   createdByProfile: one(profiles, {
     fields: [surveys.createdBy],
@@ -326,9 +326,9 @@ export const surveysRelations = relations(surveys, ({ one, many }) => ({
 }));
 
 export const surveyQuestionsRelations = relations(surveyQuestions, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [surveyQuestions.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [surveyQuestions.organizationId],
+    references: [organizations.id],
   }),
   survey: one(surveys, {
     fields: [surveyQuestions.surveyId],
@@ -338,9 +338,9 @@ export const surveyQuestionsRelations = relations(surveyQuestions, ({ one, many 
 }));
 
 export const surveyResponsesRelations = relations(surveyResponses, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [surveyResponses.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [surveyResponses.organizationId],
+    references: [organizations.id],
   }),
   survey: one(surveys, {
     fields: [surveyResponses.surveyId],
@@ -354,9 +354,9 @@ export const surveyResponsesRelations = relations(surveyResponses, ({ one, many 
 }));
 
 export const surveyAnswersRelations = relations(surveyAnswers, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [surveyAnswers.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [surveyAnswers.organizationId],
+    references: [organizations.id],
   }),
   response: one(surveyResponses, {
     fields: [surveyAnswers.responseId],
@@ -369,9 +369,9 @@ export const surveyAnswersRelations = relations(surveyAnswers, ({ one }) => ({
 }));
 
 export const pollsRelations = relations(polls, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [polls.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [polls.organizationId],
+    references: [organizations.id],
   }),
   createdByProfile: one(profiles, {
     fields: [polls.createdBy],
@@ -381,9 +381,9 @@ export const pollsRelations = relations(polls, ({ one, many }) => ({
 }));
 
 export const pollVotesRelations = relations(pollVotes, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [pollVotes.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [pollVotes.organizationId],
+    references: [organizations.id],
   }),
   poll: one(polls, {
     fields: [pollVotes.pollId],

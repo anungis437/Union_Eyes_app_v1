@@ -3,7 +3,7 @@
  * 
  * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
- * - RLS policies enforce tenant isolation at database level
+ * - RLS policies enforce organization isolation at database level
  * 
  * Creates sample data for testing dashboard functionality
  * POST /api/admin/seed-test-data
@@ -24,7 +24,7 @@ import {
   ErrorCode 
 } from '@/lib/api/standardized-responses';
 
-const adminSeed-test-dataSchema = z.object({
+const adminSeedTestDataSchema = z.object({
   organizationId: z.string().uuid('Invalid organizationId'),
 });
 
@@ -61,7 +61,7 @@ export const POST = async (request: NextRequest) => {
       'organizationId is required'
     );
       }
-// All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+// All database operations wrapped in withRLSContext - RLS policies handle organization isolation
       return withRLSContext(async (tx) => {
         // Get the current user's profile
         const [userProfile] = await tx

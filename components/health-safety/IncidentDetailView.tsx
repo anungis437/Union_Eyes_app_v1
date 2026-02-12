@@ -27,10 +27,8 @@ import {
   User,
   AlertTriangle,
   FileText,
-  Clock,
   Edit,
   Download,
-  CheckCircle,
   XCircle
 } from "lucide-react";
 import { IncidentStatusBadge } from "./IncidentStatusBadge";
@@ -87,11 +85,7 @@ export function IncidentDetailView({
   const [incident, setIncident] = React.useState<IncidentDetail | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
 
-  React.useEffect(() => {
-    loadIncidentDetails();
-  }, [incidentId]);
-
-  async function loadIncidentDetails() {
+  const loadIncidentDetails = React.useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch(`/api/health-safety/incidents/${incidentId}`);
@@ -106,7 +100,7 @@ export function IncidentDetailView({
       } else {
         throw new Error(data.error);
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to load incident details",
@@ -115,7 +109,11 @@ export function IncidentDetailView({
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [incidentId, toast]);
+
+  React.useEffect(() => {
+    loadIncidentDetails();
+  }, [loadIncidentDetails]);
 
   async function downloadReport() {
     try {
@@ -133,7 +131,7 @@ export function IncidentDetailView({
         title: "Success",
         description: "Incident report downloaded"
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to download report",

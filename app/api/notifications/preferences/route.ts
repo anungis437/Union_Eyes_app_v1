@@ -113,8 +113,6 @@ export const PUT = async (request: NextRequest) => {
         phone,
       } = body;
 
-      const tenantId = organizationId;
-
       // Check if preferences exist
       const existing = await withRLSContext({ organizationId }, async (db) => {
         return await db.query.userNotificationPreferences.findFirst({
@@ -160,7 +158,7 @@ export const PUT = async (request: NextRequest) => {
           .insert(userNotificationPreferences)
           .values({
             userId,
-            tenantId,
+            organizationId,
             email,
             phone: phone || null,
             emailEnabled: emailEnabled ?? true,

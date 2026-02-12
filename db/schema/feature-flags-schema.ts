@@ -12,12 +12,12 @@ export const featureFlags = pgTable("feature_flags", {
   
   // Flag identification
   name: text("name").notNull().unique(),
-  type: text("type").notNull().default('boolean'), // 'boolean' | 'percentage' | 'tenant' | 'user'
+  type: text("type").notNull().default('boolean'), // 'boolean' | 'percentage' | 'organization' | 'user'
   
   // Configuration
   enabled: boolean("enabled").notNull().default(false),
   percentage: integer("percentage"), // For percentage-based rollouts (0-100)
-  allowedTenants: json("allowed_tenants").$type<string[]>(), // For tenant-specific flags
+  allowedOrganizations: json("allowed_organizations").$type<string[]>(), // For organization-specific flags
   allowedUsers: json("allowed_users").$type<string[]>(), // For user-specific flags
   
   // Metadata

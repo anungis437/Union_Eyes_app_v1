@@ -58,7 +58,6 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
 
   try {
     const organizationScopeId = organizationId || userId;
-    const tenantId = organizationScopeId;
 
     // Query model performance metrics from analytics tables
     // Build on existing analytics_scheduled_reports and benchmark_data tables
@@ -71,7 +70,7 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
           AVG(CASE WHEN prediction_correct THEN 1.0 ELSE 0.0 END) as accuracy,
           AVG(confidence) as avg_confidence
         FROM ml_predictions
-        WHERE tenant_id = ${tenantId}
+        WHERE organization_id = ${organizationScopeId}
           AND prediction_type = 'claim_outcome'
           AND predicted_at >= NOW() - INTERVAL '24 hours'
         
@@ -83,7 +82,7 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
           AVG(CASE WHEN prediction_correct THEN 1.0 ELSE 0.0 END) as accuracy,
           AVG(confidence) as avg_confidence
         FROM ml_predictions
-        WHERE tenant_id = ${tenantId}
+        WHERE organization_id = ${organizationScopeId}
           AND prediction_type = 'timeline'
           AND predicted_at >= NOW() - INTERVAL '24 hours'
         
@@ -95,7 +94,7 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
           AVG(CASE WHEN prediction_correct THEN 1.0 ELSE 0.0 END) as accuracy,
           AVG(confidence) as avg_confidence
         FROM ml_predictions
-        WHERE tenant_id = ${tenantId}
+        WHERE organization_id = ${organizationScopeId}
           AND prediction_type = 'churn_risk'
           AND predicted_at >= NOW() - INTERVAL '24 hours'
         
@@ -107,7 +106,7 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
           AVG(CASE WHEN assignment_accepted THEN 1.0 ELSE 0.0 END) as accuracy,
           AVG(confidence) as avg_confidence
         FROM ml_predictions
-        WHERE tenant_id = ${tenantId}
+        WHERE organization_id = ${organizationScopeId}
           AND prediction_type = 'assignment'
           AND predicted_at >= NOW() - INTERVAL '24 hours'
       )

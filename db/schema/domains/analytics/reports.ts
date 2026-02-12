@@ -13,6 +13,7 @@
 
 import { pgTable, uuid, text, timestamp, boolean, varchar, jsonb, pgEnum, integer } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
+import { organizations } from '../../../schema-organizations';
 
 // ============================================================================
 // ENUMS
@@ -56,7 +57,9 @@ export const scheduleFrequencyEnum = pgEnum('schedule_frequency', [
 
 export const reports = pgTable('reports', {
   id: uuid('id').defaultRandom().primaryKey(),
-  tenantId: varchar('tenant_id', { length: 255 }).notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   name: varchar('name', { length: 255 }).notNull(),
   description: text('description'),
   reportType: reportTypeEnum('report_type').notNull().default('custom'),
@@ -79,7 +82,7 @@ export const reports = pgTable('reports', {
 
 export const reportTemplates = pgTable('report_templates', {
   id: uuid('id').defaultRandom().primaryKey(),
-  tenantId: varchar('tenant_id', { length: 255 }), // null for system templates
+  organizationId: uuid('organization_id').references(() => organizations.id, { onDelete: 'cascade' }),
   name: varchar('name', { length: 255 }).notNull(),
   description: text('description'),
   category: reportCategoryEnum('category').notNull(),
@@ -100,7 +103,9 @@ export const reportTemplates = pgTable('report_templates', {
 export const reportExecutions = pgTable('report_executions', {
   id: uuid('id').defaultRandom().primaryKey(),
   reportId: uuid('report_id').notNull(),
-  tenantId: varchar('tenant_id', { length: 255 }).notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   executedBy: varchar('executed_by', { length: 255 }).notNull(), // User ID - matches users.userId VARCHAR(255)
   executedAt: timestamp('executed_at').notNull().defaultNow(),
   format: reportFormatEnum('format').notNull().default('pdf'),
@@ -121,7 +126,9 @@ export const reportExecutions = pgTable('report_executions', {
 export const scheduledReports = pgTable('scheduled_reports', {
   id: uuid('id').defaultRandom().primaryKey(),
   reportId: uuid('report_id').notNull(),
-  tenantId: varchar('tenant_id', { length: 255 }).notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   name: varchar('name', { length: 255 }).notNull(),
   frequency: scheduleFrequencyEnum('frequency').notNull(),
   dayOfWeek: varchar('day_of_week', { length: 20 }), // For weekly reports
@@ -146,7 +153,9 @@ export const scheduledReports = pgTable('scheduled_reports', {
 export const reportShares = pgTable('report_shares', {
   id: uuid('id').defaultRandom().primaryKey(),
   reportId: uuid('report_id').notNull(),
-  tenantId: varchar('tenant_id', { length: 255 }).notNull(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   sharedBy: varchar('shared_by', { length: 255 }).notNull(), // User ID - matches users.userId VARCHAR(255)
   sharedWith: varchar('shared_with', { length: 255 }), // User ID or null for public - matches users.userId VARCHAR(255)
   canEdit: boolean('can_edit').notNull().default(false),

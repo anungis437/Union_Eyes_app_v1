@@ -39,8 +39,11 @@ const DateRangeSchema = z.object({
 });
 
 const AlertsSchema = z.object({
-  tenantId: z.string().uuid().optional(),
+  organizationId: z.string().uuid().optional(),
 });
+
+const getOrganizationIdFromHeaders = (req: Request): string | undefined =>
+  (req.headers['x-organization-id'] as string) || (req.headers['x-tenant-id'] as string);
 
 // ============================================================================
 // BURN-RATE FORECASTING ENDPOINTS
@@ -52,13 +55,13 @@ const AlertsSchema = z.object({
  */
 router.get('/forecast/:fundId', async (req: Request, res: Response) => {
   try {
-    const tenantId = req.headers['x-tenant-id'] as string;
+    const organizationId = getOrganizationIdFromHeaders(req);
     const { fundId, forecastDays } = ForecastParamsSchema.parse({
       fundId: req.params.fundId,
       forecastDays: req.query.forecastDays,
     });
 
-    const forecast = await generateBurnRateForecast(tenantId, fundId, forecastDays);
+    const forecast = await generateBurnRateForecast(organizationId as string, fundId, forecastDays);
 
     res.json({
       success: true,
@@ -79,7 +82,7 @@ router.get('/forecast/:fundId', async (req: Request, res: Response) => {
  */
 router.get('/historical/:fundId', async (req: Request, res: Response) => {
   try {
-    const tenantId = req.headers['x-tenant-id'] as string;
+    const organizationId = getOrganizationIdFromHeaders(req);
     const fundId = req.params.fundId;
     
     const { startDate, endDate } = DateRangeSchema.parse({
@@ -88,7 +91,7 @@ router.get('/historical/:fundId', async (req: Request, res: Response) => {
     });
 
     const historicalData = await getHistoricalBurnRate(
-      tenantId,
+      organizationId as string,
       fundId,
       new Date(startDate),
       new Date(endDate)
@@ -114,10 +117,10 @@ router.get('/historical/:fundId', async (req: Request, res: Response) => {
  */
 router.get('/seasonal/:fundId', async (req: Request, res: Response) => {
   try {
-    const tenantId = req.headers['x-tenant-id'] as string;
+    const organizationId = getOrganizationIdFromHeaders(req);
     const fundId = req.params.fundId;
 
-    const patterns = await detectSeasonalPatterns(tenantId, fundId);
+    const patterns = await detectSeasonalPatterns(organizationId as string, fundId);
 
     res.json({
       success: true,
@@ -138,14 +141,14 @@ router.get('/seasonal/:fundId', async (req: Request, res: Response) => {
  */
 router.post('/alerts/process', async (req: Request, res: Response) => {
   try {
-    const tenantId = req.headers['x-tenant-id'] as string;
+    const organizationId = getOrganizationIdFromHeaders(req);
 
-    const alertsSent = await processAutomatedAlerts({ tenantId });
+    const alertsSent = await processAutomatedAlerts({ organizationId: organizationId as string });
 
     res.json({
       success: true,
       alertsSent,
-      message: `Processed alerts for tenant. ${alertsSent} alerts sent.`,
+      message: `Processed alerts for organization. ${alertsSent} alerts sent.`,
     });
   } catch (error) {
     logger.error('Error processing alerts', { error });
@@ -162,7 +165,7 @@ router.post('/alerts/process', async (req: Request, res: Response) => {
  */
 router.post('/reports/weekly', async (req: Request, res: Response) => {
   try {
-    const tenantId = req.headers['x-tenant-id'] as string;
+    const organizationId = getOrganizationIdFromHeaders(req);
     const userId = (req as any).user?.id;
 
     if (!userId) {
@@ -172,7 +175,7 @@ router.post('/reports/weekly', async (req: Request, res: Response) => {
       });
     }
 
-    await generateWeeklyForecastReport({ tenantId });
+    await generateWeeklyForecastReport({ organizationId: organizationId as string });
 
     res.json({
       success: true,
@@ -197,7 +200,7 @@ router.post('/reports/weekly', async (req: Request, res: Response) => {
  */
 router.get('/summary', async (req: Request, res: Response) => {
   try {
-    const tenantId = req.headers['x-tenant-id'] as string;
+    const organizationId = getOrganizationIdFromHeaders(req);
 
     // Get total funds
     const [fundsData] = await db
@@ -205,7 +208,7 @@ router.get('/summary', async (req: Request, res: Response) => {
         count: sql<number>`COUNT(*)`,
       })
       .from(strikeFunds)
-      .where(eq(strikeFunds.tenantId, tenantId));
+      .where(eq(strikeFunds.tenantId, organizationId as string));
 
     // Calculate total balance from all donations - all stipends
     const [balanceData] = await db
@@ -213,14 +216,14 @@ router.get('/summary', async (req: Request, res: Response) => {
         totalDonations: sql<number>`COALESCE(SUM(CAST(${donations.amount} AS NUMERIC)), 0)`,
       })
       .from(donations)
-      .where(and(eq(donations.tenantId, tenantId), eq(donations.status, 'completed')));
+      .where(and(eq(donations.tenantId, organizationId as string), eq(donations.status, 'completed')));
 
     const [stipendData] = await db
       .select({
         totalStipends: sql<number>`COALESCE(SUM(CAST(${stipendDisbursements.totalAmount} AS NUMERIC)), 0)`,
       })
       .from(stipendDisbursements)
-      .where(and(eq(stipendDisbursements.tenantId, tenantId), eq(stipendDisbursements.status, 'paid')));
+      .where(and(eq(stipendDisbursements.tenantId, organizationId as string), eq(stipendDisbursements.status, 'paid')));
 
     const totalBalance = Number(balanceData.totalDonations) - Number(stipendData.totalStipends);
 
@@ -239,7 +242,7 @@ router.get('/summary', async (req: Request, res: Response) => {
       .from(donations)
       .where(
         and(
-          eq(donations.tenantId, tenantId),
+          eq(donations.tenantId, organizationId as string),
           eq(donations.status, 'completed'),
           gte(donations.createdAt, thirtyDaysAgo.toISOString())
         )
@@ -254,7 +257,7 @@ router.get('/summary', async (req: Request, res: Response) => {
       .from(stipendDisbursements)
       .where(
         and(
-          eq(stipendDisbursements.tenantId, tenantId),
+          eq(stipendDisbursements.tenantId, organizationId as string),
           eq(stipendDisbursements.status, 'paid'),
           gte(stipendDisbursements.createdAt, thirtyDaysAgo.toISOString())
         )
@@ -269,7 +272,7 @@ router.get('/summary', async (req: Request, res: Response) => {
       .from(duesTransactions)
       .where(
         and(
-          eq(duesTransactions.tenantId, tenantId),
+          eq(duesTransactions.tenantId, organizationId as string),
           eq(duesTransactions.status, 'completed'),
           gte(duesTransactions.createdAt, thirtyDaysAgo.toISOString())
         )
@@ -320,7 +323,7 @@ router.get('/summary', async (req: Request, res: Response) => {
  */
 router.get('/trends', async (req: Request, res: Response) => {
   try {
-    const tenantId = req.headers['x-tenant-id'] as string;
+    const organizationId = getOrganizationIdFromHeaders(req);
     const days = parseInt(req.query.days as string) || 90;
 
     const startDate = new Date();
@@ -336,7 +339,7 @@ router.get('/trends', async (req: Request, res: Response) => {
       .from(donations)
       .where(
         and(
-          eq(donations.tenantId, tenantId),
+          eq(donations.tenantId, organizationId as string),
           eq(donations.status, 'completed'),
           gte(donations.createdAt, startDate.toISOString())
         )
@@ -354,7 +357,7 @@ router.get('/trends', async (req: Request, res: Response) => {
       .from(stipendDisbursements)
       .where(
         and(
-          eq(stipendDisbursements.tenantId, tenantId),
+          eq(stipendDisbursements.tenantId, organizationId as string),
           eq(stipendDisbursements.status, 'paid'),
           gte(stipendDisbursements.createdAt, startDate.toISOString())
         )
@@ -397,7 +400,7 @@ router.get('/trends', async (req: Request, res: Response) => {
  */
 router.get('/top-donors', async (req: Request, res: Response) => {
   try {
-    const tenantId = req.headers['x-tenant-id'] as string;
+    const organizationId = getOrganizationIdFromHeaders(req);
     const limit = parseInt(req.query.limit as string) || 10;
 
     const topDonors = await db
@@ -411,7 +414,7 @@ router.get('/top-donors', async (req: Request, res: Response) => {
       .from(donations)
       .where(
         and(
-          eq(donations.tenantId, tenantId),
+          eq(donations.tenantId, organizationId as string),
           eq(donations.status, 'completed'),
           eq(donations.isAnonymous, false)
         )
@@ -445,12 +448,12 @@ router.get('/top-donors', async (req: Request, res: Response) => {
  */
 router.get('/fund-health', async (req: Request, res: Response) => {
   try {
-    const tenantId = req.headers['x-tenant-id'] as string;
+    const organizationId = getOrganizationIdFromHeaders(req);
 
     const funds = await db
       .select()
       .from(strikeFunds)
-      .where(eq(strikeFunds.tenantId, tenantId));
+      .where(eq(strikeFunds.tenantId, organizationId as string));
 
     const fundHealth = await Promise.all(
       funds.map(async (fund) => {
@@ -468,7 +471,7 @@ router.get('/fund-health', async (req: Request, res: Response) => {
           const currentBalance = Number(balanceData?.totalDonations || 0) - Number(balanceData?.totalStipends || 0);
           const targetAmount = Number(fund.targetAmount || currentBalance * 2);
 
-          const forecast = await generateBurnRateForecast(tenantId, fund.id, 90);
+          const forecast = await generateBurnRateForecast(organizationId as string, fund.id, 90);
           const realisticScenario = forecast.scenarios.find((s) => s.scenario === 'realistic');
           
           return {

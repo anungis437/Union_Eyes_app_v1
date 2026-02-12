@@ -3,7 +3,7 @@
  * 
  * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - Database operations wrapped in withRLSContext() for automatic context setting
- * - RLS policies enforce tenant isolation at database level
+ * - RLS policies enforce organization isolation at database level
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -20,17 +20,17 @@ import {
   standardSuccessResponse, 
   ErrorCode 
 } from '@/lib/api/standardized-responses';
-// Cache dashboard stats for 60 seconds per tenant
+// Cache dashboard stats for 60 seconds per organization
 const getCachedDashboardStats = unstable_cache(
-  async (tenantId: string) => {
-    const statistics = await getClaimStatistics(tenantId);
+  async (organizationId: string) => {
+    const statistics = await getClaimStatistics(organizationId);
     
     // Get member count using RLS-protected query
     const memberCount = await withRLSContext(async (tx) => {
       const memberCountResult = await tx.execute(sql`
         SELECT COUNT(*) as count
         FROM organization_members
-        WHERE organization_id = ${tenantId}
+        WHERE organization_id = ${organizationId}
         AND deleted_at IS NULL
       `);
       
@@ -50,8 +50,8 @@ const getCachedDashboardStats = unstable_cache(
 );
 
 /**
- * GET /api/dashboard/stats?tenantId=<uuid>
- * Fetch dashboard statistics for the specified tenant
+ * GET /api/dashboard/stats?organizationId=<uuid>
+ * Fetch dashboard statistics for the specified organization
  * Protected by enhanced role-based auth with rate limiting
  */
 export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
@@ -71,19 +71,19 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
     );
   }
   try {
-    // Prefer query parameter over middleware tenantId (to avoid cookie timing issues)
+    // Prefer query parameter over middleware organizationId (to avoid cookie timing issues)
     const { searchParams } = new URL(request.url);
-    const queryTenantId = (searchParams.get('organizationId') ?? searchParams.get('tenantId'));
-    const tenantId = queryTenantId || context.organizationId;
+    const queryOrganizationId = searchParams.get('organizationId') ?? searchParams.get('orgId') ?? searchParams.get('organization_id') ?? searchParams.get('org_id');
+    const organizationIdParam = queryOrganizationId || context.organizationId;
 // Use cached stats
-    const response = await getCachedDashboardStats(tenantId);
+    const response = await getCachedDashboardStats(organizationIdParam);
 // Log audit event
     await logApiAuditEvent({
       userId,
       organizationId,
       action: 'dashboard_stats_fetch',
       resourceType: 'dashboard',
-      resourceId: tenantId,
+      resourceId: organizationIdParam,
       metadata: { cached: true },
       dataType: 'ANALYTICS',
     });

@@ -29,12 +29,11 @@ interface StewardPerformance {
 async function handler(req: NextRequest, context) {
   try {
     const organizationId = context.organizationId;
-    const tenantId = organizationId;
     
-    if (!tenantId) {
+    if (!organizationId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'Tenant ID required'
+      'Organization ID required'
     );
     }
 
@@ -56,9 +55,9 @@ async function handler(req: NextRequest, context) {
         AVG(EXTRACT(EPOCH FROM (c.resolved_at - c.created_at))/86400.0) FILTER (WHERE c.resolved_at IS NOT NULL) AS avg_resolution_days,
         ROUND(100.0 * COUNT(c.id) FILTER (WHERE c.outcome = 'won') / NULLIF(COUNT(c.id) FILTER (WHERE c.outcome IS NOT NULL), 0), 1) AS win_rate
       FROM organization_members om
-      LEFT JOIN claims c ON c.assigned_to = om.id AND c.tenant_id = om.tenant_id
+      LEFT JOIN claims c ON c.assigned_to = om.id AND c.organization_id = om.organization_id
         AND c.created_at BETWEEN ${startDate} AND ${endDate}
-      WHERE om.tenant_id = ${tenantId}
+      WHERE om.organization_id = ${organizationId}
         AND om.role IN ('steward', 'admin', 'organizer')
       GROUP BY om.id, om.first_name, om.last_name
       HAVING COUNT(c.id) > 0

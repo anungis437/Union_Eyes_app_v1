@@ -24,7 +24,7 @@ import {
 
 /**
  * GET /api/reports/scheduled
- * List all scheduled reports for the tenant
+ * List all scheduled reports for the organization
  * 
  * GUARDED: withOrganizationAuth
  */
@@ -45,7 +45,7 @@ async function getHandler(req: NextRequest, context: OrganizationContext) {
     if (scheduleType) filters.scheduleType = scheduleType;
 
     // Get scheduled reports
-    const schedules = await getScheduledReports(tenantId, filters);
+    const schedules = await getScheduledReports(organizationId, filters);
 
     return NextResponse.json({
       schedules,
@@ -117,7 +117,7 @@ async function postHandler(req: NextRequest, context: OrganizationContext) {
       isActive: body.isActive ?? true,
     };
 
-    const schedule = await createScheduledReport(tenantId, params);
+    const schedule = await createScheduledReport(organizationId, params);
 
     return NextResponse.json(schedule, { status: 201 });
   } catch (error) {

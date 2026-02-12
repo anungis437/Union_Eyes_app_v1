@@ -13,10 +13,7 @@ import {
 
 const profileRolesSchema = z.object({
   userId: z.string().uuid('Invalid userId'),
-  organizationId: z.string().uuid('Invalid organizationId').optional(),
-  tenantId: z.string().uuid('Invalid tenantId').optional(),
-}).refine((data) => data.organizationId || data.tenantId, {
-  message: 'Either organizationId or tenantId is required'
+  organizationId: z.string().uuid('Invalid organizationId'),
 });
 export const POST = withApiAuth(async (req: NextRequest) => {
   try {
@@ -32,8 +29,7 @@ export const POST = withApiAuth(async (req: NextRequest) => {
       );
     }
 
-    const { userId, organizationId: organizationIdFromBody, tenantId: tenantIdFromBody } = validation.data;
-    const organizationId = organizationIdFromBody ?? tenantIdFromBody;
+    const { userId, organizationId } = validation.data;
 
     // Query organizationMembers to find the user's role
     const memberRecord = await withRLSContext({ organizationId }, async (db) => {

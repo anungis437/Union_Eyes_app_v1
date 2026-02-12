@@ -12,14 +12,14 @@ import {
 } from '@/lib/api/standardized-responses';
 async function handler(req: NextRequest) {
   const user = await getCurrentUser();
-  if (!user || !user.tenantId) {
+  if (!user || !user.organizationId) {
     return standardErrorResponse(
       ErrorCode.AUTH_REQUIRED,
-      'Authentication and tenant context required'
+      'Authentication and organization context required'
     );
   }
   
-  const tenantId = user.tenantId;
+  const organizationId = user.organizationId;
 
   // Get queue metrics by priority
   const queues = await withRLSContext(async (tx) => {
@@ -30,7 +30,7 @@ async function handler(req: NextRequest) {
       COALESCE(AVG(EXTRACT(EPOCH FROM (NOW() - ${claims.createdAt})) / 3600), 0) as "avgAge",
       COALESCE(MAX(EXTRACT(EPOCH FROM (NOW() - ${claims.createdAt})) / 3600), 0) as oldest
     FROM ${claims}
-    WHERE ${claims.organizationId} = ${tenantId}
+    WHERE ${claims.organizationId} = ${organizationId}
       AND ${claims.status} IN ('under_review', 'assigned', 'investigation', 'pending_documentation')
     GROUP BY ${claims.priority}
     ORDER BY 

@@ -98,11 +98,11 @@ export const GET = async (request: NextRequest) => {
         const conditions = [eq(bargainingProposals.negotiationId, negotiationId)];
         
         if (proposalType) {
-          conditions.push(eq(bargainingProposals.proposalType, proposalType as any));
+          conditions.push(eq(bargainingProposals.proposalType, proposalType));
         }
         
         if (status) {
-          conditions.push(eq(bargainingProposals.status, status as any));
+          conditions.push(eq(bargainingProposals.status, status));
         }
         
         if (clauseCategory) {

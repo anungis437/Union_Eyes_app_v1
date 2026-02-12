@@ -20,7 +20,7 @@ import {
 export const dynamic = 'force-dynamic';
 
 
-const organizingCard-checkSchema = z.object({
+const organizingCardCheckSchema = z.object({
   campaignId: z.string().uuid('Invalid campaignId'),
   validationDate: z.string().uuid('Invalid validationDate'),
 });

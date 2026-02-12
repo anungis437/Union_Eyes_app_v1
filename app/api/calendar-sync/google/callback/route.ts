@@ -60,7 +60,7 @@ export const GET = async (request: NextRequest) => {
         .insert(externalCalendarConnections)
         .values({
           userId,
-          tenantId: organizationId || 'default-org',
+          organizationId: organizationId || 'default-org',
           provider: 'google',
           providerAccountId,
           accessToken,

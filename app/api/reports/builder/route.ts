@@ -84,7 +84,7 @@ export const POST = async (req: NextRequest) => {
       const [report] = await db
         .insert(reports)
         .values({
-          tenantId: organizationId,
+          organizationId,
           name: body.name,
           description: body.description || null,
           reportType: 'custom',
@@ -141,11 +141,11 @@ export const GET = async (req: NextRequest) => {
     );
       }
 
-      // Get all custom reports for this tenant
+      // Get all custom reports for this organization
       const customReports = await db
         .select()
         .from(reports)
-        .where(eq(reports.tenantId, organizationId))
+        .where(eq(reports.organizationId, organizationId))
         .orderBy(reports.createdAt);
 
       return NextResponse.json({

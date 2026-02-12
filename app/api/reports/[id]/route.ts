@@ -52,8 +52,8 @@ async function getHandler(
         r.*,
         om.first_name || ' ' || om.last_name AS created_by_name
       FROM reports r
-      LEFT JOIN organization_members om ON om.id = r.created_by AND om.tenant_id = r.tenant_id
-      WHERE r.id = ${params.id} AND r.tenant_id = ${organizationId}
+      LEFT JOIN organization_members om ON om.id = r.created_by AND om.organization_id = r.organization_id
+      WHERE r.id = ${params.id} AND r.organization_id = ${organizationId}
     `);
 
     if (!reportResult || reportResult.length === 0) {
@@ -116,7 +116,7 @@ async function putHandler(
     // Verify ownership or admin
     const existingResult = await db.execute(sql`
       SELECT created_by FROM reports 
-      WHERE id = ${params.id} AND tenant_id = ${context.organizationId}
+      WHERE id = ${params.id} AND organization_id = ${context.organizationId}
     `);
 
     if (!existingResult || existingResult.length === 0) {
@@ -135,7 +135,7 @@ async function putHandler(
           config = ${body.config ? JSON.stringify(body.config) : sql`config`},
           is_public = ${body.isPublic !== undefined ? body.isPublic : sql`is_public`},
           updated_at = NOW()
-      WHERE id = ${params.id} AND tenant_id = ${context.organizationId}
+      WHERE id = ${params.id} AND organization_id = ${context.organizationId}
       RETURNING *
     `);
 
@@ -180,7 +180,7 @@ async function deleteHandler(
     // Verify ownership or admin
     const existingResult = await db.execute(sql`
       SELECT created_by FROM reports 
-      WHERE id = ${params.id} AND tenant_id = ${organizationId}
+      WHERE id = ${params.id} AND organization_id = ${organizationId}
     `);
 
     if (!existingResult || existingResult.length === 0) {
@@ -193,7 +193,7 @@ async function deleteHandler(
     // Delete report
     await db.execute(sql`
       DELETE FROM reports
-      WHERE id = ${params.id} AND tenant_id = ${organizationId}
+      WHERE id = ${params.id} AND organization_id = ${organizationId}
     `);
 
     // Log audit event

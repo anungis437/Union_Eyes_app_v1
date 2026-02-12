@@ -72,7 +72,7 @@ export const GET = withEnhancedRoleAuth(10, async (
       .where(
         and(
           eq(calendarEvents.id, params.id),
-          eq(calendarEvents.tenantId, organizationId)
+          eq(calendarEvents.organizationId, organizationId)
         )
       );
 
@@ -187,7 +187,7 @@ export const PATCH = withEnhancedRoleAuth(40, async (
       .where(
         and(
           eq(calendarEvents.id, params.id),
-          eq(calendarEvents.tenantId, organizationId)
+          eq(calendarEvents.organizationId, organizationId)
         )
       );
 
@@ -296,7 +296,7 @@ export const DELETE = withEnhancedRoleAuth(40, async (
       .where(
         and(
           eq(calendarEvents.id, params.id),
-          eq(calendarEvents.tenantId, organizationId)
+          eq(calendarEvents.organizationId, organizationId)
         )
       );
 

@@ -34,16 +34,16 @@ export const GET = withEnhancedRoleAuth(30, async (req: NextRequest, context) =>
   }
 
   try {
-    const tenantId = organizationId;
+    const organizationScopeId = organizationId;
     
-    if (!tenantId) {
+    if (!organizationScopeId) {
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
       'Organization ID required'
     );
     }
 
-    const heatmapData = await getWeeklyActivityHeatmap(tenantId);
+    const heatmapData = await getWeeklyActivityHeatmap(organizationScopeId);
 
     // Log audit event
     await logApiAuditEvent({

@@ -49,13 +49,13 @@ const coordinatorOverrideSchema = z.object({
  */
 router.post('/check-in', async (req: Request, res: Response) => {
   try {
-    const { tenantId, role } = (req as any).user;
+    const { organizationId, role } = (req as any).user;
 
     const validatedData = checkInSchema.parse(req.body);
 
     const result = await PicketService.checkIn(
       {
-        tenantId,
+        organizationId,
         strikeFundId: validatedData.strikeFundId,
         memberId: validatedData.memberId,
         method: validatedData.method,
@@ -108,12 +108,12 @@ router.post('/check-in', async (req: Request, res: Response) => {
  */
 router.post('/check-out', async (req: Request, res: Response) => {
   try {
-    const { tenantId } = (req as any).user;
+    const { organizationId } = (req as any).user;
 
     const validatedData = checkOutSchema.parse(req.body);
 
     const result = await PicketService.checkOut({
-      tenantId,
+      organizationId,
       attendanceId: validatedData.attendanceId,
       latitude: validatedData.latitude,
       longitude: validatedData.longitude,
@@ -154,7 +154,7 @@ router.post('/check-out', async (req: Request, res: Response) => {
  */
 router.get('/active', async (req: Request, res: Response) => {
   try {
-    const { tenantId } = (req as any).user;
+    const { organizationId } = (req as any).user;
     const { strikeFundId } = req.query;
 
     if (!strikeFundId || typeof strikeFundId !== 'string') {
@@ -164,7 +164,7 @@ router.get('/active', async (req: Request, res: Response) => {
       });
     }
 
-    const records = await PicketService.getActiveCheckIns(tenantId, strikeFundId);
+    const records = await PicketService.getActiveCheckIns(organizationId, strikeFundId);
 
     res.json({
       success: true,
@@ -185,7 +185,7 @@ router.get('/active', async (req: Request, res: Response) => {
  */
 router.get('/history', async (req: Request, res: Response) => {
   try {
-    const { tenantId } = (req as any).user;
+    const { organizationId } = (req as any).user;
     const { strikeFundId, startDate, endDate, memberId } = req.query;
 
     if (!strikeFundId || typeof strikeFundId !== 'string') {
@@ -213,7 +213,7 @@ router.get('/history', async (req: Request, res: Response) => {
     }
 
     const records = await PicketService.getAttendanceHistory(
-      tenantId,
+      organizationId,
       strikeFundId,
       start,
       end,
@@ -239,7 +239,7 @@ router.get('/history', async (req: Request, res: Response) => {
  */
 router.get('/summary', async (req: Request, res: Response) => {
   try {
-    const { tenantId } = (req as any).user;
+    const { organizationId } = (req as any).user;
     const { strikeFundId, startDate, endDate, memberId } = req.query;
 
     if (!strikeFundId || typeof strikeFundId !== 'string') {
@@ -267,7 +267,7 @@ router.get('/summary', async (req: Request, res: Response) => {
     }
 
     const summary = await PicketService.getAttendanceSummary(
-      tenantId,
+      organizationId,
       strikeFundId,
       start,
       end,
@@ -364,7 +364,7 @@ router.post('/validate-qr', async (req: Request, res: Response) => {
  */
 router.post('/coordinator-override', async (req: Request, res: Response) => {
   try {
-    const { tenantId, role } = (req as any).user;
+    const { organizationId, role } = (req as any).user;
 
     // Only coordinators and admins can use this endpoint
     if (!['admin', 'coordinator', 'financial_admin'].includes(role)) {
@@ -377,7 +377,7 @@ router.post('/coordinator-override', async (req: Request, res: Response) => {
     const validatedData = coordinatorOverrideSchema.parse(req.body);
 
     const result = await PicketService.coordinatorOverride(
-      tenantId,
+      organizationId,
       validatedData.strikeFundId,
       validatedData.memberId,
       validatedData.verifiedBy,

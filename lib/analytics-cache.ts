@@ -7,7 +7,7 @@
  * Features:
  * - Distributed caching across server instances
  * - Automatic cache invalidation based on TTL
- * - Tenant-isolated caching
+ * - Organization-isolated caching
  * - Cache key generation
  * - Cache statistics
  * 
@@ -95,7 +95,7 @@ class AnalyticsCacheService {
   }
 
   /**
-   * Generate cache key from tenant, endpoint, and parameters
+  * Generate cache key from organization, endpoint, and parameters
    */
   private generateKey(
     organizationId: string,
@@ -184,7 +184,7 @@ class AnalyticsCacheService {
   }
 
   /**
-   * Invalidate cache for specific endpoint or all tenant data
+  * Invalidate cache for specific endpoint or all organization data
    */
   async invalidate(organizationId: string, endpoint?: string): Promise<void> {
     if (!redis) {

@@ -96,7 +96,7 @@ export const POST = async (req: NextRequest) => {
         logger.info('Super admin switched organization', {
           userId,
           userEmail: clerkUser.emailAddresses[0]?.emailAddress,
-          fromOrg: publicMetadata.tenantId,
+          fromOrg: publicMetadata.organizationId,
           toOrg: organizationId,
           orgName: targetOrg.name,
         });
@@ -120,7 +120,7 @@ export const POST = async (req: NextRequest) => {
 
       if (!membership) {
         // Check if user has access through organizational hierarchy (e.g., admin of parent org)
-        // NOTE: This is a cross-tenant query - user may have memberships in multiple organizations
+        // NOTE: This is a cross-organization query - user may have memberships in multiple organizations
         // Using current context organizationId for RLS compliance, but query spans all user's orgs
         const userMemberships = await withRLSContext({ organizationId: currentOrgId }, async (db) => {
           return await db.query.organizationMembers.findMany({
