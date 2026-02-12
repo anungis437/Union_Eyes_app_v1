@@ -23,7 +23,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { organizations } from "../../../schema-organizations";
 import { profiles } from "../../profiles-schema";
-import { users } from "../../member";
+import { users } from "../member/user-management";
 
 // Chat session status enum
 export const chatSessionStatusEnum = pgEnum("chat_session_status", [

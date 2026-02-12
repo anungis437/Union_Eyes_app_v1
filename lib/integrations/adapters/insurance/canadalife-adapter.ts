@@ -20,6 +20,7 @@ import {
   SyncResult,
   HealthCheckResult,
   WebhookEvent,
+  ConnectionStatus,
 } from '../../types';
 import { CanadaLifeClient, type CanadaLifeConfig } from './canadalife-client';
 import { db } from '@/db';
@@ -50,10 +51,14 @@ export class CanadaLifeAdapter extends BaseIntegration {
     this.ensureInitialized();
 
     try {
+      const policyGroupId = typeof this.config!.settings?.policyGroupId === 'string' 
+        ? this.config!.settings.policyGroupId 
+        : 'DEFAULT_GROUP';
+      
       const config: CanadaLifeConfig = {
         clientId: this.config!.credentials.clientId!,
         clientSecret: this.config!.credentials.clientSecret!,
-        policyGroupId: this.config!.settings?.policyGroupId || '',
+        policyGroupId,
         refreshToken: this.config!.credentials.refreshToken,
         environment: 'production',
       };
@@ -67,9 +72,9 @@ export class CanadaLifeAdapter extends BaseIntegration {
       }
       
       this.connected = true;
-      this.logOperation('connect', 'Connected to Canada Life');
+      this.logOperation('connect');
     } catch (error) {
-      this.logError('connect', error);
+      this.logError('connect', error instanceof Error ? error : new Error(String(error)));
       throw error;
     }
   }
@@ -77,7 +82,7 @@ export class CanadaLifeAdapter extends BaseIntegration {
   async disconnect(): Promise<void> {
     this.connected = false;
     this.client = undefined;
-    this.logOperation('disconnect', 'Disconnected from Canada Life');
+    this.logOperation('disconnect');
   }
 
   async healthCheck(): Promise<HealthCheckResult> {
@@ -90,22 +95,17 @@ export class CanadaLifeAdapter extends BaseIntegration {
 
       return {
         healthy: isHealthy,
-        latency,
-        details: {
-          provider: 'Canada Life',
-          connected: this.connected,
-          timestamp: new Date().toISOString(),
-        },
+        status: ConnectionStatus.CONNECTED,
+        latencyMs: latency,
+        lastCheckedAt: new Date(),
       };
     } catch (error) {
       return {
         healthy: false,
-        latency: 0,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        details: {
-          provider: 'Canada Life',
-          connected: false,
-        },
+        status: ConnectionStatus.ERROR,
+        latencyMs: 0,
+        lastError: error instanceof Error ? error.message : 'Unknown error',
+        lastCheckedAt: new Date(),
       };
     }
   }
@@ -118,7 +118,7 @@ export class CanadaLifeAdapter extends BaseIntegration {
     let recordsCreated = 0;
     let recordsUpdated = 0;
     let recordsFailed = 0;
-    const errors: string[] = [];
+    const errors: Array<{ entity: string; entityId?: string; error: string; details?: unknown }> = [];
 
     try {
       const entities = options.entities || this.capabilities.supportedEntities;
@@ -153,31 +153,29 @@ export class CanadaLifeAdapter extends BaseIntegration {
           }
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-          errors.push(`Failed to sync ${entity}: ${errorMessage}`);
-          this.logError('sync', error);
+          errors.push({ entity, error: `Failed to sync ${entity}: ${errorMessage}` });
+          this.logError('sync', error instanceof Error ? error : new Error(String(error)));
         }
       }
 
       return {
-        status: recordsFailed > 0 ? 'partial' : 'success',
+        success: recordsFailed === 0,
         recordsProcessed,
         recordsCreated,
         recordsUpdated,
         recordsFailed,
-        duration: Date.now() - startTime,
-        nextCursor: new Date().toISOString(),
         errors: errors.length > 0 ? errors : undefined,
+        cursor: new Date().toISOString(),
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       return {
-        status: 'failed',
+        success: false,
         recordsProcessed,
         recordsCreated,
         recordsUpdated,
         recordsFailed,
-        duration: Date.now() - startTime,
-        errors: [errorMessage],
+        errors: [{ entity: 'sync', error: errorMessage }],
       };
     }
   }
@@ -195,36 +193,39 @@ export class CanadaLifeAdapter extends BaseIntegration {
           const existing = await db.select().from(externalInsurancePolicies).where(
             and(
               eq(externalInsurancePolicies.organizationId, this.config!.organizationId),
-              eq(externalInsurancePolicies.provider, 'canada_life'),
+              eq(externalInsurancePolicies.externalProvider, 'canada_life'),
               eq(externalInsurancePolicies.externalId, policy.external_id)
             )
           ).limit(1);
 
           const policyData = {
-            organizationId: this.config!.organizationId,
-            provider: 'canada_life' as const,
-            externalId: policy.external_id,
             policyNumber: policy.policy_number,
             policyType: policy.policy_type,
-            policyHolder: policy.policy_holder,
+            employeeId: policy.policy_holder,
             coverageAmount: policy.coverage_amount.toString(),
             premium: policy.premium.toString(),
-            effectiveDate: new Date(policy.effective_date),
-            expiryDate: policy.expiry_date ? new Date(policy.expiry_date) : null,
+            effectiveDate: policy.effective_date,
+            terminationDate: policy.expiry_date || null,
             status: policy.status,
-            lastSyncAt: new Date(),
+            lastSyncedAt: new Date(),
+            updatedAt: new Date(),
           };
 
           if (existing.length > 0) {
             await db.update(externalInsurancePolicies).set(policyData).where(eq(externalInsurancePolicies.id, existing[0].id));
             updated++;
           } else {
-            await db.insert(externalInsurancePolicies).values(policyData);
+            await db.insert(externalInsurancePolicies).values({
+              organizationId: this.config!.organizationId,
+              externalProvider: 'canada_life',
+              externalId: policy.external_id,
+              ...policyData,
+            });
             created++;
           }
           processed++;
         } catch (error) {
-          this.logError('syncPolicies', error);
+          this.logError('syncPolicies', error instanceof Error ? error : new Error(String(error)));
           failed++;
         }
       }
@@ -249,40 +250,42 @@ export class CanadaLifeAdapter extends BaseIntegration {
           const existing = await db.select().from(externalInsuranceClaims).where(
             and(
               eq(externalInsuranceClaims.organizationId, this.config!.organizationId),
-              eq(externalInsuranceClaims.provider, 'canada_life'),
+              eq(externalInsuranceClaims.externalProvider, 'canada_life'),
               eq(externalInsuranceClaims.externalId, claim.external_id)
             )
           ).limit(1);
 
           const claimData = {
-            organizationId: this.config!.organizationId,
-            provider: 'canada_life' as const,
-            externalId: claim.external_id,
             claimNumber: claim.claim_number,
-            memberName: claim.member_name,
-            claimDate: new Date(claim.claim_date),
+            employeeId: claim.member_name,
+            employeeName: claim.member_name,
             claimType: claim.claim_type,
             claimAmount: claim.claim_amount.toString(),
             approvedAmount: claim.approved_amount?.toString(),
             paidAmount: claim.paid_amount?.toString(),
             status: claim.status,
             providerName: claim.provider_name,
-            serviceDate: claim.service_date ? new Date(claim.service_date) : null,
-            disabilityStartDate: claim.disability_start_date ? new Date(claim.disability_start_date) : null,
-            estimatedReturnDate: claim.estimated_return_date ? new Date(claim.estimated_return_date) : null,
-            lastSyncAt: new Date(),
+            serviceDate: claim.service_date || null,
+            submissionDate: claim.claim_date,
+            lastSyncedAt: new Date(),
+            updatedAt: new Date(),
           };
 
           if (existing.length > 0) {
             await db.update(externalInsuranceClaims).set(claimData).where(eq(externalInsuranceClaims.id, existing[0].id));
             updated++;
           } else {
-            await db.insert(externalInsuranceClaims).values(claimData);
+            await db.insert(externalInsuranceClaims).values({
+              organizationId: this.config!.organizationId,
+              externalProvider: 'canada_life',
+              externalId: claim.external_id,
+              ...claimData,
+            });
             created++;
           }
           processed++;
         } catch (error) {
-          this.logError('syncClaims', error);
+          this.logError('syncClaims', error instanceof Error ? error : new Error(String(error)));
           failed++;
         }
       }
@@ -307,34 +310,42 @@ export class CanadaLifeAdapter extends BaseIntegration {
           const existing = await db.select().from(externalInsuranceBeneficiaries).where(
             and(
               eq(externalInsuranceBeneficiaries.organizationId, this.config!.organizationId),
-              eq(externalInsuranceBeneficiaries.provider, 'canada_life'),
+              eq(externalInsuranceBeneficiaries.externalProvider, 'canada_life'),
               eq(externalInsuranceBeneficiaries.externalId, beneficiary.external_id)
             )
           ).limit(1);
 
+          const [firstName, ...lastNameParts] = beneficiary.beneficiary_name.split(' ');
+          const lastName = lastNameParts.join(' ') || firstName;
+
           const beneficiaryData = {
-            organizationId: this.config!.organizationId,
-            provider: 'canada_life' as const,
-            externalId: beneficiary.external_id,
             policyId: beneficiary.policy_id,
-            beneficiaryName: beneficiary.beneficiary_name,
+            employeeId: beneficiary.policy_id,
+            firstName: firstName,
+            lastName: lastName,
             relationship: beneficiary.relationship,
-            percentage: beneficiary.percentage.toString(),
-            dateOfBirth: beneficiary.date_of_birth ? new Date(beneficiary.date_of_birth) : null,
+            percentage: Math.round(beneficiary.percentage),
+            isPrimary: false,
             status: beneficiary.status,
-            lastSyncAt: new Date(),
+            lastSyncedAt: new Date(),
+            updatedAt: new Date(),
           };
 
           if (existing.length > 0) {
             await db.update(externalInsuranceBeneficiaries).set(beneficiaryData).where(eq(externalInsuranceBeneficiaries.id, existing[0].id));
             updated++;
           } else {
-            await db.insert(externalInsuranceBeneficiaries).values(beneficiaryData);
+            await db.insert(externalInsuranceBeneficiaries).values({
+              organizationId: this.config!.organizationId,
+              externalProvider: 'canada_life',
+              externalId: beneficiary.external_id,
+              ...beneficiaryData,
+            });
             created++;
           }
           processed++;
         } catch (error) {
-          this.logError('syncBeneficiaries', error);
+          this.logError('syncBeneficiaries', error instanceof Error ? error : new Error(String(error)));
           failed++;
         }
       }
@@ -351,6 +362,6 @@ export class CanadaLifeAdapter extends BaseIntegration {
   }
 
   async processWebhook(event: WebhookEvent): Promise<void> {
-    this.logOperation('webhook', 'Canada Life does not support webhooks');
+    this.logOperation('webhook', { eventId: event.id, message: 'Webhooks not supported' });
   }
 }

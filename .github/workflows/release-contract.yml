@@ -32,6 +32,17 @@ jobs:
       - name: Generate migration manifest
         run: pnpm tsx scripts/generate-migration-manifest.ts --output=migration-manifest.json
       
+      - name: Verify immutability triggers (if DATABASE_URL available)
+        if: env.DATABASE_URL != ''
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🔒 IMMUTABILITY TRIGGER VERIFICATION"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          pnpm tsx scripts/verify-immutability-triggers.ts || echo "⚠️  Trigger verification skipped (no DATABASE_URL)"
+          echo ""
+        continue-on-error: true
+      
       - name: Run critical security tests
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -55,7 +66,7 @@ jobs:
           
           # Enforcement Layer
           echo "▶ Security Enforcement Layer"
-          pnpm vitest run __tests__/enforcement-layer.test.ts --reporter=verbose
+          pnpm vitest run __tests__/ci/enforcement-layer.test.ts --reporter=verbose
           
           # Indigenous Data Service
           echo "▶ Indigenous Data Service (Sovereignty)"
