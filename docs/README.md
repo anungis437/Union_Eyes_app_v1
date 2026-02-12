@@ -2,52 +2,112 @@
 
 This directory contains all project documentation organized by category.
 
-## Directory Structure
+## 📚 Quick Navigation
+
+- **Getting Started**: See [Main README](../README.md)
+- **API Documentation**: [API_DOCUMENTATION_SPRINT_COMPLETE.md](../API_DOCUMENTATION_SPRINT_COMPLETE.md)
+- **Security**: [Security Documentation](../SECURITY_WORLD_CLASS_COMPLETE.md)
+- **Testing**: [Performance Tests](__tests__/performance/README.md), [Test Coverage](../COVERAGE_GUIDE.md)
+- **Deployment**: [Production Guide](../PRODUCTION_DEPLOYMENT_GUIDE.md)
+
+## 📂 Directory Structure
+
+### `/accounting`
+Financial and accounting system documentation
+
+### `/ai`
+AI integration documentation (Claude, GPT-4, Gemini, RAG)
+
+### `/api`
+API endpoint documentation and specifications
+
+### `/architecture`
+System architecture diagrams and design documents
+
+### `/audit`
+Security audits, compliance reports, validation results
+
+### `/compliance`
+GDPR, SOC 2, PIPEDA compliance documentation and reports
 
 ### `/deployment`
-
-Deployment-related documentation and configuration:
-
+Deployment guides and configuration:
 - `AZURE_CREDENTIALS.md` - Azure authentication setup
 - `AZURE_DEPLOYMENT.md` - Azure deployment guide
 - `production-appsettings.json` - Production configuration
 - `staging-appsettings.json` - Staging configuration
 
+### `/developer`
+Developer guides, coding standards, contribution guidelines
+
+### `/disaster-recovery`
+Backup strategies, recovery procedures, business continuity
+
+### `/features`
+Feature specifications and implementation details
+
+### `/geolocation`
+Geolocation services and address validation documentation
+
+### `/governance`
+Data governance policies and procedures
+
 ### `/guides`
-
 User guides and implementation documentation:
-
 - `AI_API_TESTING_GUIDE.md` - AI API testing procedures
 - `AI_IMPLEMENTATION_SUMMARY.md` - AI feature implementation summary
-- `AI_QUICK_START.md` - Quick start for AI features
 - `API_CATALOG.md` - Complete API endpoint catalog
-- `CRITICAL_FULL_APP_ASSESSMENT.md` - Comprehensive application assessment
 - `PLATFORM_READINESS_ASSESSMENT.md` - Platform readiness evaluation
-- `PLATFORM_READINESS_UPDATE_PORTAL.md` - Portal readiness updates
-- `PORTAL_TESTING_LAUNCH_GUIDE.md` - Portal testing procedures
 - `email-test-quickstart.md` - Email testing quick start
-- `test-email-notifications.md` - Email notification testing
+
+### `/integrations`
+Third-party integration documentation (insurance providers, payment processors)
+
+### `/jurisdiction-reference`
+Legal and jurisdictional reference materials
+
+### `/migration`
+Database migration guides and procedures
+
+### `/operations`
+Operational procedures, monitoring, incident response
+
+### `/performance`
+Performance benchmarking and optimization guides
 
 ### `/phase-reports`
-
-Phase completion reports and progress tracking:
-
+Project phase completion reports:
 - `PHASE_4_FINANCIAL_SPECIFICATION.md` - Financial features specification
-- `PHASE_4_STRIKE_FUND_SPECIFICATION.md` - Strike fund specification
 - `PHASE_5D_COMPLETE.md` - Phase 5D completion report
-- `PHASE_5D_PROGRESS.md` - Phase 5D progress tracking
-- `PHASE_5D_SESSION_4_PROGRESS.md` - Session 4 progress
 - `MEMBER_PORTAL_IMPLEMENTATION_COMPLETE.md` - Member portal completion
-- `SESSION_STATUS_SENTRY_COMPLETE.md` - Session status and Sentry integration
+
+### `/recognition`
+Recognition programs and achievement tracking
+
+### `/releases`
+Release notes and version history
+
+### `/reports`
+System reports, analytics, and dashboards
 
 ### `/security`
-
-Security implementation and compliance documentation:
-
+Security implementation and compliance:
 - `OPTION_1_PRODUCTION_READINESS_COMPLETE.md` - Authorization & tenant isolation
 - `OPTION_2_INPUT_VALIDATION_COMPLETE.md` - Input validation implementation
 - `OPTION_3_RATE_LIMITING_COMPLETE.md` - Rate limiting & abuse prevention
 - `OPTION_4_ENHANCED_LOGGING_COMPLETE.md` - Enhanced logging & monitoring
+
+### `/sustainability`
+Sustainability initiatives and ESG documentation
+
+### `/testing`
+Testing strategies, test plans, and QA procedures
+
+### `/user-guides`
+End-user documentation and tutorials
+
+### `/validation`
+Validation reports and quality assurance documentation
 - `SECURITY_IMPLEMENTATION_COMPLETE.md` - Complete security overview
 - `RESPONSIBLE_AI.md` - Responsible AI guidelines
 
