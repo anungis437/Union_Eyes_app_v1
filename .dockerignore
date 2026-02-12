@@ -1,121 +1,52 @@
-# Git and version control
-.git
-.github
-.gitignore
-.gitattributes
-
-# Temporarily exclude AI routes (require workspace packages)
-app/api/ai
-
-# Dependencies - exclude ALL node_modules (we'll install fresh in container)
+﻿# Dependencies
 node_modules
-**/node_modules
-.pnpm-store
-.pnpm-cache
-
-# Build outputs - exclude for staging (build in container)
-.next
-out
-build
-dist
-*.tsbuildinfo
-next-env.d.ts
-
-# Testing
-coverage
-.nyc_output
-test
-tests
-__tests__
-*.test.ts
-*.test.tsx
-*.spec.ts
-*.spec.tsx
-vitest.config.ts
-__mocks__
-
-# Local env files - keep only for build args
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env
-
-# Documentation
-*.md
-!README.md
-docs
-archive
-prompts
-AZURE_CREDENTIALS.md
-SESSION_SUMMARY.md
-MONOREPO_CLEANUP_REPORT.md
-PERFORMANCE_*.md
-SECURITY_*.md
-
-# IDE
-.vscode
-.idea
-.claude
-*.swp
-*.swo
-*~
-
-# Logs and staging logs
-logs
-*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-staging-logs
-staging-logs-new
 
-# OS files
+# Testing
+coverage
+.nyc_output
+__tests__/__snapshots__
+
+# Next.js
+.next
+out
+build
+dist
+
+# Production
+.vercel
+.env*.local
+
+# Misc
 .DS_Store
-Thumbs.db
 *.pem
+.idea
+.vscode
+*.log
 
-# Database and scripts (not needed in container)
-scripts/*.ps1
-scripts/*.sh
-scripts/seed-*.ts
-scripts/ml-*.ts
-scripts/train-*.ts
-scripts/add-*.ts
-migrations
-*.sql
+# Git
+.git
+.gitignore
+.gitattributes
 
-# Docker compose files (not needed in build)
-docker-compose*.yml
-Dockerfile.simple
+# CI/CD
+.github
 
-# Config files not needed in container
-.eslintrc*
-.prettierrc*
-tsconfig.*.json
-turbo.json
-vercel.json
+# Documentation
+*.md
+docs
 LICENSE
-license
 
 # Development files
-.remotion
-remotion.config.ts
-instrumentation-client.ts
+.prettierrc
+.eslintrc.json
+tsconfig.json
+next.config.js
 
-# Credential files
-AZURE_CREDENTIALS.md
-.env.staging
-.env.production
-
-# Large test files
-test-member-import.csv
-*.csv
-*.xlsx
-
-# Unused services (as per cleanup report)
-services/ai-service
-services/workflow-service
-packages/unused-*
-DEPLOYMENT_STATUS.md
+# Large directories
+backups
+monitoring/grafana/dashboards
+coverage

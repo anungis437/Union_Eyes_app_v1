@@ -1,4 +1,35 @@
-﻿# Production Docker Compose Configuration
+#!/usr/bin/env pwsh
+<#
+.SYNOPSIS
+    Enhance production docker-compose with security and secrets
+
+.DESCRIPTION
+    Adds production hardening to docker-compose.prod.yml
+#>
+
+[CmdletBinding()]
+param()
+
+$ErrorActionPreference = "Stop"
+Set-StrictMode -Version Latest
+
+function Write-Step {
+    param([string]$Message, [string]$Status = "Info")
+    $colors = @{ Success = "Green"; Warning = "Yellow"; Error = "Red"; Info = "Cyan" }
+    Write-Host "[$(Get-Date -Format 'HH:mm:ss')] $Message" -ForegroundColor $colors[$Status]
+}
+
+try {
+    # Backup original
+    if (Test-Path "docker-compose.prod.yml") {
+        $backupFile = "docker-compose.prod.yml.backup.$(Get-Date -Format 'yyyyMMdd_HHmmss')"
+        Copy-Item "docker-compose.prod.yml" $backupFile
+        Write-Step "Backup created: $backupFile" -Status "Success"
+    }
+    
+    # Create enhanced production compose
+    $enhancedProdCompose = @'
+# Production Docker Compose Configuration
 # Enhanced with security hardening and secrets management
 
 version: '3.8'
@@ -170,3 +201,34 @@ secrets:
     external: true
   azure_openai_key:
     external: true
+'@
+    
+    # Write enhanced compose file
+    $enhancedProdCompose | Out-File -FilePath "docker-compose.prod.yml" -Encoding UTF8
+    Write-Step "Enhanced docker-compose.prod.yml" -Status "Success"
+    
+    # Validate
+    Write-Step "Validating configuration..." -Status "Info"
+    $prevErrorAction = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    $validation = docker-compose -f docker-compose.prod.yml config 2>&1 | Out-String
+    $exitCode = $LASTEXITCODE
+    $ErrorActionPreference = $prevErrorAction
+    
+    if ($validation -match "\berror\b" -and $validation -notmatch "level=warning") {
+        Write-Step "Validation failed!" -Status "Error"
+        Write-Host $validation -ForegroundColor Red
+        
+        if (Test-Path $backupFile) {
+            Copy-Item $backupFile "docker-compose.prod.yml" -Force
+            Write-Step "Restored from backup" -Status "Success"
+        }
+        exit 1
+    }
+    
+    Write-Step "[OK] Configuration is valid" -Status "Success"
+    
+} catch {
+    Write-Step "Error: $_" -Status "Error"
+    exit 1
+}
