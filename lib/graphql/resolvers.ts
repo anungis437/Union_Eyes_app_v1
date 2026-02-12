@@ -6,9 +6,22 @@
 
 import { db } from '@/db';
 import { claims, profiles } from '@/db/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { 
+  externalInsuranceClaims, 
+  externalInsurancePolicies 
+} from '@/db/schema';
+import { eq, and, desc, gte, lte } from 'drizzle-orm';
 import { getSystemStatus } from '@/lib/monitoring';
 import type { YogaInitialContext } from 'graphql-yoga';
+import { PensionProcessorFactory } from '@/lib/pension-processor';
+import { 
+  PensionPlanType, 
+  PaymentFrequency, 
+  PensionMember,
+  PensionProcessor as IPensionProcessor,
+} from '@/lib/pension-processor/types';
+import { IntegrationFactory } from '@/lib/integrations/factory';
+import { IntegrationProvider } from '@/lib/integrations/types';
 
 export const resolvers = {
   Query: {
@@ -86,6 +99,196 @@ export const resolvers = {
       };
     },
 
+    // Pension Processors
+    pensionProcessors: async () => {
+      const factory = PensionProcessorFactory.getInstance();
+      const processors = factory.getAvailableProcessors();
+      
+      return processors.map(type => {
+        const processor = factory.getProcessor(type);
+        return {
+          type,
+          name: processor.name,
+          description: processor.description,
+          minAge: processor.capabilities.minAge,
+          maxAge: processor.capabilities.maxAge,
+          supportsBuyBack: processor.capabilities.supportsBuyBack || false,
+          supportsEarlyRetirement: processor.capabilities.supportsEarlyRetirement || false,
+          supportedProvinces: processor.capabilities.supportedProvinces || [],
+        };
+      });
+    },
+
+    pensionProcessor: async (_parent: any, { planType }: { planType: string }) => {
+      const factory = PensionProcessorFactory.getInstance();
+      const processor = factory.getProcessor(planType as PensionPlanType);
+      
+      return {
+        type: processor.type,
+        name: processor.name,
+        description: processor.description,
+        minAge: processor.capabilities.minAge,
+        maxAge: processor.capabilities.maxAge,
+        supportsBuyBack: processor.capabilities.supportsBuyBack || false,
+        supportsEarlyRetirement: processor.capabilities.supportsEarlyRetirement || false,
+        supportedProvinces: processor.capabilities.supportedProvinces || [],
+      };
+    },
+
+    contributionRates: async (
+      _parent: any, 
+      { planType, year }: { planType: string; year: number }
+    ) => {
+      const factory = PensionProcessorFactory.getInstance();
+      const processor = factory.getProcessor(planType as PensionPlanType);
+      const rates = await processor.getContributionRates(year);
+      
+      return {
+        planType: rates.planType,
+        year: rates.year,
+        employeeRate: rates.employeeRate.toNumber(),
+        employerRate: rates.employerRate.toNumber(),
+        maximumPensionableEarnings: rates.maximumPensionableEarnings.toNumber(),
+        basicExemption: rates.basicExemption?.toNumber(),
+        maximumContribution: rates.maximumContribution.toNumber(),
+      };
+    },
+
+    remittance: async (_parent: any, { id }: { id: string }) => {
+      // Mock implementation - would fetch from database in production
+      return {
+        id,
+        planType: 'CPP',
+        periodStart: new Date('2026-01-01'),
+        periodEnd: new Date('2026-01-31'),
+        totalEmployeeContributions: 50000,
+        totalEmployerContributions: 50000,
+        totalContributions: 100000,
+        employeeCount: 250,
+        status: 'SUBMITTED',
+        confirmationNumber: 'CPP-2026-001',
+        submittedAt: new Date('2026-02-01'),
+        createdAt: new Date('2026-02-01'),
+      };
+    },
+
+    remittances: async (
+      _parent: any, 
+      { planType, status }: { planType?: string; status?: string }
+    ) => {
+      // Mock implementation - would fetch from database in production
+      return [
+        {
+          id: '1',
+          planType: planType || 'CPP',
+          periodStart: new Date('2026-01-01'),
+          periodEnd: new Date('2026-01-31'),
+          totalEmployeeContributions: 50000,
+          totalEmployerContributions: 50000,
+          totalContributions: 100000,
+          employeeCount: 250,
+          status: status || 'SUBMITTED',
+          confirmationNumber: 'CPP-2026-001',
+          submittedAt: new Date('2026-02-01'),
+          createdAt: new Date('2026-02-01'),
+        },
+      ];
+    },
+
+    // Insurance
+    insuranceClaims: async (
+      _parent: any,
+      { provider, status, startDate, endDate, pagination }: any
+    ) => {
+      const limit = pagination?.first || 50;
+      
+      let query = db.select().from(externalInsuranceClaims);
+
+      const conditions = [];
+      if (provider) {
+        conditions.push(eq(externalInsuranceClaims.provider, provider.toLowerCase()));
+      }
+      if (status) {
+        conditions.push(eq(externalInsuranceClaims.status, status));
+      }
+      if (startDate) {
+        conditions.push(gte(externalInsuranceClaims.claimDate, new Date(startDate)));
+      }
+      if (endDate) {
+        conditions.push(lte(externalInsuranceClaims.claimDate, new Date(endDate)));
+      }
+
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions)) as typeof query;
+      }
+
+      const results = await query
+        .limit(limit)
+        .orderBy(desc(externalInsuranceClaims.claimDate));
+
+      return results.map(claim => ({
+        id: claim.id,
+        claimNumber: claim.claimNumber,
+        provider: claim.provider.toUpperCase().replace(/_/g, '_'),
+        memberName: claim.memberName || 'Unknown',
+        claimDate: claim.claimDate,
+        claimType: claim.claimType || 'general',
+        claimAmount: claim.claimAmount ? parseFloat(claim.claimAmount) : 0,
+        approvedAmount: claim.approvedAmount ? parseFloat(claim.approvedAmount) : null,
+        paidAmount: claim.paidAmount ? parseFloat(claim.paidAmount) : null,
+        status: claim.status,
+        providerName: claim.providerName,
+        serviceDate: claim.serviceDate,
+      }));
+    },
+
+    insurancePolicies: async (
+      _parent: any,
+      { provider, status }: any
+    ) => {
+      let query = db.select().from(externalInsurancePolicies);
+
+      const conditions = [];
+      if (provider) {
+        conditions.push(eq(externalInsurancePolicies.provider, provider.toLowerCase()));
+      }
+      if (status) {
+        conditions.push(eq(externalInsurancePolicies.status, status));
+      }
+
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions)) as typeof query;
+      }
+
+      const results = await query.orderBy(desc(externalInsurancePolicies.effectiveDate));
+
+      return results.map(policy => ({
+        id: policy.id,
+        provider: policy.provider.toUpperCase().replace(/_/g, '_'),
+        policyNumber: policy.policyNumber,
+        policyType: policy.policyType || 'general',
+        policyHolder: policy.policyHolder || 'Unknown',
+        coverageAmount: policy.coverageAmount ? parseFloat(policy.coverageAmount) : 0,
+        premium: policy.premium ? parseFloat(policy.premium) : 0,
+        effectiveDate: policy.effectiveDate,
+        expiryDate: policy.expiryDate,
+        status: policy.status,
+      }));
+    },
+
+    insuranceConnections: async () => {
+      // Mock implementation - would fetch actual connection status in production
+      const providers = ['SUN_LIFE', 'MANULIFE', 'GREEN_SHIELD_CANADA', 'CANADA_LIFE', 'INDUSTRIAL_ALLIANCE'];
+      
+      return providers.map(provider => ({
+        provider,
+        connected: ['SUN_LIFE', 'MANULIFE'].includes(provider),
+        lastSyncAt: ['SUN_LIFE', 'MANULIFE'].includes(provider) ? new Date() : null,
+        claimsCount: ['SUN_LIFE', 'MANULIFE'].includes(provider) ? 150 : 0,
+        policiesCount: ['SUN_LIFE', 'MANULIFE'].includes(provider) ? 45 : 0,
+      }));
+    },
+
     // System Status
     systemStatus: async () => {
       return await getSystemStatus();
@@ -151,6 +354,150 @@ export const resolvers = {
     ) => {
       // Implementation would record the vote
       return true;
+    },
+
+    // Pension Contributions
+    calculatePensionContribution: async (
+      _parent: any,
+      { input }: { input: any }
+    ) => {
+      const factory = PensionProcessorFactory.getInstance();
+      const processor = factory.getProcessor(input.planType as PensionPlanType);
+
+      const member: PensionMember = {
+        memberId: input.memberId,
+        dateOfBirth: new Date(input.dateOfBirth),
+        province: input.province,
+        yearToDateEarnings: input.yearToDateEarnings || 0,
+        yearToDateContributions: input.yearToDateContributions || 0,
+      };
+
+      const contribution = await processor.calculateContribution(
+        member,
+        input.grossEarnings,
+        input.paymentFrequency as PaymentFrequency
+      );
+
+      return {
+        employeeContribution: contribution.employeeContribution.toNumber(),
+        employerContribution: contribution.employerContribution.toNumber(),
+        totalContribution: contribution.totalContribution.toNumber(),
+        pensionableEarnings: contribution.pensionableEarnings.toNumber(),
+        grossEarnings: contribution.grossEarnings.toNumber(),
+        basicExemption: contribution.basicExemption.toNumber(),
+        planType: contribution.planType,
+        contributionPeriod: contribution.contributionPeriod,
+      };
+    },
+
+    createRemittance: async (
+      _parent: any,
+      { input }: { input: any }
+    ) => {
+      const factory = PensionProcessorFactory.getInstance();
+      const processor = factory.getProcessor(input.planType as PensionPlanType);
+
+      // Mock contributions data
+      const contributions = input.contributions.map((id: string) => ({
+        memberId: id,
+        employeeContribution: 100,
+        employerContribution: 100,
+      }));
+
+      const remittance = await processor.createRemittance({
+        organizationId: 'org_123',
+        periodStart: new Date(input.periodStart),
+        periodEnd: new Date(input.periodEnd),
+        contributions,
+      });
+
+      return {
+        id: remittance.remittanceId,
+        planType: remittance.planType,
+        periodStart: remittance.periodStart,
+        periodEnd: remittance.periodEnd,
+        totalEmployeeContributions: remittance.totalEmployeeContributions.toNumber(),
+        totalEmployerContributions: remittance.totalEmployerContributions.toNumber(),
+        totalContributions: remittance.totalContributions.toNumber(),
+        employeeCount: remittance.employeeCount,
+        status: 'PENDING',
+        confirmationNumber: null,
+        submittedAt: null,
+        createdAt: remittance.createdAt,
+      };
+    },
+
+    submitRemittance: async (
+      _parent: any,
+      { id }: { id: string }
+    ) => {
+      // Mock implementation - would fetch remittance and submit
+      const factory = PensionProcessorFactory.getInstance();
+      const processor = factory.getDefaultProcessor();
+
+      const result = await processor.submitRemittance(id);
+
+      return {
+        id,
+        planType: result.planType,
+        periodStart: result.periodStart,
+        periodEnd: result.periodEnd,
+        totalEmployeeContributions: result.totalEmployeeContributions.toNumber(),
+        totalEmployerContributions: result.totalEmployerContributions.toNumber(),
+        totalContributions: result.totalContributions.toNumber(),
+        employeeCount: result.employeeCount,
+        status: 'SUBMITTED',
+        confirmationNumber: result.confirmationNumber,
+        submittedAt: result.submittedAt,
+        createdAt: new Date(),
+      };
+    },
+
+    // Insurance Sync
+    syncInsuranceProvider: async (
+      _parent: any,
+      { provider }: { provider: string }
+    ) => {
+      try {
+        // Map GraphQL provider enum to integration provider
+        const providerMap: Record<string, IntegrationProvider> = {
+          'SUN_LIFE': IntegrationProvider.SUN_LIFE,
+          'MANULIFE': IntegrationProvider.MANULIFE,
+          'GREEN_SHIELD_CANADA': IntegrationProvider.GREEN_SHIELD_CANADA,
+          'CANADA_LIFE': IntegrationProvider.CANADA_LIFE,
+          'INDUSTRIAL_ALLIANCE': IntegrationProvider.INDUSTRIAL_ALLIANCE,
+        };
+
+        const integrationProvider = providerMap[provider];
+        if (!integrationProvider) {
+          throw new Error(`Unknown insurance provider: ${provider}`);
+        }
+
+        const factory = IntegrationFactory.getInstance();
+        const adapter = factory.getAdapter(integrationProvider);
+
+        // Perform sync
+        const syncResult = await adapter.sync({
+          fullSync: true,
+          entities: ['claims', 'policies'],
+        });
+
+        return {
+          provider,
+          connected: true,
+          lastSyncAt: new Date(),
+          claimsCount: syncResult.recordsCreated + syncResult.recordsUpdated,
+          policiesCount: syncResult.recordsCreated + syncResult.recordsUpdated,
+        };
+      } catch (error) {
+        return {
+          provider,
+          connected: false,
+          lastSyncAt: null,
+          claimsCount: 0,
+          policiesCount: 0,
+        };
+      }
     },
   },
 

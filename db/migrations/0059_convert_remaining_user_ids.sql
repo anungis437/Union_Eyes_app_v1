@@ -284,7 +284,7 @@ ALTER TABLE voting_sessions
   ALTER COLUMN created_by TYPE varchar(255);
 
 -- =============================================================================
--- STEP 4: Recreate foreign key constraints referencing user_management.users
+-- STEP 4: Recreate foreign key constraints referencing public.users
 -- =============================================================================
 
 -- Note: Only recreate FKs that should reference users.user_id
@@ -293,129 +293,129 @@ ALTER TABLE voting_sessions
 -- Per-Capita Remittances
 ALTER TABLE per_capita_remittances
   ADD CONSTRAINT per_capita_remittances_approved_by_fkey
-  FOREIGN KEY (approved_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (approved_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 ALTER TABLE per_capita_remittances
   ADD CONSTRAINT per_capita_remittances_rejected_by_fkey
-  FOREIGN KEY (rejected_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (rejected_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 ALTER TABLE per_capita_remittances
   ADD CONSTRAINT per_capita_remittances_created_by_fkey
-  FOREIGN KEY (created_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (created_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 ALTER TABLE remittance_approvals
   ADD CONSTRAINT remittance_approvals_approver_user_id_fkey
-  FOREIGN KEY (approver_user_id) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+  FOREIGN KEY (approver_user_id) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 -- Communication Analytics
 ALTER TABLE user_engagement_scores
   ADD CONSTRAINT user_engagement_scores_user_id_fkey
-  FOREIGN KEY (user_id) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+  FOREIGN KEY (user_id) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 ALTER TABLE communication_preferences
   ADD CONSTRAINT communication_preferences_user_id_fkey
-  FOREIGN KEY (user_id) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+  FOREIGN KEY (user_id) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 -- ERP Integration
 ALTER TABLE financial_audit_log
   ADD CONSTRAINT financial_audit_log_user_id_fkey
-  FOREIGN KEY (user_id) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (user_id) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 ALTER TABLE erp_connectors
   ADD CONSTRAINT erp_connectors_created_by_fkey
-  FOREIGN KEY (created_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (created_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 ALTER TABLE erp_connectors
   ADD CONSTRAINT erp_connectors_updated_by_fkey
-  FOREIGN KEY (updated_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (updated_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 ALTER TABLE gl_mappings
   ADD CONSTRAINT gl_mappings_created_by_fkey
-  FOREIGN KEY (created_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (created_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 ALTER TABLE gl_mappings
   ADD CONSTRAINT gl_mappings_updated_by_fkey
-  FOREIGN KEY (updated_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (updated_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 ALTER TABLE journal_entries
   ADD CONSTRAINT journal_entries_created_by_fkey
-  FOREIGN KEY (created_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (created_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 ALTER TABLE journal_entries
   ADD CONSTRAINT journal_entries_approved_by_fkey
-  FOREIGN KEY (approved_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (approved_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 ALTER TABLE bank_reconciliations
   ADD CONSTRAINT bank_reconciliations_reconciled_by_fkey
-  FOREIGN KEY (reconciled_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (reconciled_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 ALTER TABLE bank_reconciliations
   ADD CONSTRAINT bank_reconciliations_approved_by_fkey
-  FOREIGN KEY (approved_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (approved_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 -- Deadlines
 ALTER TABLE deadlines
   ADD CONSTRAINT deadlines_completed_by_fkey
-  FOREIGN KEY (completed_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (completed_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 ALTER TABLE deadlines
   ADD CONSTRAINT deadlines_escalated_to_fkey
-  FOREIGN KEY (escalated_to) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (escalated_to) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 ALTER TABLE deadline_extensions
   ADD CONSTRAINT deadline_extensions_requested_by_fkey
-  FOREIGN KEY (requested_by) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+  FOREIGN KEY (requested_by) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 ALTER TABLE deadline_extensions
   ADD CONSTRAINT deadline_extensions_approved_by_fkey
-  FOREIGN KEY (approved_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (approved_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 ALTER TABLE deadline_alerts
   ADD CONSTRAINT deadline_alerts_recipient_id_fkey
-  FOREIGN KEY (recipient_id) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+  FOREIGN KEY (recipient_id) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 -- Reports
 ALTER TABLE reports
   ADD CONSTRAINT reports_created_by_fkey
-  FOREIGN KEY (created_by) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+  FOREIGN KEY (created_by) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 ALTER TABLE reports
   ADD CONSTRAINT reports_updated_by_fkey
-  FOREIGN KEY (updated_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (updated_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 ALTER TABLE report_templates
   ADD CONSTRAINT report_templates_created_by_fkey
-  FOREIGN KEY (created_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (created_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 ALTER TABLE report_executions
   ADD CONSTRAINT report_executions_executed_by_fkey
-  FOREIGN KEY (executed_by) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+  FOREIGN KEY (executed_by) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 ALTER TABLE scheduled_reports
   ADD CONSTRAINT scheduled_reports_created_by_fkey
-  FOREIGN KEY (created_by) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+  FOREIGN KEY (created_by) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 ALTER TABLE report_shares
   ADD CONSTRAINT report_shares_shared_by_fkey
-  FOREIGN KEY (shared_by) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+  FOREIGN KEY (shared_by) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 ALTER TABLE report_shares
   ADD CONSTRAINT report_shares_shared_with_fkey
-  FOREIGN KEY (shared_with) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+  FOREIGN KEY (shared_with) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 -- Recognition & Rewards
 ALTER TABLE automation_rules
   ADD CONSTRAINT automation_rules_created_by_fkey
-  FOREIGN KEY (created_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (created_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 -- Additional tables (selective FK recreation - only where appropriate)
 ALTER TABLE organizations
   ADD CONSTRAINT organizations_created_by_fkey
-  FOREIGN KEY (created_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (created_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 ALTER TABLE voting_notifications
   ADD CONSTRAINT voting_notifications_recipient_id_fkey
-  FOREIGN KEY (recipient_id) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+  FOREIGN KEY (recipient_id) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 -- =============================================================================
 -- STEP 5: Data validation

@@ -214,7 +214,7 @@ BEGIN
   RAISE NOTICE '=============================================================================';
   RAISE NOTICE 'SKIPPING Foreign key constraint recreation';
   RAISE NOTICE '=============================================================================';
-  RAISE NOTICE 'Foreign key constraints to user_management.users are NOT being recreated';
+  RAISE NOTICE 'Foreign key constraints to public.users are NOT being recreated';
   RAISE NOTICE 'due to potential data integrity issues (orphaned data).';
   RAISE NOTICE '';
   RAISE NOTICE 'After this migration completes, you should:';

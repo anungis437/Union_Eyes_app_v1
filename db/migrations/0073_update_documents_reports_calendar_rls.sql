@@ -1,6 +1,6 @@
 -- Migration: Update documents, reports, and calendar RLS for Session Context
 -- Date: February 10, 2026
--- Purpose: Convert member_documents, reports, calendars RLS policies from auth.uid() to session context
+-- Purpose: Convert member_documents, reports, calendars RLS policies from current_setting('app.current_user_id', true) to session context
 -- Related: Migration 0071 (messaging), Migration 0072 (notifications)
 
 -- ============================================================================

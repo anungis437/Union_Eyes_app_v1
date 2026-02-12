@@ -123,23 +123,23 @@ CREATE TABLE pack_verification_log (
 -- ============================================================================
 
 -- Defensibility packs indexes
-CREATE INDEX idx_defensibility_packs_case_id ON defensibility_packs(case_id);
-CREATE INDEX idx_defensibility_packs_case_number ON defensibility_packs(case_number);
-CREATE INDEX idx_defensibility_packs_org_id ON defensibility_packs(organization_id);
-CREATE INDEX idx_defensibility_packs_generated_at ON defensibility_packs(generated_at DESC);
-CREATE INDEX idx_defensibility_packs_integrity_hash ON defensibility_packs(integrity_hash);
-CREATE INDEX idx_defensibility_packs_verification_status ON defensibility_packs(verification_status);
+CREATE INDEX IF NOT EXISTS idx_defensibility_packs_case_id ON defensibility_packs(case_id);
+CREATE INDEX IF NOT EXISTS idx_defensibility_packs_case_number ON defensibility_packs(case_number);
+CREATE INDEX IF NOT EXISTS idx_defensibility_packs_org_id ON defensibility_packs(organization_id);
+CREATE INDEX IF NOT EXISTS idx_defensibility_packs_generated_at ON defensibility_packs(generated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_defensibility_packs_integrity_hash ON defensibility_packs(integrity_hash);
+CREATE INDEX IF NOT EXISTS idx_defensibility_packs_verification_status ON defensibility_packs(verification_status);
 
 -- Download log indexes
-CREATE INDEX idx_pack_download_log_pack_id ON pack_download_log(pack_id);
-CREATE INDEX idx_pack_download_log_case_number ON pack_download_log(case_number);
-CREATE INDEX idx_pack_download_log_downloaded_at ON pack_download_log(downloaded_at DESC);
-CREATE INDEX idx_pack_download_log_downloaded_by ON pack_download_log(downloaded_by);
+CREATE INDEX IF NOT EXISTS idx_pack_download_log_pack_id ON pack_download_log(pack_id);
+CREATE INDEX IF NOT EXISTS idx_pack_download_log_case_number ON pack_download_log(case_number);
+CREATE INDEX IF NOT EXISTS idx_pack_download_log_downloaded_at ON pack_download_log(downloaded_at DESC);
+CREATE INDEX IF NOT EXISTS idx_pack_download_log_downloaded_by ON pack_download_log(downloaded_by);
 
 -- Verification log indexes
-CREATE INDEX idx_pack_verification_log_pack_id ON pack_verification_log(pack_id);
-CREATE INDEX idx_pack_verification_log_passed ON pack_verification_log(verification_passed);
-CREATE INDEX idx_pack_verification_log_verified_at ON pack_verification_log(verified_at DESC);
+CREATE INDEX IF NOT EXISTS idx_pack_verification_log_pack_id ON pack_verification_log(pack_id);
+CREATE INDEX IF NOT EXISTS idx_pack_verification_log_passed ON pack_verification_log(verification_passed);
+CREATE INDEX IF NOT EXISTS idx_pack_verification_log_verified_at ON pack_verification_log(verified_at DESC);
 
 -- ============================================================================
 -- PART 5: Comments for Documentation

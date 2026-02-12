@@ -78,18 +78,18 @@ COMMENT ON TABLE ai_budgets IS 'Monthly AI budget allocations and spend tracking
 -- ============================================================================
 
 -- Usage metrics indexes
-CREATE INDEX idx_usage_org_time ON ai_usage_metrics(organization_id, created_at DESC);
-CREATE INDEX idx_usage_provider_time ON ai_usage_metrics(provider, created_at DESC);
-CREATE INDEX idx_usage_model ON ai_usage_metrics(model);
-CREATE INDEX idx_usage_user ON ai_usage_metrics(user_id) WHERE user_id IS NOT NULL;
-CREATE INDEX idx_usage_metadata ON ai_usage_metrics USING gin(metadata);
+CREATE INDEX IF NOT EXISTS idx_usage_org_time ON ai_usage_metrics(organization_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_usage_provider_time ON ai_usage_metrics(provider, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_usage_model ON ai_usage_metrics(model);
+CREATE INDEX IF NOT EXISTS idx_usage_user ON ai_usage_metrics(user_id) WHERE user_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_usage_metadata ON ai_usage_metrics USING gin(metadata);
 
 -- Rate limits indexes
-CREATE INDEX idx_rate_limits_org ON ai_rate_limits(organization_id, limit_type);
+CREATE INDEX IF NOT EXISTS idx_rate_limits_org ON ai_rate_limits(organization_id, limit_type);
 
 -- Budgets indexes
-CREATE INDEX idx_budgets_org_period ON ai_budgets(organization_id, billing_period_end);
-CREATE INDEX idx_budgets_alert ON ai_budgets(organization_id) WHERE (current_spend_usd / monthly_limit_usd) >= alert_threshold;
+CREATE INDEX IF NOT EXISTS idx_budgets_org_period ON ai_budgets(organization_id, billing_period_end);
+CREATE INDEX IF NOT EXISTS idx_budgets_alert ON ai_budgets(organization_id) WHERE (current_spend_usd / monthly_limit_usd) >= alert_threshold;
 
 -- ============================================================================
 -- 5. Create materialized view for daily usage aggregation
@@ -113,7 +113,7 @@ GROUP BY organization_id, provider, model, DATE(created_at);
 
 -- Indexes on materialized view
 CREATE UNIQUE INDEX idx_usage_daily_unique ON ai_usage_daily(organization_id, provider, model, usage_date);
-CREATE INDEX idx_usage_daily_date ON ai_usage_daily(usage_date DESC);
+CREATE INDEX IF NOT EXISTS idx_usage_daily_date ON ai_usage_daily(usage_date DESC);
 
 COMMENT ON MATERIALIZED VIEW ai_usage_daily IS 'Daily aggregated AI usage metrics for reporting';
 

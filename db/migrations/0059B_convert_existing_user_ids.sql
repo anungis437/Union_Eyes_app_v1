@@ -182,104 +182,104 @@ END $$;
 
 -- =============================================================================
 -- STEP 3: Recreate foreign key constraints where appropriate
--- Only creates FK to user_management.users if that table/column exists
+-- Only creates FK to public.users if that table/column exists
 -- =============================================================================
 
 DO $$
 DECLARE
   users_exists boolean;
 BEGIN
-  -- Check if user_management.users exists
+  -- Check if public.users exists
   SELECT EXISTS (
     SELECT FROM information_schema.tables 
     WHERE table_schema = 'user_management' AND table_name = 'users'
   ) INTO users_exists;
 
   IF users_exists THEN
-    RAISE NOTICE 'Recreating FK constraints to user_management.users...';
+    RAISE NOTICE 'Recreating FK constraints to public.users...';
     
     -- Per-Capita Remittances
     IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'per_capita_remittances') THEN
       ALTER TABLE per_capita_remittances
         ADD CONSTRAINT per_capita_remittances_approved_by_fkey
-        FOREIGN KEY (approved_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+        FOREIGN KEY (approved_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
       ALTER TABLE per_capita_remittances
         ADD CONSTRAINT per_capita_remittances_rejected_by_fkey
-        FOREIGN KEY (rejected_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+        FOREIGN KEY (rejected_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
       ALTER TABLE per_capita_remittances
         ADD CONSTRAINT per_capita_remittances_created_by_fkey
-        FOREIGN KEY (created_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+        FOREIGN KEY (created_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
     END IF;
 
     -- Deadlines
     IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'claim_deadlines') THEN
       ALTER TABLE claim_deadlines
         ADD CONSTRAINT claim_deadlines_completed_by_fkey
-        FOREIGN KEY (completed_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+        FOREIGN KEY (completed_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
       ALTER TABLE claim_deadlines
         ADD CONSTRAINT claim_deadlines_escalated_to_fkey
-        FOREIGN KEY (escalated_to) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+        FOREIGN KEY (escalated_to) REFERENCES public.users(user_id) ON DELETE SET NULL;
     END IF;
 
     IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'deadline_extensions') THEN
       ALTER TABLE deadline_extensions
         ADD CONSTRAINT deadline_extensions_requested_by_fkey
-        FOREIGN KEY (requested_by) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+        FOREIGN KEY (requested_by) REFERENCES public.users(user_id) ON DELETE CASCADE;
       ALTER TABLE deadline_extensions
         ADD CONSTRAINT deadline_extensions_approved_by_fkey
-        FOREIGN KEY (approved_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+        FOREIGN KEY (approved_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
     END IF;
 
     IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'deadline_alerts') THEN
       ALTER TABLE deadline_alerts
         ADD CONSTRAINT deadline_alerts_recipient_id_fkey
-        FOREIGN KEY (recipient_id) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+        FOREIGN KEY (recipient_id) REFERENCES public.users(user_id) ON DELETE CASCADE;
     END IF;
 
     -- Reports
     IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'reports') THEN
       ALTER TABLE reports
         ADD CONSTRAINT reports_created_by_fkey
-        FOREIGN KEY (created_by) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+        FOREIGN KEY (created_by) REFERENCES public.users(user_id) ON DELETE CASCADE;
       ALTER TABLE reports
         ADD CONSTRAINT reports_updated_by_fkey
-        FOREIGN KEY (updated_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+        FOREIGN KEY (updated_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
     END IF;
 
     IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'report_executions') THEN
       ALTER TABLE report_executions
         ADD CONSTRAINT report_executions_executed_by_fkey
-        FOREIGN KEY (executed_by) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+        FOREIGN KEY (executed_by) REFERENCES public.users(user_id) ON DELETE CASCADE;
     END IF;
 
     IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'scheduled_reports') THEN
       ALTER TABLE scheduled_reports
         ADD CONSTRAINT scheduled_reports_created_by_fkey
-        FOREIGN KEY (created_by) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+        FOREIGN KEY (created_by) REFERENCES public.users(user_id) ON DELETE CASCADE;
     END IF;
 
     IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'report_shares') THEN
       ALTER TABLE report_shares
         ADD CONSTRAINT report_shares_shared_by_fkey
-        FOREIGN KEY (shared_by) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+        FOREIGN KEY (shared_by) REFERENCES public.users(user_id) ON DELETE CASCADE;
       ALTER TABLE report_shares
         ADD CONSTRAINT report_shares_shared_with_fkey
-        FOREIGN KEY (shared_with) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+        FOREIGN KEY (shared_with) REFERENCES public.users(user_id) ON DELETE CASCADE;
     END IF;
 
     IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'organizations') THEN
       ALTER TABLE organizations
         ADD CONSTRAINT organizations_created_by_fkey
-        FOREIGN KEY (created_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+        FOREIGN KEY (created_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
     END IF;
 
     IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'voting_notifications') THEN
       ALTER TABLE voting_notifications
         ADD CONSTRAINT voting_notifications_recipient_id_fkey
-        FOREIGN KEY (recipient_id) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+        FOREIGN KEY (recipient_id) REFERENCES public.users(user_id) ON DELETE CASCADE;
     END IF;
   ELSE
-    RAISE NOTICE 'user_management.users table not found - skipping FK constraint creation';
+    RAISE NOTICE 'public.users table not found - skipping FK constraint creation';
   END IF;
 END $$;
 

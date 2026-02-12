@@ -1,6 +1,6 @@
 -- Migration: Update in_app_notifications RLS for Session Context
 -- Date: February 10, 2026
--- Purpose: Convert in_app_notifications RLS policies from auth.uid() to session context
+-- Purpose: Convert in_app_notifications RLS policies from current_setting('app.current_user_id', true) to session context
 -- Related: Migration 0071 (messaging tables), Migration 0052 (original policies)
 
 -- ============================================================================
@@ -8,7 +8,7 @@
 -- ============================================================================
 
 -- Create helper function to get current user ID from session context
--- This replaces auth.uid() for Azure PostgreSQL compatibility
+-- This replaces current_setting('app.current_user_id', true) for Azure PostgreSQL compatibility
 CREATE OR REPLACE FUNCTION current_user_id()
 RETURNS TEXT AS $$
 BEGIN

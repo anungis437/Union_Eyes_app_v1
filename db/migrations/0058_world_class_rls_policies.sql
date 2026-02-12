@@ -9,10 +9,10 @@ BEGIN;
 -- =============================================================================
 
 -- Enable RLS on user_management schema tables
-ALTER TABLE user_management.users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_management.oauth_providers ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_management.tenant_users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_management.user_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.oauth_providers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.tenant_users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_sessions ENABLE ROW LEVEL SECURITY;
 
 -- Enable RLS on audit tables
 ALTER TABLE audit_security.audit_logs ENABLE ROW LEVEL SECURITY;
@@ -23,14 +23,14 @@ ALTER TABLE audit_security.security_events ENABLE ROW LEVEL SECURITY;
 -- =============================================================================
 
 -- Users table - currently has single "ALL" policy (too permissive)
-DROP POLICY IF EXISTS users_own_record ON user_management.users;
+DROP POLICY IF EXISTS users_own_record ON public.users;
 
 -- =============================================================================
 -- SECTION 3: Users Table - Granular Policies
 -- =============================================================================
 
 -- SELECT: Users can read their own record + admins can read all
-CREATE POLICY users_select_own ON user_management.users
+CREATE POLICY users_select_own ON public.users
   FOR SELECT
   USING (
     user_id = COALESCE(
@@ -49,12 +49,12 @@ CREATE POLICY users_select_own ON user_management.users
   );
 
 -- INSERT: Only system can create users (via Clerk webhook or admin API)
-CREATE POLICY users_insert_system ON user_management.users
+CREATE POLICY users_insert_system ON public.users
   FOR INSERT
   WITH CHECK (
     -- Allow if user has system_admin role
     EXISTS (
-      SELECT 1 FROM user_management.users u
+      SELECT 1 FROM public.users u
       WHERE u.user_id = COALESCE(
         (current_setting('request.jwt.claims', true)::json->>'sub'),
         current_setting('app.current_user_id', true)
@@ -66,7 +66,7 @@ CREATE POLICY users_insert_system ON user_management.users
   );
 
 -- UPDATE: Users can update their own profile fields, admins can update more
-CREATE POLICY users_update_own ON user_management.users
+CREATE POLICY users_update_own ON public.users
   FOR UPDATE
   USING (
     user_id = COALESCE(
@@ -85,12 +85,12 @@ CREATE POLICY users_update_own ON user_management.users
   )
   WITH CHECK (
     -- Cannot change user_id
-    user_id = (SELECT user_id FROM user_management.users WHERE user_id = users.user_id)
+    user_id = (SELECT user_id FROM public.users WHERE user_id = users.user_id)
     -- Non-admins cannot promote themselves to admin
     AND (
-      is_system_admin = (SELECT is_system_admin FROM user_management.users WHERE user_id = users.user_id)
+      is_system_admin = (SELECT is_system_admin FROM public.users WHERE user_id = users.user_id)
       OR EXISTS (
-        SELECT 1 FROM user_management.users u
+        SELECT 1 FROM public.users u
         WHERE u.user_id = COALESCE(
           (current_setting('request.jwt.claims', true)::json->>'sub'),
           current_setting('app.current_user_id', true)
@@ -101,11 +101,11 @@ CREATE POLICY users_update_own ON user_management.users
   );
 
 -- DELETE: Only system admins can delete users
-CREATE POLICY users_delete_admin ON user_management.users
+CREATE POLICY users_delete_admin ON public.users
   FOR DELETE
   USING (
     EXISTS (
-      SELECT 1 FROM user_management.users u
+      SELECT 1 FROM public.users u
       WHERE u.user_id = COALESCE(
         (current_setting('request.jwt.claims', true)::json->>'sub'),
         current_setting('app.current_user_id', true)
@@ -118,7 +118,7 @@ CREATE POLICY users_delete_admin ON user_management.users
 -- SECTION 4: OAuth Providers - Strict User Isolation
 -- =============================================================================
 
-CREATE POLICY oauth_select_own ON user_management.oauth_providers
+CREATE POLICY oauth_select_own ON public.oauth_providers
   FOR SELECT
   USING (
     user_id = COALESCE(
@@ -127,7 +127,7 @@ CREATE POLICY oauth_select_own ON user_management.oauth_providers
     )
   );
 
-CREATE POLICY oauth_insert_own ON user_management.oauth_providers
+CREATE POLICY oauth_insert_own ON public.oauth_providers
   FOR INSERT
   WITH CHECK (
     user_id = COALESCE(
@@ -136,7 +136,7 @@ CREATE POLICY oauth_insert_own ON user_management.oauth_providers
     )
   );
 
-CREATE POLICY oauth_delete_own ON user_management.oauth_providers
+CREATE POLICY oauth_delete_own ON public.oauth_providers
   FOR DELETE
   USING (
     user_id = COALESCE(
@@ -149,7 +149,7 @@ CREATE POLICY oauth_delete_own ON user_management.oauth_providers
 -- SECTION 5: User Sessions - Strict Isolation
 -- =============================================================================
 
-CREATE POLICY sessions_select_own ON user_management.user_sessions
+CREATE POLICY sessions_select_own ON public.user_sessions
   FOR SELECT
   USING (
     user_id = COALESCE(
@@ -158,7 +158,7 @@ CREATE POLICY sessions_select_own ON user_management.user_sessions
     )
   );
 
-CREATE POLICY sessions_insert_own ON user_management.user_sessions
+CREATE POLICY sessions_insert_own ON public.user_sessions
   FOR INSERT
   WITH CHECK (
     user_id = COALESCE(
@@ -167,7 +167,7 @@ CREATE POLICY sessions_insert_own ON user_management.user_sessions
     )
   );
 
-CREATE POLICY sessions_update_own ON user_management.user_sessions
+CREATE POLICY sessions_update_own ON public.user_sessions
   FOR UPDATE
   USING (
     user_id = COALESCE(
@@ -176,7 +176,7 @@ CREATE POLICY sessions_update_own ON user_management.user_sessions
     )
   );
 
-CREATE POLICY sessions_delete_own ON user_management.user_sessions
+CREATE POLICY sessions_delete_own ON public.user_sessions
   FOR DELETE
   USING (
     user_id = COALESCE(
@@ -189,7 +189,7 @@ CREATE POLICY sessions_delete_own ON user_management.user_sessions
 -- SECTION 6: Tenant Users - Admin Management
 -- =============================================================================
 
-CREATE POLICY tenant_users_select_org ON user_management.tenant_users
+CREATE POLICY tenant_users_select_org ON public.tenant_users
   FOR SELECT
   USING (
     -- User can see their own tenant memberships
@@ -210,7 +210,7 @@ CREATE POLICY tenant_users_select_org ON user_management.tenant_users
     )
   );
 
-CREATE POLICY tenant_users_insert_admin ON user_management.tenant_users
+CREATE POLICY tenant_users_insert_admin ON public.tenant_users
   FOR INSERT
   WITH CHECK (
     EXISTS (
@@ -225,7 +225,7 @@ CREATE POLICY tenant_users_insert_admin ON user_management.tenant_users
     )
   );
 
-CREATE POLICY tenant_users_update_admin ON user_management.tenant_users
+CREATE POLICY tenant_users_update_admin ON public.tenant_users
   FOR UPDATE
   USING (
     EXISTS (
@@ -240,7 +240,7 @@ CREATE POLICY tenant_users_update_admin ON user_management.tenant_users
     )
   );
 
-CREATE POLICY tenant_users_delete_admin ON user_management.tenant_users
+CREATE POLICY tenant_users_delete_admin ON public.tenant_users
   FOR DELETE
   USING (
     EXISTS (
@@ -601,7 +601,7 @@ CREATE POLICY audit_select_admin ON audit_security.audit_logs
     )
     -- Or system admin can see all
     OR EXISTS (
-      SELECT 1 FROM user_management.users u
+      SELECT 1 FROM public.users u
       WHERE u.user_id = COALESCE(
         (current_setting('request.jwt.claims', true)::json->>'sub'),
         current_setting('app.current_user_id', true)
@@ -627,7 +627,7 @@ CREATE POLICY security_events_select_admin ON audit_security.security_events
       current_setting('app.current_user_id', true)
     )
     OR EXISTS (
-      SELECT 1 FROM user_management.users u
+      SELECT 1 FROM public.users u
       WHERE u.user_id = COALESCE(
         (current_setting('request.jwt.claims', true)::json->>'sub'),
         current_setting('app.current_user_id', true)
@@ -644,7 +644,7 @@ CREATE POLICY security_events_update_admin ON audit_security.security_events
   FOR UPDATE
   USING (
     EXISTS (
-      SELECT 1 FROM user_management.users u
+      SELECT 1 FROM public.users u
       WHERE u.user_id = COALESCE(
         (current_setting('request.jwt.claims', true)::json->>'sub'),
         current_setting('app.current_user_id', true)

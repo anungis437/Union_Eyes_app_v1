@@ -156,19 +156,19 @@ DECLARE
   column_record RECORD;
   constraint_count INT := 0;
 BEGIN
-  -- Check if user_management.users table exists
+  -- Check if public.users table exists
   SELECT EXISTS (
     SELECT FROM information_schema.tables 
     WHERE table_schema = 'user_management' AND table_name = 'users'
   ) INTO users_table_exists;
 
   IF NOT users_table_exists THEN
-    RAISE NOTICE 'user_management.users table not found - skipping FK recreation';
+    RAISE NOTICE 'public.users table not found - skipping FK recreation';
     RETURN;
   END IF;
 
   RAISE NOTICE '---------------------------------------------------';
-  RAISE NOTICE 'Recreating FK constraints to user_management.users...';
+  RAISE NOTICE 'Recreating FK constraints to public.users...';
 
   -- Recreate FK constraints for common patterns
   -- For tables we know should have FKs
@@ -177,7 +177,7 @@ BEGIN
   IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'per_capita_remittances') THEN
     IF EXISTS (SELECT FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'per_capita_remittances' AND column_name = 'created_by') THEN
       ALTER TABLE per_capita_remittances ADD CONSTRAINT per_capita_remittances_created_by_fkey
-        FOREIGN KEY (created_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+        FOREIGN KEY (created_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
       constraint_count := constraint_count + 1;
     END IF;
   END IF;
@@ -186,12 +186,12 @@ BEGIN
   IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'reports') THEN
     IF EXISTS (SELECT FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'reports' AND column_name = 'created_by') THEN
       ALTER TABLE reports ADD CONSTRAINT reports_created_by_fkey
-        FOREIGN KEY (created_by) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+        FOREIGN KEY (created_by) REFERENCES public.users(user_id) ON DELETE CASCADE;
       constraint_count := constraint_count + 1;
     END IF;
     IF EXISTS (SELECT FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'reports' AND column_name = 'updated_by') THEN
       ALTER TABLE reports ADD CONSTRAINT reports_updated_by_fkey
-        FOREIGN KEY (updated_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+        FOREIGN KEY (updated_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
       constraint_count := constraint_count + 1;
     END IF;
   END IF;
@@ -200,7 +200,7 @@ BEGIN
   IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'organizations') THEN
     IF EXISTS (SELECT FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'organizations' AND column_name = 'created_by') THEN
       ALTER TABLE organizations ADD CONSTRAINT organizations_created_by_fkey
-        FOREIGN KEY (created_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+        FOREIGN KEY (created_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
       constraint_count := constraint_count + 1;
     END IF;
   END IF;
@@ -209,7 +209,7 @@ BEGIN
   IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'user_notification_preferences') THEN
     IF EXISTS (SELECT FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'user_notification_preferences' AND column_name = 'user_id') THEN
       ALTER TABLE user_notification_preferences ADD CONSTRAINT user_notification_preferences_user_id_fkey
-        FOREIGN KEY (user_id) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+        FOREIGN KEY (user_id) REFERENCES public.users(user_id) ON DELETE CASCADE;
       constraint_count := constraint_count + 1;
     END IF;
   END IF;
@@ -218,7 +218,7 @@ BEGIN
   IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'cross_org_access_log') THEN
     IF EXISTS (SELECT FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'cross_org_access_log' AND column_name = 'user_id') THEN
       ALTER TABLE cross_org_access_log ADD CONSTRAINT cross_org_access_log_user_id_fkey
-        FOREIGN KEY (user_id) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+        FOREIGN KEY (user_id) REFERENCES public.users(user_id) ON DELETE CASCADE;
       constraint_count := constraint_count + 1;
     END IF;
   END IF;

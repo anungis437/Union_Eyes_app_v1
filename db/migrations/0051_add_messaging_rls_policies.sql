@@ -18,7 +18,7 @@ USING (
   thread_id IN (
     SELECT thread_id 
     FROM message_participants 
-    WHERE user_id = auth.uid() -- Clerk user ID from auth context
+    WHERE user_id = current_setting('app.current_user_id', true) -- Clerk user ID from auth context
   )
 );
 
@@ -30,9 +30,9 @@ WITH CHECK (
   thread_id IN (
     SELECT thread_id 
     FROM message_participants 
-    WHERE user_id = auth.uid()
+    WHERE user_id = current_setting('app.current_user_id', true)
   )
-  AND sender_id = auth.uid() -- Can only send as themselves
+  AND sender_id = current_setting('app.current_user_id', true) -- Can only send as themselves
 );
 
 -- Policy 3: Users can UPDATE their own recent messages (15 min edit window)
@@ -40,15 +40,15 @@ CREATE POLICY "messages_update_own_recent" ON messages
 FOR UPDATE
 TO public
 USING (
-  sender_id = auth.uid()
+  sender_id = current_setting('app.current_user_id', true)
   AND created_at > (NOW() - INTERVAL '15 minutes')
 )
 WITH CHECK (
-  sender_id = auth.uid()
+  sender_id = current_setting('app.current_user_id', true)
   AND thread_id IN (
     SELECT thread_id 
     FROM message_participants 
-    WHERE user_id = auth.uid()
+    WHERE user_id = current_setting('app.current_user_id', true)
   )
 );
 
@@ -57,7 +57,7 @@ CREATE POLICY "messages_delete_own_recent" ON messages
 FOR DELETE
 TO public
 USING (
-  sender_id = auth.uid()
+  sender_id = current_setting('app.current_user_id', true)
   AND created_at > (NOW() - INTERVAL '1 hour')
 );
 
@@ -81,7 +81,7 @@ USING (
   id IN (
     SELECT thread_id 
     FROM message_participants 
-    WHERE user_id = auth.uid()
+    WHERE user_id = current_setting('app.current_user_id', true)
   )
 );
 
@@ -93,7 +93,7 @@ WITH CHECK (
   organization_id IN (
     SELECT DISTINCT organization_id 
     FROM organization_members 
-    WHERE user_id = auth.uid() 
+    WHERE user_id = current_setting('app.current_user_id', true) 
       AND status = 'active'
   )
 );
@@ -106,7 +106,7 @@ USING (
   id IN (
     SELECT thread_id 
     FROM message_participants 
-    WHERE user_id = auth.uid()
+    WHERE user_id = current_setting('app.current_user_id', true)
   )
 );
 
@@ -115,11 +115,11 @@ CREATE POLICY "threads_delete_creator_or_admin" ON message_threads
 FOR DELETE
 TO public
 USING (
-  created_by = auth.uid()
+  created_by = current_setting('app.current_user_id', true)
   OR organization_id IN (
     SELECT DISTINCT organization_id 
     FROM organization_members 
-    WHERE user_id = auth.uid() 
+    WHERE user_id = current_setting('app.current_user_id', true) 
       AND role IN ('admin', 'officer')
   )
 );
@@ -140,14 +140,14 @@ CREATE POLICY "participants_read_own_or_admin" ON message_participants
 FOR SELECT
 TO public
 USING (
-  user_id = auth.uid()
+  user_id = current_setting('app.current_user_id', true)
   OR thread_id IN (
     SELECT mt.id 
     FROM message_threads mt
     WHERE mt.organization_id IN (
       SELECT organization_id 
       FROM organization_members 
-      WHERE user_id = auth.uid() AND role IN ('admin', 'officer')
+      WHERE user_id = current_setting('app.current_user_id', true) AND role IN ('admin', 'officer')
     )
   )
 );
@@ -163,7 +163,7 @@ WITH CHECK (
     WHERE mt.organization_id IN (
       SELECT organization_id 
       FROM organization_members 
-      WHERE user_id = auth.uid() AND role IN ('admin', 'officer')
+      WHERE user_id = current_setting('app.current_user_id', true) AND role IN ('admin', 'officer')
     )
   )
 );
@@ -172,7 +172,7 @@ WITH CHECK (
 CREATE POLICY "participants_delete_self" ON message_participants
 FOR DELETE
 TO public
-USING (user_id = auth.uid());
+USING (user_id = current_setting('app.current_user_id', true));
 
 -- Index for performance
 CREATE INDEX IF NOT EXISTS idx_message_participants_user_id ON message_participants(user_id);
@@ -190,11 +190,11 @@ CREATE POLICY "read_receipts_own_only" ON message_read_receipts
 FOR SELECT
 TO public
 USING (
-  reader_id = auth.uid()
+  reader_id = current_setting('app.current_user_id', true)
   OR message_id IN (
     SELECT m.id 
     FROM messages m
-    WHERE m.sender_id = auth.uid()
+    WHERE m.sender_id = current_setting('app.current_user_id', true)
   )
 );
 
@@ -202,7 +202,7 @@ USING (
 CREATE POLICY "read_receipts_create_own" ON message_read_receipts
 FOR INSERT
 TO public
-WITH CHECK (reader_id = auth.uid());
+WITH CHECK (reader_id = current_setting('app.current_user_id', true));
 
 -- ============================================================================
 -- 5. MESSAGE_NOTIFICATIONS TABLE - RLS POLICIES
@@ -215,19 +215,19 @@ ALTER TABLE message_notifications ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "msg_notifications_own_only" ON message_notifications
 FOR SELECT
 TO public
-USING (recipient_id = auth.uid());
+USING (recipient_id = current_setting('app.current_user_id', true));
 
 -- Policy 2: Users can only insert notifications for themselves
 CREATE POLICY "msg_notifications_create_own" ON message_notifications
 FOR INSERT
 TO public
-WITH CHECK (recipient_id = auth.uid());
+WITH CHECK (recipient_id = current_setting('app.current_user_id', true));
 
 -- Policy 3: Users can update their own notifications (mark as read, etc)
 CREATE POLICY "msg_notifications_update_own" ON message_notifications
 FOR UPDATE
 TO public
-USING (recipient_id = auth.uid());
+USING (recipient_id = current_setting('app.current_user_id', true));
 
 -- Index for performance
 CREATE INDEX IF NOT EXISTS idx_message_notifications_recipient_id ON message_notifications(recipient_id, created_at DESC);
@@ -259,7 +259,7 @@ END $$;
 -- ============================================================================
 -- AUDIT LOG ENTRY
 -- ============================================================================
-
+-- DISABLED: 
 INSERT INTO audit_security.security_events (
   organization_id,
   event_category,

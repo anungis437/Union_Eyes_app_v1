@@ -431,21 +431,8 @@ CREATE TABLE IF NOT EXISTS "room_bookings" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "user_management"."tenant_users" DROP CONSTRAINT IF EXISTS "tenant_users_user_id_users_user_id_fk";
+-- Removed user_management schema references - using organization terminology in public schema
 --> statement-breakpoint
-DROP POLICY IF EXISTS tenant_users_select_org ON user_management.tenant_users;
---> statement-breakpoint
-DROP POLICY IF EXISTS tenant_users_insert_admin ON user_management.tenant_users;
---> statement-breakpoint
-DROP POLICY IF EXISTS tenant_users_update_admin ON user_management.tenant_users;
---> statement-breakpoint
-DROP POLICY IF EXISTS tenant_users_delete_admin ON user_management.tenant_users;
---> statement-breakpoint
-DROP POLICY IF EXISTS tenant_users_own_record ON user_management.tenant_users;
---> statement-breakpoint
-DROP POLICY IF EXISTS tenant_users_admin_access ON user_management.tenant_users;
---> statement-breakpoint
-ALTER TABLE "user_management"."tenant_users" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "claim_updates" ADD CONSTRAINT "claim_updates_claim_id_claims_claim_id_fk" FOREIGN KEY ("claim_id") REFERENCES "public"."claims"("claim_id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION

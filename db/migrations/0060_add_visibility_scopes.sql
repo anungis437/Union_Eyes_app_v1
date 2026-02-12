@@ -17,8 +17,8 @@ ALTER TABLE grievance_transitions
   ADD COLUMN visibility_scope visibility_scope DEFAULT 'staff' NOT NULL;
 
 -- Create index for efficient filtering
-CREATE INDEX idx_claim_updates_visibility ON claim_updates(claim_id, visibility_scope);
-CREATE INDEX idx_grievance_transitions_visibility ON grievance_transitions(claim_id, visibility_scope);
+CREATE INDEX IF NOT EXISTS idx_claim_updates_visibility ON claim_updates(claim_id, visibility_scope);
+CREATE INDEX IF NOT EXISTS idx_grievance_transitions_visibility ON grievance_transitions(claim_id, visibility_scope);
 
 -- Add comments for documentation
 COMMENT ON TYPE visibility_scope IS 'Defines who can see an event: member (union member), staff (steward/officer), admin (union administrator), system (internal only)';

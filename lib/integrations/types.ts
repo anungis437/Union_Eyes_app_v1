@@ -46,7 +46,10 @@ export enum IntegrationProvider {
   MANULIFE = 'manulife',
   BLUE_CROSS = 'blue_cross',
   GREEN_SHIELD = 'green_shield',
+  GREEN_SHIELD_CANADA = 'green_shield_canada',
   CANADA_LIFE = 'canada_life',
+  INDUSTRIAL_ALLIANCE = 'industrial_alliance',
+  SUN_LIFE = 'sun_life',
   
   // Pension
   OTPP = 'otpp',

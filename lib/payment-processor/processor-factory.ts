@@ -12,7 +12,9 @@ import {
 } from './types';
 import { StripeProcessor } from './processors/stripe-processor';
 import { WhopProcessor } from './processors/whop-processor';
-import { PayPalProcessor, SquareProcessor, ManualProcessor } from './processors/future-processors';
+import { PayPalProcessor } from './processors/paypal-processor';
+import { SquareProcessor } from './processors/square-processor';
+import { ManualProcessor } from './processors/future-processors';
 
 /**
  * Processor factory configuration
@@ -218,7 +220,7 @@ export function loadProcessorConfigFromEnv(): ProcessorFactoryConfig {
     };
   }
 
-  // PayPal configuration (when implemented)
+  // PayPal configuration
   if (process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET) {
     config.processors[PaymentProcessorType.PAYPAL] = {
       apiKey: process.env.PAYPAL_CLIENT_ID,
@@ -230,12 +232,15 @@ export function loadProcessorConfigFromEnv(): ProcessorFactoryConfig {
     };
   }
 
-  // Square configuration (when implemented)
-  if (process.env.SQUARE_ACCESS_TOKEN) {
+  // Square configuration
+  if (process.env.SQUARE_ACCESS_TOKEN && process.env.SQUARE_APPLICATION_ID) {
     config.processors[PaymentProcessorType.SQUARE] = {
       apiKey: process.env.SQUARE_ACCESS_TOKEN,
       webhookSecret: process.env.SQUARE_WEBHOOK_SECRET,
       environment: process.env.NODE_ENV === 'production' ? 'production' : 'test',
+      metadata: {
+        applicationId: process.env.SQUARE_APPLICATION_ID,
+      },
     };
   }
 

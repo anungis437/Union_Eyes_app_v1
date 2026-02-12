@@ -22,10 +22,10 @@ DROP VIEW IF EXISTS v_training_program_progress CASCADE;
 -- STEP 2: Drop ALL foreign key constraints on affected tables
 -- =============================================================================
 
--- FK constraints referencing user_management.users.user_id
-ALTER TABLE user_management.oauth_providers DROP CONSTRAINT IF EXISTS oauth_providers_user_id_users_user_id_fk;
-ALTER TABLE user_management.tenant_users DROP CONSTRAINT IF EXISTS tenant_users_invited_by_users_user_id_fk;
-ALTER TABLE user_management.user_sessions DROP CONSTRAINT IF EXISTS user_sessions_user_id_users_user_id_fk;
+-- FK constraints referencing public.users.user_id
+ALTER TABLE public.oauth_providers DROP CONSTRAINT IF EXISTS oauth_providers_user_id_users_user_id_fk;
+ALTER TABLE public.tenant_users DROP CONSTRAINT IF EXISTS tenant_users_invited_by_users_user_id_fk;
+ALTER TABLE public.user_sessions DROP CONSTRAINT IF EXISTS user_sessions_user_id_users_user_id_fk;
 ALTER TABLE audit_security.audit_logs DROP CONSTRAINT IF EXISTS audit_logs_user_id_users_user_id_fk;
 ALTER TABLE audit_security.security_events DROP CONSTRAINT IF EXISTS security_events_user_id_users_user_id_fk;
 ALTER TABLE audit_security.security_events DROP CONSTRAINT IF EXISTS security_events_resolved_by_users_user_id_fk;
@@ -44,19 +44,19 @@ ALTER TABLE program_enrollments DROP CONSTRAINT IF EXISTS program_enrollments_me
 -- =============================================================================
 
 -- Users table policies
-DROP POLICY IF EXISTS users_own_record ON user_management.users;
-DROP POLICY IF EXISTS users_admin_access ON user_management.users;
-DROP POLICY IF EXISTS users_tenant_access ON user_management.users;
+DROP POLICY IF EXISTS users_own_record ON public.users;
+DROP POLICY IF EXISTS users_admin_access ON public.users;
+DROP POLICY IF EXISTS users_tenant_access ON public.users;
 
 -- OAuth providers policies
-DROP POLICY IF EXISTS oauth_own_providers ON user_management.oauth_providers;
+DROP POLICY IF EXISTS oauth_own_providers ON public.oauth_providers;
 
 -- Tenant users policies
-DROP POLICY IF EXISTS tenant_users_own_record ON user_management.tenant_users;
-DROP POLICY IF EXISTS tenant_users_admin_access ON user_management.tenant_users;
+DROP POLICY IF EXISTS tenant_users_own_record ON public.tenant_users;
+DROP POLICY IF EXISTS tenant_users_admin_access ON public.tenant_users;
 
 -- User sessions policies
-DROP POLICY IF EXISTS user_sessions_own_records ON user_management.user_sessions;
+DROP POLICY IF EXISTS user_sessions_own_records ON public.user_sessions;
 
 -- Audit logs policies
 DROP POLICY IF EXISTS audit_logs_admin_access ON audit_security.audit_logs;
@@ -99,26 +99,26 @@ DROP POLICY IF EXISTS claim_updates_access ON claim_updates;
 DROP POLICY IF EXISTS claim_updates_insert ON claim_updates;
 
 -- =============================================================================
--- STEP 4: Convert user_management.users.user_id (ROOT TABLE - convert FIRST)
+-- STEP 4: Convert public.users.user_id (ROOT TABLE - convert FIRST)
 -- =============================================================================
 
-ALTER TABLE user_management.users 
+ALTER TABLE public.users 
   ALTER COLUMN user_id TYPE varchar(255);
 
 -- =============================================================================
--- STEP 5: Convert all columns that reference user_management.users.user_id
+-- STEP 5: Convert all columns that reference public.users.user_id
 -- =============================================================================
 
 -- OAuth providers
-ALTER TABLE user_management.oauth_providers 
+ALTER TABLE public.oauth_providers 
   ALTER COLUMN user_id TYPE varchar(255);
 
 -- Tenant users (invited_by references users.user_id)
-ALTER TABLE user_management.tenant_users 
+ALTER TABLE public.tenant_users 
   ALTER COLUMN invited_by TYPE varchar(255);
 
 -- User sessions
-ALTER TABLE user_management.user_sessions 
+ALTER TABLE public.user_sessions 
   ALTER COLUMN user_id TYPE varchar(255);
 
 -- Audit logs
@@ -160,7 +160,7 @@ ALTER TABLE program_enrollments
 DO $$
 BEGIN
   IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'tenant_management' AND table_name = 'tenant_configurations') THEN
-    ALTER TABLE tenant_management.tenant_configurations ALTER COLUMN updated_by TYPE varchar(255);
+    ALTER TABLE -- DISABLED: tenant_management.tenant_configurations ALTER COLUMN updated_by TYPE varchar(255);
   END IF;
 END $$;
 
@@ -232,42 +232,42 @@ END $$;
 -- STEP 8: Recreate critical FK constraints
 -- =============================================================================
 
--- Re-establish FK constraints referencing user_management.users.user_id (now varchar)
-ALTER TABLE user_management.oauth_providers
+-- Re-establish FK constraints referencing public.users.user_id (now varchar)
+ALTER TABLE public.oauth_providers
   ADD CONSTRAINT oauth_providers_user_id_users_user_id_fk
-  FOREIGN KEY (user_id) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+  FOREIGN KEY (user_id) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
-ALTER TABLE user_management.tenant_users
+ALTER TABLE public.tenant_users
   ADD CONSTRAINT tenant_users_invited_by_users_user_id_fk
-  FOREIGN KEY (invited_by) REFERENCES user_management.users(user_id);
+  FOREIGN KEY (invited_by) REFERENCES public.users(user_id);
 
-ALTER TABLE user_management.user_sessions
+ALTER TABLE public.user_sessions
   ADD CONSTRAINT user_sessions_user_id_users_user_id_fk
-  FOREIGN KEY (user_id) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+  FOREIGN KEY (user_id) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 ALTER TABLE audit_security.audit_logs
   ADD CONSTRAINT audit_logs_user_id_users_user_id_fk
-  FOREIGN KEY (user_id) REFERENCES user_management.users(user_id);
+  FOREIGN KEY (user_id) REFERENCES public.users(user_id);
 
 ALTER TABLE audit_security.security_events
   ADD CONSTRAINT security_events_user_id_users_user_id_fk
-  FOREIGN KEY (user_id) REFERENCES user_management.users(user_id);
+  FOREIGN KEY (user_id) REFERENCES public.users(user_id);
 
 ALTER TABLE audit_security.security_events
   ADD CONSTRAINT security_events_resolved_by_users_user_id_fk
-  FOREIGN KEY (resolved_by) REFERENCES user_management.users(user_id);
+  FOREIGN KEY (resolved_by) REFERENCES public.users(user_id);
 
 ALTER TABLE claims
   ADD CONSTRAINT fk_claims_member
-  FOREIGN KEY (member_id) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+  FOREIGN KEY (member_id) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 ALTER TABLE claims
   ADD CONSTRAINT fk_claims_assigned_to
-  FOREIGN KEY (assigned_to) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (assigned_to) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 ALTER TABLE claim_updates
   ADD CONSTRAINT fk_claim_updates_user
-  FOREIGN KEY (created_by) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+  FOREIGN KEY (created_by) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 -- Note: We do NOT recreate FK constraints for course_registrations, member_certifications,
 -- program_enrollments yet until we determine the correct parent table (users vs members)
@@ -278,7 +278,7 @@ ALTER TABLE claim_updates
 -- =============================================================================
 
 -- Users table policies
-CREATE POLICY users_own_record ON user_management.users
+CREATE POLICY users_own_record ON public.users
   FOR ALL
   USING (user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
@@ -322,7 +322,7 @@ COMMIT;
 -- Migration 0055 complete!
 -- 
 -- Summary:
--- - Converted user_management.users.user_id from UUID to varchar(255)
+-- - Converted public.users.user_id from UUID to varchar(255)
 -- - Converted all referencing columns to varchar(255)
 -- - Recreated essential FK constraints
 -- - Recreated basic RLS policies (expand as needed)

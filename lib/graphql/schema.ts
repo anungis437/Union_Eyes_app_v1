@@ -41,6 +41,34 @@ export const schema = createSchema({
       CANCELLED
     }
 
+    enum PensionPlanType {
+      CPP
+      QPP
+      OTPP
+    }
+
+    enum PaymentFrequency {
+      WEEKLY
+      BIWEEKLY
+      SEMIMONTHLY
+      MONTHLY
+    }
+
+    enum RemittanceStatus {
+      PENDING
+      SUBMITTED
+      CONFIRMED
+      FAILED
+    }
+
+    enum InsuranceProvider {
+      SUN_LIFE
+      MANULIFE
+      GREEN_SHIELD_CANADA
+      CANADA_LIFE
+      INDUSTRIAL_ALLIANCE
+    }
+
     # Types
     type Claim {
       id: ID!
@@ -105,6 +133,91 @@ export const schema = createSchema({
       createdAt: DateTime!
     }
 
+    # Pension Types
+    type PensionContribution {
+      employeeContribution: Float!
+      employerContribution: Float!
+      totalContribution: Float!
+      pensionableEarnings: Float!
+      grossEarnings: Float!
+      basicExemption: Float!
+      planType: PensionPlanType!
+      contributionPeriod: String!
+    }
+
+    type ContributionRates {
+      planType: PensionPlanType!
+      year: Int!
+      employeeRate: Float!
+      employerRate: Float!
+      maximumPensionableEarnings: Float!
+      basicExemption: Float
+      maximumContribution: Float!
+    }
+
+    type PensionRemittance {
+      id: ID!
+      planType: PensionPlanType!
+      periodStart: DateTime!
+      periodEnd: DateTime!
+      totalEmployeeContributions: Float!
+      totalEmployerContributions: Float!
+      totalContributions: Float!
+      employeeCount: Int!
+      status: RemittanceStatus!
+      confirmationNumber: String
+      submittedAt: DateTime
+      createdAt: DateTime!
+    }
+
+    type PensionProcessor {
+      type: PensionPlanType!
+      name: String!
+      description: String!
+      minAge: Int
+      maxAge: Int
+      supportsBuyBack: Boolean!
+      supportsEarlyRetirement: Boolean!
+      supportedProvinces: [String!]
+    }
+
+    # Insurance Types
+    type InsuranceClaim {
+      id: ID!
+      claimNumber: String!
+      provider: InsuranceProvider!
+      memberName: String!
+      claimDate: DateTime!
+      claimType: String!
+      claimAmount: Float!
+      approvedAmount: Float
+      paidAmount: Float
+      status: String!
+      providerName: String
+      serviceDate: DateTime
+    }
+
+    type InsurancePolicy {
+      id: ID!
+      provider: InsuranceProvider!
+      policyNumber: String!
+      policyType: String!
+      policyHolder: String!
+      coverageAmount: Float!
+      premium: Float!
+      effectiveDate: DateTime!
+      expiryDate: DateTime
+      status: String!
+    }
+
+    type InsuranceConnection {
+      provider: InsuranceProvider!
+      connected: Boolean!
+      lastSyncAt: DateTime
+      claimsCount: Int!
+      policiesCount: Int!
+    }
+
     # Pagination
     type PageInfo {
       hasNextPage: Boolean!
@@ -165,6 +278,25 @@ export const schema = createSchema({
       before: String
     }
 
+    # Pension Inputs
+    input CalculatePensionInput {
+      planType: PensionPlanType!
+      memberId: ID!
+      grossEarnings: Float!
+      paymentFrequency: PaymentFrequency!
+      province: String!
+      dateOfBirth: DateTime!
+      yearToDateEarnings: Float
+      yearToDateContributions: Float
+    }
+
+    input CreateRemittanceInput {
+      planType: PensionPlanType!
+      periodStart: DateTime!
+      periodEnd: DateTime!
+      contributions: [ID!]!
+    }
+
     # Queries
     type Query {
       # Claims
@@ -188,6 +320,27 @@ export const schema = createSchema({
       # Organization
       organization: Organization!
 
+      # Pension
+      pensionProcessors: [PensionProcessor!]!
+      pensionProcessor(planType: PensionPlanType!): PensionProcessor
+      contributionRates(planType: PensionPlanType!, year: Int!): ContributionRates
+      remittance(id: ID!): PensionRemittance
+      remittances(planType: PensionPlanType, status: RemittanceStatus): [PensionRemittance!]!
+
+      # Insurance
+      insuranceClaims(
+        provider: InsuranceProvider
+        status: String
+        startDate: DateTime
+        endDate: DateTime
+        pagination: PaginationInput
+      ): [InsuranceClaim!]!
+      insurancePolicies(
+        provider: InsuranceProvider
+        status: String
+      ): [InsurancePolicy!]!
+      insuranceConnections: [InsuranceConnection!]!
+
       # System
       systemStatus: SystemStatus!
     }
@@ -204,6 +357,14 @@ export const schema = createSchema({
 
       # Voting
       castVote(voteId: ID!, optionId: ID!): Boolean!
+
+      # Pension
+      calculatePensionContribution(input: CalculatePensionInput!): PensionContribution!
+      createRemittance(input: CreateRemittanceInput!): PensionRemittance!
+      submitRemittance(id: ID!): PensionRemittance!
+
+      # Insurance
+      syncInsuranceProvider(provider: InsuranceProvider!): InsuranceConnection!
     }
 
     # Subscriptions

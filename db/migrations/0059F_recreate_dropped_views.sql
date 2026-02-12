@@ -59,11 +59,11 @@ SELECT
   mc.certification_status AS cert_status,
   mc.verified_by,
   verifier.email AS verified_by_email
-FROM user_management.users u
+FROM public.users u
 LEFT JOIN course_registrations cr ON u.user_id = cr.member_id
 LEFT JOIN program_enrollments pe ON u.user_id = pe.member_id
 LEFT JOIN member_certifications mc ON u.user_id = mc.member_id
-LEFT JOIN user_management.users verifier ON mc.verified_by = verifier.user_id
+LEFT JOIN public.users verifier ON mc.verified_by = verifier.user_id
 WHERE u.is_active = true
 ORDER BY u.user_id, cr.registration_date DESC;
 
@@ -88,7 +88,7 @@ SELECT
   AVG(cr.post_test_score) AS avg_course_score,
   MAX(cr.completion_date) AS last_course_completion,
   MAX(pe.completion_date) AS last_program_completion
-FROM user_management.users u
+FROM public.users u
 LEFT JOIN course_registrations cr ON u.user_id = cr.member_id
 LEFT JOIN program_enrollments pe ON u.user_id = pe.member_id
 LEFT JOIN member_certifications mc ON u.user_id = mc.member_id
@@ -126,8 +126,8 @@ SELECT
   verifier.email AS verified_by_email,
   mc.organization_id
 FROM member_certifications mc
-JOIN user_management.users u ON mc.member_id = u.user_id
-LEFT JOIN user_management.users verifier ON mc.verified_by = verifier.user_id
+JOIN public.users u ON mc.member_id = u.user_id
+LEFT JOIN public.users verifier ON mc.verified_by = verifier.user_id
 WHERE u.is_active = true;
 
 -- =============================================================================
@@ -156,7 +156,7 @@ SELECT
     ELSE NULL
   END AS duration_days
 FROM course_registrations cr
-JOIN user_management.users u ON cr.member_id = u.user_id
+JOIN public.users u ON cr.member_id = u.user_id
 WHERE u.is_active = true
 ORDER BY cr.registration_date DESC;
 
@@ -177,7 +177,7 @@ SELECT
   mc.expiry_date,
   COUNT(DISTINCT cr.course_id) AS related_courses_completed,
   mc.organization_id
-FROM user_management.users u
+FROM public.users u
 LEFT JOIN member_certifications mc ON u.user_id = mc.member_id
 LEFT JOIN course_registrations cr ON u.user_id = cr.member_id AND cr.completed = true
 WHERE u.is_active = true
@@ -213,8 +213,8 @@ SELECT
   verifier.email AS verified_by_email,
   mc.organization_id
 FROM member_certifications mc
-JOIN user_management.users u ON mc.member_id = u.user_id
-LEFT JOIN user_management.users verifier ON mc.verified_by = verifier.user_id
+JOIN public.users u ON mc.member_id = u.user_id
+LEFT JOIN public.users verifier ON mc.verified_by = verifier.user_id
 WHERE mc.certification_status = 'active' AND u.is_active = true
 ORDER BY days_until_expiry ASC;
 
@@ -240,7 +240,7 @@ SELECT
   COUNT(CASE WHEN cr.completed = true THEN 1 END) AS courses_completed,
   AVG(cr.post_test_score) AS avg_course_score
 FROM program_enrollments pe
-JOIN user_management.users u ON pe.member_id = u.user_id
+JOIN public.users u ON pe.member_id = u.user_id
 LEFT JOIN course_registrations cr ON pe.member_id = cr.member_id
 WHERE u.is_active = true
 GROUP BY pe.program_id, pe.member_id, u.first_name, u.last_name, u.email, 

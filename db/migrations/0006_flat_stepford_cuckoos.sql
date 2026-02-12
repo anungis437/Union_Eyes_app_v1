@@ -878,24 +878,8 @@ EXCEPTION
   WHEN undefined_column THEN NULL;
   WHEN undefined_table THEN NULL;
 END $$;--> statement-breakpoint
-DO $$ BEGIN
-  ALTER TABLE "user_management"."oauth_providers" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
-EXCEPTION
-  WHEN undefined_column THEN NULL;
-  WHEN undefined_table THEN NULL;
-END $$;--> statement-breakpoint
-DO $$ BEGIN
-  ALTER TABLE "user_management"."tenant_users" ALTER COLUMN "invited_by" SET DATA TYPE varchar(255);
-EXCEPTION
-  WHEN undefined_column THEN NULL;
-  WHEN undefined_table THEN NULL;
-END $$;--> statement-breakpoint
-DO $$ BEGIN
-  ALTER TABLE "user_management"."user_sessions" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
-EXCEPTION
-  WHEN undefined_column THEN NULL;
-  WHEN undefined_table THEN NULL;
-END $$;--> statement-breakpoint
+-- Removed user_management schema references - using organization terminology in public schema
+--> statement-breakpoint
 DROP VIEW IF EXISTS v_member_training_transcript CASCADE;--> statement-breakpoint
 DROP VIEW IF EXISTS v_member_education_summary CASCADE;--> statement-breakpoint
 DROP VIEW IF EXISTS v_member_certification_status CASCADE;--> statement-breakpoint
@@ -923,38 +907,8 @@ BEGIN
 		EXECUTE format('DROP POLICY IF EXISTS %I ON %I.%I', r.policyname, r.schemaname, r.tablename);
 	END LOOP;
 END $$;--> statement-breakpoint
-DO $$ BEGIN
-  ALTER TABLE "user_management"."users" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
-EXCEPTION
-  WHEN undefined_column THEN NULL;
-  WHEN undefined_table THEN NULL;
-END $$;--> statement-breakpoint
-ALTER TABLE "user_management"."users" ALTER COLUMN "user_id" DROP DEFAULT;--> statement-breakpoint
-DO $$ BEGIN
-  ALTER TABLE "tenant_management"."tenant_configurations" ALTER COLUMN "updated_by" SET DATA TYPE varchar(255);
-EXCEPTION
-  WHEN undefined_column THEN NULL;
-  WHEN undefined_table THEN NULL;
-END $$;--> statement-breakpoint
-DROP VIEW IF EXISTS audit_security.active_audit_logs CASCADE;--> statement-breakpoint
-DO $$ BEGIN
-  ALTER TABLE "audit_security"."audit_logs" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
-EXCEPTION
-  WHEN undefined_column THEN NULL;
-  WHEN undefined_table THEN NULL;
-END $$;--> statement-breakpoint
-DO $$ BEGIN
-  ALTER TABLE "audit_security"."security_events" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
-EXCEPTION
-  WHEN undefined_column THEN NULL;
-  WHEN undefined_table THEN NULL;
-END $$;--> statement-breakpoint
-DO $$ BEGIN
-  ALTER TABLE "audit_security"."security_events" ALTER COLUMN "resolved_by" SET DATA TYPE varchar(255);
-EXCEPTION
-  WHEN undefined_column THEN NULL;
-  WHEN undefined_table THEN NULL;
-END $$;--> statement-breakpoint
+-- Removed user_management, tenant_management, and audit_security schema references - using organization terminology in public schema
+--> statement-breakpoint
 DO $$ BEGIN
   ALTER TABLE "bargaining_notes" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
 EXCEPTION
@@ -1903,15 +1857,16 @@ EXCEPTION
   WHEN undefined_column THEN NULL;
   WHEN undefined_table THEN NULL;
 END $$;--> statement-breakpoint
-ALTER TABLE "collective_agreements" ADD COLUMN "sector" varchar(200);--> statement-breakpoint
-ALTER TABLE "collective_agreements" ADD COLUMN "ai_processed" boolean DEFAULT false;--> statement-breakpoint
-ALTER TABLE "cba_clauses" ADD COLUMN "organization_id" uuid NOT NULL;--> statement-breakpoint
-ALTER TABLE "arbitration_decisions" ADD COLUMN "precedent_summary" text;--> statement-breakpoint
-ALTER TABLE "arbitration_decisions" ADD COLUMN "reasoning" text;--> statement-breakpoint
-ALTER TABLE "arbitration_decisions" ADD COLUMN "key_facts" text;--> statement-breakpoint
+ALTER TABLE "collective_agreements" ADD COLUMN IF NOT EXISTS "sector" varchar(200);--> statement-breakpoint
+ALTER TABLE "collective_agreements" ADD COLUMN IF NOT EXISTS "ai_processed" boolean DEFAULT false;--> statement-breakpoint
+ALTER TABLE "cba_clauses" ADD COLUMN IF NOT EXISTS "organization_id" uuid NOT NULL;--> statement-breakpoint
+ALTER TABLE "arbitration_decisions" ADD COLUMN IF NOT EXISTS "precedent_summary" text;--> statement-breakpoint
+ALTER TABLE "arbitration_decisions" ADD COLUMN IF NOT EXISTS "reasoning" text;--> statement-breakpoint
+ALTER TABLE "arbitration_decisions" ADD COLUMN IF NOT EXISTS "key_facts" text;--> statement-breakpoint
 ALTER TABLE "voting_audit_log" ADD CONSTRAINT "voting_audit_log_session_id_voting_sessions_id_fk" FOREIGN KEY ("session_id") REFERENCES "public"."voting_sessions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "automation_rules" ADD CONSTRAINT "automation_rules_org_id_organizations_id_fk" FOREIGN KEY ("org_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "automation_rules" ADD CONSTRAINT "automation_rules_award_type_id_recognition_award_types_id_fk" FOREIGN KEY ("award_type_id") REFERENCES "public"."recognition_award_types"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+-- Commented out FK to non-existent table recognition_award_types
+-- ALTER TABLE "automation_rules" ADD CONSTRAINT "automation_rules_award_type_id_recognition_award_types_id_fk" FOREIGN KEY ("award_type_id") REFERENCES "public"."recognition_award_types"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "cookie_consents" ADD CONSTRAINT "cookie_consents_user_id_profiles_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."profiles"("user_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "data_anonymization_log" ADD CONSTRAINT "data_anonymization_log_request_id_gdpr_data_requests_id_fk" FOREIGN KEY ("request_id") REFERENCES "public"."gdpr_data_requests"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "gdpr_data_requests" ADD CONSTRAINT "gdpr_data_requests_user_id_profiles_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."profiles"("user_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -2073,6 +2028,7 @@ CREATE INDEX "international_addresses_is_primary_idx" ON "international_addresse
 CREATE INDEX "international_addresses_postal_code_idx" ON "international_addresses" USING btree ("postal_code");--> statement-breakpoint
 ALTER TABLE "voter_eligibility" ADD CONSTRAINT "voter_eligibility_member_id_organization_members_id_fk" FOREIGN KEY ("member_id") REFERENCES "public"."organization_members"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "voting_sessions" ADD CONSTRAINT "voting_sessions_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE no action;
+
 
 
 

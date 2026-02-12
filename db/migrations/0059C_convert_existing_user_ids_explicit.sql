@@ -249,91 +249,91 @@ ALTER TABLE voting_sessions ALTER COLUMN created_by TYPE varchar(255);
 ALTER TABLE user_notification_preferences ALTER COLUMN user_id TYPE varchar(255);
 
 -- =============================================================================
--- STEP 4: Recreate FK constraints to user_management.users
+-- STEP 4: Recreate FK constraints to public.users
 -- =============================================================================
 
 -- Per-Capita Remittances
 ALTER TABLE per_capita_remittances
   ADD CONSTRAINT per_capita_remittances_approved_by_fkey
-  FOREIGN KEY (approved_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (approved_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
 ALTER TABLE per_capita_remittances
   ADD CONSTRAINT per_capita_remittances_rejected_by_fkey
-  FOREIGN KEY (rejected_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (rejected_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
 ALTER TABLE per_capita_remittances
   ADD CONSTRAINT per_capita_remittances_created_by_fkey
-  FOREIGN KEY (created_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (created_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 -- Deadlines
 ALTER TABLE claim_deadlines
   ADD CONSTRAINT claim_deadlines_completed_by_fkey
-  FOREIGN KEY (completed_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (completed_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
 ALTER TABLE claim_deadlines
   ADD CONSTRAINT claim_deadlines_escalated_to_fkey
-  FOREIGN KEY (escalated_to) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (escalated_to) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 ALTER TABLE deadline_extensions
   ADD CONSTRAINT deadline_extensions_requested_by_fkey
-  FOREIGN KEY (requested_by) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+  FOREIGN KEY (requested_by) REFERENCES public.users(user_id) ON DELETE CASCADE;
 ALTER TABLE deadline_extensions
   ADD CONSTRAINT deadline_extensions_approved_by_fkey
-  FOREIGN KEY (approved_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (approved_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 ALTER TABLE deadline_alerts
   ADD CONSTRAINT deadline_alerts_recipient_id_fkey
-  FOREIGN KEY (recipient_id) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+  FOREIGN KEY (recipient_id) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 -- Reports
 ALTER TABLE reports
   ADD CONSTRAINT reports_created_by_fkey
-  FOREIGN KEY (created_by) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+  FOREIGN KEY (created_by) REFERENCES public.users(user_id) ON DELETE CASCADE;
 ALTER TABLE reports
   ADD CONSTRAINT reports_updated_by_fkey
-  FOREIGN KEY (updated_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (updated_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 ALTER TABLE report_executions
   ADD CONSTRAINT report_executions_executed_by_fkey
-  FOREIGN KEY (executed_by) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+  FOREIGN KEY (executed_by) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 ALTER TABLE scheduled_reports
   ADD CONSTRAINT scheduled_reports_created_by_fkey
-  FOREIGN KEY (created_by) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+  FOREIGN KEY (created_by) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 ALTER TABLE report_shares
   ADD CONSTRAINT report_shares_shared_by_fkey
-  FOREIGN KEY (shared_by) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+  FOREIGN KEY (shared_by) REFERENCES public.users(user_id) ON DELETE CASCADE;
 ALTER TABLE report_shares
   ADD CONSTRAINT report_shares_shared_with_fkey
-  FOREIGN KEY (shared_with) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+  FOREIGN KEY (shared_with) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 -- Organizations
 ALTER TABLE organizations
   ADD CONSTRAINT organizations_created_by_fkey
-  FOREIGN KEY (created_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (created_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 -- Voting
 ALTER TABLE voting_notifications
   ADD CONSTRAINT voting_notifications_recipient_id_fkey
-  FOREIGN KEY (recipient_id) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+  FOREIGN KEY (recipient_id) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 -- Cross-org
 ALTER TABLE cross_org_access_log
   ADD CONSTRAINT cross_org_access_log_user_id_fkey
-  FOREIGN KEY (user_id) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+  FOREIGN KEY (user_id) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 -- User preferences
 ALTER TABLE user_notification_preferences
   ADD CONSTRAINT user_notification_preferences_user_id_fkey
-  FOREIGN KEY (user_id) REFERENCES user_management.users(user_id) ON DELETE CASCADE;
+  FOREIGN KEY (user_id) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 -- Signature workflows
 ALTER TABLE signature_workflows
   ADD CONSTRAINT signature_workflows_approver_user_id_fkey
-  FOREIGN KEY (approver_user_id) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (approver_user_id) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 -- Organization relationships
 ALTER TABLE organization_relationships
   ADD CONSTRAINT organization_relationships_approved_by_fkey
-  FOREIGN KEY (approved_by) REFERENCES user_management.users(user_id) ON DELETE SET NULL;
+  FOREIGN KEY (approved_by) REFERENCES public.users(user_id) ON DELETE SET NULL;
 
 -- =============================================================================
 -- STEP 5: Validation

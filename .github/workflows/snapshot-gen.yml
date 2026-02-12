@@ -1,0 +1,362 @@
+name: Schema Snapshot Generation
+
+on:
+  schedule:
+    # Run nightly at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to snapshot'
+        required: false
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+          - development
+      create_pr:
+        description: 'Create PR with snapshot updates'
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  generate-production-snapshot:
+    name: Generate Production Schema Snapshot
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: latest
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Install Drizzle Kit
+        run: pnpm add -D drizzle-kit
+      
+      - name: Generate production snapshot
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL || secrets.DATABASE_URL }}
+        run: |
+          mkdir -p snapshots/production
+          
+          # Introspect production database
+          npx drizzle-kit introspect:pg \
+            --out=snapshots/production/ \
+            2>&1 | tee snapshot-generation.log
+          
+          # Add timestamp metadata
+          echo "{\"generated_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"environment\": \"production\"}" \
+            > snapshots/production/metadata.json
+      
+      - name: Upload snapshot artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-snapshot-${{ github.run_id }}
+          path: |
+            snapshots/production/
+            snapshot-generation.log
+          retention-days: 90
+      
+      - name: Compare with previous snapshot
+        run: |
+          if [ -d "snapshots/production-previous" ]; then
+            echo "Comparing with previous snapshot..."
+            node scripts/compare-schemas.js \
+              snapshots/production-previous \
+              snapshots/production \
+              --json > snapshot-diff.json || true
+          else
+            echo "No previous snapshot found - this is the first snapshot"
+            echo '{"status":"first_snapshot","message":"No previous snapshot to compare"}' > snapshot-diff.json
+          fi
+      
+      - name: Check for significant changes
+        id: check_changes
+        run: |
+          if [ -f snapshot-diff.json ]; then
+            CRITICAL=$(jq -r '.summary.critical // 0' snapshot-diff.json)
+            WARNING=$(jq -r '.summary.warning // 0' snapshot-diff.json)
+            
+            echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+            echo "warning=$WARNING" >> $GITHUB_OUTPUT
+            
+            if [ "$CRITICAL" -gt 0 ]; then
+              echo "has_significant_changes=true" >> $GITHUB_OUTPUT
+              echo "::warning::Critical schema changes detected in production!"
+            elif [ "$WARNING" -gt 0 ]; then
+              echo "has_significant_changes=true" >> $GITHUB_OUTPUT
+              echo "::notice::Schema changes detected in production"
+            else
+              echo "has_significant_changes=false" >> $GITHUB_OUTPUT
+              echo "No significant schema changes"
+            fi
+          else
+            echo "has_significant_changes=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Archive previous snapshot
+        if: steps.check_changes.outputs.has_significant_changes == 'true'
+        run: |
+          if [ -d "snapshots/production-previous" ]; then
+            TIMESTAMP=$(date -u +%Y%m%d-%H%M%S)
+            mkdir -p snapshots/archive
+            mv snapshots/production-previous snapshots/archive/production-$TIMESTAMP
+            echo "Previous snapshot archived to snapshots/archive/production-$TIMESTAMP"
+          fi
+      
+      - name: Update production snapshot
+        if: steps.check_changes.outputs.has_significant_changes == 'true'
+        run: |
+          # Move current to previous
+          if [ -d "snapshots/production" ]; then
+            rm -rf snapshots/production-previous
+            cp -r snapshots/production snapshots/production-previous
+          fi
+      
+      - name: Create Pull Request with snapshot updates
+        if: |
+          steps.check_changes.outputs.has_significant_changes == 'true' && 
+          (github.event_name == 'schedule' || 
+           (github.event_name == 'workflow_dispatch' && github.event.inputs.create_pr == 'true'))
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update production schema snapshot'
+          title: '🔄 Production Schema Snapshot Update'
+          body: |
+            ## Production Schema Snapshot Update
+            
+            This PR contains an automated snapshot of the production database schema.
+            
+            **Generated:** ${{ github.run_id }}
+            **Timestamp:** ${{ github.event.repository.updated_at }}
+            
+            ### Changes Detected
+            
+            - Critical Changes: ${{ steps.check_changes.outputs.critical }}
+            - Warnings: ${{ steps.check_changes.outputs.warning }}
+            
+            ### Review Checklist
+            
+            - [ ] Review snapshot differences
+            - [ ] Verify changes are expected
+            - [ ] Update schema files if intentional changes
+            - [ ] Create migration if needed
+            - [ ] Document any manual changes
+            
+            ### Files Changed
+            
+            - `snapshots/production/` - Current production schema
+            - `snapshots/production-previous/` - Previous snapshot for comparison
+            
+            ### Next Steps
+            
+            1. Review the changes in this PR
+            2. If changes are expected, merge this PR
+            3. If unexpected, investigate schema drift
+            4. Update source schema files if needed
+            
+            ---
+            
+            *This PR was automatically generated by the Schema Snapshot workflow*
+          branch: automated/schema-snapshot-${{ github.run_number }}
+          delete-branch: true
+          labels: |
+            automated
+            schema
+            database
+            monitoring
+
+  generate-staging-snapshot:
+    name: Generate Staging Schema Snapshot
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: latest
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Install Drizzle Kit
+        run: pnpm add -D drizzle-kit
+      
+      - name: Generate staging snapshot
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+        if: env.DATABASE_URL != ''
+        run: |
+          mkdir -p snapshots/staging
+          
+          npx drizzle-kit introspect:pg \
+            --out=snapshots/staging/ \
+            2>&1 | tee staging-snapshot.log || true
+          
+          echo "{\"generated_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"environment\": \"staging\"}" \
+            > snapshots/staging/metadata.json
+      
+      - name: Upload staging snapshot
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: staging-snapshot-${{ github.run_id }}
+          path: |
+            snapshots/staging/
+            staging-snapshot.log
+          retention-days: 30
+
+  compare-environments:
+    name: Compare Production and Staging
+    runs-on: ubuntu-latest
+    needs: [generate-production-snapshot, generate-staging-snapshot]
+    if: github.event_name == 'workflow_dispatch' && always()
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Download production snapshot
+        uses: actions/download-artifact@v4
+        with:
+          name: production-snapshot-${{ github.run_id }}
+          path: snapshots/production/
+      
+      - name: Download staging snapshot
+        uses: actions/download-artifact@v4
+        with:
+          name: staging-snapshot-${{ github.run_id }}
+          path: snapshots/staging/
+        continue-on-error: true
+      
+      - name: Compare environments
+        run: |
+          if [ -d "snapshots/staging" ] && [ -d "snapshots/production" ]; then
+            echo "Comparing production and staging schemas..."
+            node scripts/compare-schemas.js \
+              snapshots/production \
+              snapshots/staging \
+              --json > env-comparison.json || true
+            
+            cat env-comparison.json
+          else
+            echo "::warning::Could not compare environments - missing snapshots"
+          fi
+      
+      - name: Upload comparison report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: environment-comparison-${{ github.run_id }}
+          path: env-comparison.json
+          retention-days: 30
+
+  cleanup-old-snapshots:
+    name: Cleanup Old Snapshot Artifacts
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    
+    steps:
+      - name: Delete old snapshot artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            
+            // Get all artifacts
+            const artifacts = await github.rest.actions.listArtifactsForRepo({
+              owner,
+              repo,
+              per_page: 100
+            });
+            
+            // Filter snapshot artifacts older than 90 days
+            const ninetyDaysAgo = new Date();
+            ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+            
+            for (const artifact of artifacts.data.artifacts) {
+              if (artifact.name.includes('snapshot') && 
+                  new Date(artifact.created_at) < ninetyDaysAgo) {
+                console.log(`Deleting old artifact: ${artifact.name}`);
+                await github.rest.actions.deleteArtifact({
+                  owner,
+                  repo,
+                  artifact_id: artifact.id
+                });
+              }
+            }
+
+  health-check:
+    name: Schema Health Check
+    runs-on: ubuntu-latest
+    needs: [generate-production-snapshot]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: latest
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Run schema drift detector
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL || secrets.DATABASE_URL }}
+        run: |
+          pnpm tsx scripts/schema-drift-detector.ts --json > health-check.json
+        continue-on-error: true
+      
+      - name: Upload health check report
+        uses: actions/upload-artifact@v4
+        with:
+          name: schema-health-check-${{ github.run_id }}
+          path: health-check.json
+          retention-days: 30
+      
+      - name: Summary
+        run: |
+          if [ -f health-check.json ]; then
+            STATUS=$(jq -r '.status' health-check.json)
+            CRITICAL=$(jq -r '.summary.criticalIssues' health-check.json)
+            
+            if [ "$STATUS" = "clean" ]; then
+              echo "✅ Schema health check passed"
+            else
+              echo "⚠️ Schema health issues detected ($CRITICAL critical)"
+            fi
+          fi

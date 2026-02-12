@@ -1,6 +1,6 @@
 -- Migration: Update Messaging RLS Policies for Session Context
 -- Date: February 10, 2026
--- Purpose: Convert RLS policies from auth.uid() to session variables
+-- Purpose: Convert RLS policies from current_setting('app.current_user_id', true) to session variables
 -- Context: Tests use PostgreSQL session context (app.current_user_id, etc.)
 
 -- ============================================================================

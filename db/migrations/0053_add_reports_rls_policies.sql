@@ -18,7 +18,7 @@ USING (
   organization_id IN (
     SELECT DISTINCT organization_id 
     FROM organization_members 
-    WHERE user_id = auth.uid() 
+    WHERE user_id = current_setting('app.current_user_id', true) 
       AND status = 'active'
   )
   OR is_public = true -- Allow public reports
@@ -32,7 +32,7 @@ WITH CHECK (
   organization_id IN (
     SELECT organization_id 
     FROM organization_members 
-    WHERE user_id = auth.uid() 
+    WHERE user_id = current_setting('app.current_user_id', true) 
       AND role IN ('admin', 'officer', 'treasurer')
       AND status = 'active'
   )
@@ -43,11 +43,11 @@ CREATE POLICY "reports_update_admin_or_creator" ON reports
 FOR UPDATE
 TO public
 USING (
-  created_by = auth.uid()
+  created_by = current_setting('app.current_user_id', true)
   OR organization_id IN (
     SELECT organization_id 
     FROM organization_members 
-    WHERE user_id = auth.uid() 
+    WHERE user_id = current_setting('app.current_user_id', true) 
       AND role IN ('admin', 'officer')
       AND status = 'active'
   )
@@ -61,7 +61,7 @@ USING (
   organization_id IN (
     SELECT organization_id 
     FROM organization_members 
-    WHERE user_id = auth.uid() 
+    WHERE user_id = current_setting('app.current_user_id', true) 
       AND role IN ('admin', 'officer')
       AND status = 'active'
   )
@@ -89,7 +89,7 @@ USING (
   OR organization_id IN (
     SELECT DISTINCT organization_id 
     FROM organization_members 
-    WHERE user_id = auth.uid() 
+    WHERE user_id = current_setting('app.current_user_id', true) 
       AND status = 'active'
   )
 );
@@ -102,7 +102,7 @@ WITH CHECK (
   organization_id IN (
     SELECT organization_id 
     FROM organization_members 
-    WHERE user_id = auth.uid() 
+    WHERE user_id = current_setting('app.current_user_id', true) 
       AND role IN ('admin', 'officer')
       AND status = 'active'
   )
@@ -113,11 +113,11 @@ CREATE POLICY "report_templates_update_admin_or_creator" ON report_templates
 FOR UPDATE
 TO public
 USING (
-  created_by = auth.uid()
+  created_by = current_setting('app.current_user_id', true)
   OR organization_id IN (
     SELECT organization_id 
     FROM organization_members 
-    WHERE user_id = auth.uid() 
+    WHERE user_id = current_setting('app.current_user_id', true) 
       AND role IN ('admin', 'officer')
       AND status = 'active'
   )
@@ -131,7 +131,7 @@ USING (
   organization_id IN (
     SELECT organization_id 
     FROM organization_members 
-    WHERE user_id = auth.uid() 
+    WHERE user_id = current_setting('app.current_user_id', true) 
       AND role IN ('admin', 'officer')
       AND status = 'active'
   )
@@ -158,7 +158,7 @@ USING (
     WHERE r.organization_id IN (
       SELECT DISTINCT organization_id 
       FROM organization_members 
-      WHERE user_id = auth.uid() 
+      WHERE user_id = current_setting('app.current_user_id', true) 
         AND status = 'active'
     )
   )
@@ -174,7 +174,7 @@ WITH CHECK (
     WHERE r.organization_id IN (
       SELECT organization_id 
       FROM organization_members 
-      WHERE user_id = auth.uid() 
+      WHERE user_id = current_setting('app.current_user_id', true) 
         AND role IN ('admin', 'officer', 'treasurer')
         AND status = 'active'
     )
@@ -198,12 +198,12 @@ CREATE POLICY "report_shares_participant_access" ON report_shares
 FOR SELECT
 TO public
 USING (
-  shared_with_user_id = auth.uid()
-  OR shared_by_user_id = auth.uid()
+  shared_with_user_id = current_setting('app.current_user_id', true)
+  OR shared_by_user_id = current_setting('app.current_user_id', true)
   OR shared_with_organization_id IN (
     SELECT organization_id 
     FROM organization_members 
-    WHERE user_id = auth.uid()
+    WHERE user_id = current_setting('app.current_user_id', true)
   )
 );
 
@@ -214,11 +214,11 @@ TO public
 WITH CHECK (
   report_id IN (
     SELECT r.id FROM reports r
-    WHERE r.created_by = auth.uid()
+    WHERE r.created_by = current_setting('app.current_user_id', true)
       OR r.organization_id IN (
         SELECT organization_id 
         FROM organization_members 
-        WHERE user_id = auth.uid() 
+        WHERE user_id = current_setting('app.current_user_id', true) 
           AND role IN ('admin', 'officer')
           AND status = 'active'
       )
@@ -229,12 +229,12 @@ WITH CHECK (
 CREATE POLICY "report_shares_modify_creator" ON report_shares
 FOR UPDATE
 TO public
-USING (shared_by_user_id = auth.uid());
+USING (shared_by_user_id = current_setting('app.current_user_id', true));
 
 CREATE POLICY "report_shares_delete_creator" ON report_shares
 FOR DELETE
 TO public
-USING (shared_by_user_id = auth.uid());
+USING (shared_by_user_id = current_setting('app.current_user_id', true));
 
 -- Create indexes for performance
 CREATE INDEX IF NOT EXISTS idx_report_shares_report_id ON report_shares(report_id);
@@ -258,7 +258,7 @@ USING (
     WHERE r.organization_id IN (
       SELECT DISTINCT organization_id 
       FROM organization_members 
-      WHERE user_id = auth.uid() 
+      WHERE user_id = current_setting('app.current_user_id', true) 
         AND status = 'active'
     )
   )
@@ -274,7 +274,7 @@ WITH CHECK (
     WHERE r.organization_id IN (
       SELECT organization_id 
       FROM organization_members 
-      WHERE user_id = auth.uid() 
+      WHERE user_id = current_setting('app.current_user_id', true) 
         AND role IN ('admin', 'officer', 'treasurer')
         AND status = 'active'
     )
@@ -291,7 +291,7 @@ USING (
     WHERE r.organization_id IN (
       SELECT organization_id 
       FROM organization_members 
-      WHERE user_id = auth.uid() 
+      WHERE user_id = current_setting('app.current_user_id', true) 
         AND role IN ('admin', 'officer')
         AND status = 'active'
     )
@@ -308,7 +308,7 @@ USING (
     WHERE r.organization_id IN (
       SELECT organization_id 
       FROM organization_members 
-      WHERE user_id = auth.uid() 
+      WHERE user_id = current_setting('app.current_user_id', true) 
         AND role IN ('admin', 'officer')
         AND status = 'active'
     )
@@ -345,7 +345,7 @@ END $$;
 -- ============================================================================
 -- AUDIT LOG ENTRY
 -- ============================================================================
-
+-- DISABLED: 
 INSERT INTO audit_security.security_events (
   organization_id,
   event_category,

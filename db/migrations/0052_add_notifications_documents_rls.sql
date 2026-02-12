@@ -14,25 +14,25 @@ ALTER TABLE in_app_notifications ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "notifications_own_user_only" ON in_app_notifications
 FOR SELECT
 TO public
-USING (user_id = auth.uid());
+USING (user_id = current_setting('app.current_user_id', true));
 
 -- Policy 2: Users can only INSERT their own notifications (system/app generated)
 CREATE POLICY "notifications_own_insert" ON in_app_notifications
 FOR INSERT
 TO public
-WITH CHECK (user_id = auth.uid());
+WITH CHECK (user_id = current_setting('app.current_user_id', true));
 
 -- Policy 3: Users can UPDATE their own notifications (mark as read, archive, etc)
 CREATE POLICY "notifications_own_update" ON in_app_notifications
 FOR UPDATE
 TO public
-USING (user_id = auth.uid());
+USING (user_id = current_setting('app.current_user_id', true));
 
 -- Policy 4: Users can DELETE their own notifications
 CREATE POLICY "notifications_own_delete" ON in_app_notifications
 FOR DELETE
 TO public
-USING (user_id = auth.uid());
+USING (user_id = current_setting('app.current_user_id', true));
 
 -- Create index for common queries
 CREATE INDEX IF NOT EXISTS idx_in_app_notifications_user_id ON in_app_notifications(user_id);
@@ -53,7 +53,7 @@ FOR SELECT
 TO public
 USING (
   member_id IN (
-    SELECT id FROM members WHERE user_id = auth.uid()
+    SELECT id FROM members WHERE user_id = current_setting('app.current_user_id', true)
   )
 );
 
@@ -66,7 +66,7 @@ USING (
     SELECT m.id 
     FROM members m
     INNER JOIN organization_members om ON m.organization_id = om.organization_id
-    WHERE om.user_id = auth.uid() 
+    WHERE om.user_id = current_setting('app.current_user_id', true) 
       AND om.role IN ('admin', 'officer', 'hr')
       AND om.status = 'active'
   )
@@ -78,7 +78,7 @@ FOR INSERT
 TO public
 WITH CHECK (
   member_id IN (
-    SELECT id FROM members WHERE user_id = auth.uid()
+    SELECT id FROM members WHERE user_id = current_setting('app.current_user_id', true)
   )
 );
 
@@ -88,12 +88,12 @@ FOR UPDATE
 TO public
 USING (
   member_id IN (
-    SELECT id FROM members WHERE user_id = auth.uid()
+    SELECT id FROM members WHERE user_id = current_setting('app.current_user_id', true)
   )
 )
 WITH CHECK (
   member_id IN (
-    SELECT id FROM members WHERE user_id = auth.uid()
+    SELECT id FROM members WHERE user_id = current_setting('app.current_user_id', true)
   )
 );
 
@@ -106,7 +106,7 @@ USING (
     SELECT m.id 
     FROM members m
     INNER JOIN organization_members om ON m.organization_id = om.organization_id
-    WHERE om.user_id = auth.uid() 
+    WHERE om.user_id = current_setting('app.current_user_id', true) 
       AND om.role IN ('admin', 'officer', 'hr')
       AND om.status = 'active'
   )
@@ -116,7 +116,7 @@ WITH CHECK (
     SELECT m.id 
     FROM members m
     INNER JOIN organization_members om ON m.organization_id = om.organization_id
-    WHERE om.user_id = auth.uid() 
+    WHERE om.user_id = current_setting('app.current_user_id', true) 
       AND om.role IN ('admin', 'officer', 'hr')
       AND om.status = 'active'
   )
@@ -128,7 +128,7 @@ FOR DELETE
 TO public
 USING (
   member_id IN (
-    SELECT id FROM members WHERE user_id = auth.uid()
+    SELECT id FROM members WHERE user_id = current_setting('app.current_user_id', true)
   )
 );
 
@@ -153,12 +153,12 @@ BEGIN
     FOR SELECT
     TO public
     USING (
-      owner_id = auth.uid()
+      owner_id = current_setting('app.current_user_id', true)
       OR storage_key IN (
         SELECT storage_key 
         FROM member_documents 
         WHERE member_id IN (
-          SELECT id FROM members WHERE user_id = auth.uid()
+          SELECT id FROM members WHERE user_id = current_setting('app.current_user_id', true)
         )
       )
     );
@@ -193,7 +193,7 @@ END $$;
 -- ============================================================================
 -- AUDIT LOG ENTRY
 -- ============================================================================
-
+-- DISABLED: 
 INSERT INTO audit_security.security_events (
   organization_id,
   event_category,

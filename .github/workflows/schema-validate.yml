@@ -1,0 +1,349 @@
+name: Schema Validation
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'db/schema/**'
+      - 'db/migrations/**'
+      - 'db/schema-organizations.ts'
+  schedule:
+    # Run every 6 hours to detect production drift
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to validate against'
+        required: false
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+          - development
+
+jobs:
+  schema-drift-detection:
+    name: Detect Schema Drift
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: latest
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Run schema drift detector
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: pnpm tsx scripts/schema-drift-detector.ts --json > drift-report.json
+        continue-on-error: true
+      
+      - name: Upload drift report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: schema-drift-report
+          path: drift-report.json
+          retention-days: 30
+      
+      - name: Check drift report
+        run: |
+          if [ -f drift-report.json ]; then
+            CRITICAL=$(jq '.summary.criticalIssues' drift-report.json)
+            WARNING=$(jq '.summary.warningIssues' drift-report.json)
+            
+            if [ "$CRITICAL" -gt 0 ]; then
+              echo "::error::🚨 Critical schema drift detected! ($CRITICAL issues)"
+              jq -r '.issues[] | select(.severity=="critical") | "::error::\(.message)"' drift-report.json
+              exit 1
+            elif [ "$WARNING" -gt 0 ]; then
+              echo "::warning::⚠️ Schema drift warnings detected ($WARNING issues)"
+              jq -r '.issues[] | select(.severity=="warning") | "::warning::\(.message)"' drift-report.json
+              exit 0
+            else
+              echo "✅ No schema drift detected"
+            fi
+          else
+            echo "::error::Drift report not generated"
+            exit 1
+          fi
+      
+      - name: Comment PR with drift report
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            if (!fs.existsSync('drift-report.json')) {
+              return;
+            }
+            
+            const report = JSON.parse(fs.readFileSync('drift-report.json', 'utf8'));
+            
+            let body = '## 🔍 Schema Drift Detection Report\n\n';
+            body += `**Status:** ${report.status === 'clean' ? '✅ Clean' : '⚠️ Drift Detected'}\n\n`;
+            body += `**Summary:**\n`;
+            body += `- Critical Issues: ${report.summary.criticalIssues}\n`;
+            body += `- Warnings: ${report.summary.warningIssues}\n`;
+            body += `- Info: ${report.summary.infoIssues}\n\n`;
+            
+            if (report.issues.length > 0) {
+              const critical = report.issues.filter(i => i.severity === 'critical');
+              const warnings = report.issues.filter(i => i.severity === 'warning');
+              
+              if (critical.length > 0) {
+                body += '### 🚨 Critical Issues\n\n';
+                critical.forEach(issue => {
+                  body += `- ${issue.message}\n`;
+                });
+                body += '\n';
+              }
+              
+              if (warnings.length > 0) {
+                body += '### ⚠️ Warnings\n\n';
+                warnings.slice(0, 10).forEach(issue => {
+                  body += `- ${issue.message}\n`;
+                });
+                if (warnings.length > 10) {
+                  body += `\n_...and ${warnings.length - 10} more warnings_\n`;
+                }
+              }
+            }
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+  production-schema-compare:
+    name: Compare Production Schema
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.event_name == 'schedule'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: latest
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Install Drizzle Kit
+        run: pnpm add -D drizzle-kit
+      
+      - name: Introspect production database
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL || secrets.DATABASE_URL }}
+        run: |
+          npx drizzle-kit introspect:pg \
+            --out=prod-schema/ \
+            2>&1 | tee introspect.log || true
+      
+      - name: Compare schemas
+        if: always()
+        run: |
+          if [ -d "prod-schema" ]; then
+            node scripts/compare-schemas.js db/schema prod-schema --json > comparison-report.json || true
+          else
+            echo '{"status":"error","message":"Production introspection failed"}' > comparison-report.json
+          fi
+        continue-on-error: true
+      
+      - name: Upload comparison report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: schema-comparison-report
+          path: |
+            comparison-report.json
+            introspect.log
+          retention-days: 30
+      
+      - name: Check comparison results
+        if: always()
+        run: |
+          if [ -f comparison-report.json ]; then
+            STATUS=$(jq -r '.status' comparison-report.json)
+            CRITICAL=$(jq -r '.summary.critical // 0' comparison-report.json)
+            WARNING=$(jq -r '.summary.warning // 0' comparison-report.json)
+            
+            if [ "$STATUS" = "error" ]; then
+              echo "::warning::Schema comparison could not complete - production introspection may have failed"
+              exit 0
+            elif [ "$CRITICAL" -gt 0 ]; then
+              echo "::error::🚨 Critical schema differences detected! ($CRITICAL issues)"
+              exit 1
+            elif [ "$WARNING" -gt 0 ]; then
+              echo "::warning::⚠️ Schema differences detected ($WARNING issues)"
+            else
+              echo "✅ Schemas match"
+            fi
+          fi
+
+  migration-integrity-check:
+    name: Migration Integrity Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: latest
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Check migration integrity
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: pnpm tsx scripts/validate-migrations.ts
+        continue-on-error: false
+      
+      - name: Report success
+        if: success()
+        run: echo "✅ All migrations are properly applied and validated"
+
+  snapshot-validation:
+    name: Validate Schema Snapshots
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Check for snapshot updates
+        run: |
+          if git diff --name-only origin/${{ github.base_ref }} HEAD | grep -q 'db/meta/.*_snapshot.json'; then
+            echo "✅ Snapshot file updated in this PR"
+          else
+            if git diff --name-only origin/${{ github.base_ref }} HEAD | grep -q 'db/schema/'; then
+              echo "::warning::Schema files changed but snapshot not updated. Consider running 'pnpm drizzle-kit generate'"
+            else
+              echo "ℹ️ No schema changes in this PR"
+            fi
+          fi
+
+  alert-on-drift:
+    name: Alert on Drift
+    runs-on: ubuntu-latest
+    needs: [schema-drift-detection, production-schema-compare]
+    if: failure() && github.event_name == 'schedule'
+    
+    steps:
+      - name: Send Slack notification
+        if: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "🚨 Schema Drift Detected!",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "🚨 Database Schema Drift Alert"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Production database schema has drifted from expected schema*"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Repository:*\n${{ github.repository }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Workflow:*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Please review the schema drift report and investigate potential manual database changes."
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+      
+      - name: Create issue on drift
+        if: github.event_name == 'schedule'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const today = new Date().toISOString().split('T')[0];
+            
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 Schema Drift Detected - ${today}`,
+              body: `## Schema Drift Alert
+              
+              Automated schema validation has detected drift in the production database.
+              
+              **Detection Time:** ${new Date().toISOString()}
+              **Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              
+              ### Action Required
+              
+              1. Review the drift report in workflow artifacts
+              2. Investigate any manual database changes
+              3. Update schema files if changes are intentional
+              4. Create migration if needed
+              5. Close this issue once resolved
+              
+              ### Reports Available
+              
+              - Schema Drift Report
+              - Production Schema Comparison
+              - Migration Integrity Check
+              
+              Download artifacts from the workflow run link above.
+              `,
+              labels: ['database', 'schema-drift', 'automated-alert', 'priority-high']
+            });

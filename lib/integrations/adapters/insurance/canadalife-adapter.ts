@@ -1,0 +1,356 @@
+/**
+ * CanadaLife Integration Adapter
+ * 
+ * Syncs insurance and benefits data from Canada Life (formerly Great-West Life):
+ * - Insurance policies (life, disability, health)
+ * - Insurance claims
+ * - Policy beneficiaries
+ * 
+ * Features:
+ * - Full and incremental sync
+ * - Organization isolation via policy group
+ * - Automatic token refresh
+ */
+
+import { BaseIntegration } from '../../base-integration';
+import {
+  IntegrationType,
+  IntegrationProvider,
+  SyncOptions,
+  SyncResult,
+  HealthCheckResult,
+  WebhookEvent,
+} from '../../types';
+import { CanadaLifeClient, type CanadaLifeConfig } from './canadalife-client';
+import { db } from '@/db';
+import { 
+  externalInsurancePolicies,
+  externalInsuranceClaims,
+  externalInsuranceBeneficiaries,
+} from '@/db/schema';
+import { eq, and } from 'drizzle-orm';
+
+export class CanadaLifeAdapter extends BaseIntegration {
+  private client?: CanadaLifeClient;
+  private readonly PAGE_SIZE = 100;
+
+  constructor() {
+    super(IntegrationType.INSURANCE, IntegrationProvider.CANADA_LIFE, {
+      supportsFullSync: true,
+      supportsIncrementalSync: true,
+      supportsWebhooks: false,
+      supportsRealTime: false,
+      supportedEntities: ['policies', 'claims', 'beneficiaries'],
+      requiresOAuth: true,
+      rateLimitPerMinute: 150,
+    });
+  }
+
+  async connect(): Promise<void> {
+    this.ensureInitialized();
+
+    try {
+      const config: CanadaLifeConfig = {
+        clientId: this.config!.credentials.clientId!,
+        clientSecret: this.config!.credentials.clientSecret!,
+        policyGroupId: this.config!.settings?.policyGroupId || '',
+        refreshToken: this.config!.credentials.refreshToken,
+        environment: 'production',
+      };
+
+      this.client = new CanadaLifeClient(config);
+      await this.client.authenticate();
+      
+      const newRefreshToken = this.client.getRefreshToken();
+      if (newRefreshToken && this.config) {
+        this.config.credentials.refreshToken = newRefreshToken;
+      }
+      
+      this.connected = true;
+      this.logOperation('connect', 'Connected to Canada Life');
+    } catch (error) {
+      this.logError('connect', error);
+      throw error;
+    }
+  }
+
+  async disconnect(): Promise<void> {
+    this.connected = false;
+    this.client = undefined;
+    this.logOperation('disconnect', 'Disconnected from Canada Life');
+  }
+
+  async healthCheck(): Promise<HealthCheckResult> {
+    try {
+      this.ensureConnected();
+
+      const startTime = Date.now();
+      const isHealthy = await this.client!.healthCheck();
+      const latency = Date.now() - startTime;
+
+      return {
+        healthy: isHealthy,
+        latency,
+        details: {
+          provider: 'Canada Life',
+          connected: this.connected,
+          timestamp: new Date().toISOString(),
+        },
+      };
+    } catch (error) {
+      return {
+        healthy: false,
+        latency: 0,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        details: {
+          provider: 'Canada Life',
+          connected: false,
+        },
+      };
+    }
+  }
+
+  async sync(options: SyncOptions): Promise<SyncResult> {
+    this.ensureConnected();
+
+    const startTime = Date.now();
+    let recordsProcessed = 0;
+    let recordsCreated = 0;
+    let recordsUpdated = 0;
+    let recordsFailed = 0;
+    const errors: string[] = [];
+
+    try {
+      const entities = options.entities || this.capabilities.supportedEntities;
+      const modifiedSince = options.cursor ? new Date(options.cursor) : undefined;
+
+      for (const entity of entities) {
+        try {
+          switch (entity) {
+            case 'policies':
+              const policiesResult = await this.syncPolicies(modifiedSince);
+              recordsProcessed += policiesResult.processed;
+              recordsCreated += policiesResult.created;
+              recordsUpdated += policiesResult.updated;
+              recordsFailed += policiesResult.failed;
+              break;
+
+            case 'claims':
+              const claimsResult = await this.syncClaims(modifiedSince);
+              recordsProcessed += claimsResult.processed;
+              recordsCreated += claimsResult.created;
+              recordsUpdated += claimsResult.updated;
+              recordsFailed += claimsResult.failed;
+              break;
+
+            case 'beneficiaries':
+              const beneficiariesResult = await this.syncBeneficiaries();
+              recordsProcessed += beneficiariesResult.processed;
+              recordsCreated += beneficiariesResult.created;
+              recordsUpdated += beneficiariesResult.updated;
+              recordsFailed += beneficiariesResult.failed;
+              break;
+          }
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          errors.push(`Failed to sync ${entity}: ${errorMessage}`);
+          this.logError('sync', error);
+        }
+      }
+
+      return {
+        status: recordsFailed > 0 ? 'partial' : 'success',
+        recordsProcessed,
+        recordsCreated,
+        recordsUpdated,
+        recordsFailed,
+        duration: Date.now() - startTime,
+        nextCursor: new Date().toISOString(),
+        errors: errors.length > 0 ? errors : undefined,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return {
+        status: 'failed',
+        recordsProcessed,
+        recordsCreated,
+        recordsUpdated,
+        recordsFailed,
+        duration: Date.now() - startTime,
+        errors: [errorMessage],
+      };
+    }
+  }
+
+  private async syncPolicies(modifiedSince?: Date): Promise<{ processed: number; created: number; updated: number; failed: number }> {
+    let processed = 0, created = 0, updated = 0, failed = 0;
+    let page = 1;
+
+    while (true) {
+      const policies = await this.client!.getPolicies(page, this.PAGE_SIZE, modifiedSince);
+      if (policies.length === 0) break;
+
+      for (const policy of policies) {
+        try {
+          const existing = await db.select().from(externalInsurancePolicies).where(
+            and(
+              eq(externalInsurancePolicies.organizationId, this.config!.organizationId),
+              eq(externalInsurancePolicies.provider, 'canada_life'),
+              eq(externalInsurancePolicies.externalId, policy.external_id)
+            )
+          ).limit(1);
+
+          const policyData = {
+            organizationId: this.config!.organizationId,
+            provider: 'canada_life' as const,
+            externalId: policy.external_id,
+            policyNumber: policy.policy_number,
+            policyType: policy.policy_type,
+            policyHolder: policy.policy_holder,
+            coverageAmount: policy.coverage_amount.toString(),
+            premium: policy.premium.toString(),
+            effectiveDate: new Date(policy.effective_date),
+            expiryDate: policy.expiry_date ? new Date(policy.expiry_date) : null,
+            status: policy.status,
+            lastSyncAt: new Date(),
+          };
+
+          if (existing.length > 0) {
+            await db.update(externalInsurancePolicies).set(policyData).where(eq(externalInsurancePolicies.id, existing[0].id));
+            updated++;
+          } else {
+            await db.insert(externalInsurancePolicies).values(policyData);
+            created++;
+          }
+          processed++;
+        } catch (error) {
+          this.logError('syncPolicies', error);
+          failed++;
+        }
+      }
+
+      if (policies.length < this.PAGE_SIZE) break;
+      page++;
+    }
+
+    return { processed, created, updated, failed };
+  }
+
+  private async syncClaims(modifiedSince?: Date): Promise<{ processed: number; created: number; updated: number; failed: number }> {
+    let processed = 0, created = 0, updated = 0, failed = 0;
+    let page = 1;
+
+    while (true) {
+      const claims = await this.client!.getClaims(page, this.PAGE_SIZE, modifiedSince);
+      if (claims.length === 0) break;
+
+      for (const claim of claims) {
+        try {
+          const existing = await db.select().from(externalInsuranceClaims).where(
+            and(
+              eq(externalInsuranceClaims.organizationId, this.config!.organizationId),
+              eq(externalInsuranceClaims.provider, 'canada_life'),
+              eq(externalInsuranceClaims.externalId, claim.external_id)
+            )
+          ).limit(1);
+
+          const claimData = {
+            organizationId: this.config!.organizationId,
+            provider: 'canada_life' as const,
+            externalId: claim.external_id,
+            claimNumber: claim.claim_number,
+            memberName: claim.member_name,
+            claimDate: new Date(claim.claim_date),
+            claimType: claim.claim_type,
+            claimAmount: claim.claim_amount.toString(),
+            approvedAmount: claim.approved_amount?.toString(),
+            paidAmount: claim.paid_amount?.toString(),
+            status: claim.status,
+            providerName: claim.provider_name,
+            serviceDate: claim.service_date ? new Date(claim.service_date) : null,
+            disabilityStartDate: claim.disability_start_date ? new Date(claim.disability_start_date) : null,
+            estimatedReturnDate: claim.estimated_return_date ? new Date(claim.estimated_return_date) : null,
+            lastSyncAt: new Date(),
+          };
+
+          if (existing.length > 0) {
+            await db.update(externalInsuranceClaims).set(claimData).where(eq(externalInsuranceClaims.id, existing[0].id));
+            updated++;
+          } else {
+            await db.insert(externalInsuranceClaims).values(claimData);
+            created++;
+          }
+          processed++;
+        } catch (error) {
+          this.logError('syncClaims', error);
+          failed++;
+        }
+      }
+
+      if (claims.length < this.PAGE_SIZE) break;
+      page++;
+    }
+
+    return { processed, created, updated, failed };
+  }
+
+  private async syncBeneficiaries(): Promise<{ processed: number; created: number; updated: number; failed: number }> {
+    let processed = 0, created = 0, updated = 0, failed = 0;
+    let page = 1;
+
+    while (true) {
+      const beneficiaries = await this.client!.getBeneficiaries(page, this.PAGE_SIZE);
+      if (beneficiaries.length === 0) break;
+
+      for (const beneficiary of beneficiaries) {
+        try {
+          const existing = await db.select().from(externalInsuranceBeneficiaries).where(
+            and(
+              eq(externalInsuranceBeneficiaries.organizationId, this.config!.organizationId),
+              eq(externalInsuranceBeneficiaries.provider, 'canada_life'),
+              eq(externalInsuranceBeneficiaries.externalId, beneficiary.external_id)
+            )
+          ).limit(1);
+
+          const beneficiaryData = {
+            organizationId: this.config!.organizationId,
+            provider: 'canada_life' as const,
+            externalId: beneficiary.external_id,
+            policyId: beneficiary.policy_id,
+            beneficiaryName: beneficiary.beneficiary_name,
+            relationship: beneficiary.relationship,
+            percentage: beneficiary.percentage.toString(),
+            dateOfBirth: beneficiary.date_of_birth ? new Date(beneficiary.date_of_birth) : null,
+            status: beneficiary.status,
+            lastSyncAt: new Date(),
+          };
+
+          if (existing.length > 0) {
+            await db.update(externalInsuranceBeneficiaries).set(beneficiaryData).where(eq(externalInsuranceBeneficiaries.id, existing[0].id));
+            updated++;
+          } else {
+            await db.insert(externalInsuranceBeneficiaries).values(beneficiaryData);
+            created++;
+          }
+          processed++;
+        } catch (error) {
+          this.logError('syncBeneficiaries', error);
+          failed++;
+        }
+      }
+
+      if (beneficiaries.length < this.PAGE_SIZE) break;
+      page++;
+    }
+
+    return { processed, created, updated, failed };
+  }
+
+  async verifyWebhook(payload: string, signature: string): Promise<boolean> {
+    return false;
+  }
+
+  async processWebhook(event: WebhookEvent): Promise<void> {
+    this.logOperation('webhook', 'Canada Life does not support webhooks');
+  }
+}

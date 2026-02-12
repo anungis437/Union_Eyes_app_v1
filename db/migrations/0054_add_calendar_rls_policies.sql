@@ -15,11 +15,11 @@ CREATE POLICY "calendars_owner_or_shared" ON calendars
 FOR SELECT
 TO public
 USING (
-  owner_id = auth.uid()
+  owner_id = current_setting('app.current_user_id', true)
   OR id IN (
     SELECT calendar_id 
     FROM calendar_sharing 
-    WHERE shared_with_user_id = auth.uid() 
+    WHERE shared_with_user_id = current_setting('app.current_user_id', true) 
       AND is_shared = true
   )
 );
@@ -28,19 +28,19 @@ USING (
 CREATE POLICY "calendars_create_own" ON calendars
 FOR INSERT
 TO public
-WITH CHECK (owner_id = auth.uid());
+WITH CHECK (owner_id = current_setting('app.current_user_id', true));
 
 -- Policy 3: Calendar owners can UPDATE their calendars
 CREATE POLICY "calendars_update_owner" ON calendars
 FOR UPDATE
 TO public
-USING (owner_id = auth.uid());
+USING (owner_id = current_setting('app.current_user_id', true));
 
 -- Policy 4: Calendar owners can DELETE their calendars
 CREATE POLICY "calendars_delete_owner" ON calendars
 FOR DELETE
 TO public
-USING (owner_id = auth.uid());
+USING (owner_id = current_setting('app.current_user_id', true));
 
 -- Create indexes for performance
 CREATE INDEX IF NOT EXISTS idx_calendars_owner_id ON calendars(owner_id);
@@ -60,12 +60,12 @@ TO public
 USING (
   calendar_id IN (
     SELECT id FROM calendars c
-    WHERE c.owner_id = auth.uid()
+    WHERE c.owner_id = current_setting('app.current_user_id', true)
       OR c.is_public = true
       OR c.id IN (
         SELECT calendar_id 
         FROM calendar_sharing 
-        WHERE shared_with_user_id = auth.uid() 
+        WHERE shared_with_user_id = current_setting('app.current_user_id', true) 
           AND is_shared = true
       )
   )
@@ -78,11 +78,11 @@ TO public
 WITH CHECK (
   calendar_id IN (
     SELECT id FROM calendars c
-    WHERE c.owner_id = auth.uid()
+    WHERE c.owner_id = current_setting('app.current_user_id', true)
       OR c.id IN (
         SELECT calendar_id 
         FROM calendar_sharing 
-        WHERE shared_with_user_id = auth.uid() 
+        WHERE shared_with_user_id = current_setting('app.current_user_id', true) 
           AND is_shared = true
           AND allow_modify = true
       )
@@ -94,14 +94,14 @@ CREATE POLICY "calendar_events_update_creator_or_admin" ON calendar_events
 FOR UPDATE
 TO public
 USING (
-  created_by = auth.uid()
+  created_by = current_setting('app.current_user_id', true)
   OR calendar_id IN (
     SELECT id FROM calendars c
-    WHERE c.owner_id = auth.uid()
+    WHERE c.owner_id = current_setting('app.current_user_id', true)
       OR c.id IN (
         SELECT calendar_id 
         FROM calendar_sharing 
-        WHERE shared_with_user_id = auth.uid() 
+        WHERE shared_with_user_id = current_setting('app.current_user_id', true) 
           AND is_shared = true
           AND allow_modify = true
       )
@@ -112,7 +112,7 @@ USING (
 CREATE POLICY "calendar_events_delete_creator" ON calendar_events
 FOR DELETE
 TO public
-USING (created_by = auth.uid());
+USING (created_by = current_setting('app.current_user_id', true));
 
 -- Create indexes for performance
 CREATE INDEX IF NOT EXISTS idx_calendar_events_calendar_id ON calendar_events(calendar_id);
@@ -133,9 +133,9 @@ FOR SELECT
 TO public
 USING (
   calendar_id IN (
-    SELECT id FROM calendars WHERE owner_id = auth.uid()
+    SELECT id FROM calendars WHERE owner_id = current_setting('app.current_user_id', true)
   )
-  OR shared_with_user_id = auth.uid()
+  OR shared_with_user_id = current_setting('app.current_user_id', true)
 );
 
 -- Policy 2: Calendar owners can CREATE shares for their calendars
@@ -144,7 +144,7 @@ FOR INSERT
 TO public
 WITH CHECK (
   calendar_id IN (
-    SELECT id FROM calendars WHERE owner_id = auth.uid()
+    SELECT id FROM calendars WHERE owner_id = current_setting('app.current_user_id', true)
   )
 );
 
@@ -154,7 +154,7 @@ FOR UPDATE
 TO public
 USING (
   calendar_id IN (
-    SELECT id FROM calendars WHERE owner_id = auth.uid()
+    SELECT id FROM calendars WHERE owner_id = current_setting('app.current_user_id', true)
   )
 );
 
@@ -164,7 +164,7 @@ FOR DELETE
 TO public
 USING (
   calendar_id IN (
-    SELECT id FROM calendars WHERE owner_id = auth.uid()
+    SELECT id FROM calendars WHERE owner_id = current_setting('app.current_user_id', true)
   )
 );
 
@@ -189,12 +189,12 @@ USING (
     SELECT id FROM calendar_events ce
     WHERE ce.calendar_id IN (
       SELECT id FROM calendars c
-      WHERE c.owner_id = auth.uid()
+      WHERE c.owner_id = current_setting('app.current_user_id', true)
         OR c.is_public = true
         OR c.id IN (
           SELECT calendar_id 
           FROM calendar_sharing 
-          WHERE shared_with_user_id = auth.uid() 
+          WHERE shared_with_user_id = current_setting('app.current_user_id', true) 
             AND is_shared = true
         )
     )
@@ -210,11 +210,11 @@ WITH CHECK (
     SELECT id FROM calendar_events ce
     WHERE ce.calendar_id IN (
       SELECT id FROM calendars c
-      WHERE c.owner_id = auth.uid()
+      WHERE c.owner_id = current_setting('app.current_user_id', true)
         OR c.id IN (
           SELECT calendar_id 
           FROM calendar_sharing 
-          WHERE shared_with_user_id = auth.uid() 
+          WHERE shared_with_user_id = current_setting('app.current_user_id', true) 
             AND is_shared = true
             AND allow_modify = true
         )
@@ -231,11 +231,11 @@ USING (
     SELECT id FROM calendar_events ce
     WHERE ce.calendar_id IN (
       SELECT id FROM calendars c
-      WHERE c.owner_id = auth.uid()
+      WHERE c.owner_id = current_setting('app.current_user_id', true)
         OR c.id IN (
           SELECT calendar_id 
           FROM calendar_sharing 
-          WHERE shared_with_user_id = auth.uid() 
+          WHERE shared_with_user_id = current_setting('app.current_user_id', true) 
             AND is_shared = true
             AND allow_modify = true
         )
@@ -247,8 +247,8 @@ USING (
 CREATE POLICY "event_attendees_update_own_rsvp" ON event_attendees
 FOR UPDATE
 TO public
-USING (attendee_id = auth.uid())
-WITH CHECK (attendee_id = auth.uid());
+USING (attendee_id = current_setting('app.current_user_id', true))
+WITH CHECK (attendee_id = current_setting('app.current_user_id', true));
 
 -- Policy 5: Event creators can DELETE attendees
 CREATE POLICY "event_attendees_delete_event_owner" ON event_attendees
@@ -259,7 +259,7 @@ USING (
     SELECT id FROM calendar_events ce
     WHERE ce.calendar_id IN (
       SELECT id FROM calendars c
-      WHERE c.owner_id = auth.uid()
+      WHERE c.owner_id = current_setting('app.current_user_id', true)
     )
   )
 );
@@ -295,7 +295,7 @@ END $$;
 -- ============================================================================
 -- AUDIT LOG ENTRY
 -- ============================================================================
-
+-- DISABLED: 
 INSERT INTO audit_security.security_events (
   organization_id,
   event_category,

@@ -25,6 +25,9 @@ import { FreshBooksAdapter } from './adapters/accounting/freshbooks-adapter';
 import { WaveAdapter } from './adapters/accounting/wave-adapter';
 import { SunLifeAdapter } from './adapters/insurance/sunlife-adapter';
 import { ManulifeAdapter } from './adapters/insurance/manulife-adapter';
+import { GreenShieldAdapter } from './adapters/insurance/greenshield-adapter';
+import { CanadaLifeAdapter } from './adapters/insurance/canadalife-adapter';
+import { IndustrialAllianceAdapter } from './adapters/insurance/ia-adapter';
 import { SlackAdapter } from './adapters/communication/slack-adapter';
 import { TeamsAdapter } from './adapters/communication/teams-adapter';
 import { LinkedInLearningAdapter } from './adapters/lms/linkedin-learning-adapter';
@@ -200,8 +203,23 @@ export class IntegrationFactory {
       case IntegrationProvider.SUNLIFE:
         return new SunLifeAdapter();
       
+      case IntegrationProvider.SUN_LIFE:
+        return new SunLifeAdapter();
+      
       case IntegrationProvider.MANULIFE:
         return new ManulifeAdapter();
+      
+      case IntegrationProvider.GREEN_SHIELD:
+        return new GreenShieldAdapter();
+      
+      case IntegrationProvider.GREEN_SHIELD_CANADA:
+        return new GreenShieldAdapter();
+      
+      case IntegrationProvider.CANADA_LIFE:
+        return new CanadaLifeAdapter();
+      
+      case IntegrationProvider.INDUSTRIAL_ALLIANCE:
+        return new IndustrialAllianceAdapter();
 
       // Pension
       case IntegrationProvider.OTPP:

@@ -221,7 +221,7 @@ BEGIN
 	FOR policy_record IN
 		SELECT schemaname, tablename, policyname
 		FROM pg_policies
-		WHERE schemaname IN ('public', 'user_management')
+		WHERE schemaname IN ('public')
 	LOOP
 		EXECUTE format('DROP POLICY IF EXISTS %I ON %I.%I',
 			policy_record.policyname,
@@ -239,7 +239,8 @@ ALTER TABLE "organization_members" ALTER COLUMN "status" SET DATA TYPE text;--> 
 ALTER TABLE "organization_members" ALTER COLUMN "membership_number" SET DATA TYPE text;--> statement-breakpoint
 ALTER TABLE "organization_members" ALTER COLUMN "updated_at" SET DATA TYPE timestamp with time zone;--> statement-breakpoint
 ALTER TABLE "organization_members" ALTER COLUMN "updated_at" DROP NOT NULL;--> statement-breakpoint
-ALTER TABLE "user_management"."tenant_users" ADD COLUMN "is_primary" boolean DEFAULT false;--> statement-breakpoint
+-- Removed user_management.tenant_users reference - using organization terminology in public schema
+--> statement-breakpoint
 ALTER TABLE "organization_members" ADD COLUMN IF NOT EXISTS "joined_at" timestamp with time zone DEFAULT now();--> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "organization_relationships" ADD CONSTRAINT "organization_relationships_parent_org_id_organizations_id_fk" FOREIGN KEY ("parent_org_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE no action;
