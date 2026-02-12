@@ -17,9 +17,13 @@ import {
   index,
   integer,
   vector,
+  decimal,
+  date,
+  interval,
 } from "drizzle-orm/pg-core";
 import { organizations } from "../../../schema-organizations";
 import { profiles } from "../../profiles-schema";
+import { users } from "../../member";
 
 // Chat session status enum
 export const chatSessionStatusEnum = pgEnum("chat_session_status", [
@@ -381,6 +385,84 @@ export const aiSafetyFilters = pgTable(
   })
 );
 
+/**
+ * Phase 1: AI Cost Tracking & Rate Limiting
+ * LLM Excellence Implementation
+ */
+
+// AI usage metrics - tracks all LLM API calls
+export const aiUsageMetrics = pgTable(
+  "ai_usage_metrics",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    provider: text("provider").notNull(), // 'openai' | 'anthropic' | 'google' | 'azure'
+    model: text("model").notNull(),
+    operation: text("operation").notNull(), // 'completion' | 'embedding' | 'moderation'
+    tokensInput: integer("tokens_input").notNull().default(0),
+    tokensOutput: integer("tokens_output").notNull().default(0),
+    tokensTotal: integer("tokens_total").notNull().default(0),
+    estimatedCost: decimal("estimated_cost", { precision: 10, scale: 6 }).notNull().default("0"),
+    requestId: text("request_id"),
+    userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+    sessionId: uuid("session_id"),
+    latencyMs: integer("latency_ms"),
+    metadata: jsonb("metadata").$type<Record<string, any>>().default({}),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    orgTimeIdx: index("idx_usage_org_time").on(table.organizationId, table.createdAt),
+    providerTimeIdx: index("idx_usage_provider_time").on(table.provider, table.createdAt),
+    modelIdx: index("idx_usage_model").on(table.model),
+    userIdx: index("idx_usage_user").on(table.userId),
+  })
+);
+
+// AI rate limits - per-organization rate limiting configuration
+export const aiRateLimits = pgTable(
+  "ai_rate_limits",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    limitType: text("limit_type").notNull(), // 'requests_per_minute' | 'tokens_per_hour' | 'cost_per_day'
+    limitValue: integer("limit_value").notNull(),
+    currentValue: integer("current_value").default(0),
+    windowStart: timestamp("window_start").defaultNow(),
+    windowDuration: interval("window_duration").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    orgLimitIdx: index("idx_rate_limits_org").on(table.organizationId, table.limitType),
+  })
+);
+
+// AI budgets - monthly budget allocations and spend tracking
+export const aiBudgets = pgTable(
+  "ai_budgets",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    monthlyLimitUsd: decimal("monthly_limit_usd", { precision: 10, scale: 2 }).notNull(),
+    currentSpendUsd: decimal("current_spend_usd", { precision: 10, scale: 2 }).default("0"),
+    alertThreshold: decimal("alert_threshold", { precision: 3, scale: 2 }).default("0.80"),
+    hardLimit: boolean("hard_limit").default(true),
+    billingPeriodStart: date("billing_period_start").notNull(),
+    billingPeriodEnd: date("billing_period_end").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    orgPeriodIdx: index("idx_budgets_org_period").on(table.organizationId, table.billingPeriodEnd),
+  })
+);
+
 // Type exports
 export type ChatSession = typeof chatSessions.$inferSelect;
 export type NewChatSession = typeof chatSessions.$inferInsert;
@@ -392,4 +474,10 @@ export type ChatbotSuggestion = typeof chatbotSuggestions.$inferSelect;
 export type NewChatbotSuggestion = typeof chatbotSuggestions.$inferInsert;
 export type ChatbotAnalytics = typeof chatbotAnalytics.$inferSelect;
 export type AISafetyFilter = typeof aiSafetyFilters.$inferSelect;
+export type AIUsageMetric = typeof aiUsageMetrics.$inferSelect;
+export type NewAIUsageMetric = typeof aiUsageMetrics.$inferInsert;
+export type AIRateLimit = typeof aiRateLimits.$inferSelect;
+export type NewAIRateLimit = typeof aiRateLimits.$inferInsert;
+export type AIBudget = typeof aiBudgets.$inferSelect;
+export type NewAIBudget = typeof aiBudgets.$inferInsert;
 
