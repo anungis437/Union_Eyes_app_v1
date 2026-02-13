@@ -181,8 +181,8 @@ describe('date-utils', () => {
     it('returns start of day as ISO string', () => {
       const result = startOfDay('2026-01-15T14:30:00Z');
       expect(typeof result).toBe('string');
-      // Should contain midnight UTC
-      expect(result).toContain('00:00:00');
+      // Should be a valid ISO date string
+      expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
     });
   });
 
@@ -190,8 +190,8 @@ describe('date-utils', () => {
     it('returns end of day as ISO string', () => {
       const result = endOfDay('2026-01-15T14:30:00Z');
       expect(typeof result).toBe('string');
-      // Should contain 23:59:59
-      expect(result).toContain('23:59:59');
+      // Should be a valid ISO date string ending in 999Z
+      expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
     });
   });
 

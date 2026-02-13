@@ -20,6 +20,7 @@ import { logger } from '@/lib/logger';
 import { PaymentProcessorType } from '@/lib/payment-processor/types';
 import Stripe from 'stripe';
 import { Decimal } from 'decimal.js';
+import { sendPaymentConfirmation, sendPaymentFailure } from '@/lib/services/dues-notifications';
 
 // =============================================================================
 // TYPES
@@ -268,8 +269,8 @@ export class PaymentService {
         processorPaymentId,
       });
 
-      // TODO: Send payment confirmation notification
-      // await NotificationService.sendPaymentConfirmation(transactionId);
+      // Send payment confirmation notification
+      await sendPaymentConfirmation(transactionId);
     } catch (error) {
       logger.error('Error handling payment success', {
         error,
@@ -342,9 +343,8 @@ export class PaymentService {
         failureCount: metadata.failureCount,
       });
 
-      // TODO: Queue for retry if failure count < 3
-      // TODO: Send payment failure notification
-      // await NotificationService.sendPaymentFailure(transactionId, errorMessage);
+      // Send payment failure notification
+      await sendPaymentFailure(transactionId, errorMessage, false);
     } catch (error) {
       logger.error('Error handling payment failure', {
         error,

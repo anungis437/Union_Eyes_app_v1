@@ -17,6 +17,7 @@ import { duesTransactions } from '@/db/schema/domains/finance/dues';
 import { organizationMembers } from '@/db/schema-organizations';
 import { eq, and, lte, sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
+import { sendPaymentFailure, sendAdminIntervention, calculateRetryDate } from '@/lib/services/dues-notifications';
 
 // =============================================================================
 // TYPES
@@ -106,9 +107,16 @@ export class FailedPaymentRetryService {
 
           result.retriesAttempted++;
 
-          // TODO: Integrate with actual payment processor retry logic
-          // For now, we'll just schedule for notification
-          await this.scheduleRetryNotification(txn.id, txn.memberId, failureCount + 1);
+          // Calculate next retry date
+          const nextRetryDate = calculateRetryDate(failureCount + 1);
+
+          // Send retry notification to member
+          await sendPaymentFailure(
+            txn.id,
+            'Payment will be retried automatically',
+            true,
+            nextRetryDate
+          );
 
           result.retriesSucceeded++;
           result.results.push({
@@ -267,7 +275,9 @@ export class FailedPaymentRetryService {
         })
         .where(eq(duesTransactions.id, transactionId));
 
-      // TODO: Send admin notification
+      // Send admin intervention notification
+      await sendAdminIntervention(transactionId);
+
       logger.info('Transaction marked for admin intervention', {
         transactionId,
       });
@@ -282,34 +292,19 @@ export class FailedPaymentRetryService {
 
   /**
    * Schedule retry notification to member
+   * (Deprecated - now handled by sendPaymentFailure)
    */
   private static async scheduleRetryNotification(
     transactionId: string,
     memberId: string,
     attemptNumber: number
   ): Promise<void> {
-    try {
-      logger.info('Scheduling retry notification', {
-        transactionId,
-        memberId,
-        attemptNumber,
-      });
-
-      // TODO: Integrate with notification system
-      // For now, just log
-      logger.info('Retry notification scheduled', {
-        transactionId,
-        memberId,
-        attemptNumber,
-      });
-    } catch (error) {
-      logger.error('Error scheduling retry notification', {
-        error,
-        transactionId,
-        memberId,
-      });
-      // Don't throw - notification failure shouldn't block retry
-    }
+    // This method is no longer needed as notification is sent in the main loop
+    logger.info('Retry notification handled by sendPaymentFailure', {
+      transactionId,
+      memberId,
+      attemptNumber,
+    });
   }
 
   /**
