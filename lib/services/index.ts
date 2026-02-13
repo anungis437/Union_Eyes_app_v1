@@ -60,6 +60,7 @@ export { BreakGlassService } from './break-glass-service';
 // Feature Management Services
 // feature-flags-service exports functions, not a class - import directly from file
 // feature-flags exports functions, not a class - import directly from file
+// entitlements service exports functions - import directly from file
 
 // Support & Metrics Services
 // support-service exports functions, not a class - import directly from file

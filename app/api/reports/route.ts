@@ -16,9 +16,24 @@ import {
   standardSuccessResponse, 
   ErrorCode 
 } from '@/lib/api/standardized-responses';
+import { checkEntitlement, getCreditCost } from '@/lib/services/entitlements';
 
 async function getHandler(req: NextRequest, context) {
   const { userId, organizationId } = context;
+
+  // Check entitlement for advanced analytics
+  const entitlement = await checkEntitlement(organizationId!, 'advanced_analytics');
+  if (!entitlement.allowed) {
+    return NextResponse.json(
+      { 
+        error: entitlement.reason || 'Upgrade required for advanced analytics',
+        upgradeUrl: entitlement.upgradeUrl,
+        feature: 'advanced_analytics',
+        tier: entitlement.tier
+      },
+      { status: 403 }
+    );
+  }
 
   // Rate limit reports list
   const rateLimitResult = await checkRateLimit(
@@ -78,6 +93,20 @@ async function getHandler(req: NextRequest, context) {
 
 async function postHandler(req: NextRequest, context) {
   const { userId, organizationId } = context;
+
+  // Check entitlement for advanced analytics (report builder)
+  const entitlement = await checkEntitlement(organizationId!, 'advanced_analytics');
+  if (!entitlement.allowed) {
+    return NextResponse.json(
+      { 
+        error: entitlement.reason || 'Upgrade required for advanced analytics',
+        upgradeUrl: entitlement.upgradeUrl,
+        feature: 'advanced_analytics',
+        tier: entitlement.tier
+      },
+      { status: 403 }
+    );
+  }
 
   // Rate limit report creation
   const rateLimitResult = await checkRateLimit(

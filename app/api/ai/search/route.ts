@@ -14,6 +14,7 @@ import {
 import { z } from 'zod';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
+import { checkEntitlement, consumeCredits, getCreditCost } from '@/lib/services/entitlements';
 
 import { 
   standardErrorResponse, 
@@ -37,6 +38,19 @@ export const POST = async (request: NextRequest) => {
           status: 429,
           headers: createRateLimitHeaders(rateLimitResult)
         }
+      );
+    }
+
+    // CRITICAL: Check subscription entitlement for AI search
+    const entitlement = await checkEntitlement(organizationId!, 'ai_search');
+    if (!entitlement.allowed) {
+      return NextResponse.json(
+        { 
+          error: entitlement.reason,
+          upgradeUrl: entitlement.upgradeUrl,
+          feature: 'ai_search'
+        },
+        { status: 403 }
       );
     }
 
@@ -258,6 +272,11 @@ return NextResponse.json(
         sources,
         confidence,
       };
+
+      // 16. Consume credits for AI search (non-blocking, fire-and-forget)
+      consumeCredits(organizationId!, getCreditCost('ai_search'), 'ai_search').catch((err) => {
+        console.error('Failed to consume credits:', err);
+      });
 
       return NextResponse.json(response);
     } catch (error) {

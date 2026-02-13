@@ -9,6 +9,7 @@ import {
 import { z } from 'zod';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
+import { checkEntitlement, consumeCredits, getCreditCost } from '@/lib/services/entitlements';
 
 import { 
   standardErrorResponse, 
@@ -53,6 +54,19 @@ export const POST = async (request: NextRequest) => {
           status: 429,
           headers: createRateLimitHeaders(rateLimitResult)
         }
+      );
+    }
+
+    // CRITICAL: Check subscription entitlement for AI summarize
+    const entitlement = await checkEntitlement(context.organizationId!, 'ai_summarize');
+    if (!entitlement.allowed) {
+      return NextResponse.json(
+        { 
+          error: entitlement.reason,
+          upgradeUrl: entitlement.upgradeUrl,
+          feature: 'ai_summarize'
+        },
+        { status: 403 }
       );
     }
 

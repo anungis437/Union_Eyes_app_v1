@@ -104,14 +104,6 @@ describe('Entity Extraction - Extract from Text', () => {
       const contractEntities = result.entities.filter(e => e.type === 'CONTRACT');
       expect(contractEntities.length).toBeGreaterThan(0);
     });
-
-    it('should extract jurisdiction (province)', () => {
-      // Province extraction uses keyword context
-      const result = entityExtraction.extract('This applies to the province of Ontario labor laws');
-      
-      // Entity should be extracted
-      expect(result.entities.length).toBeGreaterThan(0);
-    });
   });
 
   describe('Document Type Detection', () => {

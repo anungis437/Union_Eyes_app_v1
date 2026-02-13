@@ -11,6 +11,7 @@ import { extractClausesFromPDF, batchExtractClauses } from '@/lib/services/ai/cl
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
+import { checkEntitlement, consumeCredits, getCreditCost } from '@/lib/services/entitlements';
 
 import { 
   standardErrorResponse, 
@@ -44,6 +45,19 @@ export const POST = async (request: NextRequest) => {
           status: 429,
           headers: createRateLimitHeaders(rateLimitResult)
         }
+      );
+    }
+
+    // CRITICAL: Check subscription entitlement for AI extract-clauses
+    const entitlement = await checkEntitlement(context.organizationId!, 'ai_extract_clauses');
+    if (!entitlement.allowed) {
+      return NextResponse.json(
+        { 
+          error: entitlement.reason,
+          upgradeUrl: entitlement.upgradeUrl,
+          feature: 'ai_extract_clauses'
+        },
+        { status: 403 }
       );
     }
 
