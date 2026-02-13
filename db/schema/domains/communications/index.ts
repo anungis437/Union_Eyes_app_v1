@@ -11,9 +11,11 @@
  * - survey-polling-schema.ts
  * - communication-analytics-schema.ts
  * - push-notifications.ts
+ * - campaigns.ts (Phase 4: Campaign management)
+ * - organizer-workflows.ts (Phase 4: Organizer tools)
  * 
  * Priority: 6
- * Lines: ~1,200 (largest domain)
+ * Lines: ~2,400 (largest domain, expanded in Phase 4)
  * 
  * Duplicates to resolve:
  * - campaignStatusEnum (2 locations)
@@ -27,3 +29,7 @@ export * from './sms';
 export * from './surveys';
 export * from '../../analytics';
 export * from './push-notifications';
+
+// Phase 4: Communications & Organizing
+export * from './campaigns';
+export * from './organizer-workflows';
