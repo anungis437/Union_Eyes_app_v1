@@ -338,11 +338,11 @@ export default function PaymentCheckoutPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="container mx-auto p-6 max-w-4xl">
+      <div className="container mx-auto p-4 md:p-6 max-w-4xl">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
-            <p className="text-lg font-medium">Loading payment details...</p>
+            <p className="text-base md:text-lg font-medium">Loading payment details...</p>
           </div>
         </div>
       </div>
@@ -352,7 +352,7 @@ export default function PaymentCheckoutPage() {
   // Error state
   if (error || !transaction) {
     return (
-      <div className="container mx-auto p-6 max-w-4xl">
+      <div className="container mx-auto p-4 md:p-6 max-w-4xl">
         <Button
           variant="ghost"
           onClick={() => router.push('/dashboard/dues')}
@@ -382,7 +382,7 @@ export default function PaymentCheckoutPage() {
   // Success state (already paid)
   if (success) {
     return (
-      <div className="container mx-auto p-6 max-w-4xl">
+      <div className="container mx-auto p-4 md:p-6 max-w-4xl">
         <Button
           variant="ghost"
           onClick={() => router.push('/dashboard/dues')}
@@ -411,9 +411,9 @@ export default function PaymentCheckoutPage() {
 
   // Main checkout UI
   return (
-    <div className="container mx-auto p-6 max-w-4xl space-y-6">
+    <div className="container mx-auto p-4 md:p-6 max-w-4xl space-y-6">
       {/* Header */}
-      <div className="flex items-center space-x-4">
+      <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
         <Button
           variant="ghost"
           onClick={() => router.push('/dashboard/dues')}
@@ -423,8 +423,8 @@ export default function PaymentCheckoutPage() {
           Back
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Complete Payment</h1>
-          <p className="text-muted-foreground">Review and pay your union dues</p>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Complete Payment</h1>
+          <p className="text-sm md:text-base text-muted-foreground">Review and pay your union dues</p>
         </div>
       </div>
 
@@ -438,7 +438,7 @@ export default function PaymentCheckoutPage() {
       )}
 
       {/* Content Grid */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2">
         {/* Left Column - Transaction Summary */}
         <div>
           <TransactionSummary transaction={transaction} />
@@ -455,7 +455,7 @@ export default function PaymentCheckoutPage() {
           <Card className="mt-6 border-muted">
             <CardContent className="pt-6">
               <div className="flex items-start space-x-3">
-                <div className="p-2 bg-green-100 rounded-lg">
+                <div className="p-2 bg-green-100 rounded-lg flex-shrink-0">
                   <CheckCircle2 className="h-5 w-5 text-green-600" />
                 </div>
                 <div className="flex-1 text-sm">

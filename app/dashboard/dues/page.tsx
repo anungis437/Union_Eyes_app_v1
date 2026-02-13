@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle, Calendar, CreditCard, Download, DollarSign, TrendingUp, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { logger } from '@/lib/logger';
@@ -213,31 +214,38 @@ function UpcomingPaymentsTable({ transactions }: { transactions: DuesTransaction
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Period</TableHead>
+              <TableHead className="hidden md:table-cell">Period</TableHead>
               <TableHead>Due Date</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead className="hidden sm:table-cell">Amount</TableHead>
+              <TableHead className="hidden lg:table-cell">Status</TableHead>
               <TableHead className="text-right">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {upcomingTransactions.map((transaction) => (
               <TableRow key={transaction.id}>
-                <TableCell>
-                  <div className="font-medium">
+                <TableCell className="hidden md:table-cell">
+                  <div className="font-medium text-sm">
                     {formatDate(transaction.periodStart)} - {formatDate(transaction.periodEnd)}
                   </div>
                 </TableCell>
-                <TableCell>{formatDate(transaction.dueDate)}</TableCell>
                 <TableCell>
+                  <div className="flex flex-col">
+                    <span className="font-medium">{formatDate(transaction.dueDate)}</span>
+                    <span className="text-xs text-muted-foreground md:hidden">
+                      {formatCurrency(transaction.totalAmount)}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell className="hidden sm:table-cell">
                   <div className="font-medium">{formatCurrency(transaction.totalAmount)}</div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-muted-foreground hidden lg:block">
                     Dues: {formatCurrency(transaction.duesAmount)}
                     {parseFloat(transaction.copeAmount) > 0 && ` | COPE: ${formatCurrency(transaction.copeAmount)}`}
                     {parseFloat(transaction.pacAmount) > 0 && ` | PAC: ${formatCurrency(transaction.pacAmount)}`}
                   </div>
                 </TableCell>
-                <TableCell>{getStatusBadge(transaction.status)}</TableCell>
+                <TableCell className="hidden lg:table-cell">{getStatusBadge(transaction.status)}</TableCell>
                 <TableCell className="text-right">
                   <Button
                     size="sm"
@@ -245,9 +253,11 @@ function UpcomingPaymentsTable({ transactions }: { transactions: DuesTransaction
                     onClick={() => {
                       window.location.href = `/dashboard/dues/pay/${transaction.id}`;
                     }}
+                    className="w-full sm:w-auto"
                   >
                     <CreditCard className="mr-2 h-4 w-4" />
-                    Pay Now
+                    <span className="hidden sm:inline">Pay Now</span>
+                    <span className="sm:hidden">Pay</span>
                   </Button>
                 </TableCell>
               </TableRow>
@@ -294,31 +304,38 @@ function PaymentHistoryTable({ transactions }: { transactions: DuesTransaction[]
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Period</TableHead>
+              <TableHead className="hidden md:table-cell">Period</TableHead>
               <TableHead>Paid Date</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Method</TableHead>
+              <TableHead className="hidden sm:table-cell">Amount</TableHead>
+              <TableHead className="hidden lg:table-cell">Method</TableHead>
               <TableHead className="text-right">Receipt</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paidTransactions.map((transaction) => (
               <TableRow key={transaction.id}>
-                <TableCell>
-                  <div className="font-medium">
+                <TableCell className="hidden md:table-cell">
+                  <div className="font-medium text-sm">
                     {formatDate(transaction.periodStart)} - {formatDate(transaction.periodEnd)}
                   </div>
                 </TableCell>
-                <TableCell>{formatDate(transaction.paidDate)}</TableCell>
                 <TableCell>
+                  <div className="flex flex-col">
+                    <span className="font-medium">{formatDate(transaction.paidDate)}</span>
+                    <span className="text-xs text-muted-foreground md:hidden">
+                      {formatCurrency(transaction.totalAmount)}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell className="hidden sm:table-cell">
                   <div className="font-medium">{formatCurrency(transaction.totalAmount)}</div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-muted-foreground hidden lg:block">
                     Dues: {formatCurrency(transaction.duesAmount)}
                     {parseFloat(transaction.copeAmount) > 0 && ` | COPE: ${formatCurrency(transaction.copeAmount)}`}
                     {parseFloat(transaction.pacAmount) > 0 && ` | PAC: ${formatCurrency(transaction.pacAmount)}`}
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden lg:table-cell">
                   <div className="capitalize">{transaction.paymentMethod || 'N/A'}</div>
                   {transaction.processorType && (
                     <div className="text-xs text-muted-foreground capitalize">
@@ -327,18 +344,18 @@ function PaymentHistoryTable({ transactions }: { transactions: DuesTransaction[]
                   )}
                 </TableCell>
                 <TableCell className="text-right">
-                  {transaction.receiptUrl ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => window.open(transaction.receiptUrl!, '_blank')}
-                    >
-                      <Download className="mr-2 h-4 w-4" />
-                      Download
-                    </Button>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">Not available</span>
-                  )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      window.location.href = `/dashboard/dues/receipts/${transaction.id}`;
+                    }}
+                    className="w-full sm:w-auto"
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    <span className="hidden sm:inline">View Receipt</span>
+                    <span className="sm:hidden">View</span>
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -383,20 +400,50 @@ export default function DuesDashboardPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mb-4"></div>
-            <p className="text-lg font-medium">Loading your dues information...</p>
-          </div>
+      <div className="container mx-auto p-4 md:p-6 space-y-6">
+        {/* Page Header Skeleton */}
+        <div className="flex flex-col space-y-2">
+          <Skeleton className="h-9 w-48" />
+          <Skeleton className="h-5 w-72" />
         </div>
+
+        {/* Overview Cards Skeleton */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-4 rounded-full" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-32 mb-2" />
+                <Skeleton className="h-3 w-40" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Tables Skeleton */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-56" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="container mx-auto p-6 space-y-6">
+      <div className="container mx-auto p-4 md:p-6 space-y-6">
         <div className="flex items-center justify-center min-h-[400px]">
           <Card className="w-full max-w-md">
             <CardHeader>
@@ -419,11 +466,11 @@ export default function DuesDashboardPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-4 md:p-6 space-y-6">
       {/* Page Header */}
       <div className="flex flex-col space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Dues Dashboard</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Dues Dashboard</h1>
+        <p className="text-sm md:text-base text-muted-foreground">
           View and manage your union dues payments
         </p>
       </div>
