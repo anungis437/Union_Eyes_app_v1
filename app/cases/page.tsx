@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { api } from '@/lib/api';
 import {
   Select,
   SelectContent,
@@ -70,41 +71,26 @@ export default function CasesDashboardPage() {
 
   const fetchCases = async () => {
     try {
-      // TODO: Replace with actual API calls
-      // const statsRes = await fetch('/api/cases/stats');
-      // const casesRes = await fetch(`/api/cases?status=${statusFilter}&type=${typeFilter}`);
-      
-      setStats({
-        totalActive: 45,
-        pendingInvestigation: 12,
-        inArbitration: 8,
-        resolvedThisMonth: 23,
+      const data = await api.cases.list({
+        status: statusFilter !== 'all' ? statusFilter : undefined,
+        type: typeFilter !== 'all' ? typeFilter : undefined,
       });
-
-      setCases([
-        {
-          id: '1',
-          caseNumber: 'GRV-2024-001',
-          memberName: 'John Smith',
-          type: 'disciplinary',
-          status: 'investigation',
-          priority: 'high',
-          createdAt: '2024-02-01',
-          deadline: '2024-02-15',
-          assignedTo: 'Sarah Johnson',
-        },
-        {
-          id: '2',
-          caseNumber: 'GRV-2024-002',
-          memberName: 'Jane Doe',
-          type: 'workplace_safety',
-          status: 'arbitration',
-          priority: 'medium',
-          createdAt: '2024-01-28',
-          deadline: null,
-          assignedTo: 'Mike Wilson',
-        },
-      ]);
+      
+      setCases(data);
+      
+      // Calculate stats from data
+      setStats({
+        totalActive: data.filter((c: any) => c.status !== 'resolved').length,
+        pendingInvestigation: data.filter((c: any) => c.status === 'investigation').length,
+        inArbitration: data.filter((c: any) => c.status === 'arbitration').length,
+        resolvedThisMonth: data.filter((c: any) => {
+          const resolved = new Date(c.resolvedAt || '');
+          const now = new Date();
+          return c.status === 'resolved' && 
+                 resolved.getMonth() === now.getMonth() &&
+                 resolved.getFullYear() === now.getFullYear();
+        }).length,
+      });
     } catch (error) {
       console.error('Error fetching cases:', error);
     } finally {

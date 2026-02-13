@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { api } from '@/lib/api';
 import {
   Table,
   TableBody,
@@ -46,35 +47,8 @@ export default function PaymentPlansPage() {
 
   const fetchPaymentPlans = async () => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/dues/payment-plans');
-      
-      setPlans([
-        {
-          id: '1',
-          memberName: 'Jane Doe',
-          memberId: 'MEM-456',
-          totalAmount: 300.00,
-          paidAmount: 100.00,
-          monthlyPayment: 50.00,
-          startDate: '2024-01-01',
-          endDate: '2024-06-01',
-          status: 'active',
-          paymentsRemaining: 4,
-        },
-        {
-          id: '2',
-          memberName: 'Bob Johnson',
-          memberId: 'MEM-789',
-          totalAmount: 600.00,
-          paidAmount: 600.00,
-          monthlyPayment: 100.00,
-          startDate: '2023-09-01',
-          endDate: '2024-02-01',
-          status: 'completed',
-          paymentsRemaining: 0,
-        },
-      ]);
+      const data = await api.dues.paymentPlans.list();
+      setPlans(data);
     } catch (error) {
       console.error('Error fetching payment plans:', error);
     } finally {
