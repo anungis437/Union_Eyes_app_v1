@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { api } from '@/lib/api';
 import {
   Select,
   SelectContent,
@@ -67,26 +68,24 @@ export default function EditMemberPage({ params }: { params: { id: string } }) {
 
   const fetchMember = async () => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch(`/api/members/${params.id}`);
-      // const data = await response.json();
+      const data = await api.members.get(params.id);
       
       setFormData({
-        firstName: 'John',
-        lastName: 'Smith',
-        email: 'john.smith@example.com',
-        phone: '+1 (555) 123-4567',
-        dateOfBirth: '1985-05-15',
-        status: 'active',
-        localId: 'local-123',
-        classification: 'full_time',
-        jobTitle: 'Senior Technician',
-        employerId: 'emp-1',
-        hireDate: '2020-01-15',
-        address: '123 Main St',
-        city: 'Toronto',
-        province: 'ON',
-        postalCode: 'M1A 1A1',
+        firstName: data.firstName || '',
+        lastName: data.lastName || '',
+        email: data.email || '',
+        phone: data.phone || '',
+        dateOfBirth: data.dateOfBirth || '',
+        status: data.status || 'active',
+        localId: data.localId || '',
+        classification: data.classification || '',
+        jobTitle: data.jobTitle || '',
+        employerId: data.employerId || '',
+        hireDate: data.hireDate || '',
+        address: data.address || '',
+        city: data.city || '',
+        province: data.province || 'ON',
+        postalCode: data.postalCode || '',
       });
     } catch (error) {
       console.error('Error fetching member:', error);
@@ -103,17 +102,11 @@ export default function EditMemberPage({ params }: { params: { id: string } }) {
     e.preventDefault();
     
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch(`/api/members/${params.id}`, {
-      //   method: 'PATCH',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData),
-      // });
-      
-      console.log('Updating member:', formData);
+      await api.members.update(params.id, formData);
       router.push(`/members/${params.id}`);
     } catch (error) {
       console.error('Error updating member:', error);
+      alert('Failed to update member');
     }
   };
 

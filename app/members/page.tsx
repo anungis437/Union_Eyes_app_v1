@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { api } from '@/lib/api';
 import {
   Table,
   TableBody,
@@ -56,25 +57,13 @@ export default function MembersPage() {
   const fetchMembers = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call
-      // const response = await fetch(`/api/members?status=${statusFilter}`);
-      // const data = await response.json();
+      const result = await api.members.list({
+        status: statusFilter !== 'all' ? statusFilter : undefined,
+        search: searchQuery,
+        limit: 100,
+      });
       
-      // Mock data for now
-      setMembers([
-        {
-          id: '1',
-          fullName: 'John Smith',
-          email: 'john.smith@example.com',
-          status: 'active',
-          local: 'Local 123',
-          classification: 'full_time',
-          joinedAt: '2024-01-15',
-          steward: true,
-          officer: false,
-        },
-        // Add more mock members...
-      ]);
+      setMembers(result.members);
     } catch (error) {
       console.error('Error fetching members:', error);
     } finally {
@@ -86,11 +75,8 @@ export default function MembersPage() {
     if (!searchQuery) return fetchMembers();
     
     try {
-      // TODO: Replace with actual search API
-      // const response = await fetch('/api/members/search', {
-      //   method: 'POST',
-      //   body: JSON.stringify({ query: searchQuery }),
-      // });
+      const result = await api.members.search(searchQuery);
+      setMembers(result.members);
     } catch (error) {
       console.error('Search error:', error);
     }

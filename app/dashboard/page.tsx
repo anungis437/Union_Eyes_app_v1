@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { api } from '@/lib/api';
 import {
   Users, FileText, DollarSign, AlertCircle, 
   TrendingUp, Calendar, Award, ArrowRight
@@ -55,41 +56,13 @@ export default function DashboardPage() {
 
   const fetchDashboardData = async () => {
     try {
-      // TODO: Replace with actual API calls
-      // const statsRes = await fetch('/api/dashboard/stats');
-      // const activitiesRes = await fetch('/api/dashboard/activities');
-      
-      setStats({
-        totalMembers: 450,
-        activeMembers: 428,
-        activeCases: 23,
-        upcomingDeadlines: 5,
-        duesCollected: 245678.50,
-        membersInArrears: 12,
-        activeElections: 2,
-        strikeFundBalance: 450000,
-      });
-
-      setActivities([
-        {
-          id: '1',
-          type: 'case',
-          description: 'New grievance filed by John Smith',
-          timestamp: '2024-02-13T10:30:00Z',
-        },
-        {
-          id: '2',
-          type: 'member',
-          description: 'Jane Doe joined as new member',
-          timestamp: '2024-02-13T09:15:00Z',
-        },
-        {
-          id: '3',
-          type: 'dues',
-          description: 'Remittance received from ABC Manufacturing',
-          timestamp: '2024-02-12T16:45:00Z',
-        },
+      const [statsData, activitiesData] = await Promise.all([
+        api.dashboard.stats(),
+        api.dashboard.activities(10),
       ]);
+      
+      setStats(statsData);
+      setActivities(activitiesData);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
