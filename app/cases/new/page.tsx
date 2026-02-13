@@ -13,6 +13,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { api } from '@/lib/api';
 import {
   Select,
   SelectContent,
@@ -56,17 +57,12 @@ export default function NewCasePage() {
     e.preventDefault();
     
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/cases', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData),
-      // });
-      
-      console.log('Creating case:', formData);
+      await api.cases.create(formData);
+      alert('Case created successfully!');
       router.push('/cases');
     } catch (error) {
       console.error('Error creating case:', error);
+      alert('Error creating case. Please try again.');
     }
   };
 

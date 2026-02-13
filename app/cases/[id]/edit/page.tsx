@@ -59,9 +59,7 @@ export default function EditCasePage({ params }: { params: { id: string } }) {
 
   const fetchCase = async () => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch(`/api/cases/${params.id}`);
-      // const data = await response.json();
+      const data = await api.cases.get(params.id);
       
       // Mock data
       setFormData({
@@ -92,17 +90,12 @@ export default function EditCasePage({ params }: { params: { id: string } }) {
     e.preventDefault();
 
     try {
-      // TODO: Replace with actual API call
-      // await fetch(`/api/cases/${params.id}`, {
-      //   method: 'PATCH',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData),
-      // });
-
-      console.log('Updating case:', formData);
+      await api.cases.update(params.id, formData);
+      alert('Case updated successfully!');
       router.push(`/cases/${params.id}`);
     } catch (error) {
       console.error('Error updating case:', error);
+      alert('Error updating case. Please try again.');
     }
   };
 

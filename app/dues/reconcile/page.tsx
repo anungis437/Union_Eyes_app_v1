@@ -23,6 +23,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   CheckCircle, XCircle, AlertTriangle, Search, RefreshCw 
 } from 'lucide-react';
+import { api } from '@/lib/api';
 
 interface ReconciliationItem {
   id: string;
@@ -54,38 +55,11 @@ export default function ReconciliationPage() {
 
   const fetchReconciliationQueue = async () => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/dues/reconcile');
-      // const data = await response.json();
-      
-      setItems([
-        {
-          id: '1',
-          remittanceId: 'REM-001',
-          employerMemberId: 'EMP-12345',
-          employerName: 'John Smith',
-          amount: 125.50,
-          periodStart: '2024-01-01',
-          periodEnd: '2024-01-31',
-          suggestedMatches: [
-            {
-              memberId: 'MEM-789',
-              memberName: 'John Smith',
-              confidence: 0.95,
-              reason: 'Exact name match',
-            },
-            {
-              memberId: 'MEM-456',
-              memberName: 'J. Smith',
-              confidence: 0.75,
-              reason: 'Partial name match',
-            },
-          ],
-          status: 'pending',
-        },
-      ]);
+      const data = await api.dues.reconciliation.queue();
+      setItems(data.items || []);
     } catch (error) {
       console.error('Error fetching reconciliation queue:', error);
+      alert('Error loading reconciliation queue.');
     } finally {
       setLoading(false);
     }
@@ -93,39 +67,35 @@ export default function ReconciliationPage() {
 
   const handleMatch = async (itemId: string, memberId: string) => {
     try {
-      // TODO: Replace with actual API call
-      // await fetch(`/api/dues/reconcile/${itemId}/match`, {
-      //   method: 'POST',
-      //   body: JSON.stringify({ memberId }),
-      // });
-      
+      await api.dues.reconciliation.match(itemId, memberId);
       setItems(items.filter(item => item.id !== itemId));
+      alert('Match successful!');
     } catch (error) {
       console.error('Error matching item:', error);
+      alert('Error matching remittance.');
     }
   };
 
   const handleReject = async (itemId: string) => {
     try {
-      // TODO: Replace with actual API call
-      // await fetch(`/api/dues/reconcile/${itemId}/reject`, {
-      //   method: 'POST',
-      // });
-      
+      await api.dues.reconciliation.reject(itemId);
       setItems(items.filter(item => item.id !== itemId));
+      alert('Item rejected successfully.');
     } catch (error) {
       console.error('Error rejecting item:', error);
+      alert('Error rejecting item.');
     }
   };
 
   const runAutoReconciliation = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call
-      // await fetch('/api/dues/reconcile/auto', { method: 'POST' });
+      const result = await api.dues.reconciliation.autoMatch();
+      alert(`Auto-reconciliation complete! Matched ${result.matched || 0} records.`);
       await fetchReconciliationQueue();
     } catch (error) {
       console.error('Error running auto-reconciliation:', error);
+      alert('Error running auto-reconciliation.');
     } finally {
       setLoading(false);
     }

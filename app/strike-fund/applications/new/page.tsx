@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { api } from '@/lib/api';
 import { ArrowLeft, Save, AlertCircle } from 'lucide-react';
 
 interface ApplicationData {
@@ -65,17 +66,12 @@ export default function NewStrikeFundApplicationPage() {
     }
 
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/strike-fund/applications', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData),
-      // });
-
-      console.log('Submitting application:', formData);
+      await api.strikeFund.applications.create(formData);
+      alert('Application submitted successfully!');
       router.push('/strike-fund');
     } catch (error) {
       console.error('Error submitting application:', error);
+      alert('Error submitting application. Please try again.');
     }
   };
 

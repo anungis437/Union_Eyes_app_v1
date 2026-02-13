@@ -13,6 +13,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { api } from '@/lib/api';
 import { 
   Upload, FileText, CheckCircle, XCircle, AlertTriangle, ArrowLeft 
 } from 'lucide-react';
@@ -38,24 +39,17 @@ export default function BulkImportPage() {
     try {
       setCurrentStep('importing');
       
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/bulk-import', {
-      //   method: 'POST',
-      //   body: JSON.stringify({
-      //     importType: 'members',
-      //     fileName: file?.name,
-      //     fileUrl: 'uploaded-url',
-      //   }),
-      // });
-      // const data = await response.json();
-      // setJobId(data.job.id);
-      
-      // Simulate import
-      setTimeout(() => {
-        setCurrentStep('complete');
-      }, 3000);
+      if (!file) {
+        alert('No file selected');
+        return;
+      }
+
+      const result = await api.members.import(file);
+      setJobId(result.job?.id);
+      setCurrentStep('complete');
     } catch (error) {
       console.error('Import error:', error);
+      alert('Error importing members. Please try again.');
     }
   };
 

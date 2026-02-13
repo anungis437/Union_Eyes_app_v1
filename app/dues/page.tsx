@@ -23,6 +23,7 @@ import {
   DollarSign, TrendingUp, AlertCircle, FileText, 
   Download, Upload, RefreshCw 
 } from 'lucide-react';
+import { api } from '@/lib/api';
 
 interface DuesStats {
   totalCollected: number;
@@ -59,39 +60,20 @@ export default function DuesDashboardPage() {
 
   const fetchDashboardData = async () => {
     try {
-      // TODO: Replace with actual API calls
-      // const statsRes = await fetch('/api/dues/stats');
-      // const remittancesRes = await fetch('/api/dues/remittances?limit=10');
-      
-      setStats({
-        totalCollected: 245678.50,
-        pendingRemittances: 12450.00,
-        inArrears: 8900.00,
-        reconciliationQueue: 23,
-      });
-
-      setRemittances([
-        {
-          id: '1',
-          employer: 'ABC Manufacturing',
-          periodStart: '2024-01-01',
-          periodEnd: '2024-01-31',
-          amount: 15678.50,
-          memberCount: 45,
-          status: 'reconciled',
-          uploadedAt: '2024-02-05',
-        },
-        {
-          id: '2',
-          employer: 'XYZ Industries',
-          periodStart: '2024-01-01',
-          periodEnd: '2024-01-31',
-          amount: 8450.00,
-          memberCount: 28,
-          status: 'pending',
-          uploadedAt: '2024-02-08',
-        },
+      const [statsData, remittancesData] = await Promise.all([
+        api.dues.dashboard(),
+        api.dues.remittances.list({ limit: 10 }),
       ]);
+      
+      setStats(statsData);
+      setRemittances(remittancesData.remittances || []);
+    } catch (error) {
+      console.error('Error fetching dues dashboard:', error);
+      alert('Error loading dashboard data.');
+    } finally {
+      setLoading(false);
+    }
+  };
     } catch (error) {
       console.error('Error fetching dues data:', error);
     } finally {

@@ -22,6 +22,7 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, Upload, FileText, CheckCircle, AlertCircle } from 'lucide-react';
+import { api } from '@/lib/api';
 
 type UploadStep = 'details' | 'upload' | 'processing' | 'complete';
 
@@ -61,33 +62,24 @@ export default function UploadRemittancePage() {
     setCurrentStep('processing');
 
     try {
-      // Simulate file upload with progress
-      for (let i = 0; i <= 100; i += 10) {
-        await new Promise(resolve => setTimeout(resolve, 200));
-        setUploadProgress(i);
-      }
-
-      // TODO: Replace with actual API call
-      // const formDataObj = new FormData();
-      // formDataObj.append('file', formData.file);
-      // formDataObj.append('employerId', formData.employerId);
-      // formDataObj.append('periodStart', formData.periodStart);
-      // formDataObj.append('periodEnd', formData.periodEnd);
-      // 
-      // const response = await fetch('/api/dues/remittances', {
-      //   method: 'POST',
-      //   body: formDataObj,
-      // });
-
+      const formDataObj = new FormData();
+      formDataObj.append('file', formData.file);
+      formDataObj.append('employerId', formData.employerId);
+      formDataObj.append('periodStart', formData.periodStart);
+      formDataObj.append('periodEnd', formData.periodEnd);
+      
+      const result = await api.dues.remittances.upload(formDataObj);
+      
       setProcessingResults({
-        totalRows: 250,
-        validRows: 245,
-        errors: 5,
+        totalRows: result.totalRows || 0,
+        validRows: result.validRows || 0,
+        errors: result.errors || 0,
       });
 
       setCurrentStep('complete');
     } catch (error) {
       console.error('Error uploading remittance:', error);
+      alert('Error uploading remittance. Please try again.');
     }
   };
 

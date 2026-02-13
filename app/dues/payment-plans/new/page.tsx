@@ -63,19 +63,17 @@ export default function NewPaymentPlanPage() {
 
   const fetchMember = async () => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch(`/api/members/${memberId}`);
-      // const data = await response.json();
-      
+      const data = await api.members.get(memberId || '');
       setMember({
-        id: '1',
-        name: 'Jane Doe',
-        memberId: 'MEM-456',
-        email: 'jane.doe@example.com',
-        arrearsAmount: parseFloat(prefilledAmount || '300'),
+        id: data.id,
+        name: data.fullName || data.name,
+        memberId: data.memberId || memberId || '',
+        email: data.email,
+        arrearsAmount: data.arrearsAmount || parseFloat(prefilledAmount || '0'),
       });
     } catch (error) {
       console.error('Error fetching member:', error);
+      alert('Error loading member data.');
     } finally {
       setLoading(false);
     }
@@ -106,17 +104,12 @@ export default function NewPaymentPlanPage() {
     e.preventDefault();
 
     try {
-      // TODO: Replace with actual API call
-      // await fetch('/api/dues/payment-plans', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData),
-      // });
-
-      console.log('Creating payment plan:', formData);
+      await api.dues.paymentPlans.create(formData);
+      alert('Payment plan created successfully!');
       router.push('/dues/payment-plans');
     } catch (error) {
       console.error('Error creating payment plan:', error);
+      alert('Error creating payment plan. Please try again.');
     }
   };
 

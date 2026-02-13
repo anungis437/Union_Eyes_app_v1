@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { api } from '@/lib/api';
 import {
   Select,
   SelectContent,
@@ -100,17 +101,12 @@ export default function NewMemberPage() {
 
   const handleSubmit = async () => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/members', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData),
-      // });
-      
-      console.log('Creating member:', formData);
+      await api.members.create(formData);
+      alert('Member created successfully!');
       router.push('/members');
     } catch (error) {
       console.error('Error creating member:', error);
+      alert('Error creating member. Please try again.');
     }
   };
 

@@ -60,37 +60,11 @@ export default function ArrearsPage() {
 
   const fetchMembersInArrears = async () => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/dues/arrears');
-      
-      setMembers([
-        {
-          id: '1',
-          memberName: 'John Smith',
-          memberId: 'MEM-123',
-          email: 'john.smith@example.com',
-          phone: '+1 (555) 123-4567',
-          amountOwed: 450.00,
-          monthsBehind: 3,
-          lastPayment: '2023-11-15',
-          status: 'active',
-          hasPaymentPlan: false,
-        },
-        {
-          id: '2',
-          memberName: 'Jane Doe',
-          memberId: 'MEM-456',
-          email: 'jane.doe@example.com',
-          phone: '+1 (555) 987-6543',
-          amountOwed: 300.00,
-          monthsBehind: 2,
-          lastPayment: '2023-12-01',
-          status: 'payment_plan',
-          hasPaymentPlan: true,
-        },
-      ]);
+      const data = await api.dues.arrears.list();
+      setMembers(data.members || []);
     } catch (error) {
       console.error('Error fetching arrears:', error);
+      alert('Error loading arrears data.');
     } finally {
       setLoading(false);
     }
@@ -100,19 +74,19 @@ export default function ArrearsPage() {
     if (!selectedMember || !paymentAmount) return;
 
     try {
-      // TODO: Replace with actual API call
-      // await fetch(`/api/dues/arrears/${selectedMember.id}/payment`, {
-      //   method: 'POST',
-      //   body: JSON.stringify({ amount: parseFloat(paymentAmount), notes }),
-      // });
+      await api.dues.arrears.recordPayment(selectedMember.id, {
+        amount: parseFloat(paymentAmount),
+        notes,
+      });
 
-      console.log('Recording payment:', { memberId: selectedMember.id, amount: paymentAmount, notes });
+      alert('Payment recorded successfully!');
       setPaymentAmount('');
       setNotes('');
       setSelectedMember(null);
       fetchMembersInArrears();
     } catch (error) {
       console.error('Error recording payment:', error);
+      alert('Error recording payment.');
     }
   };
 
@@ -122,15 +96,11 @@ export default function ArrearsPage() {
 
   const sendReminder = async (member: MemberInArrears) => {
     try {
-      // TODO: Replace with actual API call
-      // await fetch(`/api/dues/arrears/${member.id}/reminder`, {
-      //   method: 'POST',
-      // });
-
-      console.log('Sending reminder to:', member.memberName);
+      await api.dues.arrears.sendReminder(member.id);
       alert(`Reminder email sent to ${member.memberName}`);
     } catch (error) {
       console.error('Error sending reminder:', error);
+      alert('Error sending reminder email.');
     }
   };
 

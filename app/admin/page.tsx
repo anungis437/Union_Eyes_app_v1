@@ -23,6 +23,7 @@ import {
 import {
   Settings, Database, Shield, Link, Users, Activity, AlertCircle
 } from 'lucide-react';
+import { api } from '@/lib/api';
 
 interface SystemStats {
   totalUsers: number;
@@ -57,35 +58,20 @@ export default function AdminDashboardPage() {
 
   const fetchAdminData = async () => {
     try {
-      // TODO: Replace with actual API calls
-      // const statsRes = await fetch('/api/admin/stats');
-      // const integrationsRes = await fetch('/api/integrations');
-      
-      setStats({
-        totalUsers: 125,
-        activeIntegrations: 5,
-        dataRetentionPolicies: 8,
-        pendingApprovals: 3,
-      });
-
-      setIntegrations([
-        {
-          id: '1',
-          name: 'Google Workspace SSO',
-          type: 'sso',
-          status: 'active',
-          lastSync: '2024-02-10T10:30:00Z',
-          provider: 'google',
-        },
-        {
-          id: '2',
-          name: 'Azure AD SCIM',
-          type: 'scim',
-          status: 'active',
-          lastSync: '2024-02-10T09:15:00Z',
-          provider: 'azure',
-        },
+      const [statsData, integrationsData] = await Promise.all([
+        api.admin.stats(),
+        api.admin.integrations.list(),
       ]);
+      
+      setStats(statsData);
+      setIntegrations(integrationsData.integrations || []);
+    } catch (error) {
+      console.error('Error fetching admin data:', error);
+      alert('Error loading admin dashboard.');
+    } finally {
+      setLoading(false);
+    }
+  };
     } catch (error) {
       console.error('Error fetching admin data:', error);
     } finally {
