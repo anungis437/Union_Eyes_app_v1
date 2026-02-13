@@ -140,19 +140,20 @@ export const POST = withRoleAuth('steward', async (request: NextRequest, context
     }
     
     const { campaignId, organizationId, jobTitle, department, shift, supportLevel, cardSigned, cardSignedDate, organizingCommitteeMember, primaryIssues, notes } = validation.data;
-      const {
-        campaignId,
-        organizationId,
-        jobTitle,
-        department,
-        shift,
-        supportLevel,
-        cardSigned,
-        cardSignedDate,
-        organizingCommitteeMember,
-        primaryIssues,
-        notes,
-      } = body;
+    // DUPLICATE REMOVED (Phase 2): Multi-line destructuring of body
+    // const {
+    // campaignId,
+    // organizationId,
+    // jobTitle,
+    // department,
+    // shift,
+    // supportLevel,
+    // cardSigned,
+    // cardSignedDate,
+    // organizingCommitteeMember,
+    // primaryIssues,
+    // notes,
+    // } = body;
   if (organizationId && organizationId !== context.organizationId) {
     return standardErrorResponse(
       ErrorCode.FORBIDDEN,
@@ -232,5 +233,4 @@ export const POST = withRoleAuth('steward', async (request: NextRequest, context
     );
     }
 });
-
 

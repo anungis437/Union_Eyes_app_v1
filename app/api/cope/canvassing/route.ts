@@ -1,4 +1,4 @@
-import { withRLSContext } from '@/lib/db/with-rls-context';
+﻿import { withRLSContext } from '@/lib/db/with-rls-context';
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * API Route: Canvassing Activities
@@ -161,7 +161,7 @@ export const POST = async (request: NextRequest) => {
       );
     }
     
-    const { campaignId, organizationId, activityType, activityDate, volunteerMemberId, volunteerName, contactName, contactAddress, contactPhone, contactEmail, responseType, supportLevel, issuesDiscussed, followUpRequired, followUpNotes, durationMinutes } = validation.data;
+      // DUPLICATE REMOVED:     const { campaignId, organizationId, activityType, activityDate, volunteerMemberId, volunteerName, contactName, contactAddress, contactPhone, contactEmail, responseType, supportLevel, issuesDiscussed, followUpRequired, followUpNotes, durationMinutes } = validation.data;
       const {
         campaignId,
         organizationId,

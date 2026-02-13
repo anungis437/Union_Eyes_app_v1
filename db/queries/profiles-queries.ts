@@ -3,7 +3,7 @@
 import { eq } from "drizzle-orm";
 import { InsertProfile, profilesTable, SelectProfile } from "../schema/profiles-schema";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { withRLSContext } from "@/lib/rls-middleware";
+import { withRLSContext } from "@/lib/db/with-rls-context";
 import { logger } from "@/lib/logger";
 
 export const createProfile = async (

@@ -45,7 +45,7 @@ export async function downloadMultiple(
     .where(
       and(
         inArray(documents.id, documentIds),
-        eq(documents.tenantId, tenantId),
+        eq(documents.organizationId /* was tenantId */, tenantId),
         isNull(documents.deletedAt)
       )
     );
@@ -158,7 +158,7 @@ export async function bulkTag(
       .where(
         and(
           inArray(documents.id, documentIds),
-          eq(documents.tenantId, tenantId),
+          eq(documents.organizationId /* was tenantId */, tenantId),
           isNull(documents.deletedAt)
         )
       );
@@ -244,7 +244,7 @@ export async function bulkDelete(
       .where(
         and(
           inArray(documents.id, documentIds),
-          eq(documents.tenantId, tenantId),
+          eq(documents.organizationId /* was tenantId */, tenantId),
           isNull(documents.deletedAt)
         )
       );
@@ -340,7 +340,7 @@ export async function moveToFolder(
         .where(
           and(
             eq(documentFolders.id, folderId),
-            eq(documentFolders.tenantId, tenantId),
+            eq(documentFolders.organizationId /* was tenantId */, tenantId),
             isNull(documentFolders.deletedAt)
           )
         )
@@ -358,7 +358,7 @@ export async function moveToFolder(
       .where(
         and(
           inArray(documents.id, documentIds),
-          eq(documents.tenantId, tenantId),
+          eq(documents.organizationId /* was tenantId */, tenantId),
           isNull(documents.deletedAt)
         )
       );
@@ -437,7 +437,7 @@ export async function bulkCopy(
         .where(
           and(
             eq(documentFolders.id, destinationFolderId),
-            eq(documentFolders.tenantId, tenantId),
+            eq(documentFolders.organizationId /* was tenantId */, tenantId),
             isNull(documentFolders.deletedAt)
           )
         )
@@ -465,7 +465,7 @@ export async function bulkCopy(
       .where(
         and(
           inArray(documents.id, documentIds),
-          eq(documents.tenantId, tenantId),
+          eq(documents.organizationId /* was tenantId */, tenantId),
           isNull(documents.deletedAt)
         )
       );
@@ -558,7 +558,7 @@ export async function bulkUpdateMetadata(
       .where(
         and(
           inArray(documents.id, documentIds),
-          eq(documents.tenantId, tenantId),
+          eq(documents.organizationId /* was tenantId */, tenantId),
           isNull(documents.deletedAt)
         )
       );
@@ -649,7 +649,7 @@ export async function validateDocumentPermissions(
     .where(
       and(
         inArray(documents.id, documentIds),
-        eq(documents.tenantId, tenantId),
+        eq(documents.organizationId /* was tenantId */, tenantId),
         isNull(documents.deletedAt)
       )
     );

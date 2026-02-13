@@ -1,4 +1,4 @@
-import { logApiAuditEvent } from "@/lib/middleware/api-security";
+﻿import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * API Route: Pension Trustees
  * CRUD operations for trustee management
@@ -25,96 +25,96 @@ export const GET = async (request: NextRequest) => {
     const { userId, organizationId } = context;
 
   try {
-      const { searchParams } = new URL(request.url);
-      const trustBoardId = searchParams.get('trustBoardId');
-      const activeOnly = searchParams.get('activeOnly') === 'true';
-
-      if (!trustBoardId) {
-        return standardErrorResponse(
-      ErrorCode.MISSING_REQUIRED_FIELD,
-      'Bad Request - trustBoardId is required'
-    );
-      }
-
-      const conditions = [eq(pensionTrustees.trusteeBoardId, trustBoardId)];
-      
-      if (activeOnly) {
-        conditions.push(eq(pensionTrustees.isCurrent, true));
-      }
-
-      const whereClause = conditions.length > 1 
-        ? sql.join(conditions, sql.raw(' AND '))
-        : conditions[0];
-
-      const trustees = await db
-        .select()
-        .from(pensionTrustees)
-        .where(whereClause);
-
-      return NextResponse.json({
-        success: true,
-        data: trustees,
-        count: trustees.length,
-      });
-
-    } catch (error) {
-      logger.error('Failed to fetch trustees', error as Error, {
-        userId,
-        trustBoardId: request.nextUrl.searchParams.get('trustBoardId'),
-        correlationId: request.headers.get('x-correlation-id'),
-  });
-    return standardErrorResponse(
-      ErrorCode.INTERNAL_ERROR,
-      'Internal Server Error',
-      error
-    );
-  }
-  })(request);
-};
-
-
-const pensionTrusteesSchema = z.object({
-  trustBoardId: z.string().uuid('Invalid trustBoardId'),
-  userId: z.string().uuid('Invalid userId'),
-  trusteeName: z.string().min(1, 'trusteeName is required'),
-  trusteeType: z.unknown().optional(), // 'employer' | 'union' | 'independent'
-  position: z.string().min(1, 'position is required'),
-  termStartDate: z.string().datetime().optional(),
-  termEndDate: z.string().datetime().optional(),
-  termLengthYears: z.unknown().optional().default(3),
-  isVotingMember: z.boolean().optional().default(true),
-  representingOrganization: z.unknown().optional(),
-  representingOrganizationId: z.string().uuid('Invalid representingOrganizationId'),
-  email: z.string().email('Invalid email address'),
-  phone: z.string().min(10, 'Invalid phone number'),
-  notes: z.string().optional(),
-});
-
-export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
-    const { userId, organizationId } = context;
-
-  try {
-      if (!userId) {
-        return standardErrorResponse(
-      ErrorCode.AUTH_REQUIRED,
-      'Unauthorized - Authentication required'
-    );
-      }
-
-      const body = await request.json();
-    // Validate request body
-    const validation = pensionTrusteesSchema.safeParse(body);
-    if (!validation.success) {
-      return standardErrorResponse(
-        ErrorCode.VALIDATION_ERROR,
-        'Invalid request data',
-        validation.error.errors
-      );
-    }
-    
-    const { trustBoardId, userId, trusteeName, trusteeType, // 'employer' | 'union' | 'independent'
-        position, termStartDate, termEndDate, termLengthYears = 3, isVotingMember = true, representingOrganization, representingOrganizationId, email, phone, notes } = validation.data;
+      // DUPLICATE REMOVED:       const { searchParams } = new URL(request.url);
+      // DUPLICATE REMOVED:       const trustBoardId = searchParams.get('trustBoardId');
+      // DUPLICATE REMOVED:       const activeOnly = searchParams.get('activeOnly') === 'true';
+      // DUPLICATE REMOVED: 
+      // DUPLICATE REMOVED:       if (!trustBoardId) {
+      // DUPLICATE REMOVED:         return standardErrorResponse(
+      // DUPLICATE REMOVED:       ErrorCode.MISSING_REQUIRED_FIELD,
+      // DUPLICATE REMOVED:       'Bad Request - trustBoardId is required'
+      // DUPLICATE REMOVED:     );
+      // DUPLICATE REMOVED:       }
+      // DUPLICATE REMOVED: 
+      // DUPLICATE REMOVED:       const conditions = [eq(pensionTrustees.trusteeBoardId, trustBoardId)];
+      // DUPLICATE REMOVED:       
+      // DUPLICATE REMOVED:       if (activeOnly) {
+      // DUPLICATE REMOVED:         conditions.push(eq(pensionTrustees.isCurrent, true));
+      // DUPLICATE REMOVED:       }
+      // DUPLICATE REMOVED: 
+      // DUPLICATE REMOVED:       const whereClause = conditions.length > 1 
+      // DUPLICATE REMOVED:         ? sql.join(conditions, sql.raw(' AND '))
+      // DUPLICATE REMOVED:         : conditions[0];
+      // DUPLICATE REMOVED: 
+      // DUPLICATE REMOVED:       const trustees = await db
+      // DUPLICATE REMOVED:         .select()
+      // DUPLICATE REMOVED:         .from(pensionTrustees)
+      // DUPLICATE REMOVED:         .where(whereClause);
+      // DUPLICATE REMOVED: 
+      // DUPLICATE REMOVED:       return NextResponse.json({
+      // DUPLICATE REMOVED:         success: true,
+      // DUPLICATE REMOVED:         data: trustees,
+      // DUPLICATE REMOVED:         count: trustees.length,
+      // DUPLICATE REMOVED:       });
+      // DUPLICATE REMOVED: 
+      // DUPLICATE REMOVED:     } catch (error) {
+      // DUPLICATE REMOVED:       logger.error('Failed to fetch trustees', error as Error, {
+      // DUPLICATE REMOVED:         userId,
+      // DUPLICATE REMOVED:         trustBoardId: request.nextUrl.searchParams.get('trustBoardId'),
+      // DUPLICATE REMOVED:         correlationId: request.headers.get('x-correlation-id'),
+      // DUPLICATE REMOVED:   });
+      // DUPLICATE REMOVED:     return standardErrorResponse(
+      // DUPLICATE REMOVED:       ErrorCode.INTERNAL_ERROR,
+      // DUPLICATE REMOVED:       'Internal Server Error',
+      // DUPLICATE REMOVED:       error
+      // DUPLICATE REMOVED:     );
+      // DUPLICATE REMOVED:   }
+      // DUPLICATE REMOVED:   })(request);
+      // DUPLICATE REMOVED: };
+      // DUPLICATE REMOVED: 
+      // DUPLICATE REMOVED: 
+      // DUPLICATE REMOVED: const pensionTrusteesSchema = z.object({
+      // DUPLICATE REMOVED:   trustBoardId: z.string().uuid('Invalid trustBoardId'),
+      // DUPLICATE REMOVED:   userId: z.string().uuid('Invalid userId'),
+      // DUPLICATE REMOVED:   trusteeName: z.string().min(1, 'trusteeName is required'),
+      // DUPLICATE REMOVED:   trusteeType: z.unknown().optional(), // 'employer' | 'union' | 'independent'
+      // DUPLICATE REMOVED:   position: z.string().min(1, 'position is required'),
+      // DUPLICATE REMOVED:   termStartDate: z.string().datetime().optional(),
+      // DUPLICATE REMOVED:   termEndDate: z.string().datetime().optional(),
+      // DUPLICATE REMOVED:   termLengthYears: z.unknown().optional().default(3),
+      // DUPLICATE REMOVED:   isVotingMember: z.boolean().optional().default(true),
+      // DUPLICATE REMOVED:   representingOrganization: z.unknown().optional(),
+      // DUPLICATE REMOVED:   representingOrganizationId: z.string().uuid('Invalid representingOrganizationId'),
+      // DUPLICATE REMOVED:   email: z.string().email('Invalid email address'),
+      // DUPLICATE REMOVED:   phone: z.string().min(10, 'Invalid phone number'),
+      // DUPLICATE REMOVED:   notes: z.string().optional(),
+      // DUPLICATE REMOVED: });
+      // DUPLICATE REMOVED: 
+      // DUPLICATE REMOVED: export const POST = async (request: NextRequest) => {
+      // DUPLICATE REMOVED:   return withEnhancedRoleAuth(20, async (request, context) => {
+      // DUPLICATE REMOVED:     const { userId, organizationId } = context;
+      // DUPLICATE REMOVED: 
+      // DUPLICATE REMOVED:   try {
+      // DUPLICATE REMOVED:       if (!userId) {
+      // DUPLICATE REMOVED:         return standardErrorResponse(
+      // DUPLICATE REMOVED:       ErrorCode.AUTH_REQUIRED,
+      // DUPLICATE REMOVED:       'Unauthorized - Authentication required'
+      // DUPLICATE REMOVED:     );
+      // DUPLICATE REMOVED:       }
+      // DUPLICATE REMOVED: 
+      // DUPLICATE REMOVED:       const body = await request.json();
+      // DUPLICATE REMOVED:     // Validate request body
+      // DUPLICATE REMOVED:     const validation = pensionTrusteesSchema.safeParse(body);
+      // DUPLICATE REMOVED:     if (!validation.success) {
+      // DUPLICATE REMOVED:       return standardErrorResponse(
+      // DUPLICATE REMOVED:         ErrorCode.VALIDATION_ERROR,
+      // DUPLICATE REMOVED:         'Invalid request data',
+      // DUPLICATE REMOVED:         validation.error.errors
+      // DUPLICATE REMOVED:       );
+      // DUPLICATE REMOVED:     }
+      // DUPLICATE REMOVED:     
+      // DUPLICATE REMOVED:     const { trustBoardId, userId, trusteeName, trusteeType, // 'employer' | 'union' | 'independent'
+      // DUPLICATE REMOVED:         position, termStartDate, termEndDate, termLengthYears = 3, isVotingMember = true, representingOrganization, representingOrganizationId, email, phone, notes } = validation.data;
       const {
         trustBoardId,
         userId: trusteeUserId,

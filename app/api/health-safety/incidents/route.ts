@@ -21,6 +21,7 @@ import {
   standardSuccessResponse, 
   ErrorCode 
 } from '@/lib/api/standardized-responses';
+import { logger } from '@/lib/logger';
 
 /**
  * Validation schema for creating incidents

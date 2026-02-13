@@ -76,7 +76,7 @@ export async function isFeatureEnabled(
     }
 
     // Check tenant/organization-specific override
-    if (context.organizationId && flag.allowedTenants?.includes(context.organizationId)) {
+    if (context.organizationId && flag.allowedOrganizations?.includes(context.organizationId)) {
       await cacheSet(cacheKey, true, { namespace: 'feature-flags', ttl: 300 });
       return true;
     }

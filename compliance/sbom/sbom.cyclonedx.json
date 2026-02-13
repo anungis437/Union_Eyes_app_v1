@@ -1,0 +1,22 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.4",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-02-12T23:21:13.640Z",
+    "tools": [
+      {
+        "vendor": "Union Eyes",
+        "name": "SBOM Generator",
+        "version": "1.0.0"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "name": "unioneyes",
+      "version": "1.0.0",
+      "description": ""
+    }
+  },
+  "components": []
+}

@@ -103,17 +103,23 @@ export async function createSignatureWorkflow(
       .values({
         organizationId: request.organizationId,
         documentId: request.documentId,
-        workflowType: request.workflowType,
-        provider: provider.name,
-        externalId: envelope.id,
+        name: request.documentName,
+        description: request.subject,
+        provider: provider.name as any,
+        externalEnvelopeId: envelope.id,
+        totalSigners: request.signers.length,
         status: "sent",
-        subject: request.subject,
-        message: request.message,
-        documentName: request.documentName,
-        documentHash,
+        sentAt: new Date(),
         expiresAt: request.expiresInDays
           ? new Date(Date.now() + request.expiresInDays * 86400000)
           : undefined,
+        workflowData: {
+          workflowType: request.workflowType,
+          subject: request.subject,
+          message: request.message,
+          documentName: request.documentName,
+          documentHash,
+        },
         createdBy: request.userId,
       })
       .returning();
@@ -127,8 +133,7 @@ export async function createSignatureWorkflow(
             workflowId: workflow.id,
             name: signer.name,
             email: signer.email,
-            role: signer.role,
-            order: signer.order || index + 1,
+            signerOrder: signer.order || index + 1,
             status: "pending",
             signingUrl: `${envelope.documentUrl}/signer/${signer.email}`,
           })
@@ -250,9 +255,9 @@ export async function getWorkflowStatus(
       .where(eq(signers.workflowId, workflowId));
 
     // Optionally sync with provider
-    if (syncWithProvider && workflow.externalId) {
+    if (syncWithProvider && workflow.externalEnvelopeId) {
       const provider = getSignatureProvider(workflow.provider as SignatureProviderType);
-      const envelope = await provider.getEnvelopeStatus(workflow.externalId);
+      const envelope = await provider.getEnvelopeStatus(workflow.externalEnvelopeId);
 
       // Update workflow status if changed
       if (envelope.status !== workflow.status) {
@@ -322,7 +327,7 @@ export async function handleSignerCompleted(
         signedAt: signatureData.signedAt,
         ipAddress: signatureData.ipAddress,
         userAgent: signatureData.userAgent,
-        signature: signatureData.signatureImage,
+        signatureImage: signatureData.signatureImage,
       })
       .where(
         and(eq(signers.workflowId, workflowId), eq(signers.email, signerEmail))
@@ -349,7 +354,7 @@ export async function handleSignerCompleted(
       priority: "normal",
       subject: "Signature Received - Thank You",
       title: "Signature Confirmed",
-      body: `Thank you for signing ${workflow.documentName}. Your signature has been recorded.`,
+      body: `Thank you for signing ${(workflow.workflowData as any)?.documentName || workflow.name}. Your signature has been recorded.`,
       metadata: {
         type: "signature_completed",
         workflowId,
@@ -411,7 +416,10 @@ async function completeWorkflow(workflowId: string): Promise<void> {
       .set({
         status: "completed",
         completedAt: new Date(),
-        signedDocumentHash,
+        workflowData: {
+          ...(workflow.workflowData as any || {}),
+          signedDocumentHash,
+        },
       })
       .where(eq(signatureWorkflows.id, workflowId));
 
@@ -425,7 +433,7 @@ async function completeWorkflow(workflowId: string): Promise<void> {
       signatureHash: signedDocumentHash,
       metadata: {
         provider: workflow.provider,
-        originalHash: workflow.documentHash,
+        originalHash: (workflow.workflowData as any)?.documentHash,
         signedHash: signedDocumentHash,
       },
     });
@@ -447,7 +455,7 @@ async function completeWorkflow(workflowId: string): Promise<void> {
       const storageResult = await storageService.uploadDocument({
         organizationId: workflow.organizationId,
         documentBuffer: signedDocument,
-        documentName: `${workflow.documentName}_signed.pdf`,
+        documentName: `${(workflow.workflowData as any)?.documentName || workflow.name}_signed.pdf`,
         documentType: "signed_contract",
         contentType: "application/pdf",
         metadata: {
@@ -461,8 +469,11 @@ async function completeWorkflow(workflowId: string): Promise<void> {
       await db
         .update(signatureWorkflows)
         .set({
-          storageUrl: storageResult.url,
-          storageKey: storageResult.key,
+          workflowData: {
+            ...(workflow.workflowData as any || {}),
+            storageUrl: storageResult.url,
+            storageKey: storageResult.key,
+          },
         })
         .where(eq(signatureWorkflows.id, workflowId));
 
@@ -486,9 +497,9 @@ async function completeWorkflow(workflowId: string): Promise<void> {
       recipientId: workflow.createdBy,
       type: "email",
       priority: "high",
-      subject: `Signature Workflow Completed: ${workflow.subject}`,
+      subject: `Signature Workflow Completed: ${(workflow.workflowData as any)?.subject || workflow.description}`,
       title: "All Signatures Received",
-      body: `All parties have signed ${workflow.documentName}. The signed document is now available.`,
+      body: `All parties have signed ${(workflow.workflowData as any)?.documentName || workflow.name}. The signed document is now available.`,
       actionUrl: `/documents/${workflow.documentId}`,
       actionLabel: "View Document",
       metadata: {
@@ -565,9 +576,9 @@ export async function voidWorkflow(
           recipientEmail: signer.email,
           type: "email",
           priority: "normal",
-          subject: `Signature Request Cancelled: ${workflow.subject}`,
+          subject: `Signature Request Cancelled: ${(workflow.workflowData as any)?.subject || workflow.description}`,
           title: "Signature Request Cancelled",
-          body: `The signature request for ${workflow.documentName} has been cancelled. Reason: ${reason}`,
+          body: `The signature request for ${(workflow.workflowData as any)?.documentName || workflow.name} has been cancelled. Reason: ${reason}`,
           metadata: {
             type: "workflow_voided",
             workflowId,
@@ -616,7 +627,7 @@ export async function sendSignerReminders(workflowId: string, userId: string): P
     await Promise.all(
       pendingSigners.map(async (signer) => {
         // Send via provider
-        await provider.sendReminder(workflow.externalId!, signer.email);
+        await provider.sendReminder(workflow.externalEnvelopeId!, signer.email);
 
         // Send notification
         await notificationService.send({
@@ -624,9 +635,9 @@ export async function sendSignerReminders(workflowId: string, userId: string): P
           recipientEmail: signer.email,
           type: "email",
           priority: "high",
-          subject: `Reminder: Signature Required - ${workflow.subject}`,
+          subject: `Reminder: Signature Required - ${(workflow.workflowData as any)?.subject || workflow.description}`,
           title: "Signature Reminder",
-          body: `This is a reminder to sign ${workflow.documentName}`,
+          body: `This is a reminder to sign ${(workflow.workflowData as any)?.documentName || workflow.name}`,
           actionUrl: signer.signingUrl || undefined,
           actionLabel: "Sign Now",
           metadata: {

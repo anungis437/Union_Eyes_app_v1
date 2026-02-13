@@ -84,6 +84,27 @@ export class SQLInjectionScanner {
   }
 
   /**
+   * Scan a single string value for SQL injection patterns
+   * Used for checking IDs, parameters, etc.
+   */
+  static scanMethod(value: string): boolean {
+    if (!value || typeof value !== 'string') {
+      return false;
+    }
+
+    // Check for SQL injection patterns
+    for (const [patternName, pattern] of Object.entries(INJECTION_PATTERNS)) {
+      if (pattern.test(value)) {
+        return true; // Pattern detected
+      }
+    }
+
+    // Check for suspicious characters that might indicate injection
+    const suspiciousChars = /[';\"\\-]|--|\/\*|\*\/|union|select|drop|delete|insert|update|truncate/gi;
+    return suspiciousChars.test(value);
+  }
+
+  /**
    * Get recommendations based on detected patterns
    */
   private static getRecommendations(patterns: string[]): string[] {
@@ -222,7 +243,7 @@ export { SQLSecurityAuditLog };
  *   import { executeParameterizedQuery } from '@/lib/middleware/sql-injection-prevention';
  *   
  *   const results = await executeParameterizedQuery(async () => {
- *     return db.select().from(users).where(eq(users.id, userId)).execute();
+ *     return db.select().from(users).where(eq(users.userId, userId)).execute();
  *   });
  */
 export async function executeParameterizedQuery<T>(

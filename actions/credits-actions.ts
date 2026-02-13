@@ -2,6 +2,7 @@
 
 import { getProfileByUserId, updateProfile } from "@/db/queries/profiles-queries";
 import { auth } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 import { revalidatePath } from "next/cache";
 
 // Constants

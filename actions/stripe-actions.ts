@@ -1,6 +1,7 @@
 import { updateProfile, updateProfileByStripeCustomerId } from "@/db/queries/profiles-queries";
 import { SelectProfile } from "@/db/schema";
 import { stripe } from "@/lib/stripe";
+import { logger } from '@/lib/logger';
 import Stripe from "stripe";
 
 type MembershipStatus = SelectProfile["membership"];

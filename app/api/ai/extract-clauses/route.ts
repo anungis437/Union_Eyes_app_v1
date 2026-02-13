@@ -60,14 +60,15 @@ export const POST = async (request: NextRequest) => {
     }
     
     const { pdfUrl, cbaId, organizationId, autoSave = true, batch = false, cbas = [] } = validation.data;
-      const {
-        pdfUrl,
-        cbaId,
-        organizationId,
-        autoSave = true,
-        batch = false,
-        cbas = [],
-      } = body;
+    // DUPLICATE REMOVED (Phase 2): Multi-line destructuring of body
+    // const {
+    // pdfUrl,
+    // cbaId,
+    // organizationId,
+    // autoSave = true,
+    // batch = false,
+    // cbas = [],
+    // } = body;
   if (organizationId && organizationId !== context.organizationId) {
     return standardErrorResponse(
       ErrorCode.FORBIDDEN,
@@ -127,4 +128,3 @@ return standardErrorResponse(
     }
     })(request);
 };
-

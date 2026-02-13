@@ -80,7 +80,7 @@ export class AccessibilityAuditManager {
       const issues: NewAccessibilityIssue[] = scanResults.violations.map(
         (violation: any) => ({
           auditId,
-          tenantId: audit[0].tenantId,
+          tenantId: audit[0].organizationId /* was tenantId */,
           issueTitle: violation.description,
           issueDescription: violation.help,
           severity: this.mapAxeSeverityToOurs(violation.impact),
@@ -211,7 +211,7 @@ export class AccessibilityAuditManager {
     let query = db
       .select()
       .from(accessibilityIssues)
-      .where(eq(accessibilityIssues.tenantId, organizationId));
+      .where(eq(accessibilityIssues.organizationId /* was tenantId */, organizationId));
     
     if (options.severity && options.severity.length > 0) {
       query = query.where(
@@ -575,7 +575,7 @@ export class AccessibilityReportGenerator {
     const issues = await db
       .select()
       .from(accessibilityIssues)
-      .where(eq(accessibilityIssues.tenantId, organizationId));
+      .where(eq(accessibilityIssues.organizationId /* was tenantId */, organizationId));
     
     // Calculate summary
     const summary = {

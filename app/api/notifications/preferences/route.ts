@@ -96,22 +96,23 @@ export const PUT = async (request: NextRequest) => {
     const { emailEnabled, smsEnabled, pushEnabled, inAppEnabled, digestFrequency, quietHoursStart, quietHoursEnd, claimUpdates, documentUpdates, deadlineAlerts, systemAnnouncements, securityAlerts, email, phone } = validation.data;
 
       // Validate input
-      const {
-        emailEnabled,
-        smsEnabled,
-        pushEnabled,
-        inAppEnabled,
-        digestFrequency,
-        quietHoursStart,
-        quietHoursEnd,
-        claimUpdates,
-        documentUpdates,
-        deadlineAlerts,
-        systemAnnouncements,
-        securityAlerts,
-        email,
-        phone,
-      } = body;
+    // DUPLICATE REMOVED (Phase 2): Multi-line destructuring of body
+    // const {
+    // emailEnabled,
+    // smsEnabled,
+    // pushEnabled,
+    // inAppEnabled,
+    // digestFrequency,
+    // quietHoursStart,
+    // quietHoursEnd,
+    // claimUpdates,
+    // documentUpdates,
+    // deadlineAlerts,
+    // systemAnnouncements,
+    // securityAlerts,
+    // email,
+    // phone,
+    // } = body;
 
       // Check if preferences exist
       const existing = await withRLSContext({ organizationId }, async (db) => {
@@ -187,4 +188,3 @@ return standardErrorResponse(
     }
     })(request);
 };
-

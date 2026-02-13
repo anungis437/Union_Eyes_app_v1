@@ -93,15 +93,16 @@ export const POST = async (request: NextRequest) => {
     }
     
     const { organizationId, campaignName, campaignCode, campaignType, targetEmployerName, estimatedEligibleWorkers, laborBoardJurisdiction } = validation.data;
-      const {
-        organizationId,
-        campaignName,
-        campaignCode,
-        campaignType,
-        targetEmployerName,
-        estimatedEligibleWorkers,
-        laborBoardJurisdiction,
-      } = body;
+    // DUPLICATE REMOVED (Phase 2): Multi-line destructuring of body
+    // const {
+    // organizationId,
+    // campaignName,
+    // campaignCode,
+    // campaignType,
+    // targetEmployerName,
+    // estimatedEligibleWorkers,
+    // laborBoardJurisdiction,
+    // } = body;
   if (organizationId && organizationId !== context.organizationId) {
     return standardErrorResponse(
       ErrorCode.FORBIDDEN,
@@ -154,4 +155,3 @@ export const POST = async (request: NextRequest) => {
     }
     })(request);
 };
-

@@ -5,6 +5,7 @@ import { InsertProfile, SelectProfile } from "@/db/schema/domains/member";
 import { ActionResult } from "@/types/actions/actions-types";
 import { revalidatePath } from "next/cache";
 import { auth } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 export async function createProfileAction(data: InsertProfile): Promise<ActionResult<SelectProfile>> {
   try {

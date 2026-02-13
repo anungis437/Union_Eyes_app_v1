@@ -121,21 +121,22 @@ export const POST = async (request: NextRequest) => {
     }
     
     const { name, description, color, icon, isPersonal = true, isShared = false, isPublic = false, timezone = 'America/New_York', defaultEventDuration = 60, reminderDefaultMinutes = 15, allowOverlap = true, requireApproval = false, metadata } = validation.data;
-      const {
-        name,
-        description,
-        color,
-        icon,
-        isPersonal = true,
-        isShared = false,
-        isPublic = false,
-        timezone = 'America/New_York',
-        defaultEventDuration = 60,
-        reminderDefaultMinutes = 15,
-        allowOverlap = true,
-        requireApproval = false,
-        metadata,
-      } = body;
+    // DUPLICATE REMOVED (Phase 2): Multi-line destructuring of body
+    // const {
+    // name,
+    // description,
+    // color,
+    // icon,
+    // isPersonal = true,
+    // isShared = false,
+    // isPublic = false,
+    // timezone = 'America/New_York',
+    // defaultEventDuration = 60,
+    // reminderDefaultMinutes = 15,
+    // allowOverlap = true,
+    // requireApproval = false,
+    // metadata,
+    // } = body;
 
       if (!name) {
         return standardErrorResponse(
@@ -190,4 +191,3 @@ return standardErrorResponse(
     }
     })(request);
 };
-

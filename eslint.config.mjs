@@ -10,6 +10,18 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
+  {
+    ignores: [
+      '.next/**',
+      'node_modules/**',
+      'supabase/functions/**',
+      'services/**',
+      'packages/**',
+      'mobile/**',
+      'archive/**',
+      'cba-intelligence/**',
+    ],
+  },
   ...compat.extends('next/core-web-vitals'),
   ...compat.extends('next/typescript'),
 ];

@@ -13,6 +13,8 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import {
   Table,
@@ -124,6 +126,8 @@ const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 // ============================================================================
 
 export function AuditLogsDashboard() {
+  const params = useParams<{ locale?: string }>();
+  const localePrefix = params?.locale ? `/${params.locale}` : '';
   const [filters, setFilters] = useState<FilterState>({
     search: '',
     actionType: 'all',
@@ -302,6 +306,16 @@ alert('Failed to export audit logs');
           </p>
         </div>
         <div className="flex gap-2">
+          <Link href={`${localePrefix}/admin/runbooks/RUNBOOK_INCIDENT_RESPONSE`}>
+            <Button variant="outline" size="sm">
+              Runbook: Incident Response
+            </Button>
+          </Link>
+          <Link href={`${localePrefix}/admin/runbooks`}>
+            <Button variant="outline" size="sm">
+              Runbook Library
+            </Button>
+          </Link>
           <Button variant="outline" size="sm" onClick={() => refetchLogs()}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh

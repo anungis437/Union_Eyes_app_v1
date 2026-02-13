@@ -155,24 +155,25 @@ export const POST = async (request: NextRequest) => {
     }
     
     const { organizationId, courseName, courseDescription, courseCategory, deliveryMethod, courseDifficulty, durationHours, durationDays, learningObjectives, courseOutline, providesCertification, certificationName, certificationValidYears, clcApproved, minEnrollment, maxEnrollment, courseMaterialsUrl, isActive, clcApprovalDate } = validation.data;
-      const {
-        organizationId,
-        courseName,
-        courseDescription,
-        courseCategory,
-        deliveryMethod,
-        courseDifficulty,
-        durationHours,
-        durationDays,
-        learningObjectives,
-        courseOutline,
-        providesCertification,
-        certificationName,
-        certificationValidYears,
-        clcApproved,
-        minEnrollment,
-        maxEnrollment,
-      } = body;
+    // DUPLICATE REMOVED (Phase 2): Multi-line destructuring of body
+    // const {
+    // organizationId,
+    // courseName,
+    // courseDescription,
+    // courseCategory,
+    // deliveryMethod,
+    // courseDifficulty,
+    // durationHours,
+    // durationDays,
+    // learningObjectives,
+    // courseOutline,
+    // providesCertification,
+    // certificationName,
+    // certificationValidYears,
+    // clcApproved,
+    // minEnrollment,
+    // maxEnrollment,
+    // } = body;
   if (organizationId && organizationId !== context.organizationId) {
     return standardErrorResponse(
       ErrorCode.FORBIDDEN,
@@ -273,15 +274,16 @@ export const PATCH = async (request: NextRequest) => {
       }
 
       const body = await request.json();
-      const {
-        courseDescription,
-        learningObjectives,
-        courseOutline,
-        courseMaterialsUrl,
-        isActive,
-        clcApproved,
-        clcApprovalDate,
-      } = body;
+    // DUPLICATE REMOVED (Phase 2): Multi-line destructuring of body
+    // const {
+    // courseDescription,
+    // learningObjectives,
+    // courseOutline,
+    // courseMaterialsUrl,
+    // isActive,
+    // clcApproved,
+    // clcApprovalDate,
+    // } = body;
 
       // Build update query
       const updates: any[] = [];
@@ -353,4 +355,3 @@ export const PATCH = async (request: NextRequest) => {
     }
     })(request);
 };
-

@@ -119,16 +119,17 @@ export const POST = async (request: NextRequest) => {
     }
     
     const { organizationId, campaignId, filingType, laborBoardName, filedDate, bargainingUnitDescription, estimatedUnitSize, supportingDocumentation, filingStatus, hearingDate, decisionDate, decisionOutcome, certificationNumber } = validation.data;
-      const {
-        organizationId,
-        campaignId,
-        filingType,
-        laborBoardName,
-        filedDate,
-        bargainingUnitDescription,
-        estimatedUnitSize,
-        supportingDocumentation,
-      } = body;
+    // DUPLICATE REMOVED (Phase 2): Multi-line destructuring of body
+    // const {
+    // organizationId,
+    // campaignId,
+    // filingType,
+    // laborBoardName,
+    // filedDate,
+    // bargainingUnitDescription,
+    // estimatedUnitSize,
+    // supportingDocumentation,
+    // } = body;
   if (organizationId && organizationId !== context.organizationId) {
     return standardErrorResponse(
       ErrorCode.FORBIDDEN,
@@ -213,13 +214,14 @@ export const PATCH = async (request: NextRequest) => {
       }
 
       const body = await request.json();
-      const {
-        filingStatus,
-        hearingDate,
-        decisionDate,
-        decisionOutcome,
-        certificationNumber,
-      } = body;
+    // DUPLICATE REMOVED (Phase 2): Multi-line destructuring of body
+    // const {
+    // filingStatus,
+    // hearingDate,
+    // decisionDate,
+    // decisionOutcome,
+    // certificationNumber,
+    // } = body;
 
       // Build update query
       const updates: any[] = [];
@@ -283,4 +285,3 @@ export const PATCH = async (request: NextRequest) => {
     }
     })(request);
 };
-

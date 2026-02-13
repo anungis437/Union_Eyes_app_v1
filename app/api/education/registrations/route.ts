@@ -142,15 +142,16 @@ export const POST = async (request: NextRequest) => {
     }
     
     const { organizationId, memberId, courseId, sessionId, travelRequired, travelSubsidyRequested, accommodationRequired, registrationStatus, attended, attendanceHours } = validation.data;
-      const {
-        organizationId,
-        memberId,
-        courseId,
-        sessionId,
-        travelRequired,
-        travelSubsidyRequested,
-        accommodationRequired,
-      } = body;
+    // DUPLICATE REMOVED (Phase 2): Multi-line destructuring of body
+    // const {
+    // organizationId,
+    // memberId,
+    // courseId,
+    // sessionId,
+    // travelRequired,
+    // travelSubsidyRequested,
+    // accommodationRequired,
+    // } = body;
   if (organizationId && organizationId !== context.organizationId) {
     return standardErrorResponse(
       ErrorCode.FORBIDDEN,
@@ -327,11 +328,12 @@ export const PATCH = async (request: NextRequest) => {
       }
 
       const body = await request.json();
-      const {
-        registrationStatus,
-        attended,
-        attendanceHours,
-      } = body;
+    // DUPLICATE REMOVED (Phase 2): Multi-line destructuring of body
+    // const {
+    // registrationStatus,
+    // attended,
+    // attendanceHours,
+    // } = body;
 
       // Build update query
       const updates: any[] = [];
@@ -391,4 +393,3 @@ export const PATCH = async (request: NextRequest) => {
     }
     })(request);
 };
-

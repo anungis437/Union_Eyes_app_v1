@@ -258,7 +258,7 @@ function evaluateTenantFlag(
   flag: FeatureFlag,
   context: FeatureFlagContext
 ): FeatureFlagResult {
-  const allowedTenants = flag.allowedTenants as string[] | null;
+  const allowedTenants = flag.allowedOrganizations as string[] | null;
   
   if (!allowedTenants || allowedTenants.length === 0) {
     return {

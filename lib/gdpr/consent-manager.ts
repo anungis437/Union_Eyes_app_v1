@@ -103,7 +103,7 @@ export class ConsentManager {
       .where(
         and(
           eq(userConsents.userId, userId),
-          eq(userConsents.tenantId, tenantId),
+          eq(userConsents.organizationId /* was tenantId */, tenantId),
           eq(userConsents.status, "granted")
         )
       )
@@ -124,7 +124,7 @@ export class ConsentManager {
       .where(
         and(
           eq(userConsents.userId, userId),
-          eq(userConsents.tenantId, tenantId),
+          eq(userConsents.organizationId /* was tenantId */, tenantId),
           eq(userConsents.consentType, consentType as any),
           eq(userConsents.status, "granted")
         )
@@ -245,7 +245,7 @@ export class GdprRequestManager {
     try {
       const notificationService = new NotificationService();
       await notificationService.send({
-        organizationId: data.tenantId,
+        organizationId: data.organizationId /* was tenantId */,
         recipientEmail: process.env.DPO_EMAIL || process.env.ADMIN_EMAIL || 'admin@unioneyes.app',
         type: 'email',
         priority: 'high',
@@ -316,7 +316,7 @@ export class GdprRequestManager {
       .insert(gdprDataRequests)
       .values({
         userId: data.userId,
-        tenantId: data.tenantId,
+        tenantId: data.organizationId /* was tenantId */,
         requestType: "portability",
         status: "pending",
         deadline,
@@ -340,7 +340,7 @@ export class GdprRequestManager {
       .where(
         and(
           eq(gdprDataRequests.userId, userId),
-          eq(gdprDataRequests.tenantId, tenantId)
+          eq(gdprDataRequests.organizationId /* was tenantId */, tenantId)
         )
       )
       .orderBy(desc(gdprDataRequests.requestedAt));
@@ -355,7 +355,7 @@ export class GdprRequestManager {
       .from(gdprDataRequests)
       .where(
         and(
-          eq(gdprDataRequests.tenantId, tenantId),
+          eq(gdprDataRequests.organizationId /* was tenantId */, tenantId),
           eq(gdprDataRequests.status, "pending")
         )
       )
@@ -444,7 +444,7 @@ export class DataExportService {
       .where(
         and(
           eq(userConsents.userId, userId),
-          eq(userConsents.tenantId, tenantId)
+          eq(userConsents.organizationId /* was tenantId */, tenantId)
         )
       );
   }
@@ -861,7 +861,7 @@ export class DataErasureService {
       .where(
         and(
           eq(userConsents.userId, userId),
-          eq(userConsents.tenantId, tenantId)
+          eq(userConsents.organizationId /* was tenantId */, tenantId)
         )
       );
 

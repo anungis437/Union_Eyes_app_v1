@@ -130,7 +130,7 @@ export class WorkdayClient {
       this.tokenExpiresAt = new Date(Date.now() + data.expires_in * 1000);
 
       logger.info('Workday authentication successful', {
-        tenantId: this.config.tenantId,
+        tenantId: this.config.organizationId /* was tenantId */,
         expiresAt: this.tokenExpiresAt,
       });
     } catch (error) {

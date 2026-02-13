@@ -8,6 +8,8 @@
 // - Certificate validity verification
 // - Bulk signature verification
 // - Verification audit trail
+
+import { logger } from '@/lib/logger';
 // =====================================================================================
 
 import { db } from '@/db';

@@ -264,7 +264,7 @@ export async function importMicrosoftEvents(
           )
           .limit(1);
 
-        const eventData = mapMicrosoftEventToLocal(msEvent, localCalendarId, localCalendar.tenantId);
+        const eventData = mapMicrosoftEventToLocal(msEvent, localCalendarId, localCalendar.organizationId /* was tenantId */);
 
         if (existingEvent) {
           // Update existing event

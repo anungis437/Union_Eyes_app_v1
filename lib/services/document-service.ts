@@ -123,7 +123,7 @@ export async function listDocuments(
 
     const scopedOrganizationId = filters.organizationId ?? filters.tenantId;
     if (scopedOrganizationId) {
-      conditions.push(eq(documents.tenantId, scopedOrganizationId));
+      conditions.push(eq(documents.organizationId /* was tenantId */, scopedOrganizationId));
     }
 
     if (filters.folderId) {
@@ -303,7 +303,7 @@ export async function listFolders(
 ): Promise<FolderWithChildren[]> {
   try {
     const conditions: SQL[] = [
-      eq(documentFolders.tenantId, organizationId),
+      eq(documentFolders.organizationId /* was tenantId */, organizationId),
       sql`${documentFolders.deletedAt} IS NULL`,
     ];
 
@@ -424,7 +424,7 @@ export async function getFolderTree(organizationId: string): Promise<FolderWithC
     const allFolders = await db
       .select()
       .from(documentFolders)
-      .where(and(eq(documentFolders.tenantId, organizationId), sql`${documentFolders.deletedAt} IS NULL`));
+      .where(and(eq(documentFolders.organizationId /* was tenantId */, organizationId), sql`${documentFolders.deletedAt} IS NULL`));
 
     // Build tree structure
     const folderMap = new Map<string, FolderWithChildren>();
@@ -586,7 +586,7 @@ export async function searchDocuments(
     const offset = (page - 1) * limit;
 
     const conditions: SQL[] = [
-      eq(documents.tenantId, organizationId),
+      eq(documents.organizationId /* was tenantId */, organizationId),
       sql`${documents.deletedAt} IS NULL`,
     ];
 
@@ -761,7 +761,7 @@ export async function getDocumentStatistics(organizationId: string): Promise<{
     const docs = await db
       .select()
       .from(documents)
-      .where(and(eq(documents.tenantId, organizationId), sql`${documents.deletedAt} IS NULL`));
+      .where(and(eq(documents.organizationId /* was tenantId */, organizationId), sql`${documents.deletedAt} IS NULL`));
 
     const byCategory: Record<string, number> = {};
     const byFileType: Record<string, number> = {};

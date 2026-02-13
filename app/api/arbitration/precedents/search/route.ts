@@ -1,4 +1,4 @@
-import { logApiAuditEvent } from "@/lib/middleware/api-security";
+﻿import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * Phase 5B: Arbitration Precedents Advanced Search API
  * Route: /api/arbitration/precedents/search
@@ -140,7 +140,7 @@ export const POST = async (request: NextRequest) => {
       );
     }
     
-    const { query, grievanceTypes, outcomes, jurisdictions, precedentLevels, sectors, industries, provinces, arbitratorNames, fromDate, toDate, tags, sharingLevels, minCitations, maxCitations, page = 1, limit = 20, sortBy = 'decisionDate', sortOrder = 'desc' } = validation.data;
+      // DUPLICATE REMOVED:     const { query, grievanceTypes, outcomes, jurisdictions, precedentLevels, sectors, industries, provinces, arbitratorNames, fromDate, toDate, tags, sharingLevels, minCitations, maxCitations, page = 1, limit = 20, sortBy = 'decisionDate', sortOrder = 'desc' } = validation.data;
 
       // Parse search criteria
       const {

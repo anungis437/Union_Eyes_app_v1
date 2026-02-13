@@ -243,7 +243,7 @@ export class XeroClient {
     const url = `${this.baseUrl}/${endpoint}`;
     const headers: HeadersInit = {
       Authorization: `Bearer ${this.accessToken}`,
-      'xero-tenant-id': this.config.tenantId,
+      'xero-tenant-id': this.config.organizationId /* was tenantId */,
       Accept: 'application/json',
       ...options.headers,
     };

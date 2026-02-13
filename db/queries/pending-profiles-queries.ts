@@ -1,7 +1,7 @@
 import { pendingProfilesTable, InsertPendingProfile, SelectPendingProfile } from "@/db/schema/domains/member";
 import { eq, and } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { withRLSContext } from "@/lib/rls-middleware";
+import { withRLSContext } from "@/lib/db/with-rls-context";
 
 // Create a new pending profile
 export const createPendingProfile = async (

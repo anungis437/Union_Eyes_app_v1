@@ -136,11 +136,38 @@ export interface StandardizedSuccess<T = any> {
 }
 
 /**
+ * Convert unknown error to a safe Record<string, any> format
+ * Handles Error objects, plain objects, and primitives
+ */
+function normalizeErrorDetails(details: unknown): Record<string, any> | undefined {
+  if (details === null || details === undefined) {
+    return undefined;
+  }
+  
+  // If already a plain object, return as-is
+  if (typeof details === 'object' && !Array.isArray(details) && !(details instanceof Error)) {
+    return details as Record<string, any>;
+  }
+  
+  // Handle Error objects
+  if (details instanceof Error) {
+    return {
+      message: details.message,
+      name: details.name,
+      ...(details.stack && { stack: details.stack }),
+    };
+  }
+  
+  // Handle primitives and arrays
+  return { value: String(details) };
+}
+
+/**
  * Generate standardized error response
  * 
  * @param code - Error code from ErrorCode enum
  * @param message - User-friendly error message
- * @param details - Additional context (only included in dev mode)
+ * @param details - Additional context (accepts unknown for catch blocks)
  * @param traceId - Optional trace ID for correlation
  * @returns NextResponse with standardized error format
  * 
@@ -154,7 +181,7 @@ export interface StandardizedSuccess<T = any> {
 export function standardErrorResponse(
   code: ErrorCode,
   message: string,
-  details?: Record<string, any>,
+  details?: unknown,
   traceId?: string
 ): NextResponse<StandardizedError> {
   const isDevelopment = process.env.NODE_ENV === 'development';
@@ -163,8 +190,9 @@ export function standardErrorResponse(
   // Generate or use existing trace ID
   const finalTraceId = traceId || generateTraceId();
   
-  // Sanitize details to prevent information leakage
-  const sanitizedDetails = isDevelopment ? details : sanitizeErrorDetails(details);
+  // Normalize and sanitize details to prevent information leakage
+  const normalizedDetails = normalizeErrorDetails(details);
+  const sanitizedDetails = isDevelopment ? normalizedDetails : sanitizeErrorDetails(normalizedDetails);
   
   // Log error with appropriate severity (never log raw Error objects)
   const severity = statusCode >= 500 ? 'error' : statusCode >= 400 ? 'warn' : 'info';

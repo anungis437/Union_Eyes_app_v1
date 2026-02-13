@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Send, ThumbsUp, ThumbsDown, FileText, MoreVertical, Archive, Trash2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/lib/hooks/use-toast";
 
 interface Message {
   id: string;

@@ -58,7 +58,7 @@ export class WorkdayAdapter extends BaseIntegration {
       const workdayConfig: WorkdayConfig = {
         clientId: this.config!.credentials.clientId!,
         clientSecret: this.config!.credentials.clientSecret!,
-        tenantId: this.config!.settings?.tenantId || '',
+        tenantId: this.config!.settings?.organizationId /* was tenantId */ || '',
         environment: this.config!.settings?.environment || 'production',
         refreshToken: this.config!.credentials.refreshToken,
       };

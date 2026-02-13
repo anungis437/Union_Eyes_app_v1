@@ -282,7 +282,7 @@ async function processNotification(job: any) {
           }
 
         case 'in-app':
-          await sendInAppNotification(userId, title, message, data, data?.tenantId);
+          await sendInAppNotification(userId, title, message, data, data?.organizationId /* was tenantId */);
           return { channel, success: true };
 
         default:

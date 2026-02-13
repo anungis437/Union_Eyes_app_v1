@@ -138,15 +138,16 @@ export const PATCH = withApiAuth(async (request: NextRequest) => {
     }
     
     const { memberId, token, registrationConfirmations, sessionReminders, completionCertificates, certificationExpiry, programMilestones } = validation.data;
-    const {
-      memberId,
-      token,
-      registrationConfirmations,
-      sessionReminders,
-      completionCertificates,
-      certificationExpiry,
-      programMilestones,
-    } = body;
+    // DUPLICATE REMOVED (Phase 2): Multi-line destructuring of body
+    // const {
+    // memberId,
+    // token,
+    // registrationConfirmations,
+    // sessionReminders,
+    // completionCertificates,
+    // certificationExpiry,
+    // programMilestones,
+    // } = body;
 
     if (!memberId && !token) {
       return standardErrorResponse(
@@ -313,4 +314,3 @@ export const POST = withApiAuth(async (request: NextRequest) => {
     );
   }
 });
-

@@ -89,17 +89,18 @@ export const POST = async (request: NextRequest) => {
     }
     
     const { documentId, documentType, name, description, workflowType, steps, dueDate, expiresAt, autoStart } = validation.data;
-      const {
-        documentId,
-        documentType,
-        name,
-        description,
-        workflowType,
-        steps,
-        dueDate,
-        expiresAt,
-        autoStart,
-      } = body;
+    // DUPLICATE REMOVED (Phase 2): Multi-line destructuring of body
+    // const {
+    // documentId,
+    // documentType,
+    // name,
+    // description,
+    // workflowType,
+    // steps,
+    // dueDate,
+    // expiresAt,
+    // autoStart,
+    // } = body;
 
       // Validation
       if (!documentId || !documentType || !name || !workflowType || !steps) {
@@ -149,4 +150,3 @@ return NextResponse.json(
     }
     })(request);
 };
-

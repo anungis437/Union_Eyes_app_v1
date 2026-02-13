@@ -195,31 +195,32 @@ export const POST = async (request: NextRequest) => {
     }
     
     const { name, displayName, description, buildingName, floor, roomNumber, address, capacity = 10, features = [], equipment = [], requiresApproval = false, minBookingDuration = 30, maxBookingDuration = 480, advanceBookingDays = 90, operatingHours, allowedUserRoles, blockedDates = [], contactPersonId, contactEmail, contactPhone, imageUrl, floorPlanUrl, metadata } = validation.data;
-      const {
-        name,
-        displayName,
-        description,
-        buildingName,
-        floor,
-        roomNumber,
-        address,
-        capacity = 10,
-        features = [],
-        equipment = [],
-        requiresApproval = false,
-        minBookingDuration = 30,
-        maxBookingDuration = 480,
-        advanceBookingDays = 90,
-        operatingHours,
-        allowedUserRoles,
-        blockedDates = [],
-        contactPersonId,
-        contactEmail,
-        contactPhone,
-        imageUrl,
-        floorPlanUrl,
-        metadata,
-      } = body;
+    // DUPLICATE REMOVED (Phase 2): Multi-line destructuring of body
+    // const {
+    // name,
+    // displayName,
+    // description,
+    // buildingName,
+    // floor,
+    // roomNumber,
+    // address,
+    // capacity = 10,
+    // features = [],
+    // equipment = [],
+    // requiresApproval = false,
+    // minBookingDuration = 30,
+    // maxBookingDuration = 480,
+    // advanceBookingDays = 90,
+    // operatingHours,
+    // allowedUserRoles,
+    // blockedDates = [],
+    // contactPersonId,
+    // contactEmail,
+    // contactPhone,
+    // imageUrl,
+    // floorPlanUrl,
+    // metadata,
+    // } = body;
 
       if (!name) {
         return standardErrorResponse(
@@ -279,4 +280,3 @@ export const POST = async (request: NextRequest) => {
     }
     })(request);
 };
-

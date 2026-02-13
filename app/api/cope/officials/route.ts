@@ -1,4 +1,4 @@
-import { withRLSContext } from '@/lib/db/with-rls-context';
+﻿import { withRLSContext } from '@/lib/db/with-rls-context';
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * API Route: Elected Officials
@@ -149,7 +149,7 @@ export const POST = async (request: NextRequest) => {
       );
     }
     
-    const { organizationId, firstName, lastName, officeTitle, governmentLevel, jurisdiction, electoralDistrict, politicalParty, constituencyOfficePhone, email, cabinetPosition, laborFriendlyRating, previousUnionMember, unionEndorsed, totalMeetingsHeld, lastContactDate, responsive, isCurrent, defeatDate, retirementDate } = validation.data;
+      // DUPLICATE REMOVED:     const { organizationId, firstName, lastName, officeTitle, governmentLevel, jurisdiction, electoralDistrict, politicalParty, constituencyOfficePhone, email, cabinetPosition, laborFriendlyRating, previousUnionMember, unionEndorsed, totalMeetingsHeld, lastContactDate, responsive, isCurrent, defeatDate, retirementDate } = validation.data;
       const {
         organizationId,
         firstName,

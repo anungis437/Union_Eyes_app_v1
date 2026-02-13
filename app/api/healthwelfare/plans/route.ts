@@ -112,15 +112,16 @@ export const POST = async (request: NextRequest) => {
     }
     
     const { organizationId, planName, planType, insuranceCarrier, coverageStartDate, monthlyPremiumSingle, monthlyPremiumFamily } = validation.data;
-      const {
-        organizationId,
-        planName,
-        planType,
-        insuranceCarrier,
-        coverageStartDate,
-        monthlyPremiumSingle,
-        monthlyPremiumFamily,
-      } = body;
+    // DUPLICATE REMOVED (Phase 2): Multi-line destructuring of body
+    // const {
+    // organizationId,
+    // planName,
+    // planType,
+    // insuranceCarrier,
+    // coverageStartDate,
+    // monthlyPremiumSingle,
+    // monthlyPremiumFamily,
+    // } = body;
   if (organizationId && organizationId !== context.organizationId) {
     return standardErrorResponse(
       ErrorCode.FORBIDDEN,
@@ -181,4 +182,3 @@ export const POST = async (request: NextRequest) => {
     }
     })(request);
 };
-

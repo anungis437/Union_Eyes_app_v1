@@ -173,7 +173,7 @@ export function useTenant() {
  */
 export function useTenantId(): string | null {
   const { currentTenant } = useTenant();
-  return currentTenant?.tenantId || null;
+  return currentTenant?.organizationId /* was tenantId */ || null;
 }
 
 /**

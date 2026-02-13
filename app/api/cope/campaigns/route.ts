@@ -1,4 +1,4 @@
-import { withRLSContext } from '@/lib/db/with-rls-context';
+﻿import { withRLSContext } from '@/lib/db/with-rls-context';
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * API Route: COPE Political Campaigns
@@ -151,7 +151,7 @@ export const POST = async (request: NextRequest) => {
       );
     }
     
-    const { organizationId, campaignName, campaignType, campaignDescription, campaignGoals, startDate, endDate, electionDate, jurisdictionLevel, jurisdictionName, electoralDistrict, primaryIssue, memberParticipationGoal, doorsKnockedGoal, phoneCallsGoal, budgetAllocated, fundedByCope, copeContributionAmount, campaignStatus, membersParticipated, doorsKnocked, phoneCallsMade, expensesToDate, outcomeType, outcomeDate, outcomeNotes } = validation.data;
+      // DUPLICATE REMOVED:     const { organizationId, campaignName, campaignType, campaignDescription, campaignGoals, startDate, endDate, electionDate, jurisdictionLevel, jurisdictionName, electoralDistrict, primaryIssue, memberParticipationGoal, doorsKnockedGoal, phoneCallsGoal, budgetAllocated, fundedByCope, copeContributionAmount, campaignStatus, membersParticipated, doorsKnocked, phoneCallsMade, expensesToDate, outcomeType, outcomeDate, outcomeNotes } = validation.data;
       const {
         organizationId,
         campaignName,

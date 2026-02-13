@@ -102,7 +102,7 @@ export async function scheduleEventReminders(
             .insert(eventReminders)
             .values({
               eventId,
-              tenantId: event.tenantId,
+              tenantId: event.organizationId /* was tenantId */,
               userId: attendee.userId || attendee.email,
               reminderMinutes: minutes,
               reminderType: channel,

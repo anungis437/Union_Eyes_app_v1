@@ -355,7 +355,7 @@ export async function initiateRedemption(input: unknown) {
     if (!userId) throw new Error('Unauthorized');
 
     const orgId = await getCurrentUserOrgId();
-    const validated = redemptionInitiateSchema.parse(input);
+    const validated = initiateRedemptionSchema.parse(input);
 
     // Initiate redemption (deducts credits)
     const redemption = await rewardsService.initiateRedemption(

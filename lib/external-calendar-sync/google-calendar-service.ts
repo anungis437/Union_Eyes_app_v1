@@ -259,7 +259,7 @@ export async function importGoogleEvents(
           )
           .limit(1);
 
-        const eventData = mapGoogleEventToLocal(googleEvent, localCalendarId, localCalendar.tenantId);
+        const eventData = mapGoogleEventToLocal(googleEvent, localCalendarId, localCalendar.organizationId /* was tenantId */);
 
         if (existingEvent) {
           // Update existing event

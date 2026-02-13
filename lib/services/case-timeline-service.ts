@@ -326,13 +326,13 @@ async function recomputeSignalsForCase(claimId: string): Promise<void> {
       if (claimData.assignedTo) {
         try {
           const assignedOfficer = await db.query.users.findFirst({
-            where: eq(users.id, claimData.assignedTo),
+            where: eq(users.userId, claimData.assignedTo),
           });
           
           if (assignedOfficer?.email) {
             const notificationService = new NotificationService();
             await notificationService.send({
-              organizationId: claimData.organizationId || claimData.tenantId,
+              organizationId: claimData.organizationId || claimData.organizationId /* was tenantId */,
               recipientId: claimData.assignedTo,
               recipientEmail: assignedOfficer.email,
               type: 'email',

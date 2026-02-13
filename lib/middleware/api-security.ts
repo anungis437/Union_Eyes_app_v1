@@ -19,6 +19,9 @@ import { eq, and } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from 'zod';
 
+// Re-export for convenience
+export { SQLInjectionScanner } from '@/lib/middleware/sql-injection-prevention';
+
 /**
  * API Route Handler Type
  */

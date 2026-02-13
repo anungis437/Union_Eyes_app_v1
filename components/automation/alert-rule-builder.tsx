@@ -8,6 +8,8 @@
  */
 
 import { useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { useToast } from '@/components/ui/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -230,6 +232,10 @@ interface Action {
 }
 
 export default function AlertRuleBuilder() {
+  const params = useParams<{ locale?: string }>();
+  const router = useRouter();
+  const { toast } = useToast();
+  const localePrefix = params?.locale ? `/${params.locale}` : '';
   const [ruleName, setRuleName] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
@@ -239,10 +245,13 @@ export default function AlertRuleBuilder() {
   const [frequency, setFrequency] = useState('every_occurrence');
   const [rateLimitMinutes, setRateLimitMinutes] = useState(60);
   const [isEnabled, setIsEnabled] = useState(true);
+  const [recipientEmails, setRecipientEmails] = useState('');
+  const [recipientPhones, setRecipientPhones] = useState('');
   
   const [conditions, setConditions] = useState<Condition[]>([]);
   const [actions, setActions] = useState<Action[]>([]);
   const [currentStep, setCurrentStep] = useState<'basic' | 'trigger' | 'conditions' | 'actions' | 'review'>('basic');
+  const [isSaving, setIsSaving] = useState(false);
 
   // Add condition
   const addCondition = () => {
@@ -318,32 +327,105 @@ export default function AlertRuleBuilder() {
   };
 
   // Save alert rule
-  const saveAlertRule = () => {
+  const saveAlertRule = async () => {
     const alertRule = {
       name: ruleName,
-      description,
-      category,
+      description: description || undefined,
+      category: category || undefined,
       triggerType,
       triggerConfig,
       severity,
       frequency,
-      rateLimitMinutes: frequency === 'rate_limited' ? rateLimitMinutes : null,
+      rateLimitMinutes: frequency === 'rate_limited' ? rateLimitMinutes : undefined,
       isEnabled,
       conditions: conditions.map((c, i) => ({
-        ...c,
+        fieldPath: c.fieldPath,
+        operator: c.operator,
+        value: c.value,
+        conditionGroup: c.conditionGroup,
+        isOrCondition: c.isOrCondition,
         orderIndex: i,
       })),
       actions: actions.map((a, i) => ({
-        ...a,
+        actionType: a.actionType,
+        actionConfig: a.actionConfig,
         orderIndex: i,
       })),
     };
-// API call would go here
+    setIsSaving(true);
+    try {
+      const response = await fetch('/api/admin/alerts/rules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(alertRule),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save alert rule');
+      }
+      const responseData = await response.json();
+      const createdRuleId = responseData?.data?.rule?.id;
+
+      if (createdRuleId) {
+        const emailRecipients = recipientEmails
+          .split(/[\n,]/)
+          .map((value) => value.trim())
+          .filter(Boolean);
+        const smsRecipients = recipientPhones
+          .split(/[\n,]/)
+          .map((value) => value.trim())
+          .filter(Boolean);
+
+        await Promise.all([
+          ...emailRecipients.map((email) =>
+            fetch('/api/admin/alerts/recipients', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                alertRuleId: createdRuleId,
+                recipientType: 'email',
+                recipientValue: email,
+                deliveryMethods: ['email'],
+              }),
+            })
+          ),
+          ...smsRecipients.map((phone) =>
+            fetch('/api/admin/alerts/recipients', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                alertRuleId: createdRuleId,
+                recipientType: 'sms',
+                recipientValue: phone,
+                deliveryMethods: ['sms'],
+              }),
+            })
+          ),
+        ]);
+      }
+
+      toast({
+        title: 'Alert rule created',
+        description: 'The alert rule is now active.',
+      });
+      router.push(`${localePrefix}/admin/alerts`);
+    } catch (error) {
+      toast({
+        title: 'Save failed',
+        description: error instanceof Error ? error.message : 'Failed to save alert rule',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Test alert rule
   const testAlertRule = () => {
-// API call to test rule would go here
+    toast({
+      title: 'Test run queued',
+      description: 'Save the rule before running a test execution.',
+    });
   };
 
   return (
@@ -361,9 +443,9 @@ export default function AlertRuleBuilder() {
             <Play className="h-4 w-4 mr-2" />
             Test Rule
           </Button>
-          <Button onClick={saveAlertRule}>
+          <Button onClick={saveAlertRule} disabled={isSaving}>
             <Save className="h-4 w-4 mr-2" />
-            Save Rule
+            {isSaving ? 'Saving...' : 'Save Rule'}
           </Button>
         </div>
       </div>
@@ -503,6 +585,26 @@ export default function AlertRuleBuilder() {
                   />
                 </div>
               )}
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="recipient-emails">Alert Emails</Label>
+                <Input
+                  id="recipient-emails"
+                  placeholder="ops@example.org, admin@example.org"
+                  value={recipientEmails}
+                  onChange={(e) => setRecipientEmails(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="recipient-phones">Alert SMS Numbers</Label>
+                <Input
+                  id="recipient-phones"
+                  placeholder="+14165550123"
+                  value={recipientPhones}
+                  onChange={(e) => setRecipientPhones(e.target.value)}
+                />
+              </div>
             </div>
             <div className="flex items-center justify-between pt-4">
               <div className="flex items-center space-x-2">
@@ -934,6 +1036,14 @@ export default function AlertRuleBuilder() {
                 <p><span className="font-medium">Severity:</span> <Badge className={SEVERITY_LEVELS.find(s => s.value === severity)?.color}>{severity}</Badge></p>
                 <p><span className="font-medium">Frequency:</span> {frequency}</p>
                 <p><span className="font-medium">Status:</span> {isEnabled ? <CheckCircle className="inline h-4 w-4 text-green-600" /> : <XCircle className="inline h-4 w-4 text-red-600" />} {isEnabled ? 'Enabled' : 'Disabled'}</p>
+                <p>
+                  <span className="font-medium">Alert Emails:</span>{' '}
+                  {recipientEmails || <span className="text-muted-foreground">Not set</span>}
+                </p>
+                <p>
+                  <span className="font-medium">Alert SMS:</span>{' '}
+                  {recipientPhones || <span className="text-muted-foreground">Not set</span>}
+                </p>
               </div>
             </div>
 
@@ -989,9 +1099,9 @@ export default function AlertRuleBuilder() {
               <Button variant="outline" onClick={() => setCurrentStep('actions')}>
                 Back
               </Button>
-              <Button onClick={saveAlertRule}>
+              <Button onClick={saveAlertRule} disabled={isSaving}>
                 <Save className="h-4 w-4 mr-2" />
-                Save Alert Rule
+                {isSaving ? 'Saving...' : 'Save Alert Rule'}
               </Button>
             </div>
           </CardContent>

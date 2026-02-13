@@ -4,7 +4,7 @@ import { eq, and, desc, sql, count } from "drizzle-orm";
 import { claims, claimUpdates } from "../schema/claims-schema";
 import { organizations } from "../schema-organizations";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { withRLSContext } from "@/lib/rls-middleware";
+import { withRLSContext } from "@/lib/db/with-rls-context";
 import { logger } from "@/lib/logger";
 
 // Type for inserting a new claim

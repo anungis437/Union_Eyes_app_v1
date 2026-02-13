@@ -1,4 +1,4 @@
-import { logApiAuditEvent } from "@/lib/middleware/api-security";
+﻿import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { trainingPrograms, trainingCourses } from "@/db/schema";
@@ -141,7 +141,7 @@ export const POST = async (request: NextRequest) => {
       );
     }
     
-    const { organizationId, programName, programCategory, programDescription, programDurationMonths, requiredCourses, electiveCourses, electivesRequiredCount, totalHoursRequired, providesCertification, certificationName, entryRequirements, timeCommitment, clcApproved, notes, isActive } = validation.data;
+      // DUPLICATE REMOVED:     const { organizationId, programName, programCategory, programDescription, programDurationMonths, requiredCourses, electiveCourses, electivesRequiredCount, totalHoursRequired, providesCertification, certificationName, entryRequirements, timeCommitment, clcApproved, notes, isActive } = validation.data;
       const {
         organizationId,
         programName,

@@ -12,6 +12,7 @@
  */
 
 import * as React from "react";
+import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,10 +26,18 @@ import {
   AlertCircle,
   TrendingUp,
   UserCheck,
+  Building2,
+  ArrowRight,
+  Activity,
+  Bell,
 } from "lucide-react";
 import { AuditLogViewer } from "@/components/compliance/audit-log-viewer";
 
-export default function AdminPage() {
+interface AdminPageProps {
+  params: { locale: string };
+}
+
+export default function AdminPage({ params }: AdminPageProps) {
   // Mock statistics - would come from API/database
   const stats = {
     totalMembers: 1234,
@@ -40,16 +49,16 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
+    <div className="space-y-6">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <Shield className="h-8 w-8" />
-            Admin Panel
+            Admin Dashboard
           </h1>
           <p className="text-gray-600 mt-2">
-            Manage users, configure system settings, and monitor compliance
+            System overview and quick access to admin functions
           </p>
         </div>
         <Badge
@@ -57,6 +66,140 @@ export default function AdminPage() {
         >
           System: {stats.systemHealth}
         </Badge>
+      </div>
+
+      {/* Quick Access Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <Link href={`/${params.locale}/admin/tenants`}>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5 text-blue-600" />
+                  <span>Tenants</span>
+                </div>
+                <ArrowRight className="h-4 w-4 text-gray-400" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600">
+                Manage tenant organizations, subscriptions, and resources
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href={`/${params.locale}/admin/users`}>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-green-600" />
+                  <span>Users</span>
+                </div>
+                <ArrowRight className="h-4 w-4 text-gray-400" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600">
+                User management and role assignment across all tenants
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href={`/${params.locale}/admin/permissions`}>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-purple-600" />
+                  <span>Permissions</span>
+                </div>
+                <ArrowRight className="h-4 w-4 text-gray-400" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600">
+                Permission audit and role-permission mappings
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href={`/${params.locale}/admin/audit`}>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Activity className="h-5 w-5 text-orange-600" />
+                  <span>Audit Logs</span>
+                </div>
+                <ArrowRight className="h-4 w-4 text-gray-400" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600">
+                System activity logs and compliance audit trail
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href={`/${params.locale}/admin/alerts`}>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Bell className="h-5 w-5 text-red-600" />
+                  <span>Alerts</span>
+                </div>
+                <ArrowRight className="h-4 w-4 text-gray-400" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600">
+                Alert rules, incidents, and notification health
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href={`/${params.locale}/admin/settings`}>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Settings className="h-5 w-5 text-gray-600" />
+                  <span>Settings</span>
+                </div>
+                <ArrowRight className="h-4 w-4 text-gray-400" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600">
+                System configuration and global settings
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-blue-900">
+              <FileText className="h-5 w-5" />
+              Documentation
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-blue-800 mb-3">
+              Admin console guides and API docs
+            </p>
+            <Button variant="outline" size="sm" className="w-full">
+              View Docs
+            </Button>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Quick Stats */}

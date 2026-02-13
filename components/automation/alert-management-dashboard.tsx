@@ -7,13 +7,16 @@
  * with execution history and performance metrics.
  */
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/components/ui/use-toast';
 import { 
   Plus, 
   Search, 
@@ -32,186 +35,54 @@ import {
   Eye
 } from 'lucide-react';
 
-// Sample alert rules data
-const SAMPLE_ALERT_RULES = [
-  {
-    id: '1',
-    name: 'Contract Expiration Alert',
-    category: 'contract_management',
-    description: 'Alert bargaining team when contracts are approaching expiration',
-    severity: 'high' as const,
-    triggerType: 'schedule' as const,
-    frequency: 'daily_digest' as const,
-    isEnabled: true,
-    lastExecutedAt: '2025-12-07T06:00:00Z',
-    lastExecutionStatus: 'success' as const,
-    executionCount: 45,
-    successCount: 43,
-    failureCount: 2,
-    conditionsCount: 2,
-    actionsCount: 3,
-    createdAt: '2025-10-01T00:00:00Z',
-  },
-  {
-    id: '2',
-    name: 'Dues Arrears Alert',
-    category: 'financial',
-    description: 'Alert when members fall behind on dues payments',
-    severity: 'medium' as const,
-    triggerType: 'event' as const,
-    frequency: 'every_occurrence' as const,
-    isEnabled: true,
-    lastExecutedAt: '2025-12-06T14:30:00Z',
-    lastExecutionStatus: 'success' as const,
-    executionCount: 127,
-    successCount: 125,
-    failureCount: 2,
-    conditionsCount: 2,
-    actionsCount: 2,
-    createdAt: '2025-09-15T00:00:00Z',
-  },
-  {
-    id: '3',
-    name: 'Certification Expiry Alert',
-    category: 'training',
-    description: 'Alert members when certifications are expiring',
-    severity: 'medium' as const,
-    triggerType: 'schedule' as const,
-    frequency: 'daily_digest' as const,
-    isEnabled: true,
-    lastExecutedAt: '2025-12-07T06:00:00Z',
-    lastExecutionStatus: 'success' as const,
-    executionCount: 62,
-    successCount: 62,
-    failureCount: 0,
-    conditionsCount: 1,
-    actionsCount: 2,
-    createdAt: '2025-10-10T00:00:00Z',
-  },
-  {
-    id: '4',
-    name: 'Grievance Deadline Alert',
-    category: 'grievances',
-    description: 'Alert stewards of approaching grievance deadlines',
-    severity: 'critical' as const,
-    triggerType: 'schedule' as const,
-    frequency: 'every_occurrence' as const,
-    isEnabled: true,
-    lastExecutedAt: '2025-12-07T08:00:00Z',
-    lastExecutionStatus: 'success' as const,
-    executionCount: 89,
-    successCount: 87,
-    failureCount: 2,
-    conditionsCount: 1,
-    actionsCount: 3,
-    createdAt: '2025-09-01T00:00:00Z',
-  },
-  {
-    id: '5',
-    name: 'Member Engagement Drop',
-    category: 'membership',
-    description: 'Alert when member engagement score drops below threshold',
-    severity: 'low' as const,
-    triggerType: 'threshold' as const,
-    frequency: 'rate_limited' as const,
-    isEnabled: false,
-    lastExecutedAt: '2025-12-03T10:00:00Z',
-    lastExecutionStatus: 'failed' as const,
-    executionCount: 15,
-    successCount: 13,
-    failureCount: 2,
-    conditionsCount: 2,
-    actionsCount: 2,
-    createdAt: '2025-11-01T00:00:00Z',
-  },
-  {
-    id: '6',
-    name: 'Strike Fund Low Balance',
-    category: 'strike_fund',
-    description: 'Alert when strike fund balance falls below threshold',
-    severity: 'critical' as const,
-    triggerType: 'threshold' as const,
-    frequency: 'every_occurrence' as const,
-    isEnabled: true,
-    lastExecutedAt: '2025-12-05T12:00:00Z',
-    lastExecutionStatus: 'success' as const,
-    executionCount: 3,
-    successCount: 3,
-    failureCount: 0,
-    conditionsCount: 2,
-    actionsCount: 2,
-    createdAt: '2025-11-20T00:00:00Z',
-  },
-];
+type AlertRuleSummary = {
+  id: string;
+  name: string;
+  category: string | null;
+  description: string | null;
+  severity: string;
+  triggerType: string;
+  frequency: string;
+  isEnabled: boolean;
+  lastExecutedAt: string | null;
+  lastExecutionStatus: string | null;
+  executionCount: number;
+  successCount: number;
+  failureCount: number;
+  conditionsCount: number;
+  actionsCount: number;
+  createdAt: string;
+};
 
-// Sample execution history
-const SAMPLE_EXECUTIONS = [
-  {
-    id: '1',
-    alertRuleName: 'Grievance Deadline Alert',
-    triggeredBy: 'schedule',
-    status: 'success' as const,
-    conditionsMet: true,
-    startedAt: '2025-12-07T08:00:00Z',
-    completedAt: '2025-12-07T08:00:05Z',
-    executionTimeMs: 5234,
-    actionsExecuted: 3,
-    actionsSucceeded: 3,
-    actionsFailed: 0,
-  },
-  {
-    id: '2',
-    alertRuleName: 'Contract Expiration Alert',
-    triggeredBy: 'schedule',
-    status: 'success' as const,
-    conditionsMet: true,
-    startedAt: '2025-12-07T06:00:00Z',
-    completedAt: '2025-12-07T06:00:08Z',
-    executionTimeMs: 8123,
-    actionsExecuted: 3,
-    actionsSucceeded: 3,
-    actionsFailed: 0,
-  },
-  {
-    id: '3',
-    alertRuleName: 'Certification Expiry Alert',
-    triggeredBy: 'schedule',
-    status: 'success' as const,
-    conditionsMet: true,
-    startedAt: '2025-12-07T06:00:00Z',
-    completedAt: '2025-12-07T06:00:04Z',
-    executionTimeMs: 4567,
-    actionsExecuted: 2,
-    actionsSucceeded: 2,
-    actionsFailed: 0,
-  },
-  {
-    id: '4',
-    alertRuleName: 'Dues Arrears Alert',
-    triggeredBy: 'event',
-    status: 'success' as const,
-    conditionsMet: true,
-    startedAt: '2025-12-06T14:30:00Z',
-    completedAt: '2025-12-06T14:30:03Z',
-    executionTimeMs: 3245,
-    actionsExecuted: 2,
-    actionsSucceeded: 2,
-    actionsFailed: 0,
-  },
-  {
-    id: '5',
-    alertRuleName: 'Member Engagement Drop',
-    triggeredBy: 'threshold',
-    status: 'failed' as const,
-    conditionsMet: true,
-    startedAt: '2025-12-03T10:00:00Z',
-    completedAt: '2025-12-03T10:00:12Z',
-    executionTimeMs: 12456,
-    actionsExecuted: 2,
-    actionsSucceeded: 1,
-    actionsFailed: 1,
-  },
-];
+type AlertExecutionSummary = {
+  id: string;
+  alertRuleId: string;
+  alertRuleName: string | null;
+  triggeredBy: string;
+  status: string;
+  conditionsMet: boolean | null;
+  startedAt: string;
+  completedAt: string | null;
+  executionTimeMs: number | null;
+  actionsExecuted: any;
+  errorMessage?: string | null;
+};
+
+type AlertEscalationSummary = {
+  id: string;
+  alertRuleId: string;
+  alertRuleName: string | null;
+  name: string;
+  description: string | null;
+  escalationLevels: any;
+  status: string;
+  currentLevel: number;
+  startedAt: string;
+  nextEscalationAt: string | null;
+  resolvedAt: string | null;
+  resolvedBy: string | null;
+  resolutionNotes: string | null;
+};
 
 const SEVERITY_COLORS = {
   critical: 'bg-red-500',
@@ -228,53 +99,213 @@ const STATUS_ICONS = {
   running: { icon: Activity, color: 'text-blue-600' },
 };
 
+const RUNBOOK_LINKS = [
+  { slug: 'RUNBOOK_INCIDENT_RESPONSE', label: 'Incident Response' },
+  { slug: 'RUNBOOK_DATA_BREACH', label: 'Data Breach' },
+  { slug: 'RUNBOOK_UNAUTHORIZED_ACCESS', label: 'Unauthorized Access' },
+  { slug: 'RUNBOOK_DOS_ATTACK', label: 'Service Disruption' },
+  { slug: 'RUNBOOK_ROLLBACK', label: 'Rollback' },
+  { slug: 'RUNBOOK_CONNECTION_POOL', label: 'Connection Pool' },
+];
+
+const formatDateTime = (value?: string | null) => {
+  if (!value) return 'N/A';
+  return new Date(value).toLocaleString();
+};
+
 export default function AlertManagementDashboard() {
+  const params = useParams<{ locale?: string }>();
+  const localePrefix = params?.locale ? `/${params.locale}` : '';
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedSeverity, setSelectedSeverity] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<'all' | 'enabled' | 'disabled'>('all');
+  const [rules, setRules] = useState<AlertRuleSummary[]>([]);
+  const [executions, setExecutions] = useState<AlertExecutionSummary[]>([]);
+  const [escalations, setEscalations] = useState<AlertEscalationSummary[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isMutating, setIsMutating] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const fetchAlertData = async () => {
+    setIsLoading(true);
+    setErrorMessage(null);
+    try {
+      const [rulesRes, executionsRes, escalationsRes] = await Promise.all([
+        fetch('/api/admin/alerts/rules'),
+        fetch('/api/admin/alerts/executions?limit=50'),
+        fetch('/api/admin/alerts/escalations?limit=50'),
+      ]);
+
+      if (!rulesRes.ok) throw new Error('Failed to load alert rules');
+      if (!executionsRes.ok) throw new Error('Failed to load execution history');
+      if (!escalationsRes.ok) throw new Error('Failed to load escalations');
+
+      const rulesJson = await rulesRes.json();
+      const executionsJson = await executionsRes.json();
+      const escalationsJson = await escalationsRes.json();
+
+      setRules(rulesJson.data?.rules ?? []);
+      setExecutions(executionsJson.data?.executions ?? []);
+      setEscalations(escalationsJson.data?.escalations ?? []);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to load alert data';
+      setErrorMessage(message);
+      toast({
+        title: 'Alert data load failed',
+        description: message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAlertData();
+  }, []);
 
   // Filter alert rules
-  const filteredRules = SAMPLE_ALERT_RULES.filter(rule => {
-    if (searchQuery && !rule.name.toLowerCase().includes(searchQuery.toLowerCase()) && !rule.category.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false;
-    }
-    if (selectedCategory !== 'all' && rule.category !== selectedCategory) {
-      return false;
-    }
-    if (selectedSeverity !== 'all' && rule.severity !== selectedSeverity) {
-      return false;
-    }
-    if (selectedStatus === 'enabled' && !rule.isEnabled) {
-      return false;
-    }
-    if (selectedStatus === 'disabled' && rule.isEnabled) {
-      return false;
-    }
-    return true;
-  });
+  const filteredRules = useMemo(() => {
+    return rules.filter(rule => {
+      const categoryValue = rule.category ?? '';
+      if (searchQuery && !rule.name.toLowerCase().includes(searchQuery.toLowerCase()) && !categoryValue.toLowerCase().includes(searchQuery.toLowerCase())) {
+        return false;
+      }
+      if (selectedCategory !== 'all' && rule.category !== selectedCategory) {
+        return false;
+      }
+      if (selectedSeverity !== 'all' && rule.severity !== selectedSeverity) {
+        return false;
+      }
+      if (selectedStatus === 'enabled' && !rule.isEnabled) {
+        return false;
+      }
+      if (selectedStatus === 'disabled' && rule.isEnabled) {
+        return false;
+      }
+      return true;
+    });
+  }, [rules, searchQuery, selectedCategory, selectedSeverity, selectedStatus]);
 
-  // Calculate statistics
-  const totalRules = SAMPLE_ALERT_RULES.length;
-  const enabledRules = SAMPLE_ALERT_RULES.filter(r => r.isEnabled).length;
-  const totalExecutions = SAMPLE_ALERT_RULES.reduce((sum, r) => sum + r.executionCount, 0);
-  const totalSuccesses = SAMPLE_ALERT_RULES.reduce((sum, r) => sum + r.successCount, 0);
-  const totalFailures = SAMPLE_ALERT_RULES.reduce((sum, r) => sum + r.failureCount, 0);
+  const totalRules = rules.length;
+  const enabledRules = rules.filter(r => r.isEnabled).length;
+  const totalExecutions = rules.reduce((sum, r) => sum + (r.executionCount || 0), 0);
+  const totalSuccesses = rules.reduce((sum, r) => sum + (r.successCount || 0), 0);
+  const totalFailures = rules.reduce((sum, r) => sum + (r.failureCount || 0), 0);
   const successRate = totalExecutions > 0 ? ((totalSuccesses / totalExecutions) * 100).toFixed(1) : '0';
 
-  // Toggle alert rule
-  const toggleAlertRule = (id: string) => {
-// API call would go here
+  const toggleAlertRule = async (id: string, isEnabled: boolean) => {
+    setIsMutating(true);
+    try {
+      const response = await fetch(`/api/admin/alerts/rules/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isEnabled }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update alert rule');
+      await fetchAlertData();
+    } catch (error) {
+      toast({
+        title: 'Update failed',
+        description: error instanceof Error ? error.message : 'Failed to update rule',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsMutating(false);
+    }
   };
 
-  // Delete alert rule
-  const deleteAlertRule = (id: string) => {
-// API call would go here
+  const deleteAlertRule = async (id: string) => {
+    setIsMutating(true);
+    try {
+      const response = await fetch(`/api/admin/alerts/rules/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) throw new Error('Failed to delete alert rule');
+      await fetchAlertData();
+    } catch (error) {
+      toast({
+        title: 'Delete failed',
+        description: error instanceof Error ? error.message : 'Failed to delete rule',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsMutating(false);
+    }
   };
 
-  // Test alert rule
-  const testAlertRule = (id: string) => {
-// API call would go here
+  const testAlertRule = async (id: string) => {
+    setIsMutating(true);
+    try {
+      const response = await fetch('/api/admin/alerts/executions/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ruleId: id }),
+      });
+
+      if (!response.ok) throw new Error('Failed to execute test');
+      await fetchAlertData();
+    } catch (error) {
+      toast({
+        title: 'Test failed',
+        description: error instanceof Error ? error.message : 'Failed to run test',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsMutating(false);
+    }
+  };
+
+  const createEscalation = async (ruleId: string, ruleName: string | null) => {
+    setIsMutating(true);
+    try {
+      const response = await fetch('/api/admin/alerts/escalations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          alertRuleId: ruleId,
+          name: `${ruleName ?? 'Alert'} Escalation`,
+          description: 'Created from execution history',
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to create escalation');
+      await fetchAlertData();
+    } catch (error) {
+      toast({
+        title: 'Escalation failed',
+        description: error instanceof Error ? error.message : 'Failed to create escalation',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsMutating(false);
+    }
+  };
+
+  const updateEscalationStatus = async (id: string, status: string) => {
+    setIsMutating(true);
+    try {
+      const response = await fetch(`/api/admin/alerts/escalations/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update escalation');
+      await fetchAlertData();
+    } catch (error) {
+      toast({
+        title: 'Update failed',
+        description: error instanceof Error ? error.message : 'Failed to update escalation',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsMutating(false);
+    }
   };
 
   return (
@@ -287,11 +318,21 @@ export default function AlertManagementDashboard() {
             Monitor and manage all alert rules and execution history
           </p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Create Alert Rule
-        </Button>
+        <Link href={`${localePrefix}/admin/alerts/rules/new`}>
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Alert Rule
+          </Button>
+        </Link>
       </div>
+
+      {errorMessage && (
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="pt-6 text-sm text-red-700">
+            {errorMessage}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Statistics Cards */}
       <div className="grid md:grid-cols-5 gap-4">
@@ -357,6 +398,7 @@ export default function AlertManagementDashboard() {
         <TabsList>
           <TabsTrigger value="rules">Alert Rules</TabsTrigger>
           <TabsTrigger value="history">Execution History</TabsTrigger>
+          <TabsTrigger value="escalations">Escalations</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
@@ -381,12 +423,11 @@ export default function AlertManagementDashboard() {
                   className="border rounded-md px-3 py-2"
                 >
                   <option value="all">All Categories</option>
-                  <option value="contract_management">Contract Management</option>
-                  <option value="financial">Financial</option>
-                  <option value="training">Training</option>
-                  <option value="grievances">Grievances</option>
-                  <option value="membership">Membership</option>
-                  <option value="strike_fund">Strike Fund</option>
+                  {Array.from(new Set(rules.map((rule) => rule.category).filter(Boolean))).map((category) => (
+                    <option key={category} value={category as string}>
+                      {String(category).replace('_', ' ')}
+                    </option>
+                  ))}
                 </select>
                 <select
                   value={selectedSeverity}
@@ -416,7 +457,8 @@ export default function AlertManagementDashboard() {
           {/* Alert Rules List */}
           <div className="space-y-3">
             {filteredRules.map((rule) => {
-              const StatusIcon = STATUS_ICONS[rule.lastExecutionStatus || 'pending'];
+              const statusKey = rule.lastExecutionStatus ?? 'pending';
+              const StatusIcon = STATUS_ICONS[statusKey as keyof typeof STATUS_ICONS] ?? STATUS_ICONS.pending;
               
               return (
                 <Card key={rule.id}>
@@ -425,18 +467,22 @@ export default function AlertManagementDashboard() {
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
                           <h3 className="text-lg font-semibold">{rule.name}</h3>
-                          <Badge className={SEVERITY_COLORS[rule.severity]}>
+                          <Badge className={SEVERITY_COLORS[rule.severity as keyof typeof SEVERITY_COLORS] ?? 'bg-gray-500'}>
                             {rule.severity}
                           </Badge>
                           <Badge variant="outline">{rule.triggerType}</Badge>
-                          <Badge variant="outline">{rule.category}</Badge>
+                          <Badge variant="outline">{rule.category ?? 'uncategorized'}</Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground mb-3">{rule.description}</p>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          {rule.description ?? 'No description provided'}
+                        </p>
                         
                         <div className="grid md:grid-cols-6 gap-4 text-sm">
                           <div>
                             <p className="text-muted-foreground">Frequency</p>
-                            <p className="font-medium">{rule.frequency.replace('_', ' ')}</p>
+                            <p className="font-medium">
+                              {rule.frequency ? rule.frequency.replace('_', ' ') : 'N/A'}
+                            </p>
                           </div>
                           <div>
                             <p className="text-muted-foreground">Conditions</p>
@@ -462,11 +508,7 @@ export default function AlertManagementDashboard() {
                             <p className="text-muted-foreground">Last Run</p>
                             <div className="flex items-center gap-1">
                               <StatusIcon.icon className={`h-4 w-4 ${StatusIcon.color}`} />
-                              <p className="font-medium">
-                                {rule.lastExecutedAt 
-                                  ? new Date(rule.lastExecutedAt).toLocaleDateString()
-                                  : 'Never'}
-                              </p>
+                              <p className="font-medium">{rule.lastExecutedAt ? formatDateTime(rule.lastExecutedAt) : 'Never'}</p>
                             </div>
                           </div>
                         </div>
@@ -475,15 +517,16 @@ export default function AlertManagementDashboard() {
                       <div className="flex items-center gap-2 ml-4">
                         <Switch
                           checked={rule.isEnabled}
-                          onCheckedChange={() => toggleAlertRule(rule.id)}
+                          onCheckedChange={(checked) => toggleAlertRule(rule.id, checked)}
+                          disabled={isMutating}
                         />
-                        <Button variant="ghost" size="icon" onClick={() => testAlertRule(rule.id)}>
+                        <Button variant="ghost" size="icon" onClick={() => testAlertRule(rule.id)} disabled={isMutating}>
                           <Play className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" disabled>
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => deleteAlertRule(rule.id)}>
+                        <Button variant="ghost" size="icon" onClick={() => deleteAlertRule(rule.id)} disabled={isMutating}>
                           <Trash2 className="h-4 w-4 text-red-600" />
                         </Button>
                       </div>
@@ -492,6 +535,10 @@ export default function AlertManagementDashboard() {
                 </Card>
               );
             })}
+
+            {isLoading && (
+              <div className="text-sm text-muted-foreground">Loading alert rules...</div>
+            )}
 
             {filteredRules.length === 0 && (
               <Card>
@@ -513,8 +560,14 @@ export default function AlertManagementDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {SAMPLE_EXECUTIONS.map((execution) => {
-                  const StatusIcon = STATUS_ICONS[execution.status];
+                {executions.map((execution) => {
+                  const statusKey = execution.status ?? 'pending';
+                  const StatusIcon = STATUS_ICONS[statusKey as keyof typeof STATUS_ICONS] ?? STATUS_ICONS.pending;
+                  const actionsCount = Array.isArray(execution.actionsExecuted)
+                    ? execution.actionsExecuted.length
+                    : execution.actionsExecuted
+                      ? 1
+                      : 0;
                   
                   return (
                     <Card key={execution.id}>
@@ -523,7 +576,7 @@ export default function AlertManagementDashboard() {
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
                               <StatusIcon.icon className={`h-5 w-5 ${StatusIcon.color}`} />
-                              <h4 className="font-semibold">{execution.alertRuleName}</h4>
+                              <h4 className="font-semibold">{execution.alertRuleName ?? 'Alert Rule'}</h4>
                               <Badge variant="outline">{execution.triggeredBy}</Badge>
                             </div>
                             
@@ -538,37 +591,122 @@ export default function AlertManagementDashboard() {
                               </div>
                               <div>
                                 <p className="text-muted-foreground">Actions</p>
-                                <p className="font-medium">
-                                  {execution.actionsSucceeded}/{execution.actionsExecuted}
-                                </p>
+                                <p className="font-medium">{actionsCount}</p>
                               </div>
                               <div>
                                 <p className="text-muted-foreground">Execution Time</p>
-                                <p className="font-medium">{(execution.executionTimeMs / 1000).toFixed(2)}s</p>
+                                <p className="font-medium">
+                                  {execution.executionTimeMs ? (execution.executionTimeMs / 1000).toFixed(2) : '0.00'}s
+                                </p>
                               </div>
                               <div>
                                 <p className="text-muted-foreground">Started</p>
-                                <p className="font-medium">
-                                  {new Date(execution.startedAt).toLocaleTimeString()}
-                                </p>
+                                <p className="font-medium">{formatDateTime(execution.startedAt)}</p>
                               </div>
                               <div>
                                 <p className="text-muted-foreground">Completed</p>
-                                <p className="font-medium">
-                                  {new Date(execution.completedAt).toLocaleTimeString()}
-                                </p>
+                                <p className="font-medium">{formatDateTime(execution.completedAt)}</p>
                               </div>
                             </div>
                           </div>
 
-                          <Button variant="ghost" size="icon">
-                            <Eye className="h-4 w-4" />
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button variant="ghost" size="icon" disabled>
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={isMutating}
+                              onClick={() => createEscalation(execution.alertRuleId, execution.alertRuleName)}
+                            >
+                              Escalate
+                            </Button>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
                   );
                 })}
+                {isLoading && (
+                  <div className="text-sm text-muted-foreground">Loading execution history...</div>
+                )}
+                {!isLoading && executions.length === 0 && (
+                  <div className="text-sm text-muted-foreground">No execution history yet.</div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Escalations Tab */}
+        <TabsContent value="escalations" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Active Escalations</CardTitle>
+              <CardDescription>Track and resolve alert escalations</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {escalations.map((escalation) => (
+                  <Card key={escalation.id}>
+                    <CardContent className="pt-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h4 className="font-semibold">{escalation.name}</h4>
+                            <Badge variant="outline">{escalation.status}</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            {escalation.description ?? 'No description provided'}
+                          </p>
+                          <div className="grid md:grid-cols-4 gap-4 text-sm">
+                            <div>
+                              <p className="text-muted-foreground">Rule</p>
+                              <p className="font-medium">{escalation.alertRuleName ?? 'Alert Rule'}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Current Level</p>
+                              <p className="font-medium">{escalation.currentLevel}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Started</p>
+                              <p className="font-medium">{formatDateTime(escalation.startedAt)}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Next Escalation</p>
+                              <p className="font-medium">{formatDateTime(escalation.nextEscalationAt)}</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={isMutating || escalation.status !== 'pending'}
+                            onClick={() => updateEscalationStatus(escalation.id, 'in_progress')}
+                          >
+                            Acknowledge
+                          </Button>
+                          <Button
+                            variant="default"
+                            size="sm"
+                            disabled={isMutating || escalation.status === 'resolved'}
+                            onClick={() => updateEscalationStatus(escalation.id, 'resolved')}
+                          >
+                            Resolve
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+                {isLoading && (
+                  <div className="text-sm text-muted-foreground">Loading escalations...</div>
+                )}
+                {!isLoading && escalations.length === 0 && (
+                  <div className="text-sm text-muted-foreground">No active escalations.</div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -597,8 +735,8 @@ export default function AlertManagementDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {['contract_management', 'financial', 'training', 'grievances'].map((category) => {
-                    const categoryRules = SAMPLE_ALERT_RULES.filter(r => r.category === category);
+                  {Array.from(new Set(rules.map((rule) => rule.category).filter(Boolean))).map((category) => {
+                    const categoryRules = rules.filter(r => r.category === category);
                     const totalExecs = categoryRules.reduce((sum, r) => sum + r.executionCount, 0);
                     const successExecs = categoryRules.reduce((sum, r) => sum + r.successCount, 0);
                     const rate = totalExecs > 0 ? ((successExecs / totalExecs) * 100).toFixed(1) : '0';
@@ -629,7 +767,8 @@ export default function AlertManagementDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {SAMPLE_ALERT_RULES
+                  {rules
+                    .slice()
                     .sort((a, b) => b.executionCount - a.executionCount)
                     .slice(0, 5)
                     .map((rule) => (
@@ -649,8 +788,10 @@ export default function AlertManagementDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {SAMPLE_ALERT_RULES.slice(0, 5).map((rule) => {
-                    const avgTime = (Math.random() * 5 + 2).toFixed(2); // Mock data
+                  {rules.slice(0, 5).map((rule) => {
+                    const avgTime = rule.executionCount > 0
+                      ? (rule.successCount / rule.executionCount).toFixed(2)
+                      : '0.00';
 
                     return (
                       <div key={rule.id} className="flex items-center justify-between">
@@ -668,6 +809,26 @@ export default function AlertManagementDashboard() {
           </div>
         </TabsContent>
       </Tabs>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Runbook Quick Access</CardTitle>
+          <CardDescription>Jump directly to incident response runbooks</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-3 gap-3">
+            {RUNBOOK_LINKS.map((runbook) => (
+              <Link
+                key={runbook.slug}
+                href={`${localePrefix}/admin/runbooks/${runbook.slug}`}
+                className="rounded-md border px-3 py-2 text-sm hover:bg-gray-50"
+              >
+                {runbook.label}
+              </Link>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -135,7 +135,7 @@ export async function listCalendars(
 
     const scopedOrganizationId = filters.organizationId ?? filters.tenantId;
     if (scopedOrganizationId) {
-      conditions.push(eq(calendars.tenantId, scopedOrganizationId));
+      conditions.push(eq(calendars.organizationId /* was tenantId */, scopedOrganizationId));
     }
 
     if (filters.ownerId) {

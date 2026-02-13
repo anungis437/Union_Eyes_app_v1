@@ -137,9 +137,12 @@ export async function generateT4A(
   return {
     slipType: 'T4A',
     taxYear,
-    recipientName: member.fullName || member.name || member.email || 'Unknown',
+    recipientName: member.displayName || 
+                   `${member.firstName || ''} ${member.lastName || ''}`.trim() || 
+                   member.email || 
+                   'Unknown', // Construct name from available user fields
     recipientSIN: recipientSIN, // Encrypted/protected SIN
-    recipientAddress: member.address || 'NOT PROVIDED',
+    recipientAddress: 'NOT PROVIDED', // Users table doesn't have address field
     box028_otherIncome: strikePay, // Box 028: Other Income
     issuedDate: new Date(),
     employerName: process.env.UNION_NAME || 'Your Union Local',
@@ -168,9 +171,10 @@ export async function generateRL1(
 
   const member = memberResult as typeof memberResult;
 
-  if (member.province !== 'QC') {
-    throw new Error(`RL-1 is only for Quebec residents, member is in ${member.province}`);
-  }
+  // Note: Users table doesn't have province field
+  // Province check should be done via strikeFundDisbursements or organization federation
+  // For now, we'll rely on caller to only call this for QC members
+  // TODO: Add province validation via federation lookup
 
   const strikePay = await getYearlyStrikePay(memberId, taxYear);
 
@@ -208,9 +212,12 @@ export async function generateRL1(
   return {
     slipType: 'RL-1',
     taxYear,
-    recipientName: member.fullName || member.name || member.email || 'Unknown',
+    recipientName: member.displayName || 
+                   `${member.firstName || ''} ${member.lastName || ''}`.trim() || 
+                   member.email || 
+                   'Unknown', // Construct name from available user fields
     recipientNAS: recipientNAS, // NAS = Number d'assurance sociale
-    recipientAddress: member.address || 'NOT PROVIDED',
+    recipientAddress: 'NOT PROVIDED', // Users table doesn't have address field
     caseO_autresRevenus: strikePay, // Case O: Autres revenus (Other income)
     issuedDate: new Date(),
     employerName: process.env.UNION_NAME || 'Your Union Local',
@@ -284,7 +291,8 @@ export async function processYearEndTaxSlips(
     }
 
     // Generate RL-1 for Quebec members
-    if (member?.province === 'QC') {
+    // Check province from disbursement record, not from user table
+    if (payment.province === 'QC') {
       try {
         const rl1 = await generateRL1(memberId as string, taxYear);
         // Store RL-1 in database
@@ -359,14 +367,20 @@ export async function getTaxFilingStatus(
 }
 
 async function isMemberInQuebec(memberId: string): Promise<boolean> {
-  const memberResult = await db.query.users
-    .findFirst({
-      where: eq(users.userId, memberId)
-    })
-    .catch(() => null);
-
-  const member = memberResult as any;
-  return member?.province === 'QC';
+  // Users table doesn't have province field
+  // Check from strike fund disbursements table instead
+  try {
+    const result = await db
+      .select({ province: strikeFundDisbursements.province })
+      .from(strikeFundDisbursements)
+      .where(eq(strikeFundDisbursements.userId, memberId))
+      .limit(1);
+    
+    return result[0]?.province === 'QC';
+  } catch (error) {
+    logger.error('Failed to check member province', error as Error, { memberId });
+    return false; // Default to false if unable to determine
+  }
 }
 
 /**

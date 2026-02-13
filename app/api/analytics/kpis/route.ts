@@ -63,19 +63,20 @@ export const POST = async (request: NextRequest) => {
     }
     
     const { name, description, metricType, dataSource, calculation, visualizationType, targetValue, warningThreshold, criticalThreshold, alertEnabled, alertRecipients } = validation.data;
-      const {
-        name,
-        description,
-        metricType,
-        dataSource,
-        calculation,
-        visualizationType,
-        targetValue,
-        warningThreshold,
-        criticalThreshold,
-        alertEnabled,
-        alertRecipients
-      } = body;
+    // DUPLICATE REMOVED (Phase 2): Multi-line destructuring of body
+    // const {
+    // name,
+    // description,
+    // metricType,
+    // dataSource,
+    // calculation,
+    // visualizationType,
+    // targetValue,
+    // warningThreshold,
+    // criticalThreshold,
+    // alertEnabled,
+    // alertRecipients
+    // } = body;
       
       // Validate input
       if (!name || !metricType || !dataSource || !calculation || !visualizationType) {
@@ -182,4 +183,3 @@ return standardErrorResponse(
     }
     })(request);
 };
-

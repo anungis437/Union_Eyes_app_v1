@@ -1,4 +1,4 @@
-import { logApiAuditEvent } from "@/lib/middleware/api-security";
+﻿import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * API Route: Equity Self-Identification
  * Member-facing demographic data collection with OCAP compliance
@@ -89,17 +89,17 @@ export const POST = async (request: NextRequest) => {
       );
     }
     
-    const { memberId, organizationId, // Consent (REQUIRED)
-        dataCollectionConsent, consentType = 'explicit', consentPurpose, dataRetentionYears = 7, // Equity groups
-        equityGroups = [], // Gender identity
-        genderIdentity, genderIdentityOther, // Indigenous identity (OCAP)
-        isIndigenous, indigenousIdentity, indigenousNation, indigenousTreatyNumber, indigenousDataGovernanceConsent = false, // Visible minority
-        isVisibleMinority, visibleMinorityGroups, // Disability
-        hasDisability, disabilityTypes, requiresAccommodation, accommodationDetailsEncrypted, // LGBTQ2+
-        isLgbtq2Plus, lgbtq2PlusIdentity, // Demographics
-        dateOfBirth, ageRange, isNewcomer, immigrationYear, countryOfOrigin, primaryLanguage, speaksFrench, speaksIndigenousLanguage, indigenousLanguageName, // Accessibility
-        needsInterpretation, interpretationLanguage, needsTranslation, translationLanguage, needsMobilityAccommodation, // Privacy controls
-        allowAggregateReporting = true, allowResearchParticipation = false, allowExternalReporting = false } = validation.data;
+      // DUPLICATE REMOVED:     const { memberId, organizationId, // Consent (REQUIRED)
+      // DUPLICATE REMOVED:         dataCollectionConsent, consentType = 'explicit', consentPurpose, dataRetentionYears = 7, // Equity groups
+      // DUPLICATE REMOVED:         equityGroups = [], // Gender identity
+      // DUPLICATE REMOVED:         genderIdentity, genderIdentityOther, // Indigenous identity (OCAP)
+      // DUPLICATE REMOVED:         isIndigenous, indigenousIdentity, indigenousNation, indigenousTreatyNumber, indigenousDataGovernanceConsent = false, // Visible minority
+      // DUPLICATE REMOVED:         isVisibleMinority, visibleMinorityGroups, // Disability
+      // DUPLICATE REMOVED:         hasDisability, disabilityTypes, requiresAccommodation, accommodationDetailsEncrypted, // LGBTQ2+
+      // DUPLICATE REMOVED:         isLgbtq2Plus, lgbtq2PlusIdentity, // Demographics
+      // DUPLICATE REMOVED:         dateOfBirth, ageRange, isNewcomer, immigrationYear, countryOfOrigin, primaryLanguage, speaksFrench, speaksIndigenousLanguage, indigenousLanguageName, // Accessibility
+      // DUPLICATE REMOVED:         needsInterpretation, interpretationLanguage, needsTranslation, translationLanguage, needsMobilityAccommodation, // Privacy controls
+      // DUPLICATE REMOVED:         allowAggregateReporting = true, allowResearchParticipation = false, allowExternalReporting = false } = validation.data;
       const {
         memberId,
         organizationId,

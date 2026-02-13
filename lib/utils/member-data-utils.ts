@@ -37,11 +37,11 @@ export async function getMemberDetailsByUserId(userId: string): Promise<MemberDe
     
     return {
       userId: profile.userId,
-      name: profile.displayName || profile.email || 'Unknown Member',
+      name: profile.email || 'Unknown Member', // Profile table doesn't have displayName
       email: profile.email || '',
-      phone: profile.phoneNumber || null,
-      memberNumber: profile.memberNumber || null,
-      status: profile.status || 'active',
+      phone: null, // Profile table doesn't have phoneNumber - use users table for phone
+      memberNumber: null, // Profile table doesn't have memberNumber
+      status: profile.status || 'active', // This is payment status, not member status
     };
   } catch (error) {
 return null;
@@ -56,7 +56,7 @@ export async function getMemberDetailsById(memberId: string): Promise<MemberDeta
     const profiles = await db
       .select()
       .from(profilesTable)
-      .where(eq(profilesTable.id, memberId))
+      .where(eq(profilesTable.userId, memberId)) // Profile table doesn't have 'id', uses 'userId'
       .limit(1);
 
     if (profiles.length === 0) {
@@ -67,11 +67,11 @@ export async function getMemberDetailsById(memberId: string): Promise<MemberDeta
     
     return {
       userId: profile.userId,
-      name: profile.displayName || profile.email || 'Unknown Member',
+      name: profile.email || 'Unknown Member', // Profile table doesn't have displayName
       email: profile.email || '',
-      phone: profile.phoneNumber || null,
-      memberNumber: profile.memberNumber || null,
-      status: profile.status || 'active',
+      phone: null, // Profile table doesn't have phoneNumber - use users table for phone
+      memberNumber: null, // Profile table doesn't have memberNumber
+      status: profile.status || 'active', // This is payment status, not member status
     };
   } catch (error) {
 return null;
@@ -106,11 +106,11 @@ export async function batchGetMemberDetails(userIds: string[]): Promise<Map<stri
     profiles.forEach(profile => {
       memberMap.set(profile.userId, {
         userId: profile.userId,
-        name: profile.displayName || profile.email || 'Unknown Member',
+        name: profile.email || 'Unknown Member', // Profile table doesn't have displayName
         email: profile.email || '',
-        phone: profile.phoneNumber || null,
-        memberNumber: profile.memberNumber || null,
-        status: profile.status || 'active',
+        phone: null, // Profile table doesn't have phoneNumber - use users table for phone
+        memberNumber: null, // Profile table doesn't have memberNumber
+        status: profile.status || 'active', // This is payment status, not member status
       });
     });
   } catch (error) {

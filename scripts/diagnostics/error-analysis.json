@@ -1,0 +1,992 @@
+{
+    "TotalErrors":  6373,
+    "ByFile":  [
+                   {
+                       "Name":  "app/api/equity/self-identify/route.ts",
+                       "Count":  100
+                   },
+                   {
+                       "Name":  "app/api/events/[id]/route.ts",
+                       "Count":  76
+                   },
+                   {
+                       "Name":  "app/api/calendars/[id]/events/route.ts",
+                       "Count":  74
+                   },
+                   {
+                       "Name":  "actions/analytics-actions.ts",
+                       "Count":  69
+                   },
+                   {
+                       "Name":  "app/api/clause-library/[id]/route.ts",
+                       "Count":  67
+                   },
+                   {
+                       "Name":  "app/api/arbitration/precedents/search/route.ts",
+                       "Count":  65
+                   },
+                   {
+                       "Name":  "app/api/social-media/analytics/route.ts",
+                       "Count":  63
+                   },
+                   {
+                       "Name":  "app/api/education/programs/route.ts",
+                       "Count":  61
+                   },
+                   {
+                       "Name":  "app/api/social-media/campaigns/route.ts",
+                       "Count":  60
+                   },
+                   {
+                       "Name":  "app/api/meeting-rooms/route.ts",
+                       "Count":  60
+                   },
+                   {
+                       "Name":  "app/api/education/sessions/route.ts",
+                       "Count":  59
+                   },
+                   {
+                       "Name":  "app/api/education/certifications/route.ts",
+                       "Count":  59
+                   },
+                   {
+                       "Name":  "lib/case-assignment-engine.ts",
+                       "Count":  58
+                   },
+                   {
+                       "Name":  "app/api/cope/campaigns/route.ts",
+                       "Count":  56
+                   },
+                   {
+                       "Name":  "app/api/clause-library/search/route.ts",
+                       "Count":  49
+                   },
+                   {
+                       "Name":  "app/api/cope/officials/route.ts",
+                       "Count":  48
+                   },
+                   {
+                       "Name":  "app/api/education/courses/route.ts",
+                       "Count":  48
+                   },
+                   {
+                       "Name":  "app/api/social-media/accounts/route.ts",
+                       "Count":  47
+                   },
+                   {
+                       "Name":  "app/api/notifications/preferences/route.ts",
+                       "Count":  46
+                   },
+                   {
+                       "Name":  "app/api/analytics/kpis/route.ts",
+                       "Count":  46
+                   }
+               ],
+    "TopErrors":  [
+                      {
+                          "File":  "actions/admin-actions.ts",
+                          "Line":  17,
+                          "Column":  60,
+                          "Code":  "TS2307",
+                          "Message":  "Cannot find module \u0027@/db/schema/tenant-management-schema\u0027 or its corresponding type declarations.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  75,
+                          "Column":  77,
+                          "Code":  "TS2554",
+                          "Message":  "Expected 1 arguments, but got 2.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  75,
+                          "Column":  84,
+                          "Code":  "TS7006",
+                          "Message":  "Parameter \u0027db\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  77,
+                          "Column":  21,
+                          "Code":  "TS7006",
+                          "Message":  "Parameter \u0027claims\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  77,
+                          "Column":  31,
+                          "Code":  "TS7031",
+                          "Message":  "Binding element \u0027eq\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  77,
+                          "Column":  35,
+                          "Code":  "TS7031",
+                          "Message":  "Binding element \u0027and\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  77,
+                          "Column":  40,
+                          "Code":  "TS7031",
+                          "Message":  "Binding element \u0027gte\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  77,
+                          "Column":  45,
+                          "Code":  "TS7031",
+                          "Message":  "Binding element \u0027lte\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  84,
+                          "Column":  23,
+                          "Code":  "TS18046",
+                          "Message":  "\u0027claimsCount\u0027 is of type \u0027unknown\u0027.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  86,
+                          "Column":  32,
+                          "Code":  "TS18046",
+                          "Message":  "\u0027claimsCount\u0027 is of type \u0027unknown\u0027.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  86,
+                          "Column":  48,
+                          "Code":  "TS7006",
+                          "Message":  "Parameter \u0027c\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  90,
+                          "Column":  80,
+                          "Code":  "TS2554",
+                          "Message":  "Expected 1 arguments, but got 2.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  90,
+                          "Column":  87,
+                          "Code":  "TS7006",
+                          "Message":  "Parameter \u0027db\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  92,
+                          "Column":  21,
+                          "Code":  "TS7006",
+                          "Message":  "Parameter \u0027claims\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  92,
+                          "Column":  31,
+                          "Code":  "TS7031",
+                          "Message":  "Binding element \u0027eq\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  92,
+                          "Column":  35,
+                          "Code":  "TS7031",
+                          "Message":  "Binding element \u0027and\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  92,
+                          "Column":  40,
+                          "Code":  "TS7031",
+                          "Message":  "Binding element \u0027gte\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  92,
+                          "Column":  45,
+                          "Code":  "TS7031",
+                          "Message":  "Binding element \u0027lte\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  92,
+                          "Column":  50,
+                          "Code":  "TS7031",
+                          "Message":  "Binding element \u0027isNotNull\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  101,
+                          "Column":  13,
+                          "Code":  "TS18046",
+                          "Message":  "\u0027resolvedClaims\u0027 is of type \u0027unknown\u0027.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  104,
+                          "Column":  29,
+                          "Code":  "TS18046",
+                          "Message":  "\u0027resolvedClaims\u0027 is of type \u0027unknown\u0027.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  104,
+                          "Column":  52,
+                          "Code":  "TS7006",
+                          "Message":  "Parameter \u0027sum\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  104,
+                          "Column":  57,
+                          "Code":  "TS7006",
+                          "Message":  "Parameter \u0027claim\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  108,
+                          "Column":  37,
+                          "Code":  "TS18046",
+                          "Message":  "\u0027resolvedClaims\u0027 is of type \u0027unknown\u0027.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  111,
+                          "Column":  38,
+                          "Code":  "TS18046",
+                          "Message":  "\u0027resolvedClaims\u0027 is of type \u0027unknown\u0027.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  116,
+                          "Column":  78,
+                          "Code":  "TS2554",
+                          "Message":  "Expected 1 arguments, but got 2.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  116,
+                          "Column":  85,
+                          "Code":  "TS7006",
+                          "Message":  "Parameter \u0027db\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  125,
+                          "Column":  23,
+                          "Code":  "TS18046",
+                          "Message":  "\u0027membersCount\u0027 is of type \u0027unknown\u0027.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  139,
+                          "Column":  76,
+                          "Code":  "TS2554",
+                          "Message":  "Expected 1 arguments, but got 2.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  139,
+                          "Column":  83,
+                          "Code":  "TS7006",
+                          "Message":  "Parameter \u0027db\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  141,
+                          "Column":  17,
+                          "Code":  "TS7006",
+                          "Message":  "Parameter \u0027metrics\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  141,
+                          "Column":  28,
+                          "Code":  "TS7031",
+                          "Message":  "Binding element \u0027and\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  141,
+                          "Column":  33,
+                          "Code":  "TS7031",
+                          "Message":  "Binding element \u0027eq\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  141,
+                          "Column":  37,
+                          "Code":  "TS7031",
+                          "Message":  "Binding element \u0027gte\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  141,
+                          "Column":  42,
+                          "Code":  "TS7031",
+                          "Message":  "Binding element \u0027lte\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  151,
+                          "Column":  45,
+                          "Code":  "TS2339",
+                          "Message":  "Property \u0027metricValue\u0027 does not exist on type \u0027{}\u0027.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  151,
+                          "Column":  81,
+                          "Code":  "TS2339",
+                          "Message":  "Property \u0027metricValue\u0027 does not exist on type \u0027{}\u0027.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  161,
+                          "Column":  11,
+                          "Code":  "TS2488",
+                          "Message":  "Type \u0027unknown\u0027 must have a \u0027[Symbol.iterator]()\u0027 method that returns an iterator.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  161,
+                          "Column":  70,
+                          "Code":  "TS2554",
+                          "Message":  "Expected 1 arguments, but got 2.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  161,
+                          "Column":  77,
+                          "Code":  "TS7006",
+                          "Message":  "Parameter \u0027db\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  198,
+                          "Column":  79,
+                          "Code":  "TS2554",
+                          "Message":  "Expected 1 arguments, but got 2.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  198,
+                          "Column":  86,
+                          "Code":  "TS7006",
+                          "Message":  "Parameter \u0027db\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  200,
+                          "Column":  17,
+                          "Code":  "TS7006",
+                          "Message":  "Parameter \u0027metrics\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  200,
+                          "Column":  28,
+                          "Code":  "TS7031",
+                          "Message":  "Binding element \u0027and\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  200,
+                          "Column":  33,
+                          "Code":  "TS7031",
+                          "Message":  "Binding element \u0027eq\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  204,
+                          "Column":  19,
+                          "Code":  "TS7006",
+                          "Message":  "Parameter \u0027metrics\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  204,
+                          "Column":  30,
+                          "Code":  "TS7031",
+                          "Message":  "Binding element \u0027desc\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  209,
+                          "Column":  9,
+                          "Code":  "TS18046",
+                          "Message":  "\u0027historicalMetrics\u0027 is of type \u0027unknown\u0027.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  214,
+                          "Column":  46,
+                          "Code":  "TS18046",
+                          "Message":  "\u0027historicalMetrics\u0027 is of type \u0027unknown\u0027.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  241,
+                          "Column":  13,
+                          "Code":  "TS2488",
+                          "Message":  "Type \u0027unknown\u0027 must have a \u0027[Symbol.iterator]()\u0027 method that returns an iterator.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  241,
+                          "Column":  72,
+                          "Code":  "TS2554",
+                          "Message":  "Expected 1 arguments, but got 2.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  241,
+                          "Column":  79,
+                          "Code":  "TS7006",
+                          "Message":  "Parameter \u0027db\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  285,
+                          "Column":  69,
+                          "Code":  "TS2554",
+                          "Message":  "Expected 1 arguments, but got 2.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  285,
+                          "Column":  76,
+                          "Code":  "TS7006",
+                          "Message":  "Parameter \u0027db\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  287,
+                          "Column":  17,
+                          "Code":  "TS7006",
+                          "Message":  "Parameter \u0027metricsTable\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  287,
+                          "Column":  33,
+                          "Code":  "TS7031",
+                          "Message":  "Binding element \u0027and\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  287,
+                          "Column":  38,
+                          "Code":  "TS7031",
+                          "Message":  "Binding element \u0027eq\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  287,
+                          "Column":  42,
+                          "Code":  "TS7031",
+                          "Message":  "Binding element \u0027gte\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  292,
+                          "Column":  19,
+                          "Code":  "TS7006",
+                          "Message":  "Parameter \u0027metricsTable\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  292,
+                          "Column":  35,
+                          "Code":  "TS7031",
+                          "Message":  "Binding element \u0027desc\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  296,
+                          "Column":  9,
+                          "Code":  "TS18046",
+                          "Message":  "\u0027metrics\u0027 is of type \u0027unknown\u0027.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  301,
+                          "Column":  46,
+                          "Code":  "TS18046",
+                          "Message":  "\u0027metrics\u0027 is of type \u0027unknown\u0027.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  310,
+                          "Column":  11,
+                          "Code":  "TS2488",
+                          "Message":  "Type \u0027unknown\u0027 must have a \u0027[Symbol.iterator]()\u0027 method that returns an iterator.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  310,
+                          "Column":  75,
+                          "Code":  "TS2554",
+                          "Message":  "Expected 1 arguments, but got 2.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  310,
+                          "Column":  82,
+                          "Code":  "TS7006",
+                          "Message":  "Parameter \u0027db\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  362,
+                          "Column":  11,
+                          "Code":  "TS2488",
+                          "Message":  "Type \u0027unknown\u0027 must have a \u0027[Symbol.iterator]()\u0027 method that returns an iterator.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  362,
+                          "Column":  67,
+                          "Code":  "TS2554",
+                          "Message":  "Expected 1 arguments, but got 2.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  362,
+                          "Column":  74,
+                          "Code":  "TS7006",
+                          "Message":  "Parameter \u0027db\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  402,
+                          "Column":  69,
+                          "Code":  "TS2554",
+                          "Message":  "Expected 1 arguments, but got 2.\r"
+                      },
+                      {
+                          "File":  "actions/analytics-actions.ts",
+                          "Line":  402,
+                          "Column":  76,
+                          "Code":  "TS7006",
+                          "Message":  "Parameter \u0027db\u0027 implicitly has an \u0027any\u0027 type.\r"
+                      },
+                      {
+                          "File":  "actions/credits-actions.ts",
+                          "Line":  82,
+                          "Column":  5,
+                          "Code":  "TS2304",
+                          "Message":  "Cannot find name \u0027logger\u0027.\r"
+                      },
+                      {
+                          "File":  "actions/profiles-actions.ts",
+                          "Line":  73,
+                          "Column":  5,
+                          "Code":  "TS2304",
+                          "Message":  "Cannot find name \u0027logger\u0027.\r"
+                      },
+                      {
+                          "File":  "actions/profiles-actions.ts",
+                          "Line":  117,
+                          "Column":  5,
+                          "Code":  "TS2304",
+                          "Message":  "Cannot find name \u0027logger\u0027.\r"
+                      },
+                      {
+                          "File":  "actions/rewards-actions.ts",
+                          "Line":  358,
+                          "Column":  23,
+                          "Code":  "TS2304",
+                          "Message":  "Cannot find name \u0027redemptionInitiateSchema\u0027.\r"
+                      },
+                      {
+                          "File":  "actions/rewards-actions.ts",
+                          "Line":  363,
+                          "Column":  7,
+                          "Code":  "TS2554",
+                          "Message":  "Expected 1 arguments, but got 4.\r"
+                      },
+                      {
+                          "File":  "actions/rewards-actions.ts",
+                          "Line":  389,
+                          "Column":  11,
+                          "Code":  "TS2345",
+                          "Message":  "Argument of type \u0027PostgresJsDatabase\u003ctypeof import(\"C:/APPS/Union_Eyes_app_v1/db/schema/index\")\u003e \u0026 { $client: Sql\u003c{}\u003e; }\u0027 is not assignable to parameter of type \u0027string\u0027.\r"
+                      },
+                      {
+                          "File":  "actions/rewards-actions.ts",
+                          "Line":  400,
+                          "Column":  25,
+                          "Code":  "TS2304",
+                          "Message":  "Cannot find name \u0027discount\u0027.\r"
+                      },
+                      {
+                          "File":  "actions/stripe-actions.ts",
+                          "Line":  50,
+                          "Column":  5,
+                          "Code":  "TS2304",
+                          "Message":  "Cannot find name \u0027logger\u0027.\r"
+                      },
+                      {
+                          "File":  "actions/stripe-actions.ts",
+                          "Line":  78,
+                          "Column":  5,
+                          "Code":  "TS2304",
+                          "Message":  "Cannot find name \u0027logger\u0027.\r"
+                      },
+                      {
+                          "File":  "actions/whop-actions.ts",
+                          "Line":  280,
+                          "Column":  78,
+                          "Code":  "TS2554",
+                          "Message":  "Expected 1-2 arguments, but got 3.\r"
+                      },
+                      {
+                          "File":  "actions/whop-actions.ts",
+                          "Line":  307,
+                          "Column":  78,
+                          "Code":  "TS2554",
+                          "Message":  "Expected 1-2 arguments, but got 3.\r"
+                      },
+                      {
+                          "File":  "app/[locale]/dashboard/admin/organizations/[id]/page.tsx",
+                          "Line":  281,
+                          "Column":  29,
+                          "Code":  "TS2339",
+                          "Message":  "Property \u0027description\u0027 does not exist on type \u0027OrganizationWithDetails\u0027.\r"
+                      },
+                      {
+                          "File":  "app/[locale]/dashboard/admin/organizations/[id]/page.tsx",
+                          "Line":  284,
+                          "Column":  78,
+                          "Code":  "TS2339",
+                          "Message":  "Property \u0027description\u0027 does not exist on type \u0027OrganizationWithDetails\u0027.\r"
+                      },
+                      {
+                          "File":  "app/[locale]/dashboard/admin/rewards/budgets/page.tsx",
+                          "Line":  27,
+                          "Column":  51,
+                          "Code":  "TS2345",
+                          "Message":  "Argument of type \u0027{}\u0027 is not assignable to parameter of type \u0027string\u0027.\r"
+                      },
+                      {
+                          "File":  "app/[locale]/dashboard/admin/rewards/page.tsx",
+                          "Line":  85,
+                          "Column":  48,
+                          "Code":  "TS2339",
+                          "Message":  "Property \u0027active_programs_count\u0027 does not exist on type \u0027{ budgetUsage: { envelopeId: string; envelopeName: string; used: number; limit: number; percentage: number; isActive: boolean; }[]; totalCreditsIssued: number; totalCreditsSpent: number; totalCreditsOutstanding: number; activeMembers: number; }\u0027.\r"
+                      },
+                      {
+                          "File":  "app/[locale]/dashboard/admin/rewards/page.tsx",
+                          "Line":  102,
+                          "Column":  48,
+                          "Code":  "TS2339",
+                          "Message":  "Property \u0027pending_awards_count\u0027 does not exist on type \u0027{ budgetUsage: { envelopeId: string; envelopeName: string; used: number; limit: number; percentage: number; isActive: boolean; }[]; totalCreditsIssued: number; totalCreditsSpent: number; totalCreditsOutstanding: number; activeMembers: number; }\u0027.\r"
+                      },
+                      {
+                          "File":  "app/[locale]/dashboard/admin/rewards/page.tsx",
+                          "Line":  120,
+                          "Column":  34,
+                          "Code":  "TS2551",
+                          "Message":  "Property \u0027total_credits_issued\u0027 does not exist on type \u0027{ budgetUsage: { envelopeId: string; envelopeName: string; used: number; limit: number; percentage: number; isActive: boolean; }[]; totalCreditsIssued: number; totalCreditsSpent: number; totalCreditsOutstanding: number; activeMembers: number; }\u0027. Did you mean \u0027totalCreditsIssued\u0027?\r"
+                      },
+                      {
+                          "File":  "app/[locale]/dashboard/admin/rewards/page.tsx",
+                          "Line":  139,
+                          "Column":  34,
+                          "Code":  "TS2339",
+                          "Message":  "Property \u0027total_credits_redeemed\u0027 does not exist on type \u0027{ budgetUsage: { envelopeId: string; envelopeName: string; used: number; limit: number; percentage: number; isActive: boolean; }[]; totalCreditsIssued: number; totalCreditsSpent: number; totalCreditsOutstanding: number; activeMembers: number; }\u0027.\r"
+                      },
+                      {
+                          "File":  "app/[locale]/dashboard/admin/rewards/programs/page.tsx",
+                          "Line":  28,
+                          "Column":  56,
+                          "Code":  "TS2554",
+                          "Message":  "Expected 0 arguments, but got 1.\r"
+                      },
+                      {
+                          "File":  "app/[locale]/dashboard/analytics-admin/page.tsx",
+                          "Line":  14,
+                          "Column":  10,
+                          "Code":  "TS2724",
+                          "Message":  "\u0027\"@/lib/api-auth-guard\"\u0027 has no exported member named \u0027requireMinRole\u0027. Did you mean \u0027requireRole\u0027?\r"
+                      },
+                      {
+                          "File":  "app/[locale]/dashboard/billing-admin/page.tsx",
+                          "Line":  15,
+                          "Column":  10,
+                          "Code":  "TS2724",
+                          "Message":  "\u0027\"@/lib/api-auth-guard\"\u0027 has no exported member named \u0027requireMinRole\u0027. Did you mean \u0027requireRole\u0027?\r"
+                      },
+                      {
+                          "File":  "app/[locale]/dashboard/clc/affiliates/page.tsx",
+                          "Line":  74,
+                          "Column":  58,
+                          "Code":  "TS2339",
+                          "Message":  "Property \u0027parentOrganizationId\u0027 does not exist on type \u0027{ id: PgColumn\u003c{ name: \"id\"; tableName: \"organizations\"; dataType: \"string\"; columnType: \"PgUUID\"; data: string; driverParam: string; notNull: true; hasDefault: true; isPrimaryKey: true; isAutoincrement: false; ... 4 more ...; generated: undefined; }, {}, {}\u003e; ... 34 more ...; fiscalYearEnd: PgColumn\u003c...\u003e; }\u0027.\r"
+                      },
+                      {
+                          "File":  "app/[locale]/dashboard/clc/affiliates/page.tsx",
+                          "Line":  81,
+                          "Column":  45,
+                          "Code":  "TS2367",
+                          "Message":  "This comparison appears to be unintentional because the types \u0027\"congress\" | \"federation\" | \"union\" | \"local\" | \"region\" | \"district\"\u0027 and \u0027\"chapter\"\u0027 have no overlap.\r"
+                      },
+                      {
+                          "File":  "app/[locale]/dashboard/clc/affiliates/page.tsx",
+                          "Line":  359,
+                          "Column":  60,
+                          "Code":  "TS2339",
+                          "Message":  "Property \u0027city\u0027 does not exist on type \u0027AffiliateData\u0027.\r"
+                      },
+                      {
+                          "File":  "app/[locale]/dashboard/clc/compliance/page.tsx",
+                          "Line":  89,
+                          "Column":  11,
+                          "Code":  "TS7034",
+                          "Message":  "Variable \u0027provincialCompliance\u0027 implicitly has type \u0027any[]\u0027 in some locations where its type cannot be determined.\r"
+                      },
+                      {
+                          "File":  "app/[locale]/dashboard/clc/compliance/page.tsx",
+                          "Line":  94,
+                          "Column":  11,
+                          "Code":  "TS7034",
+                          "Message":  "Variable \u0027recentIssues\u0027 implicitly has type \u0027any[]\u0027 in some locations where its type cannot be determined.\r"
+                      },
+                      {
+                          "File":  "app/[locale]/dashboard/clc/compliance/page.tsx",
+                          "Line":  99,
+                          "Column":  11,
+                          "Code":  "TS7034",
+                          "Message":  "Variable \u0027complianceTrends\u0027 implicitly has type \u0027any[]\u0027 in some locations where its type cannot be determined.\r"
+                      },
+                      {
+                          "File":  "app/[locale]/dashboard/clc/compliance/page.tsx",
+                          "Line":  119,
+                          "Column":  7,
+                          "Code":  "TS7005",
+                          "Message":  "Variable \u0027provincialCompliance\u0027 implicitly has an \u0027any[]\u0027 type.\r"
+                      },
+                      {
+                          "File":  "app/[locale]/dashboard/clc/compliance/page.tsx",
+                          "Line":  120,
+                          "Column":  7,
+                          "Code":  "TS7005",
+                          "Message":  "Variable \u0027recentIssues\u0027 implicitly has an \u0027any[]\u0027 type.\r"
+                      },
+                      {
+                          "File":  "app/[locale]/dashboard/clc/compliance/page.tsx",
+                          "Line":  121,
+                          "Column":  7,
+                          "Code":  "TS7005",
+                          "Message":  "Variable \u0027complianceTrends\u0027 implicitly has an \u0027any[]\u0027 type.\r"
+                      }
+                  ],
+    "ByCode":  [
+                   {
+                       "Name":  "TS2345",
+                       "Count":  1307
+                   },
+                   {
+                       "Name":  "TS2451",
+                       "Count":  1242
+                   },
+                   {
+                       "Name":  "TS2339",
+                       "Count":  1192
+                   },
+                   {
+                       "Name":  "TS7006",
+                       "Count":  530
+                   },
+                   {
+                       "Name":  "TS2554",
+                       "Count":  523
+                   },
+                   {
+                       "Name":  "TS2304",
+                       "Count":  421
+                   },
+                   {
+                       "Name":  "TS2322",
+                       "Count":  298
+                   },
+                   {
+                       "Name":  "TS2353",
+                       "Count":  162
+                   },
+                   {
+                       "Name":  "TS2769",
+                       "Count":  150
+                   },
+                   {
+                       "Name":  "TS2305",
+                       "Count":  78
+                   },
+                   {
+                       "Name":  "TS18046",
+                       "Count":  70
+                   },
+                   {
+                       "Name":  "TS7031",
+                       "Count":  55
+                   },
+                   {
+                       "Name":  "TS2551",
+                       "Count":  45
+                   },
+                   {
+                       "Name":  "TS2561",
+                       "Count":  33
+                   },
+                   {
+                       "Name":  "TS2488",
+                       "Count":  31
+                   },
+                   {
+                       "Name":  "TS2307",
+                       "Count":  25
+                   },
+                   {
+                       "Name":  "TS18004",
+                       "Count":  22
+                   },
+                   {
+                       "Name":  "TS2308",
+                       "Count":  21
+                   },
+                   {
+                       "Name":  "TS2724",
+                       "Count":  18
+                   },
+                   {
+                       "Name":  "TS2300",
+                       "Count":  16
+                   },
+                   {
+                       "Name":  "TS7005",
+                       "Count":  15
+                   },
+                   {
+                       "Name":  "TS18047",
+                       "Count":  11
+                   },
+                   {
+                       "Name":  "TS7034",
+                       "Count":  11
+                   },
+                   {
+                       "Name":  "TS7053",
+                       "Count":  9
+                   },
+                   {
+                       "Name":  "TS7022",
+                       "Count":  8
+                   },
+                   {
+                       "Name":  "TS2416",
+                       "Count":  8
+                   },
+                   {
+                       "Name":  "TS2741",
+                       "Count":  7
+                   },
+                   {
+                       "Name":  "TS2740",
+                       "Count":  5
+                   },
+                   {
+                       "Name":  "TS2448",
+                       "Count":  5
+                   },
+                   {
+                       "Name":  "TS2365",
+                       "Count":  5
+                   },
+                   {
+                       "Name":  "TS2352",
+                       "Count":  5
+                   },
+                   {
+                       "Name":  "TS2367",
+                       "Count":  5
+                   },
+                   {
+                       "Name":  "TS7024",
+                       "Count":  4
+                   },
+                   {
+                       "Name":  "TS2588",
+                       "Count":  4
+                   },
+                   {
+                       "Name":  "TS2678",
+                       "Count":  4
+                   },
+                   {
+                       "Name":  "TS2654",
+                       "Count":  4
+                   },
+                   {
+                       "Name":  "TS2411",
+                       "Count":  3
+                   },
+                   {
+                       "Name":  "TS2694",
+                       "Count":  3
+                   },
+                   {
+                       "Name":  "TS2454",
+                       "Count":  3
+                   },
+                   {
+                       "Name":  "TS18048",
+                       "Count":  3
+                   },
+                   {
+                       "Name":  "TS2362",
+                       "Count":  2
+                   },
+                   {
+                       "Name":  "TS2820",
+                       "Count":  2
+                   },
+                   {
+                       "Name":  "TS2739",
+                       "Count":  1
+                   },
+                   {
+                       "Name":  "TS7016",
+                       "Count":  1
+                   },
+                   {
+                       "Name":  "TS2693",
+                       "Count":  1
+                   },
+                   {
+                       "Name":  "TS2363",
+                       "Count":  1
+                   },
+                   {
+                       "Name":  "TS2552",
+                       "Count":  1
+                   },
+                   {
+                       "Name":  "TS1355",
+                       "Count":  1
+                   },
+                   {
+                       "Name":  "TS2459",
+                       "Count":  1
+                   },
+                   {
+                       "Name":  "TS2698",
+                       "Count":  1
+                   }
+               ],
+    "FixablePatterns":  [
+
+                        ]
+}

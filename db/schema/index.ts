@@ -44,3 +44,6 @@ export * from "./domains/infrastructure";   // Priority 13: System infrastructur
 
 // Organizations (CLC-level schema, external to local union domains)
 export * from "../schema-organizations";
+
+// Union Structure (Organizational hierarchy and operational structure)
+export * from "./union-structure-schema";

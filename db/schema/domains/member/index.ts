@@ -16,4 +16,6 @@
 export * from './profiles';
 export * from './pending-profiles';
 export * from './user-management';
+export * from './member-employment';
+export * from './member-segments';
 // Note: organization-members-schema was commented out in original (using Phase 5A version from schema-organizations)

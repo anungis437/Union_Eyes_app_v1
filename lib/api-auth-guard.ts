@@ -255,9 +255,19 @@ interface PermissionCheckResult {
 }
 
 /**
+ * Base context type with common authentication fields
+ */
+export interface BaseAuthContext {
+  params?: Record<string, any>;
+  organizationId?: string;
+  userId?: string;
+  memberId?: string;
+}
+
+/**
  * API route handler type
  */
-type ApiRouteHandler<TContext extends Record<string, any> = { params?: Record<string, any> }> = (
+type ApiRouteHandler<TContext extends Record<string, any> = BaseAuthContext> = (
   request: NextRequest,
   context: TContext
 ) => Promise<NextResponse> | NextResponse;
@@ -751,7 +761,7 @@ export async function hasMinRole(minRole: string): Promise<boolean> {
  * });
  * ```
  */
-export function withRoleAuth<TContext extends Record<string, any> = { params?: Record<string, any> }>(
+export function withRoleAuth<TContext extends Record<string, any> = BaseAuthContext>(
   requiredRole: string,
   handler: ApiRouteHandler<TContext>
 ): ApiRouteHandler<TContext> {
@@ -790,7 +800,7 @@ export function withRoleAuth<TContext extends Record<string, any> = { params?: R
  * Hierarchy: admin > officer > steward > member
  * A user with 'officer' role can access routes requiring 'steward' or 'member'
  */
-export function withMinRole<TContext extends Record<string, any> = { params?: Record<string, any> }>(
+export function withMinRole<TContext extends Record<string, any> = BaseAuthContext>(
   minRole: string,
   handler: ApiRouteHandler<TContext>
 ): ApiRouteHandler<TContext> {
@@ -818,7 +828,7 @@ export function withMinRole<TContext extends Record<string, any> = { params?: Re
 /**
  * API Guard Wrapper for admin-only routes
  */
-export function withAdminAuth<TContext extends Record<string, any> = { params?: Record<string, any> }>(
+export function withAdminAuth<TContext extends Record<string, any> = BaseAuthContext>(
   handler: ApiRouteHandler<TContext>
 ): ApiRouteHandler<TContext> {
   return withRoleAuth('admin', handler);
@@ -827,7 +837,7 @@ export function withAdminAuth<TContext extends Record<string, any> = { params?: 
 /**
  * API Guard Wrapper for system admin routes
  */
-export function withSystemAdminAuth<TContext extends Record<string, any> = { params?: Record<string, any> }>(
+export function withSystemAdminAuth<TContext extends Record<string, any> = BaseAuthContext>(
   handler: ApiRouteHandler<TContext>
 ): ApiRouteHandler<TContext> {
   return withApiAuth(async (request: NextRequest, context: TContext) => {
@@ -1274,7 +1284,7 @@ export function withScopedRoleAuth<T = any>(
  * }, { requireAuth: false });
  * ```
  */
-export function withApiAuth<TContext extends Record<string, any> = { params?: Record<string, any> }>(
+export function withApiAuth<TContext extends Record<string, any> = BaseAuthContext>(
   handler: ApiRouteHandler<TContext>,
   options: ApiGuardOptions = {}
 ): ApiRouteHandler<TContext> {

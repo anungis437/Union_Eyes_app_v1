@@ -150,15 +150,16 @@ export const POST = async (request: NextRequest) => {
     }
     
     const { registrationId, completionDate, completionPercentage, finalGrade, passed, preTestScore, postTestScore } = validation.data;
-      const {
-        registrationId,
-        completionDate,
-        completionPercentage,
-        finalGrade,
-        passed,
-        preTestScore,
-        postTestScore,
-      } = body;
+    // DUPLICATE REMOVED (Phase 2): Multi-line destructuring of body
+    // const {
+    // registrationId,
+    // completionDate,
+    // completionPercentage,
+    // finalGrade,
+    // passed,
+    // preTestScore,
+    // postTestScore,
+    // } = body;
 
       // Validate required fields
       if (!registrationId || passed === undefined) {
@@ -327,4 +328,3 @@ export const POST = async (request: NextRequest) => {
     }
     })(request);
 };
-

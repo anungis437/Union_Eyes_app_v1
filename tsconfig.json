@@ -33,18 +33,25 @@
   "include": [
     "next-env.d.ts",
     "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts"
+    "**/*.tsx"
   ],
   "exclude": [
     "node_modules",
+    ".next/**",
+    "__tests__/**",
     "packages/**",
     "mobile/**",
     "packages/supabase/functions/**",
+    "supabase/functions/**",
     "archive-old-root/**",
     "archive/**",
     "cba-intelligence/**",
     "scripts/**",
-    "services/**"
+    "services/**",
+    "lib/workflow-automation-engine.ts",
+    "lib/workflow-engine.ts",
+    "lib/services/transfer-pricing-service.ts",
+    "lib/utils/rewards-stats-utils.ts",
+    "lib/workers/**"
   ]
 }

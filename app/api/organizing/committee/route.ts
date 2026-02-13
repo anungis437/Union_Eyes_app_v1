@@ -122,11 +122,12 @@ export const POST = async (request: NextRequest) => {
     }
     
     const { contactId, organizingCommitteeRole, naturalLeader } = validation.data;
-      const {
-        contactId,
-        organizingCommitteeRole,
-        naturalLeader,
-      } = body;
+    // DUPLICATE REMOVED (Phase 2): Multi-line destructuring of body
+    // const {
+    // contactId,
+    // organizingCommitteeRole,
+    // naturalLeader,
+    // } = body;
 
       // Validate required fields
       if (!contactId) {
@@ -226,4 +227,3 @@ export const DELETE = async (request: NextRequest) => {
     }
     })(request);
 };
-

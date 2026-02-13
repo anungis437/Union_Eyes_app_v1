@@ -1,0 +1,85 @@
+﻿{
+    "summary":  {
+                    "totalTables":  0,
+                    "tablesWithIssues":  0,
+                    "totalIssues":  8
+                },
+    "problematicPatterns":  {
+                                "phoneNumber":  [
+                                                    {
+                                                        "content":  "phoneNumber: r.phoneNumber,",
+                                                        "file":  "components/communications/sms-campaign-builder.tsx",
+                                                        "line":  "265"
+                                                    },
+                                                    {
+                                                        "content":  "phoneNumber: conversation.phoneNumber,",
+                                                        "file":  "components/communications/sms-inbox.tsx",
+                                                        "line":  "125"
+                                                    },
+                                                    {
+                                                        "content":  "c.phoneNumber.includes(searchQuery) ||",
+                                                        "file":  "components/communications/sms-inbox.tsx",
+                                                        "line":  "181"
+                                                    },
+                                                    {
+                                                        "content":  "\u003cspan className=\"text-sm font-medium\"\u003e{conv.phoneNumber}\u003c/span\u003e",
+                                                        "file":  "components/communications/sms-inbox.tsx",
+                                                        "line":  "260"
+                                                    },
+                                                    {
+                                                        "content":  "{selectedConv.phoneNumber}",
+                                                        "file":  "components/communications/sms-inbox.tsx",
+                                                        "line":  "299"
+                                                    },
+                                                    {
+                                                        "content":  "ilike(smsConversations.phoneNumber, `%${search}%`),",
+                                                        "file":  "app/api/communications/sms/conversations/route.ts",
+                                                        "line":  "46"
+                                                    },
+                                                    {
+                                                        "content":  "phone: memberUser.phoneNumbers?.[0]?.phoneNumber,",
+                                                        "file":  "app/api/organizations/[id]/members/route.ts",
+                                                        "line":  "276"
+                                                    },
+                                                    {
+                                                        "content":  "{t(\u0027profile.phoneNumber\u0027)}",
+                                                        "file":  "app/[locale]/dashboard/profile/page.tsx",
+                                                        "line":  "251"
+                                                    }
+                                                ],
+                                "memberNumber":  [
+
+                                                 ],
+                                "fullName":  [
+
+                                             ],
+                                "firstName":  [
+
+                                              ],
+                                "lastName":  [
+
+                                             ],
+                                "name":  [
+
+                                         ],
+                                "address":  [
+
+                                            ],
+                                "province":  [
+
+                                             ],
+                                "phone":  [
+
+                                          ],
+                                "displayName":  [
+
+                                                ]
+                            },
+    "timestamp":  "2026-02-12 20:23:39",
+    "schemaMap":  {
+
+                  },
+    "tableIssues":  {
+
+                    }
+}

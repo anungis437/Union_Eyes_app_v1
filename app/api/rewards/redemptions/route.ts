@@ -6,7 +6,7 @@ import {
   cancelRedemption,
   listUserRedemptions,
 } from '@/lib/services/rewards/redemption-service';
-import { redemptionInitiateSchema } from '@/lib/validation/rewards-schemas';
+import { initiateRedemptionSchema } from '@/lib/validation/rewards-schemas';
 import { z } from 'zod';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { NextResponse } from "next/server";
@@ -99,7 +99,7 @@ export const POST = async (request: NextRequest) => {
       
       let validatedData;
       try {
-        validatedData = redemptionInitiateSchema.parse(body);
+        validatedData = initiateRedemptionSchema.parse(body);
       } catch (error) {
         if (error instanceof z.ZodError) {
           return standardErrorResponse(

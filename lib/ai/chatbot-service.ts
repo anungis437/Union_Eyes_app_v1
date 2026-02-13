@@ -55,7 +55,7 @@ class OpenAIProvider implements AIProvider {
   
   async generateResponse(
     messages: Array<{ role: string; content: string }>,
-    options = {}
+    options: { model?: string; temperature?: number; maxTokens?: number } = {}
   ) {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -139,7 +139,7 @@ class AnthropicProvider implements AIProvider {
   
   async generateResponse(
     messages: Array<{ role: string; content: string }>,
-    options = {}
+    options: { model?: string; temperature?: number; maxTokens?: number } = {}
   ) {
     // Convert messages format for Anthropic
     const systemMessage = messages.find((m) => m.role === "system");
@@ -198,7 +198,7 @@ class GoogleAIProvider implements AIProvider {
   
   async generateResponse(
     messages: Array<{ role: string; content: string }>,
-    options = {}
+    options: { model?: string; temperature?: number; maxTokens?: number } = {}
   ) {
     // Convert messages to Google format
     const contents = messages.map((m) => ({
@@ -459,7 +459,7 @@ export class RAGService {
       .where(
         and(
           eq(knowledgeBase.isActive, true),
-          options.organizationId ? eq(knowledgeBase.tenantId, options.organizationId) : undefined
+          options.organizationId ? eq(knowledgeBase.organizationId /* was tenantId */, options.organizationId) : undefined
         )
       )
       .limit(options.limit || 5);
@@ -551,7 +551,7 @@ export class ChatbotService {
     let retrievedDocs: any[] = [];
     if (data.useRAG !== false) {
       retrievedDocs = await this.ragService.searchDocuments(data.content, {
-        organizationId: session.tenantId,
+        organizationId: session.organizationId /* was tenantId */,
         limit: 3,
       });
       

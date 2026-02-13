@@ -1,4 +1,4 @@
-import { logApiAuditEvent } from "@/lib/middleware/api-security";
+﻿import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * Phase 5B: Shared Clause Library API - Search
  * Route: /api/clause-library/search
@@ -71,22 +71,22 @@ export const POST = async (request: NextRequest) => {
     
     const { query, clauseTypes, sectors, provinces, sharingLevels, tags, effectiveDateFrom, effectiveDateTo, organizationIds, includeExpired = false, page = 1, limit = 20, sortBy = "createdAt", sortOrder = "desc" } = validation.data;
 
-      const {
-        query,
-        clauseTypes,
-        sectors,
-        provinces,
-        sharingLevels,
-        tags,
-        effectiveDateFrom,
-        effectiveDateTo,
-        organizationIds,
-        includeExpired = false,
-        page = 1,
-        limit = 20,
-        sortBy = "createdAt",
-        sortOrder = "desc",
-      } = body;
+      // DUPLICATE REMOVED:       const {
+      // DUPLICATE REMOVED:         query,
+      // DUPLICATE REMOVED:         clauseTypes,
+      // DUPLICATE REMOVED:         sectors,
+      // DUPLICATE REMOVED:         provinces,
+      // DUPLICATE REMOVED:         sharingLevels,
+      // DUPLICATE REMOVED:         tags,
+      // DUPLICATE REMOVED:         effectiveDateFrom,
+      // DUPLICATE REMOVED:         effectiveDateTo,
+      // DUPLICATE REMOVED:         organizationIds,
+      // DUPLICATE REMOVED:         includeExpired = false,
+      // DUPLICATE REMOVED:         page = 1,
+      // DUPLICATE REMOVED:         limit = 20,
+      // DUPLICATE REMOVED:         sortBy = "createdAt",
+      // DUPLICATE REMOVED:         sortOrder = "desc",
+      // DUPLICATE REMOVED:       } = body;
 
       const offset = (page - 1) * limit;
 

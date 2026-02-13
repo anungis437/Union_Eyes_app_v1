@@ -1,0 +1,311 @@
+﻿**********************
+Windows PowerShell transcript start
+Start time: 20260212214304
+Username: AzureAD\AubertNungisa
+RunAs User: AzureAD\AubertNungisa
+Configuration Name: 
+Machine: CC-WINDOWS-LENO (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe -noexit -command try { . "c:\Users\AubertNungisa\AppData\Local\Programs\Microsoft VS Code\591199df40\resources\app\out\vs\workbench\contrib\terminal\common\scripts\shellIntegration.ps1" } catch {}
+Process ID: 19020
+PSVersion: 5.1.26100.7462
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.7462
+BuildVersion: 10.0.26100.7462
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+Transcript started, output file is c:\APPS\Union_Eyes_app_v1\scripts\diagnostics\ts2451-dryrun.log
+================================================
+  Block-Scoped Variable Redeclaration Fixer
+================================================
+
+[1/6] Getting initial error count...
+Initial errors: 6355
+
+[2/6] Parsing TS2451 errors...
+Found 1242 TS2451 block-scoped redeclaration errors
+
+[3/6] Grouping errors by file...
+Files with TS2451 errors: 88
+
+Top 10 files by TS2451 error count:
+  app/api/equity/self-identify/route.ts: 78 errors
+  app/api/calendars/[id]/events/route.ts: 54 errors
+  app/api/events/[id]/route.ts: 54 errors
+  app/api/education/programs/route.ts: 48 errors
+  app/api/meeting-rooms/route.ts: 46 errors
+  app/api/education/sessions/route.ts: 40 errors
+  app/api/education/certifications/route.ts: 38 errors
+  app/api/arbitration/precedents/search/route.ts: 38 errors
+  app/api/cope/campaigns/route.ts: 36 errors
+  app/api/education/courses/route.ts: 32 errors
+
+Targeting specific file: app/api/equity/self-identify/route.ts
+
+[DRY RUN MODE - No changes will be made]
+
+[4/6] Analyzing and fixing files...
+
+[1/88] Processing: app/api/equity/self-identify/route.ts
+  Errors in file: 78
+  Variables being redeclared:
+    - : 78 occurrences
+  [DETECTED] Duplicate destructuring assignments found (2)
+  [STRATEGY] Will comment out duplicate destructuring blocks
+  Commenting out line 92: const { memberId, organizationId, // Consent (REQU
+  Commenting out line 93: dataCollectionConsent, consentType = 'explicit', c
+  Commenting out line 94: equityGroups = [], // Gender identity
+  Commenting out line 95: genderIdentity, genderIdentityOther, // Indigenous
+  Commenting out line 96: isIndigenous, indigenousIdentity, indigenousNation
+  Commenting out line 97: isVisibleMinority, visibleMinorityGroups, // Disab
+  Commenting out line 98: hasDisability, disabilityTypes, requiresAccommodat
+  Commenting out line 99: isLgbtq2Plus, lgbtq2PlusIdentity, // Demographics
+  Commenting out line 100: dateOfBirth, ageRange, isNewcomer, immigrationYear
+  Commenting out line 101: needsInterpretation, interpretationLanguage, needs
+  Commenting out line 102: allowAggregateReporting = true, allowResearchParti
+  Commenting out line 103: const {
+  Commenting out line 104: memberId,
+  Commenting out line 105: organizationId,
+  Commenting out line 106: // Consent (REQUIRED)
+  Commenting out line 107: dataCollectionConsent,
+  Commenting out line 108: consentType = 'explicit',
+  Commenting out line 109: consentPurpose,
+  Commenting out line 110: dataRetentionYears = 7,
+  Commenting out line 111: // Equity groups
+  Commenting out line 112: equityGroups = [],
+  Commenting out line 113: // Gender identity
+  Commenting out line 114: genderIdentity,
+  Commenting out line 115: genderIdentityOther,
+  Commenting out line 116: // Indigenous identity (OCAP)
+  Commenting out line 117: isIndigenous,
+  Commenting out line 118: indigenousIdentity,
+  Commenting out line 119: indigenousNation,
+  Commenting out line 120: indigenousTreatyNumber,
+  Commenting out line 121: indigenousDataGovernanceConsent = false,
+  Commenting out line 122: // Visible minority
+  Commenting out line 123: isVisibleMinority,
+  Commenting out line 124: visibleMinorityGroups,
+  Commenting out line 125: // Disability
+  Commenting out line 126: hasDisability,
+  Commenting out line 127: disabilityTypes,
+  Commenting out line 128: requiresAccommodation,
+  Commenting out line 129: accommodationDetailsEncrypted,
+  Commenting out line 130: // LGBTQ2+
+  Commenting out line 131: isLgbtq2Plus,
+  Commenting out line 132: lgbtq2PlusIdentity,
+  Commenting out line 133: // Demographics
+  Commenting out line 134: dateOfBirth,
+  Commenting out line 135: ageRange,
+  Commenting out line 136: isNewcomer,
+  Commenting out line 137: immigrationYear,
+  Commenting out line 138: countryOfOrigin,
+  Commenting out line 139: primaryLanguage,
+  Commenting out line 140: speaksFrench,
+  Commenting out line 141: speaksIndigenousLanguage,
+  Commenting out line 142: indigenousLanguageName,
+  Commenting out line 143: // Accessibility
+  Commenting out line 144: needsInterpretation,
+  Commenting out line 145: interpretationLanguage,
+  Commenting out line 146: needsTranslation,
+  Commenting out line 147: translationLanguage,
+  Commenting out line 148: needsMobilityAccommodation,
+  Commenting out line 149: // Privacy controls
+  Commenting out line 150: allowAggregateReporting = true,
+  Commenting out line 151: allowResearchParticipation = false,
+  Commenting out line 152: allowExternalReporting = false,
+  Commenting out line 153: } = body;
+  Commenting out line 429: const { userId, organizationId } = context;
+  Commenting out line 430:
+  Commenting out line 431: try {
+  Commenting out line 432: const { searchParams } = new URL(request.url);
+  Commenting out line 433: const memberId = searchParams.get('memberId');
+  Commenting out line 434:
+  Commenting out line 435: if (!memberId) {
+  Commenting out line 436: return standardErrorResponse(
+  Commenting out line 437: ErrorCode.MISSING_REQUIRED_FIELD,
+  Commenting out line 438: 'Bad Request - memberId is required'
+  Commenting out line 439: );
+  Commenting out line 440: }
+  Commenting out line 441:
+  Commenting out line 442: const data = await db
+  Commenting out line 443: .select()
+  Commenting out line 444: .from(memberDemographics)
+  Commenting out line 445: .where(eq(memberDemographics.memberId, memberId))
+  Commenting out line 446: .limit(1);
+  Commenting out line 447:
+  Commenting out line 448: if (!data || data.length === 0) {
+  Commenting out line 449: logApiAuditEvent({
+  Commenting out line 450: timestamp: new Date().toISOString(),
+  Commenting out line 451: userId,
+  Commenting out line 452: endpoint: '/api/equity/self-identify',
+  Commenting out line 453: method: 'GET',
+  Commenting out line 454: eventType: 'success',
+  Commenting out line 455: severity: 'low',
+  Commenting out line 456: details: {
+  Commenting out line 457: dataType: 'EQUITY_DATA',
+  Commenting out line 458: memberId,
+  Commenting out line 459: dataFound: false,
+  Commenting out line 460: },
+  Commenting out line 461: });
+  Commenting out line 462: return NextResponse.json({
+  Commenting out line 463: success: true,
+  Commenting out line 464: data: null,
+  Commenting out line 465: message: 'No demographic data found',
+  Commenting out line 466: });
+  Commenting out line 467: }
+  Commenting out line 468:
+  Commenting out line 469: logApiAuditEvent({
+  Commenting out line 470: timestamp: new Date().toISOString(),
+  Commenting out line 471: userId,
+  Commenting out line 472: endpoint: '/api/equity/self-identify',
+  Commenting out line 473: method: 'GET',
+  Commenting out line 474: eventType: 'success',
+  Commenting out line 475: severity: 'high',
+  Commenting out line 476: details: {
+  Commenting out line 477: dataType: 'EQUITY_DATA',
+  Commenting out line 478: memberId,
+  Commenting out line 479: dataFound: true,
+  Commenting out line 480: },
+  Commenting out line 481: });
+  Commenting out line 482:
+  Commenting out line 483: return NextResponse.json({
+  Commenting out line 484: success: true,
+  Commenting out line 485: data: data[0],
+  Commenting out line 486: });
+  Commenting out line 487:
+  Commenting out line 488: } catch (error) {
+  Commenting out line 489: logger.error('Failed to fetch demographic data', e
+  Commenting out line 490: userId,
+  Commenting out line 491: memberId: request.nextUrl.searchParams.get('member
+  Commenting out line 492: correlationId: request.headers.get('x-correlation-
+  Commenting out line 493: });
+  Commenting out line 494: logApiAuditEvent({
+  Commenting out line 495: timestamp: new Date().toISOString(),
+  Commenting out line 496: userId,
+  Commenting out line 497: endpoint: '/api/equity/self-identify',
+  Commenting out line 498: method: 'GET',
+  Commenting out line 499: eventType: 'server_error',
+  Commenting out line 500: severity: 'high',
+  Commenting out line 501: details: {
+  Commenting out line 502: dataType: 'EQUITY_DATA',
+  Commenting out line 503: error: error instanceof Error ? error.message : 'U
+  Commenting out line 504: },
+  Commenting out line 505: });
+  Commenting out line 506: return standardErrorResponse(
+  Commenting out line 507: ErrorCode.INTERNAL_ERROR,
+  Commenting out line 508: 'Internal Server Error',
+  Commenting out line 509: error
+  Commenting out line 510: );
+  Commenting out line 511: }
+  Commenting out line 517: const { userId, organizationId } = context;
+  Commenting out line 518:
+  Commenting out line 519: try {
+  Commenting out line 520: const { searchParams } = new URL(request.url);
+  Commenting out line 521: const memberId = searchParams.get('memberId');
+  Commenting out line 522:
+  Commenting out line 523: if (!memberId) {
+  Commenting out line 524: return standardErrorResponse(
+  Commenting out line 525: ErrorCode.MISSING_REQUIRED_FIELD,
+  Commenting out line 526: 'Bad Request - memberId is required'
+  Commenting out line 527: );
+  Commenting out line 528: }
+  Commenting out line 529:
+  Commenting out line 530: // Soft delete: mark consent as withdrawn
+  Commenting out line 531: const result = await db
+  Commenting out line 532: .update(memberDemographics)
+  Commenting out line 533: .set({
+  Commenting out line 534: dataCollectionConsent: false,
+  Commenting out line 535: consentWithdrawnDate: new Date().toISOString().spl
+  Commenting out line 536: updatedAt: new Date().toISOString(),
+  Commenting out line 537: })
+  Commenting out line 538: .where(eq(memberDemographics.memberId, memberId))
+  Commenting out line 539: .returning();
+  Commenting out line 540:
+  Commenting out line 541: if (!result || result.length === 0) {
+  Commenting out line 542: logApiAuditEvent({
+  Commenting out line 543: timestamp: new Date().toISOString(),
+  Commenting out line 544: userId,
+  Commenting out line 545: endpoint: '/api/equity/self-identify',
+  Commenting out line 546: method: 'DELETE',
+  Commenting out line 547: eventType: 'validation_failed',
+  Commenting out line 548: severity: 'low',
+  Commenting out line 549: details: {
+  Commenting out line 550: dataType: 'EQUITY_DATA',
+  Commenting out line 551: reason: 'No demographic data found',
+  Commenting out line 552: memberId,
+  Commenting out line 553: },
+  Commenting out line 554: });
+  Commenting out line 555: return standardErrorResponse(
+  Commenting out line 556: ErrorCode.RESOURCE_NOT_FOUND,
+  Commenting out line 557: 'Not Found - No demographic data found'
+  Commenting out line 558: );
+  Commenting out line 559: }
+  Commenting out line 560:
+  Commenting out line 561: logApiAuditEvent({
+  Commenting out line 562: timestamp: new Date().toISOString(),
+  Commenting out line 563: userId,
+  Commenting out line 564: endpoint: '/api/equity/self-identify',
+  Commenting out line 565: method: 'DELETE',
+  Commenting out line 566: eventType: 'success',
+  Commenting out line 567: severity: 'critical',
+  Commenting out line 568: details: {
+  Commenting out line 569: dataType: 'EQUITY_DATA',
+  Commenting out line 570: memberId,
+  Commenting out line 571: action: 'consent_withdrawn',
+  Commenting out line 572: privacyCompliant: true,
+  Commenting out line 573: },
+  Commenting out line 574: });
+  Commenting out line 575:
+  Commenting out line 576: return NextResponse.json({
+  Commenting out line 577: success: true,
+  Commenting out line 578: message: 'Consent withdrawn successfully. Data wil
+  Commenting out line 579: });
+  Commenting out line 580:
+  Commenting out line 581: } catch (error) {
+  Commenting out line 582: logger.error('Failed to withdraw demographic conse
+  Commenting out line 583: userId,
+  Commenting out line 584: memberId: request.nextUrl.searchParams.get('member
+  Commenting out line 585: correlationId: request.headers.get('x-correlation-
+  Commenting out line 586: });
+  Commenting out line 587: logApiAuditEvent({
+  Commenting out line 588: timestamp: new Date().toISOString(),
+  Commenting out line 589: userId,
+  Commenting out line 590: endpoint: '/api/equity/self-identify',
+  Commenting out line 591: method: 'DELETE',
+  Commenting out line 592: eventType: 'server_error',
+  Commenting out line 593: severity: 'high',
+  Commenting out line 594: details: {
+  Commenting out line 595: dataType: 'EQUITY_DATA',
+  Commenting out line 596: error: error instanceof Error ? error.message : 'U
+  Commenting out line 597: },
+  Commenting out line 598: });
+  Commenting out line 599: return standardErrorResponse(
+  Commenting out line 600: ErrorCode.INTERNAL_ERROR,
+  Commenting out line 601: 'Internal Server Error',
+  Commenting out line 602: error
+  Commenting out line 603: );
+  Commenting out line 604: }
+  [DRY RUN] Would save changes to file
+
+[5/6] Summary
+Files processed: 1
+Files fixed: 0
+Files skipped: 0
+Errors fixed: 0
+
+[6/6] Final validation...
+
+================================================
+  FINAL RESULTS
+================================================
+Initial errors: 6355
+Final errors: 6355
+Net change: 0
+
+[DRY RUN COMPLETE - No actual changes were made]
+**********************
+Windows PowerShell transcript end
+End time: 20260212214401
+**********************

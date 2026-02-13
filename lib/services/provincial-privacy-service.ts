@@ -30,6 +30,7 @@ export interface BreachNotification {
   realRiskOfHarm: boolean;
   notificationSent: boolean;
   notificationDeadline: Date;
+  affectedCount?: number; // Number of individuals affected by breach
 }
 
 /**
@@ -120,16 +121,19 @@ export function getPrivacyRules(province: string): ProvincialPrivacyRules {
 export async function assessBreachNotification(
   memberId: string,
   dataTypes: string[],
-  breachDate: Date
+  breachDate: Date,
+  organizationId?: string // Add organizationId parameter
 ): Promise<BreachNotification> {
   let province = 'FEDERAL';
 
-  if (process.env.NODE_ENV !== 'test') {
+  // Get province from organization if provided
+  if (organizationId && process.env.NODE_ENV !== 'test') {
     try {
+      // Query organization's province from federations table
       const result = await db.execute(sql`
-        SELECT province
-        FROM members
-        WHERE id = ${memberId}
+        SELECT f.province
+        FROM federation_schema.federations f
+        WHERE f.organization_id = ${organizationId}
         LIMIT 1
       `);
       const resultRows = (result as { rows?: Array<{ province?: string }> }).rows;
@@ -138,7 +142,7 @@ export async function assessBreachNotification(
         province = rows[0].province;
       }
     } catch (error) {
-      logger.error('Error fetching member province', { error, memberId });
+      logger.error('Error fetching organization province', { error, organizationId });
     }
   }
   const rules = getPrivacyRules(province);
@@ -192,7 +196,7 @@ export async function generateBreachNotification(
   const rules = getPrivacyRules(breach.province);
 
   // For QC, must also notify CAI if 500+ people affected (Law 25)
-  if (breach.province === 'QC' && breach.affectedCount >= 500) {
+  if (breach.province === 'QC' && breach.affectedCount && breach.affectedCount >= 500) {
     logger.warn('[PRIVACY] Quebec breach - CAI notification required', {
       affectedCount: breach.affectedCount,
       province: breach.province,
@@ -237,7 +241,7 @@ export function getDataRetentionPolicy(province: string): {
  */
 export function validateConsent(
   province: string,
-  consentType: 'explicit' | 'informed' | 'opt-in'
+  consentType: 'explicit' | 'informed' | 'opt-in' | 'opt-out' // Add opt-out to allow checking against it
 ): boolean {
   // QC requires explicit consent
   if (province === 'QC' && consentType !== 'explicit') {

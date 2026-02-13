@@ -44,13 +44,14 @@ export const POST = async (request: NextRequest) => {
     }
     
     const { clauseIds, analysisType = "all", save = false, comparisonName, organizationId } = validation.data;
-      const { 
-        clauseIds, 
-        analysisType = "all",
-        save = false,
-        comparisonName,
-        organizationId
-      } = body;
+    // DUPLICATE REMOVED (Phase 2): Multi-line destructuring of body
+    // const { 
+    // clauseIds, 
+    // analysisType = "all",
+    // save = false,
+    // comparisonName,
+    // organizationId
+    // } = body;
   if (organizationId && organizationId !== contextOrganizationId) {
     return standardErrorResponse(
       ErrorCode.FORBIDDEN,
@@ -119,4 +120,3 @@ return standardErrorResponse(
     }
     })(request);
 };
-

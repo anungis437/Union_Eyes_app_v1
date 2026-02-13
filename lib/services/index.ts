@@ -9,74 +9,74 @@ export { MultiCurrencyGLHelper } from './multi-currency-gl-helper';
 export { T106ComplianceService } from './t106-compliance-service';
 
 // Financial Services
-export { AuditService } from './audit-service';
+// audit-service exports functions, not a class - import directly from file
 export { AuditTrailService } from './audit-trail-service';
-export { GeneralLedgerService } from './general-ledger-service';
+// general-ledger-service exports default object, not named export - import directly from file
 export { MultiCurrencyTreasuryService } from './multi-currency-treasury-service';
 export { FinancialEmailService } from './financial-email-service';
 export { InvoiceGenerator } from './invoice-generator';
-export { StrikeFundTaxService } from './strike-fund-tax-service';
-export { TransferPricingService } from './transfer-pricing-service';
+// strike-fund-tax-service exports functions, not a class - import directly from file
+// transfer-pricing-service exports functions, not a class - import directly from file
 
 // Document Services
-export { DocumentService } from './document-service';
-export { DocumentStorageService } from './document-storage-service';
-export { PrecedentDocumentService } from './precedent-document-service';
-export { PrecedentService } from './precedent-service';
+// document-service exports functions/types, not a class - import directly from file
+// document-storage-service exports functions, not a class - import directly from file
+// precedent-document-service exports functions, not a class - import directly from file
+// precedent-service exports functions, not a class - import directly from file
 
 // Member & Organization Services
-export { MemberService } from './member-service';
-export { CBAService } from './cba-service';
-export { EducationService } from './education-service';
+// member-service exports functions, not a class - import directly from file
+// cba-service exports functions, not a class - import directly from file
+// education-service exports functions, not a class - import directly from file
 export { IndigenousDataService } from './indigenous-data-service';
 
 // Notification & Communication Services
 export { NotificationService } from './notification-service';
-export { GrievanceNotifications } from './grievance-notifications';
-export { PaymentNotifications } from './payment-notifications';
-export { EmailTemplates } from './email-templates';
+// grievance-notifications exports GrievanceNotificationContext, not GrievanceNotifications - import directly from file
+// payment-notifications exports default, not named export - import directly from file
+// email-templates exports default, not named export - import directly from file
 
 // Workflow & Process Services
-export { CaseTimelineService } from './case-timeline-service';
-export { CaseWorkflowFSM } from './case-workflow-fsm';
-export { ClaimWorkflowFSM } from './claim-workflow-fsm';
-export { SignatureWorkflowService } from './signature-workflow-service';
-export { VotingService } from './voting-service';
+// case-timeline-service exports functions, not a class - import directly from file
+// case-workflow-fsm exports functions, not a class - import directly from file
+// claim-workflow-fsm exports functions, not a class - import directly from file
+// signature-workflow-service exports default, not named export - import directly from file
+// voting-service exports functions, not a class - import directly from file
 
 // Clause & Agreement Services
-export { ClauseService } from './clause-service';
-export { BargainingNotesService } from './bargaining-notes-service';
+// clause-service exports functions, not a class - import directly from file
+// bargaining-notes-service exports functions, not a class - import directly from file
 
 // Security & Privacy Services
-export { ProvinciallPrivacyService } from './provincial-privacy-service';
-export { GeofencePrivacyService } from './geofence-privacy-service';
+// provincial-privacy-service exports functions, not a class - import directly from file
+// geofence-privacy-service exports functions, not a class - import directly from file
 
 // Infrastructure Services
-export { CacheService } from './cache-service';
-export { CalendarService } from './calendar-service';
+// cache-service exports functions, not a class - import directly from file
+// calendar-service exports CalendarEvent, not CalendarService - import directly from file
 export { LocationTrackingService } from './location-tracking-service';
 export { BreakGlassService } from './break-glass-service';
 
 // Feature Management Services
-export { FeatureFlagsService } from './feature-flags-service';
-export { FeatureFlags } from './feature-flags';
+// feature-flags-service exports functions, not a class - import directly from file
+// feature-flags exports functions, not a class - import directly from file
 
 // Support & Metrics Services
-export { SupportService } from './support-service';
-export { SLACalculator } from './sla-calculator';
-export { LROMetrics } from './lro-metrics';
-export { LROSignals } from './lro-signals';
+// support-service exports functions, not a class - import directly from file
+// sla-calculator exports functions, not a class - import directly from file
+// lro-metrics exports functions, not a class - import directly from file
+// lro-signals exports functions, not a class - import directly from file
 
 // Cryptography & Security Services
-export { VoteCryptoService } from './vote-crypto-service';
-export { VotingCryptoService } from './voting-crypto-service';
+// vote-crypto-service exports functions, not a class - import directly from file
+// voting-crypto-service exports functions, not a class - import directly from file
 
 // OCR & Data Processing
-export { OCRService } from './ocr-service';
+// ocr-service exports functions, not a class - import directly from file
 
 // Signature Providers
-export { SignatureProviders } from './signature-providers';
+// signature-providers exports SignatureProvider, not SignatureProviders - import directly from file
 
 // Utilities
 export { CurrencyService } from './currency-service';
-export { DefensibilityPack } from './defensibility-pack';
+export type { DefensibilityPack } from './defensibility-pack';

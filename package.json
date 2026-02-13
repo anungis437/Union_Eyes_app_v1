@@ -93,6 +93,10 @@
     "compliance:report:aml": "npx tsx scripts/compliance/generate-aml-report.ts",
     "compliance:report:iso": "npx tsx scripts/compliance/generate-iso-report.ts",
     "compliance:status": "npx tsx scripts/compliance/compliance-status.ts",
+    "compliance:sbom": "npx tsx scripts/compliance/generate-sbom.ts",
+    "compliance:evidence": "npx tsx scripts/compliance/generate-evidence-bundle.ts",
+    "compliance:evidence:full": "npx tsx scripts/compliance/generate-evidence-bundle.ts --include-audit-sample",
+    "compliance:audit": "pnpm compliance:sbom && pnpm compliance:evidence:full",
     "prepare": "husky"
   },
   "dependencies": {
@@ -254,6 +258,7 @@
     "@vitejs/plugin-react": "^5.1.2",
     "@vitest/coverage-istanbul": "^4.0.18",
     "@vitest/coverage-v8": "^4.0.18",
+    "archiver": "^7.0.1",
     "drizzle-kit": "^0.31.8",
     "eslint": "^9.39.2",
     "eslint-config-next": "^15.5.12",

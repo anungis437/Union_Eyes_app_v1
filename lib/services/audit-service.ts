@@ -79,10 +79,10 @@ export async function queryAuditLogs(query: AuditLogQuery): Promise<{
   const conditions = [eq(auditLogs.organizationId, query.organizationId)];
   
   if (query.startDate) {
-    conditions.push(gte(auditLogs.timestamp, query.startDate));
+    conditions.push(gte(auditLogs.createdAt, query.startDate));
   }
   if (query.endDate) {
-    conditions.push(lte(auditLogs.timestamp, query.endDate));
+    conditions.push(lte(auditLogs.createdAt, query.endDate));
   }
   if (query.userId) {
     conditions.push(eq(auditLogs.userId, query.userId));
@@ -102,7 +102,7 @@ export async function queryAuditLogs(query: AuditLogQuery): Promise<{
 
   const entries = await db.query.auditLogs.findMany({
     where: and(...conditions),
-    orderBy: [desc(auditLogs.timestamp)],
+    orderBy: [desc(auditLogs.createdAt)],
     limit,
     offset,
   });
@@ -127,7 +127,7 @@ export async function getResourceAuditTrail(
       eq(auditLogs.resourceType, resourceType),
       eq(auditLogs.resourceId, resourceId)
     ),
-    orderBy: [desc(auditLogs.timestamp)],
+    orderBy: [desc(auditLogs.createdAt)],
   });
 }
 
@@ -144,7 +144,7 @@ export async function getUserAuditTrail(
       eq(auditLogs.organizationId, organizationId),
       eq(auditLogs.userId, userId)
     ),
-    orderBy: [desc(auditLogs.timestamp)],
+    orderBy: [desc(auditLogs.createdAt)],
     limit,
   });
 }
@@ -165,8 +165,8 @@ export async function getAuditStats(
   const entries = await db.query.auditLogs.findMany({
     where: and(
       eq(auditLogs.organizationId, organizationId),
-      gte(auditLogs.timestamp, startDate),
-      lte(auditLogs.timestamp, endDate)
+      gte(auditLogs.createdAt, startDate),
+      lte(auditLogs.createdAt, endDate)
     ),
   });
 
@@ -215,7 +215,7 @@ export async function archiveOldAuditLogs(
     .where(
       and(
         eq(auditLogs.organizationId, organizationId),
-        lte(auditLogs.timestamp, beforeDate),
+        lte(auditLogs.createdAt, beforeDate),
         eq(auditLogs.archived, false) // Only archive non-archived logs
       )
     );
