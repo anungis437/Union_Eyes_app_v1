@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { api } from '@/lib/api';
 import {
   Table,
   TableBody,
@@ -60,41 +61,22 @@ export default function ElectionsDashboardPage() {
 
   const fetchElectionsData = async () => {
     try {
-      // TODO: Replace with actual API calls
-      // const statsRes = await fetch('/api/elections/stats');
-      // const electionsRes = await fetch('/api/elections');
+      const data = await api.elections.list();
+      
+      setElections(data);
+      
+      // Calculate stats from data
+      const active = data.filter((e: any) => e.status === 'active').length;
+      const totalVoters = data.reduce((sum: number, e: any) => sum + (e.eligibleVoters || 0), 0);
+      const votesCast = data.reduce((sum: number, e: any) => sum + (e.votesCast || 0), 0);
+      const upcoming = data.filter((e: any) => e.status === 'upcoming').length;
       
       setStats({
-        activeElections: 2,
-        totalVoters: 450,
-        votesCase: 312,
-        upcomingElections: 3,
+        activeElections: active,
+        totalVoters,
+        votesCase: votesCast,
+        upcomingElections: upcoming,
       });
-
-      setElections([
-        {
-          id: '1',
-          title: '2024 Executive Board Election',
-          type: 'executive',
-          status: 'active',
-          startDate: '2024-02-01',
-          endDate: '2024-02-28',
-          eligibleVoters: 450,
-          votesCast: 312,
-          positions: 5,
-        },
-        {
-          id: '2',
-          title: 'Local 123 Steward Election',
-          type: 'steward',
-          status: 'nomination',
-          startDate: '2024-03-01',
-          endDate: '2024-03-15',
-          eligibleVoters: 120,
-          votesCast: 0,
-          positions: 3,
-        },
-      ]);
     } catch (error) {
       console.error('Error fetching elections data:', error);
     } finally {

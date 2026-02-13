@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { api } from '@/lib/api';
 import {
   Table,
   TableBody,
@@ -58,35 +59,15 @@ export default function StrikeFundDashboardPage() {
 
   const fetchStrikeFundData = async () => {
     try {
-      // TODO: Replace with actual API calls
-      // const statsRes = await fetch('/api/strike-fund/stats');
-      // const appsRes = await fetch('/api/strike-fund/applications');
+      const [dashboardData, applicationsData] = await Promise.all([
+        api.strikeFund.dashboard(),
+        api.strikeFund.applications.list(),
+      ]);
       
-      setStats({
-        totalBalance: 450000,
-        weeklyDisbursements: 25600,
-        activeRecipients: 128,
-        pendingApplications: 5,
-      });
-
-      setApplications([
-        {
-          id: '1',
-          memberName: 'John Smith',
-          weeklyAmount: 200,
-          status: 'approved',
-          appliedAt: '2024-02-01',
-          approvedAt: '2024-02-02',
-          dependents: 2,
-        },
-        {
-          id: '2',
-          memberName: 'Jane Doe',
-          weeklyAmount: 150,
-          status: 'pending',
-          appliedAt: '2024-02-10',
-          approvedAt: null,
-          dependents: 0,
+      setStats(dashboardData);
+      setApplications(applicationsData);
+    } catch (error) {
+      console.error('Error fetching strike fund data:', error);
         },
       ]);
     } catch (error) {
