@@ -20,6 +20,7 @@ import { db } from '@/db';
 import { claims } from '@/db/schema';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { eq } from 'drizzle-orm';
+import { checkEntitlement } from '@/lib/services/entitlements';
 
 import { 
   standardErrorResponse, 
@@ -35,6 +36,20 @@ async function handleV1(request: NextRequest): Promise<NextResponse> {
     return standardErrorResponse(
       ErrorCode.AUTH_REQUIRED,
       'Unauthorized'
+    );
+  }
+
+  // Check entitlement for API access
+  const entitlement = await checkEntitlement(user.organizationId, 'api_access');
+  if (!entitlement.allowed) {
+    return NextResponse.json(
+      { 
+        error: entitlement.reason || 'Upgrade required for API access',
+        upgradeUrl: entitlement.upgradeUrl,
+        feature: 'api_access',
+        tier: entitlement.tier
+      },
+      { status: 403 }
     );
   }
 
@@ -60,6 +75,20 @@ async function handleV2(request: NextRequest): Promise<NextResponse> {
     return standardErrorResponse(
       ErrorCode.AUTH_REQUIRED,
       'Unauthorized'
+    );
+  }
+
+  // Check entitlement for API access
+  const entitlement = await checkEntitlement(user.organizationId, 'api_access');
+  if (!entitlement.allowed) {
+    return NextResponse.json(
+      { 
+        error: entitlement.reason || 'Upgrade required for API access',
+        upgradeUrl: entitlement.upgradeUrl,
+        feature: 'api_access',
+        tier: entitlement.tier
+      },
+      { status: 403 }
     );
   }
 

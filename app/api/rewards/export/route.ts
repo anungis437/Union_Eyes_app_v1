@@ -10,6 +10,7 @@ import {
 } from '@/lib/services/rewards/export-service';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
+import { checkEntitlement } from '@/lib/services/entitlements';
 
 import { 
   standardErrorResponse, 
@@ -27,6 +28,20 @@ export const GET = async (request: NextRequest) => {
       ErrorCode.AUTH_REQUIRED,
       'Unauthorized'
     );
+      }
+
+      // Check entitlement for bulk export
+      const entitlement = await checkEntitlement(organizationId, 'bulk_export');
+      if (!entitlement.allowed) {
+        return NextResponse.json(
+          { 
+            error: entitlement.reason || 'Upgrade required for bulk export',
+            upgradeUrl: entitlement.upgradeUrl,
+            feature: 'bulk_export',
+            tier: entitlement.tier
+          },
+          { status: 403 }
+        );
       }
 
       // Check admin role
