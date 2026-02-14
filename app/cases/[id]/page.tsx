@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { api } from '@/lib/api';
 import {
   Table,
   TableBody,
@@ -73,61 +74,15 @@ export default function CaseDetailPage({ params }: { params: { id: string } }) {
 
   const fetchCaseDetail = async () => {
     try {
-      // TODO: Replace with actual API calls
-      // const caseRes = await fetch(`/api/cases/${params.id}`);
-      // const timelineRes = await fetch(`/api/cases/${params.id}/timeline`);
-      // const evidenceRes = await fetch(`/api/cases/${params.id}/evidence`);
+      const [caseData, timelineData, evidenceData] = await Promise.all([
+        api.cases.get(params.id),
+        api.cases.timeline(params.id),
+        api.cases.evidence.list(params.id),
+      ]);
       
-      setCaseDetail({
-        id: params.id,
-        caseNumber: 'GRV-2024-001',
-        memberName: 'John Smith',
-        memberId: 'MEM-123',
-        type: 'disciplinary',
-        status: 'investigation',
-        priority: 'high',
-        description: 'Member was issued written warning without proper investigation or union representation present.',
-        createdAt: '2024-02-01T10:00:00Z',
-        updatedAt: '2024-02-10T15:30:00Z',
-        deadline: '2024-02-15T23:59:59Z',
-        assignedTo: 'Sarah Johnson',
-        assignedToId: 'USER-456',
-      });
-
-      setTimeline([
-        {
-          id: '1',
-          timestamp: '2024-02-01T10:00:00Z',
-          type: 'created',
-          description: 'Case opened',
-          actor: 'John Smith',
-        },
-        {
-          id: '2',
-          timestamp: '2024-02-02T14:30:00Z',
-          type: 'assigned',
-          description: 'Case assigned to Sarah Johnson',
-          actor: 'System',
-        },
-        {
-          id: '3',
-          timestamp: '2024-02-05T09:15:00Z',
-          type: 'evidence',
-          description: 'Warning letter uploaded',
-          actor: 'Sarah Johnson',
-        },
-      ]);
-
-      setEvidence([
-        {
-          id: '1',
-          fileName: 'written_warning.pdf',
-          fileType: 'application/pdf',
-          uploadedAt: '2024-02-05T09:15:00Z',
-          uploadedBy: 'Sarah Johnson',
-          size: 245678,
-        },
-      ]);
+      setCaseDetail(caseData);
+      setTimeline(timelineData);
+      setEvidence(evidenceData);
     } catch (error) {
       console.error('Error fetching case:', error);
     } finally {
@@ -139,9 +94,11 @@ export default function CaseDetailPage({ params }: { params: { id: string } }) {
     if (!note.trim()) return;
 
     try {
-      // TODO: API call to add note
-      console.log('Adding note:', note);
+      await api.cases.notes.create(params.id, note);
       setNote('');
+      // Refresh timeline to show new note
+      const timelineData = await api.cases.timeline(params.id);
+      setTimeline(timelineData);
     } catch (error) {
       console.error('Error adding note:', error);
     }

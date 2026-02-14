@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { api } from '@/lib/api';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   User, Mail, Phone, MapPin, Briefcase, FileText, 
@@ -42,23 +43,8 @@ export default function MemberProfilePage({ params }: { params: { id: string } }
 
   const fetchProfile = async () => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch(`/api/members/${params.id}`);
-      // const data = await response.json();
-      
-      setProfile({
-        id: params.id,
-        fullName: 'John Smith',
-        email: 'john.smith@example.com',
-        phone: '+1 (555) 123-4567',
-        status: 'active',
-        joinedAt: '2024-01-15',
-        local: 'Local 123',
-        classification: 'full_time',
-        jobTitle: 'Senior Technician',
-        steward: true,
-        officer: false,
-      });
+      const data = await api.members.get(params.id);
+      setProfile(data);
     } catch (error) {
       console.error('Error fetching profile:', error);
     } finally {

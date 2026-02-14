@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { api } from '@/lib/api';
 import {
   Table,
   TableBody,
@@ -67,54 +68,8 @@ export default function ElectionDetailPage({ params }: { params: { id: string } 
 
   const fetchElectionDetail = async () => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch(`/api/elections/${params.id}`);
-      
-      setElection({
-        id: params.id,
-        title: '2024 Executive Board Election',
-        type: 'executive',
-        status: 'active',
-        description: 'Annual election for executive board positions including President, Vice President, Secretary, and Treasurer.',
-        startDate: '2024-02-01T00:00:00Z',
-        endDate: '2024-02-28T23:59:59Z',
-        eligibleVoters: 450,
-        votesCast: 312,
-        hasVoted: false,
-        positions: [
-          {
-            id: 'pos-1',
-            title: 'President',
-            description: 'Chief executive officer of the union',
-            seats: 1,
-            candidates: [
-              {
-                id: 'cand-1',
-                name: 'Sarah Johnson',
-                bio: '15 years of union experience, current Vice President',
-              },
-              {
-                id: 'cand-2',
-                name: 'Mike Wilson',
-                bio: '20 years as shop steward, negotiations committee member',
-              },
-            ],
-          },
-          {
-            id: 'pos-2',
-            title: 'Vice President',
-            description: 'Assists the President and chairs committees',
-            seats: 1,
-            candidates: [
-              {
-                id: 'cand-3',
-                name: 'Emily Chen',
-                bio: '10 years union member, health and safety committee chair',
-              },
-            ],
-          },
-        ],
-      });
+      const data = await api.elections.get(params.id);
+      setElection(data);
     } catch (error) {
       console.error('Error fetching election:', error);
     } finally {
@@ -149,16 +104,12 @@ export default function ElectionDetailPage({ params }: { params: { id: string } 
 
   const submitBallot = async () => {
     try {
-      // TODO: Replace with actual API call
-      // await fetch(`/api/elections/${params.id}/vote`, {
-      //   method: 'POST',
-      //   body: JSON.stringify({ votes: selectedVotes }),
-      // });
-      
-      console.log('Submitting ballot:', selectedVotes);
+      await api.elections.vote(params.id, selectedVotes);
+      alert('Your vote has been submitted successfully!');
       router.push('/elections');
     } catch (error) {
       console.error('Error submitting ballot:', error);
+      alert('Failed to submit vote. Please try again.');
     }
   };
 
