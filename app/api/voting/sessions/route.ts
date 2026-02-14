@@ -1,16 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { votingSessions, votingOptions, voterEligibility, votes } from '@/db/schema/domains/governance';
+import { organizationMembers } from '@/db/schema/organization-members-schema';
 import { eq, desc, and, count } from 'drizzle-orm';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withEnhancedRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
 import { 
   standardErrorResponse, 
   standardSuccessResponse, 
-  ErrorCode 
+  ErrorCode,
+  StandardizedError,
+  StandardizedSuccess
 } from '@/lib/api/standardized-responses';
 /**
  * Validation schemas
@@ -40,7 +44,7 @@ const createSessionSchema = z.object({
  * GET /api/voting/sessions
  * List voting sessions with optional filters
  */
-export const GET = withRoleAuth(10, async (request, context) => {
+export const GET = withEnhancedRoleAuth<StandardizedError | StandardizedSuccess<any> | any>(10, async (request, context) => {
   const parsed = listSessionsSchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
   if (!parsed.success) {
     return standardErrorResponse(
@@ -86,24 +90,26 @@ try {
       const sessionsWithStats = await Promise.all(
         sessions.map(async (session) => {
           // Get vote count
-          const [voteCount] = await withRLSContext({ organizationId }, async (db) => {
-            return await db
+          const [voteCount] = await withRLSContext(async (tx: NodePgDatabase<any>) => {
+            return await tx
               .select({ count: count() })
               .from(votes)
               .where(eq(votes.sessionId, session.id));
           });
 
           // Get options count
-          const [optionsCount] = await withRLSContext({ organizationId }, async (db) => {
-            return await db
+          const [optionsCount] = await withRLSContext(async (tx: NodePgDatabase<any>) => {
+            return await tx
               .select({ count: count() })
               .from(votingOptions)
               .where(eq(votingOptions.sessionId, session.id));
           });
 
             // Check if user has voted
-            const [userVote] = await withRLSContext({ organizationId }, async (db) => {
-              return await db
+            if (!userId) return { ...session, stats: { totalVotes: 0, totalOptions: 0, hasVoted: false, isEligible: false, turnoutPercentage: 0 } };
+            
+            const [userVote] = await withRLSContext(async (tx: NodePgDatabase<any>) => {
+              return await tx
                 .select()
                 .from(votes)
                 .where(
@@ -116,8 +122,8 @@ try {
             });
 
             // Check if user is eligible
-            const [eligibility] = await withRLSContext({ organizationId }, async (db) => {
-              return await db
+            const [eligibility] = await withRLSContext(async (tx: NodePgDatabase<any>) => {
+              return await tx
                 .select()
                 .from(voterEligibility)
                 .where(
@@ -153,7 +159,7 @@ try {
         details: { resultCount: sessionsWithStats.length, includeStats: true },
       });
 
-      return NextResponse.json({ sessions: sessionsWithStats });
+      return standardSuccessResponse({ sessions: sessionsWithStats });
     }
 
     logApiAuditEvent({
@@ -165,7 +171,7 @@ try {
       details: { resultCount: sessions.length },
     });
 
-    return NextResponse.json({ sessions });
+    return standardSuccessResponse({ sessions });
   } catch (error) {
     logApiAuditEvent({
       timestamp: new Date().toISOString(), userId,
@@ -184,11 +190,11 @@ try {
  * POST /api/voting/sessions
  * Create a new voting session (admin/officer only)
  */
-export const POST = withRoleAuth(20, async (request, context) => {
+export const POST = withEnhancedRoleAuth<StandardizedError | StandardizedSuccess<any>>(20, async (request, context) => {
   let rawBody: unknown;
   try {
     rawBody = await request.json();
-  } catch {
+  } catch (error) {
     return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Invalid JSON in request body',
@@ -201,7 +207,7 @@ export const POST = withRoleAuth(20, async (request, context) => {
     return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Invalid request body',
-      error
+      parsed.error
     );
   }
 
@@ -212,8 +218,7 @@ export const POST = withRoleAuth(20, async (request, context) => {
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
     return standardErrorResponse(
       ErrorCode.FORBIDDEN,
-      'Forbidden',
-      error
+      'Forbidden'
     );
   }
 
@@ -234,25 +239,26 @@ try {
       } = body;
 
       // Check if user has admin/officer permissions
-      const member = await withRLSContext({ organizationId }, async (db) => {
-        return await db.query.organizationMembers.findFirst({
-          where: (organizationMembers, { eq, and }) =>
-            and(
-              eq(organizationMembers.userId, context.userId),
-              eq(organizationMembers.organizationId, organizationId)
-            ),
-        });
-      });
+      const [member] = await db
+        .select()
+        .from(organizationMembers)
+        .where(
+          and(
+            eq(organizationMembers.userId, context.userId),
+            eq(organizationMembers.organizationId, organizationId)
+          )
+        )
+        .limit(1);
 
       // Allow admin and officer roles to create voting sessions
-      if (!member || !['admin', 'officer', 'super_admin'].includes(member.role)) {
+      if (!member || !['admin', 'officer', 'super_admin'].includes((member as any).role || '')) {
         logApiAuditEvent({
           timestamp: new Date().toISOString(), userId,
           endpoint: '/api/voting/sessions',
           method: 'POST',
           eventType: 'unauthorized_access',
           severity: 'high',
-          details: { reason: 'Non-admin attempted voting session creation', userRole: member?.role },
+          details: { reason: 'Non-admin attempted voting session creation', userRole: (member as any)?.role },
         });
 
         return standardErrorResponse(
@@ -262,8 +268,8 @@ try {
       }
 
       // Create session
-      const [newSession] = await withRLSContext({ organizationId }, async (db) => {
-        return await db
+      const [newSession] = await withRLSContext(async (tx: NodePgDatabase<any>) => {
+        return await tx
           .insert(votingSessions)
           .values({
             title,
@@ -291,8 +297,8 @@ try {
           orderIndex: index,
         }));
 
-        await withRLSContext({ organizationId }, async (db) => {
-          return await db.insert(votingOptions).values(optionValues);
+        await withRLSContext(async (tx: NodePgDatabase<any>) => {
+          return await tx.insert(votingOptions).values(optionValues);
         });
       }
 
@@ -314,9 +320,7 @@ try {
       { 
         message: 'Voting session created successfully',
         session: newSession,
-       },
-      undefined,
-      201
+       }
     );
     } catch (error) {
       logApiAuditEvent({

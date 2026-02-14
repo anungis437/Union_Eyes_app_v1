@@ -19,7 +19,9 @@ import {
   IntegrationProvider,
   SyncOptions,
   SyncResult,
+  SyncError,
   HealthCheckResult,
+  ConnectionStatus,
   WebhookEvent,
 } from '../../types';
 import { IndustrialAllianceClient, type IndustrialAllianceConfig } from './ia-client';
@@ -92,22 +94,17 @@ export class IndustrialAllianceAdapter extends BaseIntegration {
 
       return {
         healthy: isHealthy,
-        latency,
-        details: {
-          provider: 'Industrial Alliance',
-          connected: this.connected,
-          timestamp: new Date().toISOString(),
-        },
+        status: ConnectionStatus.CONNECTED,
+        latencyMs: latency,
+        lastCheckedAt: new Date(),
       };
     } catch (error) {
       return {
         healthy: false,
-        latency: 0,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        details: {
-          provider: 'Industrial Alliance',
-          connected: false,
-        },
+        status: ConnectionStatus.ERROR,
+        latencyMs: 0,
+        lastError: error instanceof Error ? error.message : 'Unknown error',
+        lastCheckedAt: new Date(),
       };
     }
   }
@@ -120,7 +117,7 @@ export class IndustrialAllianceAdapter extends BaseIntegration {
     let recordsCreated = 0;
     let recordsUpdated = 0;
     let recordsFailed = 0;
-    const errors: string[] = [];
+    const errors: SyncError[] = [];
 
     try {
       const entities = options.entities || this.capabilities.supportedEntities;
@@ -163,31 +160,29 @@ export class IndustrialAllianceAdapter extends BaseIntegration {
           }
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-          errors.push(`Failed to sync ${entity}: ${errorMessage}`);
+          errors.push({ entity, error: `Failed to sync ${entity}: ${errorMessage}` });
           this.logError('sync', error);
         }
       }
 
       return {
-        status: recordsFailed > 0 ? 'partial' : 'success',
+        success: recordsFailed === 0,
         recordsProcessed,
         recordsCreated,
         recordsUpdated,
         recordsFailed,
-        duration: Date.now() - startTime,
-        nextCursor: new Date().toISOString(),
+        cursor: new Date().toISOString(),
         errors: errors.length > 0 ? errors : undefined,
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       return {
-        status: 'failed',
+        success: false,
         recordsProcessed,
         recordsCreated,
         recordsUpdated,
         recordsFailed,
-        duration: Date.now() - startTime,
-        errors: [errorMessage],
+        errors: [{ entity: 'sync', error: errorMessage }],
       };
     }
   }

@@ -21,8 +21,8 @@ import {
   standardSuccessResponse, 
   ErrorCode 
 } from '@/lib/api/standardized-responses';
-export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+
+export const POST = withEnhancedRoleAuth<any>(20, async (request, context) => {
     const { userId, organizationId } = context;
 
     // CRITICAL: Rate limit AI calls (expensive OpenAI API)
@@ -32,25 +32,19 @@ export const POST = async (request: NextRequest) => {
     );
 
     if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded for AI operations. Please try again later.' },
-        { 
-          status: 429,
-          headers: createRateLimitHeaders(rateLimitResult)
-        }
+      return standardErrorResponse(
+        ErrorCode.RATE_LIMIT_EXCEEDED,
+        'Rate limit exceeded for AI operations. Please try again later.',
+        { headers: createRateLimitHeaders(rateLimitResult) }
       );
     }
 
     // CRITICAL: Check subscription entitlement for AI search
     const entitlement = await checkEntitlement(organizationId!, 'ai_search');
     if (!entitlement.allowed) {
-      return NextResponse.json(
-        { 
-          error: entitlement.reason,
-          upgradeUrl: entitlement.upgradeUrl,
-          feature: 'ai_search'
-        },
-        { status: 403 }
+      return standardErrorResponse(
+        ErrorCode.FORBIDDEN,
+        entitlement.reason || 'Feature not available in current plan'
       );
     }
 
@@ -73,9 +67,9 @@ export const POST = async (request: NextRequest) => {
         // 2. Get OpenAI API key from environment
         const openaiApiKey = process.env.OPENAI_API_KEY;
         if (!openaiApiKey) {
-return NextResponse.json(
-            { error: 'AI service not configured' },
-            { status: 503 }
+          return standardErrorResponse(
+            ErrorCode.SERVICE_UNAVAILABLE,
+            'AI service not configured'
           );
         }
 
@@ -98,7 +92,7 @@ return NextResponse.json(
             model: process.env.OPENAI_EMBEDDING_MODEL || 'text-embedding-ada-002',
           });
 
-          const { data: vectorChunks, error: vectorError } = await supabase.rpc('search_ai_chunks', {
+          const { data: vectorChunks, error: vectorError } = await (supabase.rpc as any)('search_ai_chunks', {
             query_embedding: embedding,
             org_id: (organizationId || 'test-org-001') as any,
             max_results: maxSources * 2,
@@ -106,12 +100,16 @@ return NextResponse.json(
           });
 
           if (vectorError) {
-} else if (vectorChunks) {
+            console.error('Vector search error:', vectorError);
+            // Fall through to keyword search
+          } else if (vectorChunks) {
             chunks = vectorChunks as any[];
             usedVectorSearch = true;
           }
         } catch (error) {
-}
+          console.error('Vector search failed:', error);
+          // Fall through to keyword search
+        }
       }
 
       if (!usedVectorSearch) {
@@ -123,9 +121,9 @@ return NextResponse.json(
           .limit(maxSources * 2);
 
         if (searchError) {
-return NextResponse.json(
-            { error: 'Search failed', details: searchError.message },
-            { status: 500 }
+          return standardErrorResponse(
+            ErrorCode.DATABASE_ERROR,
+            `Search failed: ${searchError.message}`
           );
         }
 
@@ -206,7 +204,7 @@ return NextResponse.json(
       }));
 
       // 10. Calculate confidence
-      const confidence = (usedVectorSearch ? 'high' : 'medium') as const;
+      const confidence: 'high' | 'medium' | 'low' = usedVectorSearch ? 'high' : 'medium';
 
       // 11. Build prompt using OpenAI
       if (!openaiApiKey) {
@@ -283,28 +281,21 @@ return NextResponse.json(
       const latency = Date.now() - startTime;
 
       // Log error
-// Validation error
+      // Validation error
       if (error instanceof z.ZodError) {
-        return NextResponse.json(
-          {
-            error: 'Invalid request',
-            details: error.errors,
-          },
-          { status: 400 }
+        return standardErrorResponse(
+          ErrorCode.VALIDATION_ERROR,
+          error.errors[0]?.message || 'Invalid request data'
         );
       }
 
       // Generic error
-      return NextResponse.json(
-        {
-          error: 'AI search failed',
-          message: error instanceof Error ? error.message : 'Unknown error',
-        },
-        { status: 500 }
+      return standardErrorResponse(
+        ErrorCode.INTERNAL_ERROR,
+        error instanceof Error ? error.message : 'AI search failed'
       );
     }
-    })(request);
-};
+});
 
 /**
  * Helper function to format sources from chunks

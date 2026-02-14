@@ -67,7 +67,7 @@ export const rejectAwardSchema = z.object({
 // Budget Schemas
 // =====================================================
 
-export const createBudgetEnvelopeSchema = z.object({
+const budgetEnvelopeBaseSchema = z.object({
   programId: z.string().uuid(),
   name: z.string().min(1).max(255),
   scopeType: z.enum(['org', 'local', 'department', 'manager']).default('org'),
@@ -76,7 +76,9 @@ export const createBudgetEnvelopeSchema = z.object({
   amountLimit: z.number().int().positive(),
   startsAt: z.string().datetime(),
   endsAt: z.string().datetime(),
-}).refine(
+});
+
+export const createBudgetEnvelopeSchema = budgetEnvelopeBaseSchema.refine(
   (data) => new Date(data.endsAt) > new Date(data.startsAt),
   {
     message: 'End date must be after start date',
@@ -84,7 +86,7 @@ export const createBudgetEnvelopeSchema = z.object({
   }
 );
 
-export const updateBudgetEnvelopeSchema = createBudgetEnvelopeSchema.partial();
+export const updateBudgetEnvelopeSchema = budgetEnvelopeBaseSchema.partial();
 
 // =====================================================
 // Redemption Schemas

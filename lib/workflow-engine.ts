@@ -36,6 +36,7 @@ import {
   type StateTransition 
 } from './services/defensibility-pack';
 import { defensibilityPacks } from '../db/schema/defensibility-packs-schema';
+import { addTimelineEntry } from './integrations/timeline-integration';
 
 // Define valid status transitions
 export const STATUS_TRANSITIONS = {
@@ -215,7 +216,7 @@ export async function updateClaimStatus(
       status: currentStatus,
       priority,
       createdAt: claim.createdAt,
-      updatedAt: claim.updatedAt ?? claim.createdAt,
+      updatedAt: claim.updatedAt ?? claim.createdAt ?? new Date(),
       assignedTo: claim.assignedTo || undefined,
       organizationId: claim.organizationId,
     }]);
@@ -411,7 +412,7 @@ export async function updateClaimStatus(
               memberName: await getMemberName(claim.memberId, tx),
               currentState: newStatus,
               createdAt: claim.createdAt,
-              lastUpdated: updatedClaim.updatedAt ?? new Date(),
+              lastUpdated: updatedClaim.updatedAt || new Date(),
               grievanceType: claim.claimType || 'general',
               priority: claim.priority || 'medium',
             },
@@ -447,7 +448,21 @@ export async function updateClaimStatus(
     sendClaimStatusNotification(claim.claimId, currentStatus, newStatus, notes).catch((error) => {
 // Don't fail the status update if email fails
     });
-
+    // SPRINT 7: Auto-create timeline entry (FSM → Timeline integration)
+    // Every status change automatically appears in member's case timeline
+    addTimelineEntry(
+      claim.claimId,
+      currentStatus,
+      newStatus,
+      userId,
+      userRole,
+      notes,
+      validation.metadata
+    ).catch((error) => {
+      // Don't fail the status update if timeline integration fails
+      // This is OK - timeline is supplementary to the main workflow
+      console.error('Timeline integration failed:', error);
+    });
     return { success: true, claim: updatedClaim };
   } catch (error) {
 return {

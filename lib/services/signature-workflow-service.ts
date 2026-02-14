@@ -397,13 +397,13 @@ async function completeWorkflow(workflowId: string): Promise<void> {
       .from(signatureWorkflows)
       .where(eq(signatureWorkflows.id, workflowId));
 
-    if (!workflow || !workflow.externalId) {
+    if (!workflow || !workflow.externalEnvelopeId) {
       throw new Error(`Workflow ${workflowId} not found or missing external ID`);
     }
 
     // Download signed document
     const provider = getSignatureProvider(workflow.provider as SignatureProviderType);
-    const signedDocument = await provider.downloadSignedDocument(workflow.externalId);
+    const signedDocument = await provider.downloadSignedDocument(workflow.externalEnvelopeId);
 
     // Calculate signed document hash
     const signedDocumentHash = createHash("sha256")
@@ -536,13 +536,13 @@ export async function voidWorkflow(
       .from(signatureWorkflows)
       .where(eq(signatureWorkflows.id, workflowId));
 
-    if (!workflow || !workflow.externalId) {
+    if (!workflow || !workflow.externalEnvelopeId) {
       throw new Error(`Workflow ${workflowId} not found or missing external ID`);
     }
 
     // Void with provider
     const provider = getSignatureProvider(workflow.provider as SignatureProviderType);
-    await provider.voidEnvelope(workflow.externalId, reason);
+    await provider.voidEnvelope(workflow.externalEnvelopeId, reason);
 
     // Update workflow
     await db
@@ -608,7 +608,7 @@ export async function sendSignerReminders(workflowId: string, userId: string): P
       .from(signatureWorkflows)
       .where(eq(signatureWorkflows.id, workflowId));
 
-    if (!workflow || !workflow.externalId) {
+    if (!workflow || !workflow.externalEnvelopeId) {
       throw new Error(`Workflow ${workflowId} not found or missing external ID`);
     }
 

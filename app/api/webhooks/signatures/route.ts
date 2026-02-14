@@ -9,6 +9,9 @@ import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/database";
 import { signatureAuditLog } from "@/db/schema/domains/documents";
+import { signatureWorkflows } from "@/db/schema/domains/documents/workflows";
+import { profiles } from "@/db/schema/domains/member/profiles";
+import { eq } from "drizzle-orm";
 import {
   handleSignerCompleted,
   getWorkflowStatus,
@@ -80,14 +83,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
     }
 
-    const validation = JSON.safeParse(body);
-    if (!validation.success) {
+    let payload: any;
+    try {
+      payload = JSON.parse(body);
+    } catch (error) {
       return standardErrorResponse(
         ErrorCode.VALIDATION_ERROR,
-        validation.error.errors[0]?.message || 'Invalid request data'
+        'Invalid JSON payload'
       );
     }
-    const payload = validation.data;
     logger.info("DocuSign webhook received", { event: payload.event });
 
     // Extract workflow ID from envelope custom fields
@@ -168,14 +172,15 @@ export async function handleHelloSignWebhook(
   try {
     const formData = await request.formData();
     const json = formData.get("json") as string;
-    const validation = JSON.safeParse(json);
-    if (!validation.success) {
+    let payload: any;
+    try {
+      payload = JSON.parse(json);
+    } catch (error) {
       return standardErrorResponse(
         ErrorCode.VALIDATION_ERROR,
-        validation.error.errors[0]?.message || 'Invalid request data'
+        'Invalid JSON payload'
       );
     }
-    const payload = validation.data;
 
     logger.info("HelloSign webhook received", { event: payload.event.event_type });
 
@@ -433,16 +438,16 @@ async function handleEnvelopeDeclined(
       
       // Get workflow details to find creator
       const workflow = await withRLSContext(async (tx) => {
-      return await tx.query({
-        where: (table, { eq }) => eq(table.id, workflowId),
+      return await tx.query.signatureWorkflows.findFirst({
+        where: eq(signatureWorkflows.id, workflowId),
       });
     });
 
       if (workflow && workflow.createdBy) {
         // Get creator's email from profiles
         const creator = await withRLSContext(async (tx) => {
-      return await tx.query({
-          where: (table, { eq }) => eq(table.userId, workflow.createdBy),
+      return await tx.query.profiles.findFirst({
+          where: eq(profiles.userId, workflow.createdBy),
         });
     });
 

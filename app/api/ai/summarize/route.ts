@@ -37,165 +37,155 @@ const SummarizeRequestSchema = z.object({
   purpose: z.enum(['arbitration', 'negotiation', 'internal']).optional(),
 });
 
-export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+export const POST = withEnhancedRoleAuth<any>(20, async (request, context) => {
+  const { userId, organizationId } = context;
 
-    // CRITICAL: Rate limit AI calls (expensive OpenAI API)
-    const rateLimitResult = await checkRateLimit(
-      `ai-completion:${context.userId}`,
-      RATE_LIMITS.AI_COMPLETION
+  // CRITICAL: Rate limit AI calls (expensive OpenAI API)
+  const rateLimitResult = await checkRateLimit(
+    `ai-completion:${userId}`,
+    RATE_LIMITS.AI_COMPLETION
+  );
+
+  if (!rateLimitResult.allowed) {
+    return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded for AI operations. Please try again later.',
+      { headers: createRateLimitHeaders(rateLimitResult) }
     );
+  }
 
-    if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded for AI operations. Please try again later.' },
-        { 
-          status: 429,
-          headers: createRateLimitHeaders(rateLimitResult)
-        }
-      );
-    }
+  // CRITICAL: Check subscription entitlement for AI summarize
+  const entitlement = await checkEntitlement(organizationId!, 'ai_summarize');
+  if (!entitlement.allowed) {
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      entitlement.reason || 'Feature not available in current plan'
+    );
+  }
 
-    // CRITICAL: Check subscription entitlement for AI summarize
-    const entitlement = await checkEntitlement(context.organizationId!, 'ai_summarize');
-    if (!entitlement.allowed) {
-      return NextResponse.json(
-        { 
-          error: entitlement.reason,
-          upgradeUrl: entitlement.upgradeUrl,
-          feature: 'ai_summarize'
-        },
-        { status: 403 }
-      );
-    }
+  const startTime = Date.now();
 
-    const startTime = Date.now();
-
-      try {
+  try {
         // 1. Parse and validate request body
         const body = await request.json();
         const { claim_id, purpose = 'internal' } = SummarizeRequestSchema.parse(body);
 
-        // 2. Get OpenAI API key from environment
-        const openaiApiKey = process.env.OPENAI_API_KEY;
-        if (!openaiApiKey) {
-return NextResponse.json(
-            { error: 'AI service not configured' },
-            { status: 503 }
-          );
-        }
-
-        // 3. Create Supabase client
-        const supabase = await createClient();
-
-        // 4. Fetch case/claim data (filtered by organization)
-        const { data: claim, error: claimError } = await supabase
-          .from('claims')
-          .select(`
-          *,
-          member:members(first_name, last_name, member_number),
-          employer:employers(name),
-          activities:activities(activity_type, description, created_at)
-        `)
-          .eq('claim_id', claim_id as any)
-          .eq('organization_id', user.orgId as any)
-          .single();
-
-      if (claimError || !claim) {
-        return standardErrorResponse(
-      ErrorCode.RESOURCE_NOT_FOUND,
-      'Claim not found'
-    );
-      }
-
-      // 6. Format case content for summarization
-      const caseContent = formatCaseContent(claim as any);
-      const caseMetadata = {
-        claim_id,
-        member_name: `${(claim as any).member?.first_name} ${(claim as any).member?.last_name}`,
-        employer_name: (claim as any).employer?.name,
-        issue_type: (claim as any).issue_type,
-        status: (claim as any).status,
-        created_at: (claim as any).created_at,
-      };
-
-      // 7. Build prompt with PII masking
-      const prompt = buildSummaryPrompt(caseContent, caseMetadata);
-
-      // 8. Call OpenAI to generate summary
-      const openaiClient = createOpenAIClient({
-        apiKey: openaiApiKey,
-        baseURL: process.env.OPENAI_BASE_URL,
-      });
-
-      const completion = await openaiClient.chat.completions.create({
-        model: process.env.OPENAI_MODEL || 'gpt-4-turbo-preview',
-        messages: [
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
-        temperature: 0.3, // Lower temperature for consistency
-        max_tokens: 3000, // Summaries can be longer
-      });
-
-      const summaryText = completion.choices[0]?.message?.content || 'Unable to generate summary.';
-
-      // 9. Validate summary structure
-      const validation = validateSummaryStructure(summaryText);
-      if (!validation.valid) {
-}
-
-      // 10. Store summary in database
-      const { data: summary, error: summaryError } = await supabase
-        .from('case_summaries')
-        .insert({
-          claim_id,
-          organization_id: user.orgId || (claim as any).organization_id,
-          summary_text: summaryText,
-          created_by: 'ai', // Mark as AI-generated
-          metadata: {
-            purpose,
-            ai_model: process.env.OPENAI_MODEL || 'gpt-4-turbo-preview',
-            validation,
-            latency_ms: Date.now() - startTime,
-          },
-        } as any)
-        .select()
-        .single();
-
-      if (summaryError) {
-return NextResponse.json(
-          { error: 'Failed to store summary', details: summaryError.message },
-          { status: 500 }
-        );
-      }
-
-      // 11. Return summary
-      return NextResponse.json({
-        summary_id: (summary as any)?.id,
-        summary_text: summaryText,
-        validation,
-        metadata: {
-          purpose,
-          claim_id,
-          latency_ms: Date.now() - startTime,
-        },
-        warning: 'This is an AI-generated draft. Human review required before use.',
-      });
-    } catch (error) {
-      return NextResponse.json(
-        {
-          error: 'Failed to generate summary',
-          message: error instanceof Error ? error.message : 'Unknown error',
-        },
-        { status: 500 }
+    // 2. Get OpenAI API key from environment
+    const openaiApiKey = process.env.OPENAI_API_KEY;
+    if (!openaiApiKey) {
+      return standardErrorResponse(
+        ErrorCode.SERVICE_UNAVAILABLE,
+        'AI service not configured'
       );
     }
-      })(request);
-};
+
+    // 3. Create Supabase client
+    const supabase = await createClient();
+
+    // 4. Fetch case/claim data (filtered by organization)
+    const { data: claim, error: claimError } = await supabase
+      .from('claims')
+      .select(`
+        *,
+        member:members(first_name, last_name, member_number),
+        employer:employers(name),
+        activities:activities(activity_type, description, created_at)
+      `)
+      .eq('claim_id', claim_id as any)
+      .eq('organization_id', organizationId as any)
+      .single();
+
+    if (claimError || !claim) {
+      return standardErrorResponse(
+        ErrorCode.RESOURCE_NOT_FOUND,
+        'Claim not found'
+      );
+    }
+
+    // 6. Format case content for summarization
+    const caseContent = formatCaseContent(claim as any);
+    const caseMetadata = {
+      claim_id,
+      member_name: `${(claim as any).member?.first_name} ${(claim as any).member?.last_name}`,
+      employer_name: (claim as any).employer?.name,
+      issue_type: (claim as any).issue_type,
+      status: (claim as any).status,
+      created_at: (claim as any).created_at,
+    };
+
+    // 7. Build prompt with PII masking
+    const prompt = buildSummaryPrompt(caseContent, caseMetadata);
+
+    // 8. Call OpenAI to generate summary
+    const openaiClient = createOpenAIClient({
+      apiKey: openaiApiKey,
+      baseURL: process.env.OPENAI_BASE_URL,
+    });
+
+    const completion = await openaiClient.chat.completions.create({
+      model: process.env.OPENAI_MODEL || 'gpt-4-turbo-preview',
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+      temperature: 0.3, // Lower temperature for consistency
+      max_tokens: 3000, // Summaries can be longer
+    });
+
+    const summaryText = completion.choices[0]?.message?.content || 'Unable to generate summary.';
+
+    // 9. Validate summary structure
+    const validation = validateSummaryStructure(summaryText);
+    if (!validation.valid) {
+      console.warn('Summary validation failed. Missing sections:', validation.missingSections);
+    }
+
+    // 10. Store summary in database
+    const { data: summary, error: summaryError } = await supabase
+      .from('case_summaries')
+      .insert({
+        claim_id,
+        organization_id: organizationId || (claim as any).organization_id,
+        summary_text: summaryText,
+        created_by: 'ai', // Mark as AI-generated
+        metadata: {
+          purpose,
+          ai_model: process.env.OPENAI_MODEL || 'gpt-4-turbo-preview',
+          validation,
+          latency_ms: Date.now() - startTime,
+        },
+      } as any)
+      .select()
+      .single();
+
+    if (summaryError) {
+      return standardErrorResponse(
+        ErrorCode.DATABASE_ERROR,
+        `Failed to store summary: ${summaryError.message}`
+      );
+    }
+
+    // 11. Return summary
+    return NextResponse.json({
+      summary_id: (summary as any)?.id,
+      summary_text: summaryText,
+      validation,
+      metadata: {
+        purpose,
+        claim_id,
+        latency_ms: Date.now() - startTime,
+      },
+      warning: 'This is an AI-generated draft. Human review required before use.',
+    });
+  } catch (error) {
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      error instanceof Error ? error.message : 'Failed to generate summary'
+    );
+  }
+});
 
 /**
  * Helper function to format case content for summarization

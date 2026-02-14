@@ -86,8 +86,8 @@ Write-Host "[3/7] Grouping errors by file..." -ForegroundColor Yellow
 $errorsByFile = @{}
 $technicalDebtReport = @()
 
-foreach ($error in $ts7006Errors) {
-    if ($error -match '(.*?)\((\d+),(\d+)\): error TS7006: Parameter ''(.+?)'' implicitly has an ''any'' type') {
+foreach ($tsError in $ts7006Errors) {
+    if ($tsError -match '(.*?)\((\d+),(\d+)\): error TS7006: Parameter ''(.+?)'' implicitly has an ''any'' type') {
         $file = $matches[1]
         $line = [int]$matches[2]
         $col = [int]$matches[3]

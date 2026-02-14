@@ -28,9 +28,8 @@ const aiExtractClausesSchema = z.object({
   cbas: z.array(z.any()).default([]).optional(),
 });
 
-export const POST = async (request: NextRequest) => {
-  return withRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+export const POST = withRoleAuth('member', async (request, context) => {
+  const user = { id: context.userId, organizationId: context.organizationId };
 
     // CRITICAL: Rate limit AI calls (expensive OpenAI API)
     const rateLimitResult = await checkRateLimit(
@@ -63,32 +62,32 @@ export const POST = async (request: NextRequest) => {
 
     try {
       const body = await request.json();
-    // Validate request body
-    const validation = aiExtract-clausesSchema.safeParse(body);
-    if (!validation.success) {
-      return standardErrorResponse(
-        ErrorCode.VALIDATION_ERROR,
-        'Invalid request data',
-        validation.error.errors
-      );
-    }
-    
-    const { pdfUrl, cbaId, organizationId, autoSave = true, batch = false, cbas = [] } = validation.data;
-    // DUPLICATE REMOVED (Phase 2): Multi-line destructuring of body
-    // const {
-    // pdfUrl,
-    // cbaId,
-    // organizationId,
-    // autoSave = true,
-    // batch = false,
-    // cbas = [],
-    // } = body;
-  if (organizationId && organizationId !== context.organizationId) {
-    return standardErrorResponse(
-      ErrorCode.FORBIDDEN,
-      'Forbidden'
-    );
-  }
+      // Validate request body
+      const validation = aiExtractClausesSchema.safeParse(body);
+      if (!validation.success) {
+        return standardErrorResponse(
+          ErrorCode.VALIDATION_ERROR,
+          'Invalid request data',
+          validation.error.errors
+        );
+      }
+      
+      const { pdfUrl, cbaId, organizationId, autoSave = true, batch = false, cbas = [] } = validation.data;
+      // DUPLICATE REMOVED (Phase 2): Multi-line destructuring of body
+      // const {
+      // pdfUrl,
+      // cbaId,
+      // organizationId,
+      // autoSave = true,
+      // batch = false,
+      // cbas = [],
+      // } = body;
+      if (organizationId && organizationId !== context.organizationId) {
+        return standardErrorResponse(
+          ErrorCode.FORBIDDEN,
+          'Forbidden'
+        );
+      }
 
 
       // Batch extraction
@@ -115,10 +114,10 @@ export const POST = async (request: NextRequest) => {
       // Single extraction
       if (!pdfUrl || !cbaId || !organizationId) {
         return standardErrorResponse(
-      ErrorCode.VALIDATION_ERROR,
-      'Missing required fields: pdfUrl, cbaId, organizationId'
-      // TODO: Migrate additional details: cbaId, organizationId'
-    );
+          ErrorCode.VALIDATION_ERROR,
+          'Missing required fields: pdfUrl, cbaId, organizationId'
+          // TODO: Migrate additional details: cbaId, organizationId'
+        );
       }
 
       const result = await extractClausesFromPDF(pdfUrl, cbaId, {
@@ -134,11 +133,10 @@ export const POST = async (request: NextRequest) => {
         errors: result.errors,
       });
     } catch (error) {
-return standardErrorResponse(
-      ErrorCode.INTERNAL_ERROR,
-      'Failed to extract clauses',
-      error
-    );
+      return standardErrorResponse(
+        ErrorCode.INTERNAL_ERROR,
+        'Failed to extract clauses',
+        error
+      );
     }
-    })(request);
-};
+});

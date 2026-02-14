@@ -22,6 +22,7 @@ import {
   HealthCheckResult,
   WebhookEvent,
   SyncType,
+  ConnectionStatus,
 } from '../../types';
 import { XeroClient, type XeroConfig } from './xero-client';
 import { db } from '@/db';
@@ -74,9 +75,9 @@ export class XeroAdapter extends BaseIntegration {
       }
       
       this.connected = true;
-      this.logOperation('connect', 'Connected to Xero');
+      this.logOperation('connect', { message: 'Connected to Xero' });
     } catch (error) {
-      this.logError('connect', error);
+      this.logError('connect', error as Error);
       throw error;
     }
   }
@@ -84,7 +85,7 @@ export class XeroAdapter extends BaseIntegration {
   async disconnect(): Promise<void> {
     this.connected = false;
     this.client = undefined;
-    this.logOperation('disconnect', 'Disconnected from Xero');
+    this.logOperation('disconnect', { message: 'Disconnected from Xero' });
   }
 
   // ==========================================================================
@@ -97,26 +98,21 @@ export class XeroAdapter extends BaseIntegration {
 
       const startTime = Date.now();
       const isHealthy = await this.client!.healthCheck();
-      const latency = Date.now() - startTime;
+      const latencyMs = Date.now() - startTime;
 
       return {
         healthy: isHealthy,
-        latency,
-        details: {
-          provider: 'Xero',
-          connected: this.connected,
-          timestamp: new Date().toISOString(),
-        },
+        status: this.connected ? ConnectionStatus.CONNECTED : ConnectionStatus.DISCONNECTED,
+        latencyMs,
+        lastCheckedAt: new Date(),
       };
     } catch (error) {
       return {
         healthy: false,
-        latency: 0,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        details: {
-          provider: 'Xero',
-          connected: false,
-        },
+        status: ConnectionStatus.ERROR,
+        latencyMs: 0,
+        lastError: error instanceof Error ? error.message : 'Unknown error',
+        lastCheckedAt: new Date(),
       };
     }
   }
@@ -140,7 +136,7 @@ export class XeroAdapter extends BaseIntegration {
 
       for (const entity of entities) {
         try {
-          this.logOperation('sync', `Syncing ${entity}`);
+          this.logOperation('sync', { entity, message: `Syncing ${entity}` });
 
           switch (entity) {
             case 'invoices':
@@ -176,16 +172,14 @@ export class XeroAdapter extends BaseIntegration {
               break;
 
             default:
-              this.logOperation('sync', `Unknown entity: ${entity}`);
+              this.logOperation('sync', { entity, message: `Unknown entity: ${entity}` });
           }
         } catch (error) {
           const errorMsg = `Failed to sync ${entity}: ${error instanceof Error ? error.message : 'Unknown'}`;
           errors.push(errorMsg);
-          this.logError('sync', error, { entity });
+          this.logError('sync', error as Error, { entity });
         }
       }
-
-      const duration = Date.now() - startTime;
 
       return {
         success: recordsFailed === 0,
@@ -193,13 +187,11 @@ export class XeroAdapter extends BaseIntegration {
         recordsCreated,
         recordsUpdated,
         recordsFailed,
-        duration,
         cursor: undefined,
-        error: errors.length > 0 ? errors.join('; ') : undefined,
+        metadata: { error: errors.length > 0 ? errors.join('; ') : undefined },
       };
     } catch (error) {
-      const duration = Date.now() - startTime;
-      this.logError('sync', error);
+      this.logError('sync', error as Error);
 
       return {
         success: false,
@@ -207,8 +199,7 @@ export class XeroAdapter extends BaseIntegration {
         recordsCreated,
         recordsUpdated,
         recordsFailed,
-        duration,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        metadata: { error: error instanceof Error ? error.message : 'Unknown error' },
       };
     }
   }
@@ -257,8 +248,8 @@ export class XeroAdapter extends BaseIntegration {
             customerName: xeroInvoice.Contact.Name,
             invoiceDate: new Date(xeroInvoice.DateString),
             dueDate: xeroInvoice.DueDateString ? new Date(xeroInvoice.DueDateString) : null,
-            totalAmount: xeroInvoice.Total,
-            balanceAmount: xeroInvoice.AmountDue,
+            totalAmount: xeroInvoice.Total.toFixed(2),
+            balanceAmount: xeroInvoice.AmountDue.toFixed(2),
             status: xeroInvoice.Status.toLowerCase(),
             lastSyncedAt: new Date(),
             updatedAt: new Date(),
@@ -282,7 +273,7 @@ export class XeroAdapter extends BaseIntegration {
 
           processed++;
         } catch (error) {
-          this.logError('syncInvoices', error, { invoiceId: xeroInvoice.InvoiceID });
+          this.logError('syncInvoices', error as Error, { invoiceId: xeroInvoice.InvoiceID });
           failed++;
         }
       }
@@ -342,7 +333,7 @@ export class XeroAdapter extends BaseIntegration {
             customerId: xeroPayment.Invoice.InvoiceID, // Using invoice ID as reference
             customerName,
             paymentDate: new Date(xeroPayment.Date),
-            amount: xeroPayment.Amount,
+            amount: xeroPayment.Amount.toFixed(2),
             lastSyncedAt: new Date(),
             updatedAt: new Date(),
           };
@@ -365,7 +356,7 @@ export class XeroAdapter extends BaseIntegration {
 
           processed++;
         } catch (error) {
-          this.logError('syncPayments', error, { paymentId: xeroPayment.PaymentID });
+          this.logError('syncPayments', error as Error, { paymentId: xeroPayment.PaymentID });
           failed++;
         }
       }
@@ -406,7 +397,7 @@ export class XeroAdapter extends BaseIntegration {
             companyName: xeroContact.Name, // Xero uses Name for both
             email: xeroContact.EmailAddress,
             phone: xeroContact.ContactNumber,
-            balance: 0, // Xero doesn't provide balance directly in contact
+            balance: '0.00', // Xero doesn't provide balance directly in contact
             lastSyncedAt: new Date(),
             updatedAt: new Date(),
           };
@@ -429,7 +420,7 @@ export class XeroAdapter extends BaseIntegration {
 
           processed++;
         } catch (error) {
-          this.logError('syncContacts', error, { contactId: xeroContact.ContactID });
+          this.logError('syncContacts', error as Error, { contactId: xeroContact.ContactID });
           failed++;
         }
       }
@@ -470,7 +461,7 @@ export class XeroAdapter extends BaseIntegration {
             accountType: xeroAccount.Type,
             accountSubType: xeroAccount.Code, // Using account code as subtype
             classification: xeroAccount.Class || null,
-            currentBalance: 0, // Xero doesn't provide balance in account list
+            currentBalance: '0.00', // Xero doesn't provide balance in account list
             isActive: xeroAccount.Status === 'ACTIVE',
             lastSyncedAt: new Date(),
             updatedAt: new Date(),
@@ -494,7 +485,7 @@ export class XeroAdapter extends BaseIntegration {
 
           processed++;
         } catch (error) {
-          this.logError('syncAccounts', error, { accountId: xeroAccount.AccountID });
+          this.logError('syncAccounts', error as Error, { accountId: xeroAccount.AccountID });
           failed++;
         }
       }
@@ -517,16 +508,18 @@ export class XeroAdapter extends BaseIntegration {
   }
 
   async processWebhook(event: WebhookEvent): Promise<void> {
-    this.logOperation('webhook', `Processing ${event.eventType}`);
+    this.logOperation('webhook', { eventType: event.type, message: `Processing ${event.type}` });
 
     // Xero sends webhook events for various entity changes
-    const payload = event.payload as any;
+    const payload = event.data as any;
     
     if (payload.events) {
       for (const evt of payload.events) {
-        this.logOperation('webhook', 
-          `Entity ${evt.resourceUrl} changed: ${evt.eventCategory}`
-        );
+        this.logOperation('webhook', {
+          resourceUrl: evt.resourceUrl,
+          eventCategory: evt.eventCategory,
+          message: `Entity ${evt.resourceUrl} changed: ${evt.eventCategory}`,
+        });
         // Could trigger targeted sync here
       }
     }

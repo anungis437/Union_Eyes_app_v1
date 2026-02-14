@@ -28,7 +28,7 @@ const createReservedMatterSchema = z.object({
 });
 
 export const GET = async (request: NextRequest) =>
-  withEnhancedRoleAuth(10, async (_request, context) => {
+  withEnhancedRoleAuth<any>(10, async (_request, context) => {
     const { userId } = context;
     const parsed = listReservedMattersSchema.safeParse(
       Object.fromEntries(request.nextUrl.searchParams)
@@ -60,7 +60,7 @@ export const GET = async (request: NextRequest) =>
         details: { resultCount: records.length },
       });
 
-      return NextResponse.json({ success: true, data: records });
+      return standardSuccessResponse({ data: records });
     } catch (error) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),
@@ -81,17 +81,17 @@ export const GET = async (request: NextRequest) =>
   })(request, {});
 
 export const POST = async (request: NextRequest) =>
-  withEnhancedRoleAuth(20, async (_request, context) => {
+  withEnhancedRoleAuth<any>(20, async (_request, context) => {
     const { userId } = context;
 
     let rawBody: unknown;
     try {
       rawBody = await request.json();
-    } catch {
+    } catch (e) {
       return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Invalid JSON in request body',
-      error
+      e
     );
     }
 
@@ -100,7 +100,7 @@ export const POST = async (request: NextRequest) =>
       return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Invalid request body',
-      error
+      parsed.error
     );
     }
 
@@ -126,11 +126,7 @@ export const POST = async (request: NextRequest) =>
         details: { voteId: vote.id, matterType: body.matterType },
       });
 
-      return standardSuccessResponse(
-      { data: vote },
-      undefined,
-      201
-    );
+      return standardSuccessResponse({ data: vote });
     } catch (error) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),

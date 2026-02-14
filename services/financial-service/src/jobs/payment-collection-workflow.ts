@@ -18,7 +18,7 @@ import {
   duesTransactions, 
   arrears, 
   members,
-  // payments // TODO: Uncomment when payments table is added to schema
+  payments,
 } from '../db/schema';
 import { eq, and, inArray, sql } from 'drizzle-orm';
 // import { NotificationService } from '../services/notification-service'; // TODO: Export NotificationService
@@ -62,9 +62,44 @@ export async function processPaymentCollection(params: {
 
   try {
     // Find all unprocessed payments (status='pending' or 'processing')
-    // Note: payments table not yet in schema - workflow placeholder
-    // const pendingPayments = await db...
-    const pendingPayments: any[] = [];
+    // Join with members to get member details for notifications
+    const pendingPayments = await db
+      .select({
+        id: payments.id,
+        tenantId: payments.tenantId,
+        memberId: payments.memberId,
+        relationType: payments.relationType,
+        relationId: payments.relationId,
+        amount: payments.amount,
+        currency: payments.currency,
+        status: payments.status,
+        reconciliationStatus: payments.reconciliationStatus,
+        reconciliationDate: payments.reconciliationDate,
+        reconciledBy: payments.reconciledBy,
+        paymentMethod: payments.paymentMethod,
+        processorType: payments.processorType,
+        processorPaymentId: payments.processorPaymentId,
+        failureReason: payments.failureReason,
+        failureCode: payments.failureCode,
+        paidDate: payments.paidDate,
+        receiptUrl: payments.receiptUrl,
+        metadata: payments.metadata,
+        createdAt: payments.createdAt,
+        updatedAt: payments.updatedAt,
+        memberFirstName: members.firstName,
+        memberLastName: members.lastName,
+        memberEmail: members.email,
+        memberUserId: members.userId,
+      })
+      .from(payments)
+      .leftJoin(members, eq(payments.memberId, members.id))
+      .where(
+        and(
+          eq(payments.tenantId, tenantId),
+          inArray(payments.status, ['pending', 'processing'])
+        )
+      )
+      .limit(100); // Process in batches
 
     logger.info(`Found ${pendingPayments.length} pending payments to process`);
 
@@ -88,7 +123,7 @@ export async function processPaymentCollection(params: {
         if (matchingTransactions.length === 0) {
           // No outstanding transactions for this member
           errors.push({
-            paymentId: payment.paymentId,
+            paymentId: payment.id,
             error: 'No outstanding dues transactions found for member',
           });
           
@@ -152,7 +187,7 @@ export async function processPaymentCollection(params: {
                 .update(arrears)
                 .set({
                   arrearsStatus: 'resolved',
-                  notes: `Paid via ${payment.paymentMethod} - Ref: ${payment.referenceNumber}`,
+                  notes: `Paid via ${payment.paymentMethod} - Ref: ${payment.processorPaymentId || payment.id}`,
                 } as any)
                 .where(eq(arrears.id, arrearsRecord[0].id));
 
@@ -196,20 +231,20 @@ export async function processPaymentCollection(params: {
           await sendPaymentReceipt({
             organizationId: member?.organizationId || process.env.DEFAULT_ORGANIZATION_ID || 'default-org',
             memberId: payment.memberId,
-            memberName: `${payment.memberFirstName} ${payment.memberLastName}`,
-            memberEmail: payment.memberEmail,
-            memberPhone: payment.memberPhone,
-            userId: payment.userId,
+            memberName: `${payment.memberFirstName || ''} ${payment.memberLastName || ''}`.trim() || 'Member',
+            memberEmail: payment.memberEmail || '',
+            memberPhone: '', // Phone not available in members table
+            userId: payment.memberUserId || payment.reconciledBy || '',
             amount: parseFloat(payment.amount),
-            paymentMethod: payment.paymentMethod,
-            referenceNumber: payment.referenceNumber,
-            paymentDate: payment.paymentDate,
+            paymentMethod: payment.paymentMethod || 'unknown',
+            referenceNumber: payment.processorPaymentId || payment.id,
+            paymentDate: new Date(payment.paidDate || payment.createdAt),
             transactionsUpdated: updatedTransactionIds.length,
           });
           receiptsIssued++;
         } catch (receiptError) {
           logger.error('Failed to send payment receipt', {
-            paymentId: payment.paymentId,
+            paymentId: payment.id,
             memberId: payment.memberId,
             error: receiptError,
           });
@@ -218,11 +253,11 @@ export async function processPaymentCollection(params: {
 
       } catch (paymentError) {
         logger.error('Error processing payment', {
-          paymentId: payment.paymentId,
+          paymentId: payment.id,
           error: paymentError,
         });
         errors.push({
-          paymentId: payment.paymentId,
+          paymentId: payment.id,
           error: paymentError instanceof Error ? paymentError.message : String(paymentError),
         });
 

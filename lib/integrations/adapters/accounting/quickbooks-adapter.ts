@@ -22,6 +22,7 @@ import {
   HealthCheckResult,
   WebhookEvent,
   SyncType,
+  ConnectionStatus,
 } from '../../types';
 import { QuickBooksClient, type QuickBooksConfig } from './quickbooks-client';
 import { db } from '@/db';
@@ -74,9 +75,9 @@ export class QuickBooksAdapter extends BaseIntegration {
       }
       
       this.connected = true;
-      this.logOperation('connect', 'Connected to QuickBooks Online');
+      this.logOperation('connect', { message: 'Connected to QuickBooks Online' });
     } catch (error) {
-      this.logError('connect', error);
+      this.logError('connect', error as Error);
       throw error;
     }
   }
@@ -84,7 +85,7 @@ export class QuickBooksAdapter extends BaseIntegration {
   async disconnect(): Promise<void> {
     this.connected = false;
     this.client = undefined;
-    this.logOperation('disconnect', 'Disconnected from QuickBooks');
+    this.logOperation('disconnect', { message: 'Disconnected from QuickBooks' });
   }
 
   // ==========================================================================
@@ -97,26 +98,21 @@ export class QuickBooksAdapter extends BaseIntegration {
 
       const startTime = Date.now();
       const isHealthy = await this.client!.healthCheck();
-      const latency = Date.now() - startTime;
+      const latencyMs = Date.now() - startTime;
 
       return {
         healthy: isHealthy,
-        latency,
-        details: {
-          provider: 'QuickBooks',
-          connected: this.connected,
-          timestamp: new Date().toISOString(),
-        },
+        status: this.connected ? ConnectionStatus.CONNECTED : ConnectionStatus.DISCONNECTED,
+        latencyMs,
+        lastCheckedAt: new Date(),
       };
     } catch (error) {
       return {
         healthy: false,
-        latency: 0,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        details: {
-          provider: 'QuickBooks',
-          connected: false,
-        },
+        status: ConnectionStatus.ERROR,
+        latencyMs: 0,
+        lastError: error instanceof Error ? error.message : 'Unknown error',
+        lastCheckedAt: new Date(),
       };
     }
   }
@@ -140,7 +136,7 @@ export class QuickBooksAdapter extends BaseIntegration {
 
       for (const entity of entities) {
         try {
-          this.logOperation('sync', `Syncing ${entity}`);
+          this.logOperation('sync', { entity, message: `Syncing ${entity}` });
 
           switch (entity) {
             case 'invoices':
@@ -176,16 +172,14 @@ export class QuickBooksAdapter extends BaseIntegration {
               break;
 
             default:
-              this.logOperation('sync', `Unknown entity: ${entity}`);
+              this.logOperation('sync', { entity, message: `Unknown entity: ${entity}` });
           }
         } catch (error) {
           const errorMsg = `Failed to sync ${entity}: ${error instanceof Error ? error.message : 'Unknown'}`;
           errors.push(errorMsg);
-          this.logError('sync', error, { entity });
+          this.logError('sync', error as Error, { entity });
         }
       }
-
-      const duration = Date.now() - startTime;
 
       return {
         success: recordsFailed === 0,
@@ -193,13 +187,11 @@ export class QuickBooksAdapter extends BaseIntegration {
         recordsCreated,
         recordsUpdated,
         recordsFailed,
-        duration,
         cursor: undefined,
-        error: errors.length > 0 ? errors.join('; ') : undefined,
+        metadata: { error: errors.length > 0 ? errors.join('; ') : undefined },
       };
     } catch (error) {
-      const duration = Date.now() - startTime;
-      this.logError('sync', error);
+      this.logError('sync', error as Error);
 
       return {
         success: false,
@@ -207,8 +199,7 @@ export class QuickBooksAdapter extends BaseIntegration {
         recordsCreated,
         recordsUpdated,
         recordsFailed,
-        duration,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        metadata: { error: error instanceof Error ? error.message : 'Unknown error' },
       };
     }
   }
@@ -258,8 +249,8 @@ export class QuickBooksAdapter extends BaseIntegration {
             customerName: qbInvoice.CustomerRef.name,
             invoiceDate: new Date(qbInvoice.TxnDate),
             dueDate: qbInvoice.DueDate ? new Date(qbInvoice.DueDate) : null,
-            totalAmount: qbInvoice.TotalAmt,
-            balanceAmount: qbInvoice.Balance,
+            totalAmount: qbInvoice.TotalAmt.toFixed(2),
+            balanceAmount: qbInvoice.Balance.toFixed(2),
             status: qbInvoice.TxnStatus || 'open',
             lastSyncedAt: new Date(),
             updatedAt: new Date(),
@@ -283,7 +274,7 @@ export class QuickBooksAdapter extends BaseIntegration {
 
           processed++;
         } catch (error) {
-          this.logError('syncInvoices', error, { invoiceId: qbInvoice.Id });
+          this.logError('syncInvoices', error as Error, { invoiceId: qbInvoice.Id });
           failed++;
         }
       }
@@ -334,7 +325,7 @@ export class QuickBooksAdapter extends BaseIntegration {
             customerId: qbPayment.CustomerRef.value,
             customerName: qbPayment.CustomerRef.name,
             paymentDate: new Date(qbPayment.TxnDate),
-            amount: qbPayment.TotalAmt,
+            amount: qbPayment.TotalAmt.toFixed(2),
             lastSyncedAt: new Date(),
             updatedAt: new Date(),
           };
@@ -357,7 +348,7 @@ export class QuickBooksAdapter extends BaseIntegration {
 
           processed++;
         } catch (error) {
-          this.logError('syncPayments', error, { paymentId: qbPayment.Id });
+          this.logError('syncPayments', error as Error, { paymentId: qbPayment.Id });
           failed++;
         }
       }
@@ -401,7 +392,7 @@ export class QuickBooksAdapter extends BaseIntegration {
             companyName: qbCustomer.CompanyName,
             email: qbCustomer.PrimaryEmailAddr?.Address,
             phone: qbCustomer.PrimaryPhone?.FreeFormNumber,
-            balance: qbCustomer.Balance,
+            balance: qbCustomer.Balance.toFixed(2),
             lastSyncedAt: new Date(),
             updatedAt: new Date(),
           };
@@ -424,7 +415,7 @@ export class QuickBooksAdapter extends BaseIntegration {
 
           processed++;
         } catch (error) {
-          this.logError('syncCustomers', error, { customerId: qbCustomer.Id });
+          this.logError('syncCustomers', error as Error, { customerId: qbCustomer.Id });
           failed++;
         }
       }
@@ -468,7 +459,7 @@ export class QuickBooksAdapter extends BaseIntegration {
             accountType: qbAccount.AccountType,
             accountSubType: qbAccount.AccountSubType,
             classification: qbAccount.Classification,
-            currentBalance: qbAccount.CurrentBalance,
+            currentBalance: qbAccount.CurrentBalance.toFixed(2),
             isActive: qbAccount.Active,
             lastSyncedAt: new Date(),
             updatedAt: new Date(),
@@ -492,7 +483,7 @@ export class QuickBooksAdapter extends BaseIntegration {
 
           processed++;
         } catch (error) {
-          this.logError('syncAccounts', error, { accountId: qbAccount.Id });
+          this.logError('syncAccounts', error as Error, { accountId: qbAccount.Id });
           failed++;
         }
       }
@@ -515,18 +506,21 @@ export class QuickBooksAdapter extends BaseIntegration {
   }
 
   async processWebhook(event: WebhookEvent): Promise<void> {
-    this.logOperation('webhook', `Processing ${event.eventType}`);
+    this.logOperation('webhook', { eventType: event.type, message: `Processing ${event.type}` });
 
     // QuickBooks sends change data notifications
     // Event types: Create, Update, Delete, Merge for various entities
-    const payload = event.payload as any;
+    const payload = event.data as any;
     
     if (payload.eventNotifications) {
       for (const notification of payload.eventNotifications) {
         for (const dataChangeEvent of notification.dataChangeEvent?.entities || []) {
-          this.logOperation('webhook', 
-            `Entity ${dataChangeEvent.name} ${dataChangeEvent.operation}: ${dataChangeEvent.id}`
-          );
+          this.logOperation('webhook', {
+            entity: dataChangeEvent.name,
+            operation: dataChangeEvent.operation,
+            id: dataChangeEvent.id,
+            message: `Entity ${dataChangeEvent.name} ${dataChangeEvent.operation}: ${dataChangeEvent.id}`,
+          });
           // Could trigger targeted sync here
         }
       }

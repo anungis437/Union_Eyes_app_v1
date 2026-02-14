@@ -10,7 +10,9 @@ import { governanceService } from "@/services/governance-service";
 import { 
   standardErrorResponse, 
   standardSuccessResponse, 
-  ErrorCode 
+  ErrorCode,
+  StandardizedError,
+  StandardizedSuccess 
 } from '@/lib/api/standardized-responses';
 interface RouteParams {
   params: {
@@ -24,8 +26,8 @@ const classAVoteSchema = z.object({
   abstain: z.number().int().min(0),
 });
 
-export const GET = async (request: NextRequest, { params }: RouteParams) =>
-  withEnhancedRoleAuth(10, async (_request, context) => {
+export const GET = async (request: NextRequest, { params }: RouteParams) => {
+  return withEnhancedRoleAuth<StandardizedError | StandardizedSuccess<any>>(10, async (_request, context) => {
     const { userId } = context;
 
     try {
@@ -52,7 +54,7 @@ export const GET = async (request: NextRequest, { params }: RouteParams) =>
         details: { voteId: record.id },
       });
 
-      return NextResponse.json({ success: true, data: record });
+      return standardSuccessResponse(record);
     } catch (error) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),
@@ -71,19 +73,20 @@ export const GET = async (request: NextRequest, { params }: RouteParams) =>
     );
     }
   })(request, { params });
+};
 
-export const PATCH = async (request: NextRequest, { params }: RouteParams) =>
-  withEnhancedRoleAuth(20, async (_request, context) => {
+export const PATCH = async (request: NextRequest, { params }: RouteParams) => {
+  return withEnhancedRoleAuth<StandardizedError | StandardizedSuccess<any>>(20, async (_request, context) => {
     const { userId } = context;
 
     let rawBody: unknown;
     try {
       rawBody = await request.json();
-    } catch {
+    } catch (e) {
       return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Invalid JSON in request body',
-      error
+      e
     );
     }
 
@@ -92,7 +95,7 @@ export const PATCH = async (request: NextRequest, { params }: RouteParams) =>
       return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Invalid request body',
-      error
+      parsed.error
     );
     }
 
@@ -115,7 +118,7 @@ export const PATCH = async (request: NextRequest, { params }: RouteParams) =>
         details: { voteId: params.id, percentFor: result.percentFor },
       });
 
-      return NextResponse.json({ success: true, data: result });
+      return standardSuccessResponse(result);
     } catch (error) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),
@@ -134,3 +137,4 @@ export const PATCH = async (request: NextRequest, { params }: RouteParams) =>
     );
     }
   })(request, { params });
+};

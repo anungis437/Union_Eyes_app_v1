@@ -190,7 +190,7 @@ function Backup-Database {
 # Step 3: Apply Database Migrations
 # ============================================================================
 
-function Apply-Migration {
+function Invoke-Migration {
     param([string]$MigrationFile, [string]$DatabaseUrl)
     
     $migrationPath = Join-Path $MigrationsPath $MigrationFile
@@ -243,7 +243,7 @@ function Apply-Migration {
     }
 }
 
-function Apply-Migrations {
+function Invoke-Migrations {
     Write-Section "STEP 3: Applying Database Migrations"
     
     # Get DATABASE_URL from .env.local
@@ -263,7 +263,7 @@ function Apply-Migrations {
     
     $allSuccess = $true
     foreach ($migration in $migrations) {
-        $success = Apply-Migration -MigrationFile $migration -DatabaseUrl $databaseUrl
+        $success = Invoke-Migration -MigrationFile $migration -DatabaseUrl $databaseUrl
         if (-not $success) {
             $allSuccess = $false
             Write-Status "[WARNING] Migration failed. Check errors above." -Type "Warning"
@@ -282,7 +282,7 @@ function Apply-Migrations {
 # Step 4: Run Verification Tests
 # ============================================================================
 
-function Run-VerificationTests {
+function Invoke-VerificationTests {
     Write-Section "STEP 4: Running Verification Tests"
     
     if ($DryRun) {
@@ -293,7 +293,7 @@ function Run-VerificationTests {
     Write-Status "[TEST] Running test suite..." -Type "Info"
     
     try {
-        $testOutput = pnpm test 2>&1
+        pnpm test 2>&1 | Out-Null
         
         if ($LASTEXITCODE -eq 0) {
             Write-Status "[OK] All tests passed!" -Type "Success"
@@ -408,7 +408,7 @@ function Main {
     }
     
     # Step 3: Apply Migrations
-    if (-not (Apply-Migrations)) {
+    if (-not (Invoke-Migrations)) {
         Write-Status "`n[WARNING] Some migrations failed. Review errors above." -Type "Warning"
         $response = Read-Host "   Continue to verification? (yes/no)"
         if ($response -ne "yes") {
@@ -417,7 +417,7 @@ function Main {
     }
     
     # Step 4: Run Verification Tests
-    Run-VerificationTests
+    Invoke-VerificationTests
     
     # Step 5: Show Checklist
     Show-PostDeploymentChecklist

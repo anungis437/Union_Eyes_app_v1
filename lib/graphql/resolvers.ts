@@ -16,9 +16,9 @@ import type { YogaInitialContext } from 'graphql-yoga';
 import { PensionProcessorFactory } from '@/lib/pension-processor';
 import { 
   PensionPlanType, 
-  PaymentFrequency, 
+  ContributionPeriod, 
   PensionMember,
-  PensionProcessor as IPensionProcessor,
+  IPensionProcessor,
 } from '@/lib/pension-processor/types';
 import { IntegrationFactory } from '@/lib/integrations/factory';
 import { IntegrationProvider } from '@/lib/integrations/types';
@@ -106,15 +106,16 @@ export const resolvers = {
       
       return processors.map(type => {
         const processor = factory.getProcessor(type);
+        const capabilities = processor.getCapabilities();
         return {
           type,
-          name: processor.name,
-          description: processor.description,
-          minAge: processor.capabilities.minAge,
-          maxAge: processor.capabilities.maxAge,
-          supportsBuyBack: processor.capabilities.supportsBuyBack || false,
-          supportsEarlyRetirement: processor.capabilities.supportsEarlyRetirement || false,
-          supportedProvinces: processor.capabilities.supportedProvinces || [],
+          name: type,
+          description: `${type.toUpperCase()} Pension Processor`,
+          minAge: capabilities.minimumAge,
+          maxAge: capabilities.maximumAge,
+          supportsBuyBack: capabilities.supportsBuyBack || false,
+          supportsEarlyRetirement: capabilities.supportsEarlyRetirement || false,
+          supportedProvinces: [],
         };
       });
     },
@@ -122,16 +123,17 @@ export const resolvers = {
     pensionProcessor: async (_parent: any, { planType }: { planType: string }) => {
       const factory = PensionProcessorFactory.getInstance();
       const processor = factory.getProcessor(planType as PensionPlanType);
+      const capabilities = processor.getCapabilities();
       
       return {
         type: processor.type,
-        name: processor.name,
-        description: processor.description,
-        minAge: processor.capabilities.minAge,
-        maxAge: processor.capabilities.maxAge,
-        supportsBuyBack: processor.capabilities.supportsBuyBack || false,
-        supportsEarlyRetirement: processor.capabilities.supportsEarlyRetirement || false,
-        supportedProvinces: processor.capabilities.supportedProvinces || [],
+        name: planType,
+        description: `${planType.toUpperCase()} Pension Processor`,
+        minAge: capabilities.minimumAge,
+        maxAge: capabilities.maximumAge,
+        supportsBuyBack: capabilities.supportsBuyBack || false,
+        supportsEarlyRetirement: capabilities.supportsEarlyRetirement || false,
+        supportedProvinces: [],
       };
     },
 
@@ -144,13 +146,13 @@ export const resolvers = {
       const rates = await processor.getContributionRates(year);
       
       return {
-        planType: rates.planType,
-        year: rates.year,
+        planType: planType,
+        year: rates.taxYear,
         employeeRate: rates.employeeRate.toNumber(),
         employerRate: rates.employerRate.toNumber(),
-        maximumPensionableEarnings: rates.maximumPensionableEarnings.toNumber(),
-        basicExemption: rates.basicExemption?.toNumber(),
-        maximumContribution: rates.maximumContribution.toNumber(),
+        maximumPensionableEarnings: rates.yearlyMaximumPensionableEarnings.toNumber(),
+        basicExemption: rates.basicExemptAmount?.toNumber(),
+        maximumContribution: rates.yearlyMaximumContribution.toNumber(),
       };
     },
 
@@ -206,16 +208,16 @@ export const resolvers = {
 
       const conditions = [];
       if (provider) {
-        conditions.push(eq(externalInsuranceClaims.provider, provider.toLowerCase()));
+        conditions.push(eq(externalInsuranceClaims.externalProvider, provider.toLowerCase()));
       }
       if (status) {
         conditions.push(eq(externalInsuranceClaims.status, status));
       }
       if (startDate) {
-        conditions.push(gte(externalInsuranceClaims.claimDate, new Date(startDate)));
+        conditions.push(gte(externalInsuranceClaims.submissionDate, new Date(startDate)));
       }
       if (endDate) {
-        conditions.push(lte(externalInsuranceClaims.claimDate, new Date(endDate)));
+        conditions.push(lte(externalInsuranceClaims.submissionDate, new Date(endDate)));
       }
 
       if (conditions.length > 0) {
@@ -224,14 +226,14 @@ export const resolvers = {
 
       const results = await query
         .limit(limit)
-        .orderBy(desc(externalInsuranceClaims.claimDate));
+        .orderBy(desc(externalInsuranceClaims.submissionDate));
 
       return results.map(claim => ({
         id: claim.id,
         claimNumber: claim.claimNumber,
-        provider: claim.provider.toUpperCase().replace(/_/g, '_'),
-        memberName: claim.memberName || 'Unknown',
-        claimDate: claim.claimDate,
+        provider: claim.externalProvider.toUpperCase().replace(/_/g, '_'),
+        memberName: claim.employeeName || 'Unknown',
+        claimDate: claim.submissionDate,
         claimType: claim.claimType || 'general',
         claimAmount: claim.claimAmount ? parseFloat(claim.claimAmount) : 0,
         approvedAmount: claim.approvedAmount ? parseFloat(claim.approvedAmount) : null,
@@ -250,7 +252,7 @@ export const resolvers = {
 
       const conditions = [];
       if (provider) {
-        conditions.push(eq(externalInsurancePolicies.provider, provider.toLowerCase()));
+        conditions.push(eq(externalInsurancePolicies.externalProvider, provider.toLowerCase()));
       }
       if (status) {
         conditions.push(eq(externalInsurancePolicies.status, status));
@@ -264,14 +266,14 @@ export const resolvers = {
 
       return results.map(policy => ({
         id: policy.id,
-        provider: policy.provider.toUpperCase().replace(/_/g, '_'),
+        provider: policy.externalProvider.toUpperCase().replace(/_/g, '_'),
         policyNumber: policy.policyNumber,
         policyType: policy.policyType || 'general',
-        policyHolder: policy.policyHolder || 'Unknown',
+        policyHolder: policy.employeeId || 'Unknown',
         coverageAmount: policy.coverageAmount ? parseFloat(policy.coverageAmount) : 0,
         premium: policy.premium ? parseFloat(policy.premium) : 0,
         effectiveDate: policy.effectiveDate,
-        expiryDate: policy.expiryDate,
+        expiryDate: policy.terminationDate,
         status: policy.status,
       }));
     },
@@ -365,17 +367,27 @@ export const resolvers = {
       const processor = factory.getProcessor(input.planType as PensionPlanType);
 
       const member: PensionMember = {
-        memberId: input.memberId,
+        id: input.memberId,
+        employeeNumber: input.memberId,
+        firstName: 'Unknown',
+        lastName: 'Unknown',
         dateOfBirth: new Date(input.dateOfBirth),
+        hireDate: new Date(),
+        employmentStatus: 'FULL_TIME' as any,
         province: input.province,
-        yearToDateEarnings: input.yearToDateEarnings || 0,
-        yearToDateContributions: input.yearToDateContributions || 0,
+        annualSalary: input.yearToDateEarnings || 0,
+      };
+
+      const earnings = {
+        grossEarnings: input.grossEarnings,
+        pensionableEarnings: input.grossEarnings,
+        periodStartDate: new Date(),
+        periodEndDate: new Date(),
       };
 
       const contribution = await processor.calculateContribution(
         member,
-        input.grossEarnings,
-        input.paymentFrequency as PaymentFrequency
+        earnings
       );
 
       return {
@@ -384,7 +396,7 @@ export const resolvers = {
         totalContribution: contribution.totalContribution.toNumber(),
         pensionableEarnings: contribution.pensionableEarnings.toNumber(),
         grossEarnings: contribution.grossEarnings.toNumber(),
-        basicExemption: contribution.basicExemption.toNumber(),
+        basicExemption: contribution.basicExemptAmount?.toNumber() || 0,
         planType: contribution.planType,
         contributionPeriod: contribution.contributionPeriod,
       };
@@ -400,30 +412,44 @@ export const resolvers = {
       // Mock contributions data
       const contributions = input.contributions.map((id: string) => ({
         memberId: id,
+        planType: input.planType,
+        contributionPeriod: 'MONTHLY' as any,
+        periodStartDate: new Date(input.periodStart),
+        periodEndDate: new Date(input.periodEnd),
+        grossEarnings: 100,
+        pensionableEarnings: 100,
         employeeContribution: 100,
         employerContribution: 100,
+        totalContribution: 200,
+        employeeRate: 0.05,
+        employerRate: 0.05,
+        ytdPensionableEarnings: 1000,
+        ytdEmployeeContribution: 50,
+        ytdEmployerContribution: 50,
+        calculatedAt: new Date(),
+        taxYear: new Date().getFullYear(),
       }));
 
-      const remittance = await processor.createRemittance({
-        organizationId: 'org_123',
-        periodStart: new Date(input.periodStart),
-        periodEnd: new Date(input.periodEnd),
+      const periodStart = new Date(input.periodStart);
+      const remittance = await processor.createRemittance(
         contributions,
-      });
+        periodStart.getMonth() + 1,
+        periodStart.getFullYear()
+      );
 
       return {
-        id: remittance.remittanceId,
+        id: remittance.id,
         planType: remittance.planType,
-        periodStart: remittance.periodStart,
-        periodEnd: remittance.periodEnd,
+        periodStart: new Date(remittance.remittanceYear, remittance.remittanceMonth - 1, 1),
+        periodEnd: new Date(remittance.remittanceYear, remittance.remittanceMonth, 0),
         totalEmployeeContributions: remittance.totalEmployeeContributions.toNumber(),
         totalEmployerContributions: remittance.totalEmployerContributions.toNumber(),
         totalContributions: remittance.totalContributions.toNumber(),
-        employeeCount: remittance.employeeCount,
+        employeeCount: remittance.numberOfMembers,
         status: 'PENDING',
         confirmationNumber: null,
         submittedAt: null,
-        createdAt: remittance.createdAt,
+        createdAt: new Date(),
       };
     },
 
@@ -440,15 +466,15 @@ export const resolvers = {
       return {
         id,
         planType: result.planType,
-        periodStart: result.periodStart,
-        periodEnd: result.periodEnd,
+        periodStart: new Date(result.remittanceYear, result.remittanceMonth - 1, 1),
+        periodEnd: new Date(result.remittanceYear, result.remittanceMonth, 0),
         totalEmployeeContributions: result.totalEmployeeContributions.toNumber(),
         totalEmployerContributions: result.totalEmployerContributions.toNumber(),
         totalContributions: result.totalContributions.toNumber(),
-        employeeCount: result.employeeCount,
+        employeeCount: result.numberOfMembers,
         status: 'SUBMITTED',
         confirmationNumber: result.confirmationNumber,
-        submittedAt: result.submittedAt,
+        submittedAt: result.remittanceDate,
         createdAt: new Date(),
       };
     },
@@ -474,7 +500,7 @@ export const resolvers = {
         }
 
         const factory = IntegrationFactory.getInstance();
-        const adapter = factory.getAdapter(integrationProvider);
+        const adapter = await factory.getIntegration('org_123', integrationProvider);
 
         // Perform sync
         const syncResult = await adapter.sync({

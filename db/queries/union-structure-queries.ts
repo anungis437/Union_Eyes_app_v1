@@ -63,7 +63,8 @@ export async function createEmployer(
 ): Promise<Employer> {
   const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
     try {
-      const [employer] = await dbOrTx.insert(employers).values(data).returning();
+      const result = (await dbOrTx.insert(employers).values(data).returning()) as Employer[];
+      const employer = result[0]!;
       logger.info("Employer created", { employerId: employer.id, name: employer.name });
       return employer;
     } catch (error) {
@@ -75,7 +76,7 @@ export async function createEmployer(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -104,7 +105,7 @@ export async function getEmployerById(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -167,7 +168,7 @@ export async function listEmployersByOrganization(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -198,7 +199,7 @@ export async function updateEmployer(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -226,7 +227,7 @@ export async function archiveEmployer(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -255,7 +256,7 @@ export async function createWorksite(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -284,7 +285,7 @@ export async function getWorksiteById(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -342,7 +343,7 @@ export async function listWorksitesByEmployer(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -373,7 +374,7 @@ export async function updateWorksite(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -401,7 +402,7 @@ export async function archiveWorksite(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -430,7 +431,7 @@ export async function createBargainingUnit(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -459,7 +460,7 @@ export async function getBargainingUnitById(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -522,7 +523,7 @@ export async function listBargainingUnitsByOrganization(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -562,7 +563,7 @@ export async function getUnitsWithExpiringContracts(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -593,7 +594,7 @@ export async function updateBargainingUnit(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -621,7 +622,7 @@ export async function archiveBargainingUnit(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -650,7 +651,7 @@ export async function createCommittee(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -679,7 +680,7 @@ export async function getCommitteeById(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -742,7 +743,7 @@ export async function listCommitteesByOrganization(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -773,7 +774,7 @@ export async function updateCommittee(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -801,7 +802,7 @@ export async function archiveCommittee(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -848,7 +849,7 @@ export async function createCommitteeMembership(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -892,7 +893,7 @@ export async function getMemberCommitteeMemberships(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -935,7 +936,7 @@ export async function getCommitteeMembers(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -980,7 +981,7 @@ export async function endCommitteeMembership(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -1018,7 +1019,7 @@ export async function createStewardAssignment(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -1061,7 +1062,7 @@ export async function getMemberStewardAssignments(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -1109,7 +1110,7 @@ export async function getUnitStewards(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -1144,7 +1145,7 @@ export async function endStewardAssignment(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -1199,7 +1200,7 @@ export async function createRoleTenureHistory(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -1242,7 +1243,7 @@ export async function getMemberRoleHistory(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -1281,7 +1282,7 @@ export async function endRoleTenure(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -1334,6 +1335,6 @@ export async function getOrganizationRoleHistory(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }

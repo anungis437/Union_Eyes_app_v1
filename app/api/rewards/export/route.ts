@@ -11,14 +11,17 @@ import {
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { checkEntitlement } from '@/lib/services/entitlements';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 import { 
   standardErrorResponse, 
   standardSuccessResponse, 
   ErrorCode 
 } from '@/lib/api/standardized-responses';
-export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+import { eq, and } from 'drizzle-orm';
+import { organizationMembers } from '@/db/schema/organization-members-schema';
+
+export const GET = withEnhancedRoleAuth<any>(10, async (request, context) => {
   try {
       // 1. Authenticate and check admin role
       const { userId, organizationId } = context;
@@ -45,14 +48,18 @@ export const GET = async (request: NextRequest) => {
       }
 
       // Check admin role
-      const member = await withRLSContext({ organizationId }, async (db) => {
-        return await db.query.organizationMembers.findFirst({
-          where: (members, { eq, and }) =>
+      const member = await withRLSContext(async (tx: NodePgDatabase<any>) => {
+        const [result] = await tx
+          .select()
+          .from(organizationMembers)
+          .where(
             and(
-              eq(members.userId, userId),
-              eq(members.organizationId, organizationId)
-            ),
-        });
+              eq(organizationMembers.userId, userId),
+              eq(organizationMembers.organizationId, organizationId)
+            )
+          )
+          .limit(1);
+        return result;
       });
 
       if (!member || !['admin', 'owner'].includes(member.role)) {
@@ -149,6 +156,5 @@ return NextResponse.json(
       { status: 500 }
     );
   }
-  })(request);
-};
+});
 

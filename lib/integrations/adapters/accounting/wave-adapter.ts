@@ -71,9 +71,9 @@ export class WaveAdapter extends BaseIntegration {
       }
       
       this.connected = true;
-      this.logOperation('connect', 'Connected to Wave');
+      this.logOperation('connect', { message: 'Connected to Wave' });
     } catch (error) {
-      this.logError('connect', error);
+      this.logError('connect', error as Error);
       throw error;
     }
   }
@@ -81,7 +81,7 @@ export class WaveAdapter extends BaseIntegration {
   async disconnect(): Promise<void> {
     this.connected = false;
     this.client = undefined;
-    this.logOperation('disconnect', 'Disconnected from Wave');
+    this.logOperation('disconnect', { message: 'Disconnected from Wave' });
   }
 
   // ==========================================================================
@@ -94,26 +94,21 @@ export class WaveAdapter extends BaseIntegration {
 
       const startTime = Date.now();
       const isHealthy = await this.client!.healthCheck();
-      const latency = Date.now() - startTime;
+      const latencyMs = Date.now() - startTime;
 
       return {
         healthy: isHealthy,
-        latency,
-        details: {
-          provider: 'Wave',
-          connected: this.connected,
-          timestamp: new Date().toISOString(),
-        },
+        status: this.connected ? ConnectionStatus.CONNECTED : ConnectionStatus.DISCONNECTED,
+        latencyMs,
+        lastCheckedAt: new Date(),
       };
     } catch (error) {
       return {
         healthy: false,
-        latency: 0,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        details: {
-          provider: 'Wave',
-          connected: false,
-        },
+        status: ConnectionStatus.ERROR,
+        latencyMs: 0,
+        lastError: error instanceof Error ? error.message : 'Unknown error',
+        lastCheckedAt: new Date(),
       };
     }
   }
@@ -137,7 +132,7 @@ export class WaveAdapter extends BaseIntegration {
 
       for (const entity of entities) {
         try {
-          this.logOperation('sync', `Syncing ${entity}`);
+          this.logOperation('sync', { entity, message: `Syncing ${entity}` });
 
           switch (entity) {
             case 'invoices':
@@ -170,11 +165,9 @@ export class WaveAdapter extends BaseIntegration {
         } catch (error) {
           const errorMsg = `Failed to sync ${entity}: ${error instanceof Error ? error.message : 'Unknown'}`;
           errors.push(errorMsg);
-          this.logError('sync', error, { entity });
+          this.logError('sync', error as Error, { entity });
         }
       }
-
-      const duration = Date.now() - startTime;
 
       return {
         success: recordsFailed === 0,
@@ -182,13 +175,11 @@ export class WaveAdapter extends BaseIntegration {
         recordsCreated,
         recordsUpdated,
         recordsFailed,
-        duration,
         cursor: undefined,
-        error: errors.length > 0 ? errors.join('; ') : undefined,
+        metadata: { error: errors.length > 0 ? errors.join('; ') : undefined },
       };
     } catch (error) {
-      const duration = Date.now() - startTime;
-      this.logError('sync', error);
+      this.logError('sync', error as Error);
 
       return {
         success: false,
@@ -196,8 +187,7 @@ export class WaveAdapter extends BaseIntegration {
         recordsCreated,
         recordsUpdated,
         recordsFailed,
-        duration,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        metadata: { error: error instanceof Error ? error.message : 'Unknown error' },
       };
     }
   }
@@ -236,8 +226,8 @@ export class WaveAdapter extends BaseIntegration {
             customerName: invoice.customer.name,
             invoiceDate: new Date(invoice.invoiceDate),
             dueDate: new Date(invoice.dueDate),
-            totalAmount: invoice.total,
-            balanceAmount: invoice.amountDue,
+            totalAmount: invoice.total.toFixed(2),
+            balanceAmount: invoice.amountDue.toFixed(2),
             status: invoice.status.toLowerCase(),
             lastSyncedAt: new Date(),
             updatedAt: new Date(),
@@ -261,7 +251,7 @@ export class WaveAdapter extends BaseIntegration {
 
           processed++;
         } catch (error) {
-          this.logError('syncInvoices', error, { invoiceId: invoice.id });
+          this.logError('syncInvoices', error as Error, { invoiceId: invoice.id });
           failed++;
         }
       }
@@ -301,7 +291,7 @@ export class WaveAdapter extends BaseIntegration {
             customerId: payment.customer.id,
             customerName: payment.customer.name,
             paymentDate: new Date(payment.date),
-            amount: payment.amount,
+            amount: payment.amount.toFixed(2),
             lastSyncedAt: new Date(),
             updatedAt: new Date(),
           };
@@ -324,7 +314,7 @@ export class WaveAdapter extends BaseIntegration {
 
           processed++;
         } catch (error) {
-          this.logError('syncPayments', error, { paymentId: payment.id });
+          this.logError('syncPayments', error as Error, { paymentId: payment.id });
           failed++;
         }
       }
@@ -365,7 +355,7 @@ export class WaveAdapter extends BaseIntegration {
             companyName: customer.name,
             email: customer.email,
             phone: customer.phone,
-            balance: 0, // Wave doesn't provide balance easily
+            balance: '0.00', // Wave doesn't provide balance easily
             lastSyncedAt: new Date(),
             updatedAt: new Date(),
           };
@@ -388,7 +378,7 @@ export class WaveAdapter extends BaseIntegration {
 
           processed++;
         } catch (error) {
-          this.logError('syncCustomers', error, { customerId: customer.id });
+          this.logError('syncCustomers', error as Error, { customerId: customer.id });
           failed++;
         }
       }

@@ -182,10 +182,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             const organizationId = subscription.metadata?.organizationId || "system";
 
             const existingCycles = await withRLSContext(async (tx) => {
-      return await tx.query({
-              where: and(
-                sql`${paymentCycles.metadata}->>'stripeSubscriptionId' = ${subscription.id}`,
-              ),
+      return await tx.query.paymentCycles.findMany({
+              where: sql`${paymentCycles.metadata}->>'stripeSubscriptionId' = ${subscription.id}`,
             }).catch(() => []);
     });
 
@@ -533,10 +531,8 @@ async function handleSubscriptionDeleted(
     const organizationId = subscription.metadata?.organizationId || "system";
 
     const existingCycles = await withRLSContext(async (tx) => {
-      return await tx.query({
-      where: and(
-        sql`${paymentCycles.metadata}->>'stripeSubscriptionId' = ${subscription.id}`,
-      ),
+      return await tx.query.paymentCycles.findMany({
+      where: sql`${paymentCycles.metadata}->>'stripeSubscriptionId' = ${subscription.id}`,
     }).catch(() => []);
     });
 
@@ -727,7 +723,7 @@ async function handlePaymentMethodAttached(
       try {
         // Check if payment method already exists
         const existingMethod = await withRLSContext(async (tx) => {
-      return await tx.query({
+      return await tx.query.paymentMethods.findFirst({
           where: eq(paymentMethods.stripePaymentMethodId, paymentMethod.id),
         });
     });

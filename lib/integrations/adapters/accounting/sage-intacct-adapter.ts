@@ -56,12 +56,12 @@ export class SageIntacctAdapter extends BaseIntegration {
 
     try {
       const intacctConfig: SageIntacctConfig = {
-        companyId: this.config!.credentials.companyId!,
-        userId: this.config!.credentials.userId!,
-        userPassword: this.config!.credentials.password!,
-        senderId: this.config!.credentials.senderId!,
-        senderPassword: this.config!.credentials.senderPassword!,
-        entityId: this.config!.settings?.entityId,
+        companyId: (this.config!.credentials.metadata?.companyId as string) || '',
+        userId: (this.config!.credentials.metadata?.userId as string) || '',
+        userPassword: (this.config!.credentials.metadata?.password as string) || '',
+        senderId: (this.config!.credentials.metadata?.senderId as string) || '',
+        senderPassword: (this.config!.credentials.metadata?.senderPassword as string) || '',
+        entityId: (this.config!.settings?.entityId as string) || undefined,
         environment: this.config!.settings?.environment || 'production',
       };
 
@@ -69,9 +69,9 @@ export class SageIntacctAdapter extends BaseIntegration {
       await this.client.authenticate();
       
       this.connected = true;
-      this.logOperation('connect', 'Connected to Sage Intacct');
+      this.logOperation('connect', { message: 'Connected to Sage Intacct' });
     } catch (error) {
-      this.logError('connect', error);
+      this.logError('connect', error as Error);
       throw error;
     }
   }
@@ -79,7 +79,7 @@ export class SageIntacctAdapter extends BaseIntegration {
   async disconnect(): Promise<void> {
     this.connected = false;
     this.client = undefined;
-    this.logOperation('disconnect', 'Disconnected from Sage Intacct');
+    this.logOperation('disconnect', { message: 'Disconnected from Sage Intacct' });
   }
 
   // ==========================================================================
@@ -92,26 +92,21 @@ export class SageIntacctAdapter extends BaseIntegration {
 
       const startTime = Date.now();
       const isHealthy = await this.client!.healthCheck();
-      const latency = Date.now() - startTime;
+      const latencyMs = Date.now() - startTime;
 
       return {
         healthy: isHealthy,
-        latency,
-        details: {
-          provider: 'Sage Intacct',
-          connected: this.connected,
-          timestamp: new Date().toISOString(),
-        },
+        status: this.connected ? ConnectionStatus.CONNECTED : ConnectionStatus.DISCONNECTED,
+        latencyMs,
+        lastCheckedAt: new Date(),
       };
     } catch (error) {
       return {
         healthy: false,
-        latency: 0,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        details: {
-          provider: 'Sage Intacct',
-          connected: false,
-        },
+        status: ConnectionStatus.ERROR,
+        latencyMs: 0,
+        lastError: error instanceof Error ? error.message : 'Unknown error',
+        lastCheckedAt: new Date(),
       };
     }
   }
@@ -135,7 +130,7 @@ export class SageIntacctAdapter extends BaseIntegration {
 
       for (const entity of entities) {
         try {
-          this.logOperation('sync', `Syncing ${entity}`);
+          this.logOperation('sync', { entity, message: `Syncing ${entity}` });
 
           switch (entity) {
             case 'invoices':
@@ -176,11 +171,9 @@ export class SageIntacctAdapter extends BaseIntegration {
         } catch (error) {
           const errorMsg = `Failed to sync ${entity}: ${error instanceof Error ? error.message : 'Unknown'}`;
           errors.push(errorMsg);
-          this.logError('sync', error, { entity });
+          this.logError('sync', error as Error, { entity });
         }
       }
-
-      const duration = Date.now() - startTime;
 
       return {
         success: recordsFailed === 0,
@@ -188,13 +181,11 @@ export class SageIntacctAdapter extends BaseIntegration {
         recordsCreated,
         recordsUpdated,
         recordsFailed,
-        duration,
         cursor: undefined,
-        error: errors.length > 0 ? errors.join('; ') : undefined,
+        metadata: { error: errors.length > 0 ? errors.join('; ') : undefined },
       };
     } catch (error) {
-      const duration = Date.now() - startTime;
-      this.logError('sync', error);
+      this.logError('sync', error as Error);
 
       return {
         success: false,
@@ -202,8 +193,7 @@ export class SageIntacctAdapter extends BaseIntegration {
         recordsCreated,
         recordsUpdated,
         recordsFailed,
-        duration,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        metadata: { error: error instanceof Error ? error.message : 'Unknown error' },
       };
     }
   }
@@ -253,8 +243,8 @@ export class SageIntacctAdapter extends BaseIntegration {
             customerName: invoice.CUSTOMERNAME,
             invoiceDate: new Date(invoice.WHENCREATED),
             dueDate: invoice.WHENDUE ? new Date(invoice.WHENDUE) : null,
-            totalAmount: invoice.TOTALENTERED,
-            balanceAmount: invoice.TOTALDUE,
+            totalAmount: (typeof invoice.TOTALENTERED === 'number' ? invoice.TOTALENTERED : parseFloat(invoice.TOTALENTERED)).toFixed(2),
+            balanceAmount: (typeof invoice.TOTALDUE === 'number' ? invoice.TOTALDUE : parseFloat(invoice.TOTALDUE)).toFixed(2),
             status: invoice.STATE.toLowerCase(),
             lastSyncedAt: new Date(),
             updatedAt: new Date(),
@@ -278,7 +268,7 @@ export class SageIntacctAdapter extends BaseIntegration {
 
           processed++;
         } catch (error) {
-          this.logError('syncInvoices', error, { invoiceId: invoice.RECORDNO });
+          this.logError('syncInvoices', error as Error, { invoiceId: invoice.RECORDNO });
           failed++;
         }
       }
@@ -321,7 +311,7 @@ export class SageIntacctAdapter extends BaseIntegration {
             customerId: payment.CUSTOMERID,
             customerName: payment.CUSTOMERNAME,
             paymentDate: new Date(payment.WHENPAID),
-            amount: payment.AMOUNTPAID,
+            amount: (typeof payment.AMOUNTPAID === 'number' ? payment.AMOUNTPAID : parseFloat(payment.AMOUNTPAID)).toFixed(2),
             lastSyncedAt: new Date(),
             updatedAt: new Date(),
           };
@@ -344,7 +334,7 @@ export class SageIntacctAdapter extends BaseIntegration {
 
           processed++;
         } catch (error) {
-          this.logError('syncPayments', error, { paymentId: payment.RECORDNO });
+          this.logError('syncPayments', error as Error, { paymentId: payment.RECORDNO });
           failed++;
         }
       }
@@ -388,7 +378,7 @@ export class SageIntacctAdapter extends BaseIntegration {
             companyName: customer.NAME,
             email: customer.EMAIL1,
             phone: customer.PHONE1,
-            balance: 0, // Would need separate query for balance
+            balance: '0.00', // Would need separate query for balance
             lastSyncedAt: new Date(),
             updatedAt: new Date(),
           };
@@ -411,7 +401,7 @@ export class SageIntacctAdapter extends BaseIntegration {
 
           processed++;
         } catch (error) {
-          this.logError('syncCustomers', error, { customerId: customer.RECORDNO });
+          this.logError('syncCustomers', error as Error, { customerId: customer.RECORDNO });
           failed++;
         }
       }
@@ -455,7 +445,7 @@ export class SageIntacctAdapter extends BaseIntegration {
             accountType: account.ACCOUNTTYPE,
             accountSubType: account.ACCOUNTNO,
             classification: account.CLOSINGTYPE === 'balance_sheet' ? 'Asset/Liability' : 'Revenue/Expense',
-            currentBalance: 0, // Would need separate query
+            currentBalance: '0.00', // Would need separate query
             isActive: account.STATUS.toLowerCase() === 'active',
             lastSyncedAt: new Date(),
             updatedAt: new Date(),
@@ -479,7 +469,7 @@ export class SageIntacctAdapter extends BaseIntegration {
 
           processed++;
         } catch (error) {
-          this.logError('syncAccounts', error, { accountId: account.RECORDNO });
+          this.logError('syncAccounts', error as Error, { accountId: account.RECORDNO });
           failed++;
         }
       }

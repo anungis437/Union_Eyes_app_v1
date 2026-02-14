@@ -171,7 +171,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Get CLC API config for this organization
     const config = await withRLSContext(async (tx) => {
-      return await tx.query({
+      return await tx.query.clcApiConfig.findFirst({
       where: and(
         eq(clcApiConfig.organizationId, payload.organization_id),
         eq(clcApiConfig.isActive, true)
@@ -474,7 +474,7 @@ async function handleRemittanceFailed(payload: CLCWebhookPayload): Promise<void>
     // Send alert notification for manual review
     const notificationService = getNotificationService();
     const orgAdmins = await withRLSContext(async (tx) => {
-      return await tx.query({
+      return await tx.query.organizationMembers.findMany({
       where: and(
         eq(organizationMembers.organizationId, payload.organization_id),
         eq(organizationMembers.role, "admin")
@@ -555,7 +555,7 @@ async function handleRemittanceRejected(payload: CLCWebhookPayload): Promise<voi
     // Send urgent alert to all admins
     const notificationService = getNotificationService();
     const orgAdmins = await withRLSContext(async (tx) => {
-      return await tx.query({
+      return await tx.query.organizationMembers.findMany({
       where: and(
         eq(organizationMembers.organizationId, payload.organization_id),
         eq(organizationMembers.role, "admin")
@@ -616,7 +616,7 @@ async function handleMemberSynced(payload: CLCWebhookPayload): Promise<void> {
 
     // Update member data from CLC
     const existingMember = await withRLSContext(async (tx) => {
-      return await tx.query({
+      return await tx.query.organizationMembers.findFirst({
       where: and(
         eq(organizationMembers.organizationId, payload.organization_id),
         eq(organizationMembers.externalId, payload.data.member_id)
@@ -683,7 +683,7 @@ async function handleMemberAdded(payload: CLCWebhookPayload): Promise<void> {
 
     // Create new member record if not exists
     const existingMember = await withRLSContext(async (tx) => {
-      return await tx.query({
+      return await tx.query.organizationMembers.findFirst({
       where: and(
         eq(organizationMembers.organizationId, payload.organization_id),
         eq(organizationMembers.externalId, payload.data.member_id)
@@ -911,7 +911,7 @@ export async function retryCLCWebhook(eventId: string): Promise<void> {
   try {
     // Fetch webhook from clcWebhookLog
     const webhookLog = await withRLSContext(async (tx) => {
-      return await tx.query({
+      return await tx.query.clcWebhookLog.findFirst({
       where: eq(clcWebhookLog.eventId, eventId),
     });
     });

@@ -28,17 +28,17 @@ const councilVoteSchema = z.object({
 });
 
 export const POST = async (request: NextRequest, { params }: RouteParams) =>
-  withEnhancedRoleAuth(20, async (_request, context) => {
+  withEnhancedRoleAuth<any>(20, async (_request, context) => {
     const { userId } = context;
 
     let rawBody: unknown;
     try {
       rawBody = await request.json();
-    } catch {
+    } catch (e) {
       return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Invalid JSON in request body',
-      error
+      e
     );
     }
 
@@ -47,7 +47,7 @@ export const POST = async (request: NextRequest, { params }: RouteParams) =>
       return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Invalid request body',
-      error
+      parsed.error
     );
     }
 
@@ -69,7 +69,7 @@ export const POST = async (request: NextRequest, { params }: RouteParams) =>
         details: { voteId: params.id, decision: result.finalDecision },
       });
 
-      return NextResponse.json({ success: true, data: result });
+      return standardSuccessResponse({ data: result });
     } catch (error) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),

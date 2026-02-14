@@ -20,6 +20,7 @@ import {
   HealthCheckResult,
   WebhookEvent,
   SyncType,
+  ConnectionStatus,
 } from '../../types';
 import { FreshBooksClient, type FreshBooksConfig } from './freshbooks-client';
 import { db } from '@/db';
@@ -71,9 +72,9 @@ export class FreshBooksAdapter extends BaseIntegration {
       }
       
       this.connected = true;
-      this.logOperation('connect', 'Connected to FreshBooks');
+      this.logOperation('connect', { message: 'Connected to FreshBooks' });
     } catch (error) {
-      this.logError('connect', error);
+      this.logError('connect', error as Error);
       throw error;
     }
   }
@@ -81,7 +82,7 @@ export class FreshBooksAdapter extends BaseIntegration {
   async disconnect(): Promise<void> {
     this.connected = false;
     this.client = undefined;
-    this.logOperation('disconnect', 'Disconnected from FreshBooks');
+    this.logOperation('disconnect', { message: 'Disconnected from FreshBooks' });
   }
 
   // ==========================================================================
@@ -94,26 +95,21 @@ export class FreshBooksAdapter extends BaseIntegration {
 
       const startTime = Date.now();
       const isHealthy = await this.client!.healthCheck();
-      const latency = Date.now() - startTime;
+      const latencyMs = Date.now() - startTime;
 
       return {
         healthy: isHealthy,
-        latency,
-        details: {
-          provider: 'FreshBooks',
-          connected: this.connected,
-          timestamp: new Date().toISOString(),
-        },
+        status: this.connected ? ConnectionStatus.CONNECTED : ConnectionStatus.DISCONNECTED,
+        latencyMs,
+        lastCheckedAt: new Date(),
       };
     } catch (error) {
       return {
         healthy: false,
-        latency: 0,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        details: {
-          provider: 'FreshBooks',
-          connected: false,
-        },
+        status: ConnectionStatus.ERROR,
+        latencyMs: 0,
+        lastError: error instanceof Error ? error.message : 'Unknown error',
+        lastCheckedAt: new Date(),
       };
     }
   }
@@ -137,7 +133,7 @@ export class FreshBooksAdapter extends BaseIntegration {
 
       for (const entity of entities) {
         try {
-          this.logOperation('sync', `Syncing ${entity}`);
+          this.logOperation('sync', { entity, message: `Syncing ${entity}` });
 
           switch (entity) {
             case 'invoices':
@@ -173,16 +169,14 @@ export class FreshBooksAdapter extends BaseIntegration {
               break;
 
             default:
-              this.logOperation('sync', `Unknown entity: ${entity}`);
+              this.logOperation('sync', { entity, message: `Unknown entity: ${entity}` });
           }
         } catch (error) {
           const errorMsg = `Failed to sync ${entity}: ${error instanceof Error ? error.message : 'Unknown'}`;
           errors.push(errorMsg);
-          this.logError('sync', error, { entity });
+          this.logError('sync', error as Error, { entity });
         }
       }
-
-      const duration = Date.now() - startTime;
 
       return {
         success: recordsFailed === 0,
@@ -190,13 +184,11 @@ export class FreshBooksAdapter extends BaseIntegration {
         recordsCreated,
         recordsUpdated,
         recordsFailed,
-        duration,
         cursor: undefined,
-        error: errors.length > 0 ? errors.join('; ') : undefined,
+        metadata: { error: errors.length > 0 ? errors.join('; ') : undefined },
       };
     } catch (error) {
-      const duration = Date.now() - startTime;
-      this.logError('sync', error);
+      this.logError('sync', error as Error);
 
       return {
         success: false,
@@ -204,8 +196,7 @@ export class FreshBooksAdapter extends BaseIntegration {
         recordsCreated,
         recordsUpdated,
         recordsFailed,
-        duration,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        metadata: { error: error instanceof Error ? error.message : 'Unknown error' },
       };
     }
   }
@@ -261,8 +252,8 @@ export class FreshBooksAdapter extends BaseIntegration {
             customerName: invoice.organization,
             invoiceDate: new Date(invoice.create_date),
             dueDate: new Date(invoice.due_date),
-            totalAmount: parseFloat(invoice.amount.amount),
-            balanceAmount: parseFloat(invoice.outstanding.amount),
+            totalAmount: parseFloat(invoice.amount.amount).toFixed(2),
+            balanceAmount: parseFloat(invoice.outstanding.amount).toFixed(2),
             status: statusMap[invoice.status] || 'unknown',
             lastSyncedAt: new Date(),
             updatedAt: new Date(),
@@ -286,7 +277,7 @@ export class FreshBooksAdapter extends BaseIntegration {
 
           processed++;
         } catch (error) {
-          this.logError('syncInvoices', error, { invoiceId: invoice.id });
+          this.logError('syncInvoices', error as Error, { invoiceId: invoice.id });
           failed++;
         }
       }
@@ -326,7 +317,7 @@ export class FreshBooksAdapter extends BaseIntegration {
             customerId: payment.invoiceid.toString(),
             customerName: payment.type, // FreshBooks doesn't provide customer name in payment
             paymentDate: new Date(payment.date),
-            amount: parseFloat(payment.amount.amount),
+            amount: parseFloat(payment.amount.amount).toFixed(2),
             lastSyncedAt: new Date(),
             updatedAt: new Date(),
           };
@@ -349,7 +340,7 @@ export class FreshBooksAdapter extends BaseIntegration {
 
           processed++;
         } catch (error) {
-          this.logError('syncPayments', error, { paymentId: payment.id });
+          this.logError('syncPayments', error as Error, { paymentId: payment.id });
           failed++;
         }
       }
@@ -394,7 +385,7 @@ export class FreshBooksAdapter extends BaseIntegration {
             companyName: client.organization,
             email: client.email,
             phone: client.business_phone,
-            balance,
+            balance: balance.toFixed(2),
             lastSyncedAt: new Date(),
             updatedAt: new Date(),
           };
@@ -417,7 +408,7 @@ export class FreshBooksAdapter extends BaseIntegration {
 
           processed++;
         } catch (error) {
-          this.logError('syncClients', error, { clientId: client.id });
+          this.logError('syncClients', error as Error, { clientId: client.id });
           failed++;
         }
       }
@@ -458,7 +449,7 @@ export class FreshBooksAdapter extends BaseIntegration {
             accountType: 'EXPENSE',
             accountSubType: expense.vendor,
             classification: 'Expense',
-            currentBalance: parseFloat(expense.amount.amount),
+            currentBalance: parseFloat(expense.amount.amount).toFixed(2),
             isActive: expense.status === 0, // 0=active, 1=archived
             lastSyncedAt: new Date(),
             updatedAt: new Date(),
@@ -482,7 +473,7 @@ export class FreshBooksAdapter extends BaseIntegration {
 
           processed++;
         } catch (error) {
-          this.logError('syncExpenses', error, { expenseId: expense.id });
+          this.logError('syncExpenses', error as Error, { expenseId: expense.id });
           failed++;
         }
       }
@@ -504,7 +495,7 @@ export class FreshBooksAdapter extends BaseIntegration {
   }
 
   async processWebhook(event: WebhookEvent): Promise<void> {
-    this.logOperation('webhook', `Processing ${event.eventType}`);
+    this.logOperation('webhook', { eventType: event.type, message: `Processing ${event.type}` });
     // Implementation would process FreshBooks webhook events
   }
 }

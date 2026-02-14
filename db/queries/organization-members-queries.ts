@@ -4,44 +4,67 @@
  */
 
 import { db } from "../db";
-import { organizationMembers, SelectOrganizationMember, InsertOrganizationMember } from "../schema/organization-members-schema";
+import { organizationMembers, type SelectOrganizationMember, type InsertOrganizationMember } from "../schema/organization-members-schema";
 import { eq, and, isNull, desc, sql } from "drizzle-orm";
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+import { withRLSContext } from "@/lib/db/with-rls-context";
 
 /**
  * Get all active members for an organization
  */
-export async function getOrganizationMembers(organizationId: string): Promise<SelectOrganizationMember[]> {
-  const tenantId = organizationId;
-  return await db
-    .select()
-    .from(organizationMembers)
-    .where(
-      and(
-        eq(organizationMembers.organizationId, organizationId),
-        isNull(organizationMembers.deletedAt)
+export async function getOrganizationMembers(
+  organizationId: string,
+  tx?: NodePgDatabase<any>
+): Promise<SelectOrganizationMember[]> {
+  const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
+    return await dbOrTx
+      .select()
+      .from(organizationMembers)
+      .where(
+        and(
+          eq(organizationMembers.organizationId, organizationId),
+          isNull(organizationMembers.deletedAt)
+        )
       )
-    )
-    .orderBy(desc(organizationMembers.createdAt));
+      .orderBy(desc(organizationMembers.createdAt));
+  };
+
+  if (tx) {
+    return executeQuery(tx);
+  } else {
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
+  }
 }
 
 /**
  * Get member by ID and organization
  */
-export async function getMemberById(organizationId: string, id: string): Promise<SelectOrganizationMember | undefined> {
-  const tenantId = organizationId;
-  const result = await db
-    .select()
-    .from(organizationMembers)
-    .where(
-      and(
-        eq(organizationMembers.organizationId, organizationId),
-        eq(organizationMembers.id, id),
-        isNull(organizationMembers.deletedAt)
+export async function getMemberById(
+  organizationId: string,
+  id: string,
+  tx?: NodePgDatabase<any>
+): Promise<SelectOrganizationMember | undefined> {
+  const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
+    const result = await dbOrTx
+      .select()
+      .from(organizationMembers)
+      .where(
+        and(
+          eq(organizationMembers.organizationId, organizationId),
+          eq(organizationMembers.id, id),
+          isNull(organizationMembers.deletedAt)
+        )
       )
-    )
-    .limit(1);
-  
-  return result[0];
+      .limit(1);
+    
+    return result[0];
+  };
+
+  if (tx) {
+    return executeQuery(tx);
+  } else {
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
+  }
 }
 
 /**
@@ -49,34 +72,57 @@ export async function getMemberById(organizationId: string, id: string): Promise
  */
 export async function getMemberByUserId(
   organizationId: string,
-  userId: string
+  userId: string,
+  tx?: NodePgDatabase<any>
 ): Promise<SelectOrganizationMember | undefined> {
-  const tenantId = organizationId;
-  const result = await db
-    .select()
-    .from(organizationMembers)
-    .where(
-      and(
-        eq(organizationMembers.organizationId, organizationId),
-        eq(organizationMembers.userId, userId),
-        isNull(organizationMembers.deletedAt)
+  const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
+    const result = await dbOrTx
+      .select()
+      .from(organizationMembers)
+      .where(
+        and(
+          eq(organizationMembers.organizationId, organizationId),
+          eq(organizationMembers.userId, userId),
+          isNull(organizationMembers.deletedAt)
+        )
       )
-    )
-    .limit(1);
-  
-  return result[0];
+      .limit(1);
+    
+    return result[0];
+  };
+
+  if (tx) {
+    return executeQuery(tx);
+  } else {
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
+  }
 }
 
 /**
  * Create a new member
  */
-export async function createMember(member: InsertOrganizationMember): Promise<SelectOrganizationMember> {
-  const result = await db
-    .insert(organizationMembers)
-    .values(member)
-    .returning();
-  
-  return result[0];
+export async function createMember(
+  member: InsertOrganizationMember,
+  tx?: NodePgDatabase<any>
+): Promise<SelectOrganizationMember> {
+  const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
+    const result = await dbOrTx
+      .insert(organizationMembers)
+      .values(member)
+      .returning();
+    
+    if (!result[0]) {
+      throw new Error('Failed to create member');
+    }
+    
+    return result[0];
+  };
+
+  if (tx) {
+    return executeQuery(tx);
+  } else {
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
+  }
 }
 
 /**
@@ -113,76 +159,116 @@ export async function addOrganizationMember(params: {
  */
 export async function updateMember(
   id: string,
-  updates: Partial<InsertOrganizationMember>
+  updates: Partial<InsertOrganizationMember>,
+  tx?: NodePgDatabase<any>
 ): Promise<SelectOrganizationMember | undefined> {
-  const result = await db
-    .update(organizationMembers)
-    .set({
-      ...updates,
-      updatedAt: new Date(),
-    })
-    .where(
-      and(
-        eq(organizationMembers.id, id),
-        isNull(organizationMembers.deletedAt)
+  const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
+    const result = await dbOrTx
+      .update(organizationMembers)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(organizationMembers.id, id),
+          isNull(organizationMembers.deletedAt)
+        )
       )
-    )
-    .returning();
-  
-  return result[0];
+      .returning();
+    
+    return result[0];
+  };
+
+  if (tx) {
+    return executeQuery(tx);
+  } else {
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
+  }
 }
 
 /**
  * Soft delete a member
  */
-export async function deleteMember(id: string): Promise<boolean> {
-  const result = await db
-    .update(organizationMembers)
-    .set({
-      deletedAt: new Date(),
-      updatedAt: new Date(),
-    })
-    .where(eq(organizationMembers.id, id))
-    .returning();
-  
-  return result.length > 0;
+export async function deleteMember(
+  id: string,
+  tx?: NodePgDatabase<any>
+): Promise<boolean> {
+  const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
+    const result = await dbOrTx
+      .update(organizationMembers)
+      .set({
+        deletedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(organizationMembers.id, id))
+      .returning();
+    
+    return result.length > 0;
+  };
+
+  if (tx) {
+    return executeQuery(tx);
+  } else {
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
+  }
 }
 
 /**
  * Get member count for an organization
  */
-export async function getMemberCount(organizationId: string): Promise<number> {
-  const tenantId = organizationId;
-  const result = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(organizationMembers)
-    .where(
-      and(
-        eq(organizationMembers.organizationId, organizationId),
-        isNull(organizationMembers.deletedAt)
-      )
-    );
-  
-  return result[0]?.count || 0;
+export async function getMemberCount(
+  organizationId: string,
+  tx?: NodePgDatabase<any>
+): Promise<number> {
+  const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
+    const result = await dbOrTx
+      .select({ count: sql<number>`count(*)::int` })
+      .from(organizationMembers)
+      .where(
+        and(
+          eq(organizationMembers.organizationId, organizationId),
+          isNull(organizationMembers.deletedAt)
+        )
+      );
+    
+    return result[0]?.count || 0;
+  };
+
+  if (tx) {
+    return executeQuery(tx);
+  } else {
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
+  }
 }
 
 /**
  * Get active member count for an organization
  */
-export async function getActiveMemberCount(organizationId: string): Promise<number> {
-  const tenantId = organizationId;
-  const result = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(organizationMembers)
-    .where(
-      and(
-        eq(organizationMembers.organizationId, organizationId),
-        eq(organizationMembers.status, "active"),
-        isNull(organizationMembers.deletedAt)
-      )
-    );
-  
-  return result[0]?.count || 0;
+export async function getActiveMemberCount(
+  organizationId: string,
+  tx?: NodePgDatabase<any>
+): Promise<number> {
+  const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
+    const result = await dbOrTx
+      .select({ count: sql<number>`count(*)::int` })
+      .from(organizationMembers)
+      .where(
+        and(
+          eq(organizationMembers.organizationId, organizationId),
+          eq(organizationMembers.status, "active"),
+          isNull(organizationMembers.deletedAt)
+        )
+      );
+    
+    return result[0]?.count || 0;
+  };
+
+  if (tx) {
+    return executeQuery(tx);
+  } else {
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
+  }
 }
 
 /**
@@ -190,20 +276,28 @@ export async function getActiveMemberCount(organizationId: string): Promise<numb
  */
 export async function getMembersByRole(
   organizationId: string,
-  role: "member" | "steward" | "officer" | "admin"
+  role: "member" | "steward" | "officer" | "admin",
+  tx?: NodePgDatabase<any>
 ): Promise<SelectOrganizationMember[]> {
-  const tenantId = organizationId;
-  return await db
-    .select()
-    .from(organizationMembers)
-    .where(
-      and(
-        eq(organizationMembers.organizationId, organizationId),
-        eq(organizationMembers.role, role),
-        isNull(organizationMembers.deletedAt)
+  const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
+    return await dbOrTx
+      .select()
+      .from(organizationMembers)
+      .where(
+        and(
+          eq(organizationMembers.organizationId, organizationId),
+          eq(organizationMembers.role, role),
+          isNull(organizationMembers.deletedAt)
+        )
       )
-    )
-    .orderBy(desc(organizationMembers.createdAt));
+      .orderBy(desc(organizationMembers.createdAt));
+  };
+
+  if (tx) {
+    return executeQuery(tx);
+  } else {
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
+  }
 }
 
 /**
@@ -211,20 +305,28 @@ export async function getMembersByRole(
  */
 export async function getMembersByStatus(
   organizationId: string,
-  status: "active" | "inactive" | "on-leave"
+  status: "active" | "inactive" | "on-leave",
+  tx?: NodePgDatabase<any>
 ): Promise<SelectOrganizationMember[]> {
-  const tenantId = organizationId;
-  return await db
-    .select()
-    .from(organizationMembers)
-    .where(
-      and(
-        eq(organizationMembers.organizationId, organizationId),
-        eq(organizationMembers.status, status),
-        isNull(organizationMembers.deletedAt)
+  const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
+    return await dbOrTx
+      .select()
+      .from(organizationMembers)
+      .where(
+        and(
+          eq(organizationMembers.organizationId, organizationId),
+          eq(organizationMembers.status, status),
+          isNull(organizationMembers.deletedAt)
+        )
       )
-    )
-    .orderBy(desc(organizationMembers.createdAt));
+      .orderBy(desc(organizationMembers.createdAt));
+  };
+
+  if (tx) {
+    return executeQuery(tx);
+  } else {
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
+  }
 }
 
 /**
@@ -237,45 +339,53 @@ export async function searchMembers(
     role?: "member" | "steward" | "officer" | "admin";
     status?: "active" | "inactive" | "on-leave";
     department?: string;
-  }
+  },
+  tx?: NodePgDatabase<any>
 ): Promise<SelectOrganizationMember[]> {
-  const tenantId = organizationId;
-  const conditions = [
-    eq(organizationMembers.organizationId, organizationId),
-    isNull(organizationMembers.deletedAt),
-  ];
+  const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
+    const conditions = [
+      eq(organizationMembers.organizationId, organizationId),
+      isNull(organizationMembers.deletedAt),
+    ];
 
-  // Add full-text search if query provided
-  if (searchQuery && searchQuery.trim()) {
-    // Convert search query to tsquery format (handle multiple words)
-    const tsQuery = searchQuery.trim().split(/\s+/).join(' & ');
-    conditions.push(sql`${organizationMembers.searchVector} @@ to_tsquery('english', ${tsQuery})`);
-  }
+    // Add full-text search if query provided
+    if (searchQuery && searchQuery.trim()) {
+      // Convert search query to tsquery format (handle multiple words)
+      const tsQuery = searchQuery.trim().split(/\s+/).join(' & ');
+      conditions.push(sql`${organizationMembers.searchVector} @@ to_tsquery('english', ${tsQuery})`);
+    }
 
-  // Add filters
-  if (filters?.role) {
-    conditions.push(eq(organizationMembers.role, filters.role));
-  }
-  if (filters?.status) {
-    conditions.push(eq(organizationMembers.status, filters.status));
-  }
-  if (filters?.department) {
-    conditions.push(eq(organizationMembers.department, filters.department));
-  }
+    // Add filters
+    if (filters?.role) {
+      conditions.push(eq(organizationMembers.role, filters.role));
+    }
+    if (filters?.status) {
+      conditions.push(eq(organizationMembers.status, filters.status));
+    }
+    if (filters?.department) {
+      conditions.push(eq(organizationMembers.department, filters.department));
+    }
 
-  const query = db
-    .select()
-    .from(organizationMembers)
-    .where(and(...conditions));
+    const query = dbOrTx
+      .select()
+      .from(organizationMembers)
+      .where(and(...conditions));
 
-  // Order by relevance if search query provided
-  if (searchQuery && searchQuery.trim()) {
-    const tsQuery = searchQuery.trim().split(/\s+/).join(' & ');
-    return await query.orderBy(
-      sql`ts_rank(${organizationMembers.searchVector}, to_tsquery('english', ${tsQuery})) DESC`
-    );
+    // Order by relevance if search query provided
+    if (searchQuery && searchQuery.trim()) {
+      const tsQuery = searchQuery.trim().split(/\s+/).join(' & ');
+      return await query.orderBy(
+        sql`ts_rank(${organizationMembers.searchVector}, to_tsquery('english', ${tsQuery})) DESC`
+      );
+    }
+
+    return await query.orderBy(desc(organizationMembers.createdAt));
+  };
+
+  if (tx) {
+    return executeQuery(tx);
+  } else {
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
-
-  return await query.orderBy(desc(organizationMembers.createdAt));
 }
 

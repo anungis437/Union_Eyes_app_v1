@@ -84,10 +84,10 @@ export async function notifyAwardIssued(awardId: string) {
       recipientName: recipient.email.split('@')[0] || 'Member',
       recipientEmail: recipient.email,
       issuerName: issuer?.email.split('@')[0] || 'A colleague',
-      awardTypeName: award.awardType.name,
+      awardTypeName: award.awardType?.name || 'Award',
       awardTypeIcon: undefined,
       message: award.reason || 'Great work!',
-      creditsAwarded: award.awardType.defaultCreditAmount || 0,
+      creditsAwarded: award.awardType?.defaultCreditAmount || 0,
       awardId: award.id,
       orgName: award.organization.name,
     });
@@ -139,17 +139,24 @@ export async function notifyAwardPendingApproval(awardId: string) {
 
     // Send notification to all admins
     const results = await Promise.allSettled(
-      admins.map((admin) => {
+      admins.map(async (admin) => {
         if (!admin.email) return Promise.resolve();
         
+        // Fetch admin user details
+        const adminUser = await db.query.users.findFirst({
+          where: eq(users.id, admin.userId),
+        });
+
+        if (!adminUser) return Promise.resolve();
+        
         return sendApprovalRequestEmail({
-          adminName: admin.name || admin.email.split('@')[0] || 'Admin',
-          adminEmail: admin.email,
-          awardTypeName: award.awardType.name,
+          adminName: adminUser.displayName || adminUser.email.split('@')[0] || 'Admin',
+          adminEmail: adminUser.email,
+          awardTypeName: award.awardType?.name || 'Award',
           recipientName: recipient?.email.split('@')[0] || 'Unknown',
           issuerName: issuer?.email.split('@')[0] || 'Unknown',
           message: award.reason || '',
-          creditsToAward: award.awardType.defaultCreditAmount || 0,
+          creditsToAward: award.awardType?.defaultCreditAmount || 0,
           awardId: award.id,
           orgName: award.organization.name,
         });
@@ -168,115 +175,38 @@ export async function notifyAwardPendingApproval(awardId: string) {
 /**
  * Get users with expiring credits within the specified timeframe
  * Uses batched queries for performance
+ * 
+ * NOTE: Credit expiration is not currently implemented in the schema.
+ * This function returns an empty array until expiration tracking is added.
  */
 export async function getExpiringCreditsUsers(daysBeforeExpiration: number, batchSize = BATCH_SIZE) {
-  const expirationDate = new Date();
-  expirationDate.setDate(expirationDate.getDate() + daysBeforeExpiration);
-
-  const now = new Date();
+  // TODO: Implement credit expiration tracking in rewardWalletLedger schema
+  // When implemented, add expiresAt timestamp field and expirationProcessed boolean
   
-  // Query for expiring credits with proper indexing
-  const expiringEntries = await db.query.rewardWalletLedger.findMany({
-    where: and(
-      eq(rewardWalletLedger.transactionType, 'earn'),
-      lte(rewardWalletLedger.expiresAt, expirationDate),
-      gte(rewardWalletLedger.expiresAt, now)
-    ),
-    orderBy: [asc(rewardWalletLedger.expiresAt)],
-    limit: batchSize,
-  });
-
-  // Aggregate by user
-  const userExpirations = new Map<string, {
-    userId: string;
-    totalExpiring: number;
-    earliestExpiration: Date;
-  }>();
-
-  for (const entry of expiringEntries) {
-    const existing = userExpirations.get(entry.userId);
-    if (existing) {
-      existing.totalExpiring += Math.abs(entry.pointsChange);
-      if (entry.expiresAt! < existing.earliestExpiration) {
-        existing.earliestExpiration = entry.expiresAt!;
-      }
-    } else {
-      userExpirations.set(entry.userId, {
-        userId: entry.userId,
-        totalExpiring: Math.abs(entry.pointsChange),
-        earliestExpiration: entry.expiresAt!,
-      });
-    }
-  }
-
-  return Array.from(userExpirations.values());
+  // For now, return empty array since expiration is not tracked
+  return [];
 }
 
 /**
  * Send credit expiration notification to a single user
+ * 
+ * NOTE: Credit expiration is not currently implemented.
+ * This function logs a warning and returns success without sending emails.
  */
 async function sendExpirationNotificationToUser(
   userId: string,
   daysRemaining: number
 ): Promise<NotificationResult> {
   try {
-    // Fetch user details with organization
-    const user = await db.query.users.findFirst({
-      where: eq(users.userId, userId),
-    });
-
-    if (!user?.email) {
-      return { success: false, userId, emailSent: false, error: 'No email found' };
-    }
-
-    // Get expiring credits details
-    const expirationDate = new Date();
-    expirationDate.setDate(expirationDate.getDate() + daysRemaining);
-
-    const expiringCredits = await db.query.rewardWalletLedger.findMany({
-      where: and(
-        eq(rewardWalletLedger.userId, userId),
-        eq(rewardWalletLedger.transactionType, 'earn'),
-        lte(rewardWalletLedger.expiresAt, expirationDate),
-        gte(rewardWalletLedger.expiresAt, new Date())
-      ),
-      orderBy: [asc(rewardWalletLedger.expiresAt)],
-    });
-
-    const totalExpiring = expiringCredits.reduce(
-      (sum, entry) => sum + Math.abs(entry.pointsChange),
-      0
-    );
-
-    // Get organization name (simplified - would need proper relation)
-    const org = await db.query.organizations.findFirst({
-      where: eq(organizations.id, user.organizationId || 'default'),
-    });
-
-    await sendCreditExpirationEmail({
-      recipientName: user.email.split('@')[0] || 'Member',
-      recipientEmail: user.email,
-      expiringCredits: totalExpiring,
-      expirationDate: expirationDate,
-      daysRemaining,
-      organizationName: org?.name || 'Your Organization',
-      expiringEntries: expiringCredits.map((e) => ({
-        amount: Math.abs(e.pointsChange),
-        expiresAt: e.expiresAt!,
-        description: e.description || 'Credit earned',
-      })),
-    });
-
-    logger.info('[Notifications] Sent expiration warning', {
+    // TODO: Implement when credit expiration tracking is added to schema
+    logger.info('[Notifications] Credit expiration not yet implemented', {
       userId,
-      email: user.email,
-      totalExpiring,
       daysRemaining,
     });
     
-    return { success: true, userId, emailSent: true };
+    return { success: true, userId, emailSent: false };
   } catch (error) {
-    logger.error('[Notifications] Error sending expiration', { error, userId });
+    logger.error('[Notifications] Error in expiration notification placeholder', { error, userId });
     return { 
       success: false, 
       userId, 
@@ -378,7 +308,7 @@ export async function notifyRedemptionConfirmed(redemptionId: string) {
 
     // Fetch user details
     const user = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.userId, redemption.userId),
+      where: (users, { eq }) => eq(users.id, redemption.userId),
     });
 
     if (!user?.email) {
@@ -392,7 +322,7 @@ export async function notifyRedemptionConfirmed(redemptionId: string) {
       creditsRedeemed: redemption.creditsSpent || 0,
       checkoutUrl: redemption.providerCheckoutId || (redemption.providerPayloadJson as any)?.checkout_url,
       redemptionId: redemption.id,
-      orgName: redemption.organization.name,
+      orgName: redemption.organization?.name || 'Organization',
     });
 
     return { success: true };
@@ -468,34 +398,27 @@ export async function getNotificationStats(organizationId?: string) {
       recentRedemptions: 0,
     };
 
-    // Count expiring entries
-    const sevenDays = new Date();
-    sevenDays.setDate(sevenDays.getDate() + 7);
-    
-    const expiringCount = await db.$count(
-      rewardWalletLedger,
-      and(
-        eq(rewardWalletLedger.transactionType, 'earn'),
-        lte(rewardWalletLedger.expiresAt, sevenDays)
-      )
-    );
-    
-    stats.totalExpiringNotifications7Days = expiringCount;
+    // Credit expiration not yet implemented
+    stats.totalExpiringNotifications7Days = 0;
 
     // Count pending awards
-    stats.pendingAwards = await db.$count(
-      recognitionAwards,
-      eq(recognitionAwards.status, 'pending')
-    );
+    const [pendingResult] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(recognitionAwards)
+      .where(eq(recognitionAwards.status, 'pending'));
+    
+    stats.pendingAwards = pendingResult?.count || 0;
 
     // Count recent redemptions
     const oneDayAgo = new Date();
     oneDayAgo.setDate(oneDayAgo.getDate() - 1);
     
-    stats.recentRedemptions = await db.$count(
-      rewardRedemptions,
-      gte(rewardRedemptions.createdAt, oneDayAgo)
-    );
+    const [redemptionResult] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(rewardRedemptions)
+      .where(gte(rewardRedemptions.createdAt, oneDayAgo));
+    
+    stats.recentRedemptions = redemptionResult?.count || 0;
 
     return { success: true, data: stats };
   } catch (error) {
@@ -507,6 +430,9 @@ export async function getNotificationStats(organizationId?: string) {
 /**
  * Schedule future expiration notifications
  * This would be called after credits are earned
+ * 
+ * NOTE: Credit expiration is not currently implemented.
+ * This function is a placeholder for future functionality.
  */
 export async function scheduleExpirationNotifications(
   userId: string,
@@ -514,38 +440,20 @@ export async function scheduleExpirationNotifications(
   expiresAt: Date
 ) {
   try {
-    const now = new Date();
-    
-    // Calculate notification dates
-    const notificationDates = [
-      new Date(expiresAt.getTime() - 30 * 24 * 60 * 60 * 1000), // 30 days before
-      new Date(expiresAt.getTime() - 14 * 24 * 60 * 60 * 1000), // 14 days before
-      new Date(expiresAt.getTime() - 7 * 24 * 60 * 60 * 1000),  // 7 days before
-    ];
-
-    // Filter out past dates
-    const futureNotifications = notificationDates.filter((d) => d > now);
-
-    if (futureNotifications.length === 0) {
-      logger.info('[Notifications] No future notifications needed for user', { userId });
-      return { scheduled: 0 };
-    }
-
-    // In production, this would create scheduled job entries
-    // For now, just log
-    logger.info('[Notifications] Scheduled expiration reminders', {
+    // TODO: Implement when credit expiration tracking is added to schema
+    logger.info('[Notifications] Credit expiration scheduling not yet implemented', {
       userId,
-      count: futureNotifications.length,
-      dates: futureNotifications.map((d) => d.toISOString()),
+      creditsEarned,
+      proposedExpiresAt: expiresAt.toISOString(),
     });
 
     return { 
       success: true, 
-      scheduled: futureNotifications.length,
-      notificationDates: futureNotifications 
+      scheduled: 0,
+      message: 'Credit expiration not yet implemented'
     };
   } catch (error) {
-    logger.error('[Notifications] Error scheduling notifications', { error, userId });
+    logger.error('[Notifications] Error in expiration scheduling placeholder', { error, userId });
     return { success: false, error };
   }
 }

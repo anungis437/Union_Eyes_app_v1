@@ -7,10 +7,10 @@
 
 import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser, BaseAuthContext } from '@/lib/api-auth-guard';
 import { getReports, createReport } from '@/db/queries/analytics-queries';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
-import { logApiAuditEvent } from '@/lib/middleware/request-validation';
+import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { 
   standardErrorResponse, 
   standardSuccessResponse, 
@@ -18,7 +18,7 @@ import {
 } from '@/lib/api/standardized-responses';
 import { checkEntitlement, getCreditCost } from '@/lib/services/entitlements';
 
-async function getHandler(req: NextRequest, context) {
+async function getHandler(req: NextRequest, context: BaseAuthContext) {
   const { userId, organizationId } = context;
 
   // Check entitlement for advanced analytics
@@ -37,8 +37,8 @@ async function getHandler(req: NextRequest, context) {
 
   // Rate limit reports list
   const rateLimitResult = await checkRateLimit(
-    RATE_LIMITS.ANALYTICS_QUERY,
-    `reports-list:${userId}`
+    `reports-list:${userId}`,
+    RATE_LIMITS.ANALYTICS_QUERY
   );
 
   if (!rateLimitResult.allowed) {
@@ -68,14 +68,14 @@ async function getHandler(req: NextRequest, context) {
     const reports = await getReports(organizationId, userId, filters);
 
     // Log audit event
-    await logApiAuditEvent({
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(),
       userId,
-      organizationId,
-      action: 'reports_list',
-      resourceType: 'report',
-      resourceId: 'all',
-      metadata: { count: reports.length, filters },
-      dataType: 'ANALYTICS',
+      endpoint: '/api/reports',
+      method: 'GET',
+      eventType: 'success',
+      severity: 'low',
+      details: { count: reports.length, filters },
     });
 
     return standardSuccessResponse({ 
@@ -91,7 +91,7 @@ async function getHandler(req: NextRequest, context) {
   }
 }
 
-async function postHandler(req: NextRequest, context) {
+async function postHandler(req: NextRequest, context: BaseAuthContext) {
   const { userId, organizationId } = context;
 
   // Check entitlement for advanced analytics (report builder)
@@ -110,8 +110,8 @@ async function postHandler(req: NextRequest, context) {
 
   // Rate limit report creation
   const rateLimitResult = await checkRateLimit(
-    RATE_LIMITS.REPORT_BUILDER,
-    `reports-create:${userId}`
+    `reports-create:${userId}`,
+    RATE_LIMITS.REPORT_BUILDER
   );
 
   if (!rateLimitResult.allowed) {
@@ -151,19 +151,19 @@ async function postHandler(req: NextRequest, context) {
     });
 
     // Log audit event
-    await logApiAuditEvent({
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(),
       userId,
-      organizationId,
-      action: 'report_create',
-      resourceType: 'report',
-      resourceId: report.id,
-      metadata: { reportType: body.reportType, category: body.category },
-      dataType: 'ANALYTICS',
+      endpoint: '/api/reports',
+      method: 'POST',
+      eventType: 'success',
+      severity: 'low',
+      details: { reportId: report.id, reportType: body.reportType, category: body.category },
     });
 
     return standardSuccessResponse({ 
       report,
-    }, 'Report created successfully', 201);
+    });
   } catch (error) {
     return standardErrorResponse(
       ErrorCode.INTERNAL_ERROR,
@@ -173,7 +173,7 @@ async function postHandler(req: NextRequest, context) {
   }
 }
 
-export const GET = withRoleAuth(30, getHandler);
+export const GET = withRoleAuth('member', getHandler);
 
 const reportsSchema = z.object({
   name: z.string().min(1, 'name is required'),
@@ -187,5 +187,5 @@ const reportsSchema = z.object({
 });
 
 
-export const POST = withRoleAuth(50, postHandler);
+export const POST = withRoleAuth('steward', postHandler);
 

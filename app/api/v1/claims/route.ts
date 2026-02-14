@@ -21,6 +21,7 @@ import { claims } from '@/db/schema';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { eq } from 'drizzle-orm';
 import { checkEntitlement } from '@/lib/services/entitlements';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 import { 
   standardErrorResponse, 
@@ -39,8 +40,10 @@ async function handleV1(request: NextRequest): Promise<NextResponse> {
     );
   }
 
+  const organizationId = user.organizationId;
+
   // Check entitlement for API access
-  const entitlement = await checkEntitlement(user.organizationId, 'api_access');
+  const entitlement = await checkEntitlement(organizationId, 'api_access');
   if (!entitlement.allowed) {
     return NextResponse.json(
       { 
@@ -53,10 +56,9 @@ async function handleV1(request: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const claimsList = await withRLSContext(
-    { organizationId: user.organizationId },
-    async (db) => db.select().from(claims).where(eq(claims.organizationId, user.organizationId)).limit(20)
-  );
+  const claimsList = await withRLSContext(async (tx: NodePgDatabase<any>) => {
+    return await tx.select().from(claims).where(eq(claims.organizationId, organizationId)).limit(20);
+  });
 
   // V1 response format
   return NextResponse.json({
@@ -78,8 +80,10 @@ async function handleV2(request: NextRequest): Promise<NextResponse> {
     );
   }
 
+  const organizationId = user.organizationId;
+
   // Check entitlement for API access
-  const entitlement = await checkEntitlement(user.organizationId, 'api_access');
+  const entitlement = await checkEntitlement(organizationId, 'api_access');
   if (!entitlement.allowed) {
     return NextResponse.json(
       { 
@@ -97,10 +101,9 @@ async function handleV2(request: NextRequest): Promise<NextResponse> {
   const limit = parseInt(searchParams.get('limit') || '20');
   const offset = (page - 1) * limit;
 
-  const claimsList = await withRLSContext(
-    { organizationId: user.organizationId },
-    async (db) => db.select().from(claims).where(eq(claims.organizationId, user.organizationId)).limit(limit).offset(offset)
-  );
+  const claimsList = await withRLSContext(async (tx: NodePgDatabase<any>) => {
+    return await tx.select().from(claims).where(eq(claims.organizationId, organizationId)).limit(limit).offset(offset);
+  });
 
   // V2 response format (improved)
   return NextResponse.json({

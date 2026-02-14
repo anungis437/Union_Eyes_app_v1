@@ -16,6 +16,8 @@ import { ClaimStatus } from './workflow-engine';
 import * as React from 'react';
 import { clerkClient } from '@clerk/nextjs/server';
 import { deadlines } from '../db/schema/deadlines-schema';
+import { generateStatusUpdateMessage } from './member-experience/human-explainers';
+import { getDaysUntilDeadline } from './workflow-engine';
 
 interface ClaimNotificationData {
   claimId: string;
@@ -24,6 +26,8 @@ interface ClaimNotificationData {
   previousStatus?: string;
   newStatus: string;
   notes?: string;
+  humanMessage?: string; // SPRINT 7: Human-readable status explanation
+  daysInState?: number; // SPRINT 7: Context for timeline message
   // deadline?: Date; // Not yet implemented in claims schema
   // daysRemaining?: number; // Not yet implemented in claims schema
   memberEmail: string;
@@ -85,6 +89,17 @@ export async function sendClaimStatusNotification(
 }
     }
 
+    // SPRINT 7: Generate human-readable status update message
+    // Uses compassionate, context-aware language from timeline builder
+    const daysInState = 0; // Just changed, so 0 days in new state
+    const priority = 'medium'; // Default priority (can be enhanced with actual priority later)
+    const humanMessage = generateStatusUpdateMessage(
+      newStatus,
+      daysInState,
+      priority,
+      assignedStewardName
+    );
+
     // Build notification data (deadline support not implemented in schema yet)
     const notificationData: ClaimNotificationData = {
       claimId: claim.claimId,
@@ -93,6 +108,8 @@ export async function sendClaimStatusNotification(
       previousStatus,
       newStatus,
       notes,
+      humanMessage,
+      daysInState,
       memberEmail,
       memberName,
       assignedStewardEmail,
@@ -147,7 +164,7 @@ async function sendClaimNotificationEmail(
       });
     }
 
-    // Generate email HTML (deadline tracking not yet implemented)
+    // Generate email HTML with human-readable message (SPRINT 7)
     const emailHtml = await render(
       React.createElement(ClaimStatusNotificationEmail, {
         claimId: data.claimId,
@@ -157,6 +174,7 @@ async function sendClaimNotificationEmail(
         newStatus: data.newStatus,
         memberName: data.memberName,
         notes: data.notes,
+        humanMessage: data.humanMessage, // Context-aware compassionate message
         // deadline: undefined, // Not yet implemented in claims schema
         // daysRemaining: undefined, // Not yet implemented in claims schema
         assignedStewardName: data.assignedStewardName,

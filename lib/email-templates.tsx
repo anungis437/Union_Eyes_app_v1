@@ -29,7 +29,9 @@ interface ClaimNotificationEmailProps {
   daysRemaining?: number;
   assignedStewardName?: string;
   claimUrl: string;
+  humanMessage?: string; // SPRINT 7: Human-readable status explanation from timeline builder
 }
+
 
 /**
  * Get status display name and description
@@ -96,6 +98,7 @@ export function ClaimStatusNotificationEmail({
   daysRemaining,
   assignedStewardName,
   claimUrl,
+  humanMessage,
 }: ClaimNotificationEmailProps) {
   const statusInfo = getStatusInfo(newStatus);
   const isInitialSubmission = !previousStatus || previousStatus === 'submitted';
@@ -177,8 +180,10 @@ export function ClaimStatusNotificationEmail({
               )}
             </Section>
 
-            {/* Status Description */}
-            <Text style={text}>{statusInfo.description}</Text>
+            {/* Status Description - SPRINT 7: Use human-readable message if available */}
+            <Text style={text}>
+              {humanMessage || statusInfo.description}
+            </Text>
 
             {/* Notes from Steward */}
             {notes && (

@@ -31,7 +31,7 @@ const electionSchema = z.object({
 });
 
 export const GET = async (request: NextRequest) =>
-  withEnhancedRoleAuth(10, async (_request, context) => {
+  withEnhancedRoleAuth<any>(10, async (_request, context) => {
     const { userId } = context;
     const parsed = listElectionsSchema.safeParse(
       Object.fromEntries(request.nextUrl.searchParams)
@@ -83,17 +83,17 @@ export const GET = async (request: NextRequest) =>
   })(request, {});
 
 export const POST = async (request: NextRequest) =>
-  withEnhancedRoleAuth(20, async (_request, context) => {
+  withEnhancedRoleAuth<any>(20, async (_request, context) => {
     const { userId } = context;
 
     let rawBody: unknown;
     try {
       rawBody = await request.json();
-    } catch {
+    } catch (e) {
       return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Invalid JSON in request body',
-      error
+      e
     );
     }
 
@@ -102,7 +102,7 @@ export const POST = async (request: NextRequest) =>
       return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Invalid request body',
-      error
+      parsed.error
     );
     }
 
@@ -110,14 +110,14 @@ export const POST = async (request: NextRequest) =>
       const body = parsed.data;
       const electionInput: NewCouncilElection = {
         electionYear: body.electionYear,
-        electionDate: new Date(body.electionDate),
+        electionDate: body.electionDate,
         positionsAvailable: body.positionsAvailable,
         candidates: body.candidates,
         winners: body.winners,
         totalVotes: body.totalVotes,
         participationRate: body.participationRate,
         verifiedBy: body.verifiedBy,
-        verificationDate: body.verificationDate ? new Date(body.verificationDate) : undefined,
+        verificationDate: body.verificationDate || undefined,
         contestedResults: body.contestedResults ?? false,
       };
 
@@ -133,11 +133,7 @@ export const POST = async (request: NextRequest) =>
         details: { electionId: election.id, electionYear: body.electionYear },
       });
 
-      return standardSuccessResponse(
-      { data: election },
-      undefined,
-      201
-    );
+      return standardSuccessResponse({ data: election });
     } catch (error) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),

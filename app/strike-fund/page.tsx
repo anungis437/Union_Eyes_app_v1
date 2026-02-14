@@ -68,10 +68,6 @@ export default function StrikeFundDashboardPage() {
       setApplications(applicationsData);
     } catch (error) {
       console.error('Error fetching strike fund data:', error);
-        },
-      ]);
-    } catch (error) {
-      console.error('Error fetching strike fund data:', error);
     } finally {
       setLoading(false);
     }

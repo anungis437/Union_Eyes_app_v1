@@ -74,12 +74,6 @@ export default function DuesDashboardPage() {
       setLoading(false);
     }
   };
-    } catch (error) {
-      console.error('Error fetching dues data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {

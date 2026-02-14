@@ -19,7 +19,7 @@
  * ```
  */
 
-import { db } from '@/db/database';
+import { db } from '@/database';
 import { 
   message_log, 
   campaigns, 
@@ -159,30 +159,32 @@ async function processBatch(messages: any[]): Promise<ProcessingStats> {
       let externalId: string | null = null;
 
       if (message.channel === 'email') {
-        const result = await emailService.send({
+        // Process variables/template substitution in body if needed
+        let processedBody = message.body;
+        if (message.variables && typeof message.variables === 'object') {
+          processedBody = substituteVariables(message.body, message.variables as Record<string, any>);
+        }
+        
+        const messageId = await emailService.send({
           to: message.recipientEmail,
           subject: message.subject,
-          body: message.body,
-          variables: message.variables,
+          body: processedBody,
         });
-        success = result.success;
-        externalId = result.messageId || null;
-
-        if (!success) {
-          throw new Error(result.error || 'Email send failed');
-        }
+        success = true;
+        externalId = messageId || null;
       } else if (message.channel === 'sms') {
-        const result = await smsService.send({
-          to: message.recipientPhone,
-          body: message.body,
-          variables: message.variables,
-        });
-        success = result.success;
-        externalId = result.messageId || null;
-
-        if (!success) {
-          throw new Error(result.error || 'SMS send failed');
+        // Process variables/template substitution in body if needed
+        let processedBody = message.body;
+        if (message.variables && typeof message.variables === 'object') {
+          processedBody = substituteVariables(message.body, message.variables as Record<string, any>);
         }
+        
+        const messageId = await smsService.send({
+          to: message.recipientPhone,
+          body: processedBody,
+        });
+        success = true;
+        externalId = messageId || null;
       } else {
         throw new Error(`Unsupported channel: ${message.channel}`);
       }
@@ -240,34 +242,24 @@ async function shouldSkipMessage(message: any): Promise<boolean> {
 
     if (!prefs) return false;
 
-    // Check if channel is disabled
-    if (message.channel === 'email' && !prefs.emailEnabled) return true;
-    if (message.channel === 'sms' && !prefs.smsEnabled) return true;
-    if (message.channel === 'push' && !prefs.pushEnabled) return true;
-
-    // Check if user has unsubscribed
-    if (prefs.unsubscribedAt) return true;
+    // Check if channel is disabled (emailOptIn/smsOptIn are strings: 'true' or 'false')
+    if (message.channel === 'email' && prefs.emailOptIn !== 'true') return true;
+    if (message.channel === 'sms' && prefs.smsOptIn !== 'true') return true;
 
     // Check quiet hours (only for non-urgent messages)
-    const campaign = await db
-      .select({ type: campaigns.type })
-      .from(campaigns)
-      .where(eq(campaigns.id, message.campaignId))
-      .limit(1);
-
-    if (campaign[0] && campaign[0].type !== 'alert' && campaign[0].type !== 'transactional') {
-      if (prefs.quietHours?.enabled) {
-        const now = new Date();
-        const isQuietHour = checkQuietHours(now, prefs.quietHours);
-        if (isQuietHour) {
-          // Reschedule for after quiet hours
-          const nextAvailableTime = calculateNextAvailableTime(now, prefs.quietHours);
-          await db
-            .update(message_log)
-            .set({ scheduledAt: nextAvailableTime })
-            .where(eq(message_log.id, message.id));
-          return true; // Skip for now, will process later
-        }
+    // Note: Campaign type checking removed as schema doesn't have a type field
+    // Quiet hours apply to all messages unless they need immediate delivery
+    if (prefs.quietHoursStart && prefs.quietHoursEnd) {
+      const now = new Date();
+      const isQuietHour = checkQuietHours(now, prefs.quietHoursStart, prefs.quietHoursEnd);
+      if (isQuietHour) {
+        // Reschedule for after quiet hours
+        const nextAvailableTime = calculateNextAvailableTime(now, prefs.quietHoursStart, prefs.quietHoursEnd);
+        await db
+          .update(message_log)
+          .set({ scheduledAt: nextAvailableTime })
+          .where(eq(message_log.id, message.id));
+        return true; // Skip for now, will process later
       }
     }
 
@@ -281,12 +273,12 @@ async function shouldSkipMessage(message: any): Promise<boolean> {
 /**
  * Check if current time falls within quiet hours
  */
-function checkQuietHours(now: Date, quietHours: any): boolean {
-  if (!quietHours || !quietHours.enabled) return false;
+function checkQuietHours(now: Date, quietHoursStart: string, quietHoursEnd: string): boolean {
+  if (!quietHoursStart || !quietHoursEnd) return false;
 
   // Parse time strings (format: "HH:MM")
-  const [startHour, startMinute] = quietHours.start.split(':').map(Number);
-  const [endHour, endMinute] = quietHours.end.split(':').map(Number);
+  const [startHour, startMinute] = quietHoursStart.split(':').map(Number);
+  const [endHour, endMinute] = quietHoursEnd.split(':').map(Number);
 
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
   const startMinutes = startHour * 60 + startMinute;
@@ -303,8 +295,8 @@ function checkQuietHours(now: Date, quietHours: any): boolean {
 /**
  * Calculate next available time after quiet hours
  */
-function calculateNextAvailableTime(now: Date, quietHours: any): Date {
-  const [endHour, endMinute] = quietHours.end.split(':').map(Number);
+function calculateNextAvailableTime(now: Date, quietHoursStart: string, quietHoursEnd: string): Date {
+  const [endHour, endMinute] = quietHoursEnd.split(':').map(Number);
   
   const nextAvailable = new Date(now);
   nextAvailable.setHours(endHour, endMinute, 0, 0);
@@ -373,19 +365,23 @@ async function scheduleRetry(
  * Increment campaign statistic
  */
 async function incrementCampaignStat(campaignId: string, stat: 'sent' | 'failed') {
-  const field = stat === 'sent' ? 'sent' : 'failed';
-  
-  await db
-    .update(campaigns)
-    .set({
-      stats: sql`jsonb_set(
-        COALESCE(stats, '{}'::jsonb),
-        '{${sql.raw(field)}}',
-        to_jsonb(COALESCE((stats->>'${sql.raw(field)}')::int, 0) + 1)
-      )`,
-      updatedAt: new Date(),
-    })
-    .where(eq(campaigns.id, campaignId));
+  if (stat === 'sent') {
+    await db
+      .update(campaigns)
+      .set({
+        sentCount: sql`COALESCE(${campaigns.sentCount}, 0) + 1`,
+        updatedAt: new Date(),
+      })
+      .where(eq(campaigns.id, campaignId));
+  } else {
+    await db
+      .update(campaigns)
+      .set({
+        failedCount: sql`COALESCE(${campaigns.failedCount}, 0) + 1`,
+        updatedAt: new Date(),
+      })
+      .where(eq(campaigns.id, campaignId));
+  }
 }
 
 /**
@@ -444,7 +440,7 @@ export async function processCampaignMessages(campaignId: string): Promise<Proce
           .update(campaigns)
           .set({
             status: 'sending',
-            sentAt: new Date(),
+            startedAt: new Date(),
             updatedAt: new Date(),
           })
           .where(eq(campaigns.id, campaignId));
@@ -520,4 +516,17 @@ export async function getQueueStatus() {
     failed: failedCount.count,
     timestamp: now,
   };
+}
+
+/**
+ * Substitute variables in message template
+ */
+function substituteVariables(template: string, variables: Record<string, any>): string {
+  let result = template;
+  for (const [key, value] of Object.entries(variables)) {
+    // Support both {{variable}} and {variable} syntax
+    result = result.replace(new RegExp(`{{${key}}}`, 'g'), String(value));
+    result = result.replace(new RegExp(`{${key}}`, 'g'), String(value));
+  }
+  return result;
 }

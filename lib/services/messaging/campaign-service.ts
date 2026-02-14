@@ -18,6 +18,7 @@
 
 import { db } from '@/db';
 import { sql, eq, and, desc, inArray } from 'drizzle-orm';
+import { campaigns, messageLog } from '@/db/schema';
 import type {
   Campaign,
   InsertCampaign,
@@ -80,7 +81,7 @@ export class CampaignService {
     organizationId: string,
   ): Promise<Campaign> {
     const [campaign] = await db
-      .insert(db.schema.campaigns)
+      .insert(campaigns)
       .values({
         ...data,
         organizationId,
@@ -97,11 +98,11 @@ export class CampaignService {
   async getCampaign(campaignId: string, organizationId: string): Promise<Campaign | null> {
     const [campaign] = await db
       .select()
-      .from(db.schema.campaigns)
+      .from(campaigns)
       .where(
         and(
-          eq(db.schema.campaigns.id, campaignId),
-          eq(db.schema.campaigns.organizationId, organizationId),
+          eq(campaigns.id, campaignId),
+          eq(campaigns.organizationId, organizationId),
         ),
       )
       .limit(1);
@@ -126,29 +127,29 @@ export class CampaignService {
 
     let query = db
       .select()
-      .from(db.schema.campaigns)
-      .where(eq(db.schema.campaigns.organizationId, organizationId));
+      .from(campaigns)
+      .where(eq(campaigns.organizationId, organizationId));
 
     if (status) {
-      query = query.where(eq(db.schema.campaigns.status, status as any));
+      query = query.where(eq(campaigns.status, status as any));
     }
 
     if (channel) {
-      query = query.where(eq(db.schema.campaigns.channel, channel as any));
+      query = query.where(eq(campaigns.channel, channel as any));
     }
 
-    const campaigns = await query
-      .orderBy(desc(db.schema.campaigns.createdAt))
+    const campaignsList = await query
+      .orderBy(desc(campaigns.createdAt))
       .limit(pageSize)
       .offset(offset);
 
     const [{ count }] = await db
       .select({ count: sql<number>`count(*)` })
-      .from(db.schema.campaigns)
-      .where(eq(db.schema.campaigns.organizationId, organizationId));
+      .from(campaigns)
+      .where(eq(campaigns.organizationId, organizationId));
 
     return {
-      campaigns,
+      campaigns: campaignsList,
       total: count,
     };
   }
@@ -245,14 +246,14 @@ export class CampaignService {
 
     // Update campaign status to 'sending'
     await db
-      .update(db.schema.campaigns)
+      .update(campaigns)
       .set({
         status: 'sending',
         sentAt: new Date(),
         updatedBy: userId,
         updatedAt: new Date(),
       })
-      .where(eq(db.schema.campaigns.id, campaignId));
+      .where(eq(campaigns.id, campaignId));
 
     // Queue messages
     let queued = 0;
@@ -270,18 +271,18 @@ export class CampaignService {
 
       // Update campaign status to 'sent'
       await db
-        .update(db.schema.campaigns)
+        .update(campaigns)
         .set({
           status: 'sent',
           completedAt: new Date(),
           stats: {
-            ...campaign.stats,
+            ...(campaign.stats as any),
             queued,
           },
           updatedBy: userId,
           updatedAt: new Date(),
         })
-        .where(eq(db.schema.campaigns.id, campaignId));
+        .where(eq(campaigns.id, campaignId));
 
       return {
         campaignId,
@@ -294,13 +295,13 @@ export class CampaignService {
     } catch (error) {
       // Update campaign status to 'failed'
       await db
-        .update(db.schema.campaigns)
+        .update(campaigns)
         .set({
           status: 'failed',
           updatedBy: userId,
           updatedAt: new Date(),
         })
-        .where(eq(db.schema.campaigns.id, campaignId));
+        .where(eq(campaigns.id, campaignId));
 
       throw error;
     }
@@ -334,12 +335,12 @@ export class CampaignService {
       metadata: recipient.metadata || {},
     };
 
-    const [messageLog] = await db
-      .insert(db.schema.messageLog)
+    const [message] = await db
+      .insert(messageLog)
       .values(messageData)
       .returning();
 
-    return messageLog;
+    return message;
   }
 
   /**
@@ -350,9 +351,9 @@ export class CampaignService {
     // Get queued messages
     const queuedMessages = await db
       .select()
-      .from(db.schema.messageLog)
-      .where(eq(db.schema.messageLog.status, 'queued'))
-      .orderBy(db.schema.messageLog.createdAt)
+      .from(messageLog)
+      .where(eq(messageLog.status, 'queued'))
+      .orderBy(messageLog.createdAt)
       .limit(batchSize);
 
     for (const message of queuedMessages) {
@@ -363,13 +364,13 @@ export class CampaignService {
         
         // Update message log with error
         await db
-          .update(db.schema.messageLog)
+          .update(messageLog)
           .set({
             status: 'failed',
             errorMessage: error instanceof Error ? error.message : 'Unknown error',
-            retryCount: message.retryCount + 1,
+            retryCount: (message.retryCount || 0) + 1,
           })
-          .where(eq(db.schema.messageLog.id, message.id));
+          .where(eq(messageLog.id, message.id));
       }
     }
   }
@@ -419,13 +420,13 @@ export class CampaignService {
 
       // Update message log
       await db
-        .update(db.schema.messageLog)
+        .update(messageLog)
         .set({
           status: 'sent',
           providerMessageId,
           sentAt: new Date(),
         })
-        .where(eq(db.schema.messageLog.id, message.id));
+        .where(eq(messageLog.id, message.id));
     } catch (error) {
       throw error;
     }
@@ -474,13 +475,13 @@ export class CampaignService {
    */
   async cancelCampaign(campaignId: string, userId: string): Promise<Campaign> {
     const [campaign] = await db
-      .update(db.schema.campaigns)
+      .update(campaigns)
       .set({
         status: 'cancelled',
         updatedBy: userId,
         updatedAt: new Date(),
       })
-      .where(eq(db.schema.campaigns.id, campaignId))
+      .where(eq(campaigns.id, campaignId))
       .returning();
 
     return campaign;

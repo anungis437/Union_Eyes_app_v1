@@ -41,7 +41,7 @@ const createAuditSchema = z.object({
 });
 
 export const GET = async (request: NextRequest) =>
-  withEnhancedRoleAuth(10, async (_request, context) => {
+  withEnhancedRoleAuth<any>(10, async (_request, context) => {
     const { userId } = context;
     const parsed = listAuditsSchema.safeParse(
       Object.fromEntries(request.nextUrl.searchParams)
@@ -93,17 +93,17 @@ export const GET = async (request: NextRequest) =>
   })(request, {});
 
 export const POST = async (request: NextRequest) =>
-  withEnhancedRoleAuth(20, async (_request, context) => {
+  withEnhancedRoleAuth<any>(20, async (_request, context) => {
     const { userId } = context;
 
     let rawBody: unknown;
     try {
       rawBody = await request.json();
-    } catch {
+    } catch (e) {
       return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Invalid JSON in request body',
-      error
+      e
     );
     }
 
@@ -112,23 +112,35 @@ export const POST = async (request: NextRequest) =>
       return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Invalid request body',
-      error
+      parsed.error
     );
     }
 
     try {
       const body = parsed.data;
+      
+      // Compute compliance pass/fail based on thresholds
+      const unionRevenuePass = body.unionRevenuePercent >= 90;
+      const memberSatisfactionPass = body.memberSatisfactionPercent >= 80;
+      const dataViolationsPass = body.dataViolations === 0;
+      const overallPass = unionRevenuePass && memberSatisfactionPass && dataViolationsPass;
+      
       const auditInput: NewMissionAudit = {
         auditYear: body.auditYear,
-        auditPeriodStart: new Date(body.auditPeriodStart),
-        auditPeriodEnd: new Date(body.auditPeriodEnd),
+        auditPeriodStart: body.auditPeriodStart,
+        auditPeriodEnd: body.auditPeriodEnd,
         auditorFirm: body.auditorFirm,
         auditorName: body.auditorName,
         auditorCertification: body.auditorCertification,
-        auditDate: new Date(body.auditDate),
+        auditDate: body.auditDate,
         unionRevenuePercent: body.unionRevenuePercent,
         memberSatisfactionPercent: body.memberSatisfactionPercent,
         dataViolations: body.dataViolations,
+        unionRevenuePass,
+        memberSatisfactionPass,
+        dataViolationsPass,
+        overallPass,
+        impactsConsecutiveCompliance: !overallPass,
         totalRevenue: body.totalRevenue,
         unionRevenue: body.unionRevenue,
         memberSurveySampleSize: body.memberSurveySampleSize,
@@ -153,11 +165,7 @@ export const POST = async (request: NextRequest) =>
         details: { auditYear: body.auditYear, auditId: audit.id },
       });
 
-      return standardSuccessResponse(
-      { data: audit },
-      undefined,
-      201
-    );
+      return standardSuccessResponse({ data: audit });
     } catch (error) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),

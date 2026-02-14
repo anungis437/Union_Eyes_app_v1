@@ -95,7 +95,7 @@ export const scheduleFrequency = pgEnum("schedule_frequency", ['daily', 'weekly'
 export const sessionStatus = pgEnum("session_status", ['scheduled', 'registration_open', 'registration_closed', 'in_progress', 'completed', 'cancelled'])
 export const settlementStatus = pgEnum("settlement_status", ['proposed', 'under_review', 'accepted', 'rejected', 'finalized'])
 export const signatureStatus = pgEnum("signature_status", ['pending', 'signed', 'rejected', 'expired', 'revoked'])
-export const signatureType = pgEnum("signature_type", ['financial_attestation', 'document_approval', 'meeting_minutes', 'contract_signing', 'policy_approval', 'election_certification', 'grievance_settlement', 'collective_agreement'])
+export const signatureType = pgEnum("signature_type", ['financial_attestation', 'document_approval', 'meeting_minutes', 'contract_signing', 'policy_approval', 'election_certification', 'grievance_settlement', 'collective_agreement', 'pki_certificate', 'digital_signature'])
 export const strikeVoteRequirement = pgEnum("strike_vote_requirement", ['simple_majority', 'secret_ballot', 'membership_quorum'])
 export const syncStatus = pgEnum("sync_status", ['synced', 'pending', 'failed', 'disconnected'])
 export const taxSlipType = pgEnum("tax_slip_type", ['t4a', 't4a_box_016', 't4a_box_018', 't4a_box_048', 'cope_receipt', 'rl_1', 'rl_24'])
@@ -1226,7 +1226,9 @@ export const stipendDisbursements = pgTable("stipend_disbursements", {
 	memberId: uuid("member_id").notNull(),
 	weekStartDate: date("week_start_date").notNull(),
 	weekEndDate: date("week_end_date").notNull(),
+	daysWorked: integer("days_worked").default(0), // Number of days worked in the week
 	hoursWorked: numeric("hours_worked", { precision: 6, scale:  2 }).notNull(),
+	calculatedAmount: numeric("calculated_amount", { precision: 10, scale: 2 }), // Calculated amount before adjustments
 	baseStipendAmount: numeric("base_stipend_amount", { precision: 10, scale:  2 }).notNull(),
 	bonusAmount: numeric("bonus_amount", { precision: 10, scale:  2 }).default('0.00'),
 	totalAmount: numeric("total_amount", { precision: 10, scale:  2 }).notNull(),
@@ -1568,6 +1570,7 @@ export const arrears = pgTable("arrears", {
 	oldestDebtDate: date("oldest_debt_date"),
 	monthsOverdue: integer("months_overdue").default(0),
 	arrearsStatus: text("arrears_status").default('active').notNull(),
+	notificationStage: text("notification_stage").default('none'), // none, reminder, warning, final, suspended
 	paymentPlanActive: boolean("payment_plan_active").default(false),
 	paymentPlanAmount: numeric("payment_plan_amount", { precision: 10, scale:  2 }),
 	paymentPlanFrequency: text("payment_plan_frequency"),
@@ -6003,6 +6006,49 @@ export const duesTransactions = pgTable("dues_transactions", {
 			columns: [table.organizationId],
 			foreignColumns: [organizations.id],
 			name: "dues_transactions_organization_id_fkey"
+		}).onDelete("cascade"),
+	}
+});
+
+/**
+ * Payments Table
+ * Central payment tracking for all financial transactions
+ * Used by payment collection workflow to track payment status and reconciliation
+ */
+export const payments = pgTable("payments", {
+	id: uuid("id").defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	memberId: uuid("member_id"), // Optional - can be system-wide
+	relationType: varchar("relation_type", { length: 50 }), // 'dues', 'donation', 'strike_fund', 'expense', etc.
+	relationId: uuid("relation_id"), // Links to duesTransactions, donations, etc.
+	amount: numeric("amount", { precision: 10, scale: 2 }).notNull(),
+	currency: varchar("currency", { length: 3 }).default('USD'),
+	status: varchar("status", { length: 50 }).default('pending').notNull(), // pending, processing, completed, failed, refunded
+	reconciliationStatus: varchar("reconciliation_status", { length: 50 }).default('unreconciled'), // unreconciled, reconciled, needs_review
+	reconciliationDate: timestamp("reconciliation_date", { withTimezone: true, mode: 'string' }),
+	reconciledBy: uuid("reconciled_by"),
+	paymentMethod: varchar("payment_method", { length: 50 }),
+	processorType: varchar("processor_type", { length: 50 }), // 'stripe', 'paypal', 'bank_transfer', 'check', 'cash'
+	processorPaymentId: varchar("processor_payment_id", { length: 255 }), // Stripe payment intent ID, PayPal order ID, etc.
+	failureReason: text("failure_reason"),
+	failureCode: varchar("failure_code", { length: 50 }),
+	paidDate: timestamp("paid_date", { withTimezone: true, mode: 'string' }),
+	receiptUrl: text("receipt_url"),
+	metadata: jsonb("metadata").default({}),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+},
+(table) => {
+	return {
+		idxPaymentsMember: index("idx_payments_member").using("btree", table.memberId.asc().nullsLast()),
+		idxPaymentsStatus: index("idx_payments_status").using("btree", table.status.asc().nullsLast()),
+		idxPaymentsReconciliation: index("idx_payments_reconciliation").using("btree", table.reconciliationStatus.asc().nullsLast()),
+		idxPaymentsRelation: index("idx_payments_relation").using("btree", table.relationType.asc().nullsLast(), table.relationId.asc().nullsLast()),
+		idxPaymentsTenant: index("idx_payments_tenant").using("btree", table.tenantId.asc().nullsLast()),
+		paymentsTenantIdFkey: foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [tenants.tenantId],
+			name: "payments_tenant_id_fkey"
 		}).onDelete("cascade"),
 	}
 });

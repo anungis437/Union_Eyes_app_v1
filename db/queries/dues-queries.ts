@@ -51,7 +51,7 @@ export const getDuesBalanceByMember = async (
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 };
 
@@ -107,7 +107,7 @@ export const getDuesTransactionsByMember = async (
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 };
 
@@ -155,7 +155,7 @@ export const getDuesTransactionsByOrganization = async (
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 };
 
@@ -183,7 +183,7 @@ export const createDuesTransaction = async (
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 };
 
@@ -232,7 +232,7 @@ export const updateDuesTransactionStatus = async (
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 };
 
@@ -270,7 +270,7 @@ export const markOverdueTransactions = async (
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 };
 
@@ -330,7 +330,7 @@ export const getOrganizationDuesSummary = async (
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 };
 

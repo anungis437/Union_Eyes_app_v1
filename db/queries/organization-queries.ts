@@ -27,7 +27,7 @@ import {
   type NewOrganizationRelationship,
 } from "@/db/schema-organizations";
 import { eq, and, or, inArray, isNull, sql, desc, asc } from "drizzle-orm";
-import { NodePgDatabase } from "drizzle-orm/node-postgres";
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { withRLSContext } from "@/lib/db/with-rls-context";
 import { logger } from "@/lib/logger";
 
@@ -79,7 +79,7 @@ export async function getOrganizationById(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -120,7 +120,7 @@ export async function getOrganizationBySlug(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -171,7 +171,7 @@ export async function getOrganizationWithParent(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -236,7 +236,7 @@ export async function getOrganizations(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -283,7 +283,7 @@ export async function getOrganizationChildren(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -341,7 +341,7 @@ export async function getOrganizationDescendants(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -424,7 +424,7 @@ export async function getOrganizationAncestors(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -504,7 +504,7 @@ export async function getOrganizationTree(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -551,7 +551,7 @@ export async function getUserVisibleOrganizations(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -600,7 +600,7 @@ export async function getUserPrimaryOrganization(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -652,7 +652,7 @@ export async function searchOrganizations(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -696,7 +696,7 @@ export async function getOrganizationsByType(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -738,7 +738,7 @@ export async function getCLCAffiliatedOrganizations(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -822,7 +822,7 @@ export async function createOrganization(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -924,7 +924,7 @@ export async function updateOrganization(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -982,7 +982,7 @@ export async function deleteOrganization(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -1026,7 +1026,7 @@ export async function createOrganizationRelationship(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -1073,7 +1073,7 @@ export async function getOrganizationRelationships(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 
@@ -1137,7 +1137,7 @@ export async function getOrganizationMemberStats(
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 }
 

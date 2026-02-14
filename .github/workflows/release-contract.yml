@@ -33,7 +33,6 @@ jobs:
         run: pnpm tsx scripts/generate-migration-manifest.ts --output=migration-manifest.json
       
       - name: Verify immutability triggers (if DATABASE_URL available)
-        if: env.DATABASE_URL != ''
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "🔒 IMMUTABILITY TRIGGER VERIFICATION"

@@ -72,12 +72,6 @@ export default function AdminDashboardPage() {
       setLoading(false);
     }
   };
-    } catch (error) {
-      console.error('Error fetching admin data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {

@@ -19,7 +19,9 @@ import {
   IntegrationProvider,
   SyncOptions,
   SyncResult,
+  SyncError,
   HealthCheckResult,
+  ConnectionStatus,
   WebhookEvent,
 } from '../../types';
 import { ManulifeClient, type ManulifeConfig } from './manulife-client';
@@ -104,22 +106,17 @@ export class ManulifeAdapter extends BaseIntegration {
 
       return {
         healthy: isHealthy,
-        latency,
-        details: {
-          provider: 'Manulife',
-          connected: this.connected,
-          timestamp: new Date().toISOString(),
-        },
+        status: ConnectionStatus.CONNECTED,
+        latencyMs: latency,
+        lastCheckedAt: new Date(),
       };
     } catch (error) {
       return {
         healthy: false,
-        latency: 0,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        details: {
-          provider: 'Manulife',
-          connected: false,
-        },
+        status: ConnectionStatus.ERROR,
+        latencyMs: 0,
+        lastError: error instanceof Error ? error.message : 'Unknown error',
+        lastCheckedAt: new Date(),
       };
     }
   }
@@ -136,7 +133,7 @@ export class ManulifeAdapter extends BaseIntegration {
     let recordsCreated = 0;
     let recordsUpdated = 0;
     let recordsFailed = 0;
-    const errors: string[] = [];
+    const errors: SyncError[] = [];
 
     try {
       const entities = options.entities || this.capabilities.supportedEntities;
@@ -184,12 +181,10 @@ export class ManulifeAdapter extends BaseIntegration {
           }
         } catch (error) {
           const errorMsg = `Failed to sync ${entity}: ${error instanceof Error ? error.message : 'Unknown'}`;
-          errors.push(errorMsg);
+          errors.push({ entity, error: errorMsg });
           this.logError('sync', error, { entity });
         }
       }
-
-      const duration = Date.now() - startTime;
 
       return {
         success: recordsFailed === 0,
@@ -197,12 +192,10 @@ export class ManulifeAdapter extends BaseIntegration {
         recordsCreated,
         recordsUpdated,
         recordsFailed,
-        duration,
         cursor: new Date().toISOString(),
-        error: errors.length > 0 ? errors.join('; ') : undefined,
+        errors: errors.length > 0 ? errors : undefined,
       };
     } catch (error) {
-      const duration = Date.now() - startTime;
       this.logError('sync', error);
 
       return {
@@ -211,8 +204,7 @@ export class ManulifeAdapter extends BaseIntegration {
         recordsCreated,
         recordsUpdated,
         recordsFailed,
-        duration,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        errors: [{ entity: 'sync', error: error instanceof Error ? error.message : 'Unknown error' }],
       };
     }
   }

@@ -24,7 +24,7 @@ const issueGoldenShareSchema = z.object({
 });
 
 export const GET = async (request: NextRequest) =>
-  withEnhancedRoleAuth(10, async (_request, context) => {
+  withEnhancedRoleAuth<any>(10, async (_request, context) => {
     const { userId } = context;
 
     try {
@@ -61,17 +61,17 @@ export const GET = async (request: NextRequest) =>
   })(request, {});
 
 export const POST = async (request: NextRequest) =>
-  withEnhancedRoleAuth(20, async (_request, context) => {
+  withEnhancedRoleAuth<any>(20, async (_request, context) => {
     const { userId } = context;
 
     let rawBody: unknown;
     try {
       rawBody = await request.json();
-    } catch {
+    } catch (e) {
       return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Invalid JSON in request body',
-      error
+      e
     );
     }
 
@@ -80,7 +80,7 @@ export const POST = async (request: NextRequest) =>
       return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Invalid request body',
-      error
+      parsed.error
     );
     }
 
@@ -108,11 +108,7 @@ export const POST = async (request: NextRequest) =>
         details: { shareId: share.id },
       });
 
-      return standardSuccessResponse(
-      { data: share },
-      undefined,
-      201
-    );
+      return standardSuccessResponse({ data: share });
     } catch (error) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),

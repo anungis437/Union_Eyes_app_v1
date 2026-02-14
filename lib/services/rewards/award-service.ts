@@ -155,8 +155,8 @@ export async function issueAward(
       },
     });
 
-    if (!award) {
-      throw new Error('Award not found');
+    if (!award || !award.awardType) {
+      throw new Error('Award or award type not found');
     }
 
     if (award.status !== 'approved') {
@@ -166,7 +166,7 @@ export async function issueAward(
     const creditAmount = award.awardType.defaultCreditAmount;
 
     // Apply ledger entry (earn credits)
-    const ledgerEntry = await applyLedgerEntry(tx, {
+    const ledgerEntry = await applyLedgerEntry(tx as any, {
       orgId: award.orgId,
       userId: award.recipientUserId,
       eventType: 'earn',
@@ -178,7 +178,7 @@ export async function issueAward(
 
     // Apply budget usage with limit enforcement
     const budgetApplied = await applyBudgetUsageChecked(
-      tx,
+      tx as any,
       award.programId,
       creditAmount
     );

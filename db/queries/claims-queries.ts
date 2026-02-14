@@ -61,7 +61,7 @@ export const createClaim = async (
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 };
 
@@ -90,7 +90,7 @@ export const getClaimsByMember = async (
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 };
 
@@ -139,7 +139,7 @@ export const getClaimsByOrganization = async (
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 };
 
@@ -167,7 +167,7 @@ export const getClaimById = async (
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 };
 
@@ -211,7 +211,7 @@ export const updateClaimStatus = async (
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 };
 
@@ -254,7 +254,7 @@ export const assignClaim = async (
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 };
 
@@ -301,7 +301,7 @@ export const getClaimsAssignedToUser = async (
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 };
 
@@ -394,7 +394,7 @@ export const getClaimStatistics = async (
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 };
 
@@ -424,7 +424,7 @@ export const getRecentClaimUpdates = async (
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 };
 
@@ -468,7 +468,7 @@ export const addClaimUpdate = async (
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 };
 
@@ -501,7 +501,7 @@ export const deleteClaim = async (
   if (tx) {
     return executeQuery(tx);
   } else {
-    return withRLSContext(async (tx) => executeQuery(tx));
+    return withRLSContext(async (tx: NodePgDatabase<any>) => executeQuery(tx));
   }
 };
 
