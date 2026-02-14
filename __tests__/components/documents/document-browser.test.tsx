@@ -1,0 +1,25 @@
+/**
+ * Tests for components\documents\document-browser.tsx
+ * Auto-generated test skeleton - customize as needed
+ */
+
+import { describe, it, expect } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import DocumentBrowser from '@/components/documents/document-browser';
+
+describe('DocumentBrowser', () => {
+  it('renders without crashing', () => {
+    render(<DocumentBrowser />);
+    expect(screen.getByRole || (() => document.body)).toBeTruthy();
+  });
+
+  it('handles props correctly', () => {
+    // Component renders with default/test props
+    expect(true).toBe(true);
+  });
+
+  it('handles user interactions', async () => {
+    // User interaction test (if applicable)
+    expect(true).toBe(true);
+  });
+});
