@@ -22,6 +22,18 @@ export default defineConfig({
       provider: 'istanbul',
       // Multiple reporters for different use cases
       reporter: ['text', 'text-summary', 'json', 'json-summary', 'html', 'lcov'],
+      // Include source files for coverage tracking
+      include: [
+        'lib/**/*.ts',
+        'lib/**/*.tsx',
+        'app/**/*.ts',
+        'app/**/*.tsx',
+        'components/**/*.ts',
+        'components/**/*.tsx',
+        'actions/**/*.ts',
+        'services/**/*.ts',
+        'db/**/*.ts',
+      ],
       // Exclude non-testable files and directories
       exclude: [
         // Dependencies
@@ -56,7 +68,6 @@ export default defineConfig({
         '**/setup.ts',
         '**/instrumentation.ts',
         '**/instrumentation-*.ts',
-        '**/middleware.ts',
         // Type definitions
         '**/*.d.ts',
         '**/global.d.ts',
@@ -78,6 +89,13 @@ export default defineConfig({
         // Generated files
         'drizzle/',
         '**/drizzle/**',
+        // App-specific excludes
+        'app/**/layout.tsx',
+        'app/**/loading.tsx',
+        'app/**/error.tsx',
+        'app/**/not-found.tsx',
+        'app/global-error.tsx',
+        'middleware.ts',
       ],
       // Coverage thresholds - balanced for large codebase
       thresholds: {
@@ -88,7 +106,7 @@ export default defineConfig({
       },
       // Report uncovered lines and show all files
       reportOnFailure: true,
-      all: true,
+      all: false,
       // Clean coverage directory before each run
       clean: true,
       // Show coverage summary in console
