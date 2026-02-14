@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { logger } from '@/lib/logger';
 import { Progress } from '@/components/ui/progress';
 import { api } from '@/lib/api';
 import {
@@ -78,7 +79,7 @@ export default function ElectionsDashboardPage() {
         upcomingElections: upcoming,
       });
     } catch (error) {
-      console.error('Error fetching elections data:', error);
+      logger.error('Error fetching elections data', error);
     } finally {
       setLoading(false);
     }

@@ -14,6 +14,7 @@ import {
 } from '@/db/schema/dues-finance-schema';
 import { and, desc } from 'drizzle-orm';
 import { requireUserForOrganization } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 // Validation schema for creating remittance
 const createRemittanceSchema = z.object({
@@ -115,7 +116,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching remittances:', error);
+    logger.error('Error fetching remittances:', error);
     return NextResponse.json(
       { error: 'Failed to fetch remittances', details: error.message },
       { status: 500 }
@@ -181,7 +182,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    console.error('Error creating remittance:', error);
+    logger.error('Error creating remittance:', error);
     return NextResponse.json(
       { error: 'Failed to create remittance', details: error.message },
       { status: 500 }

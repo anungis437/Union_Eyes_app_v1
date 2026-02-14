@@ -16,6 +16,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { SecurityAuditService } from './securityAuditService';
 import type { AuditLog, AuditRiskLevel } from './securityAuditService';
 import { logger } from '../utils/logger';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // TYPES & INTERFACES

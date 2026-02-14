@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { db, schema } from '../db';
 import { eq, and, desc } from 'drizzle-orm';
 import { logger } from '../../../lib/logger';
+import { logger } from '@/lib/logger';
 
 const router = Router();
 

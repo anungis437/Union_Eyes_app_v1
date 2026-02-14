@@ -46,6 +46,8 @@ export interface SendResult {
   provider?: string;
 }
 
+import { logger } from '@/lib/logger';
+
 export interface EmailProvider {
   name: string;
   send(message: EmailMessage): Promise<SendResult>;
@@ -79,7 +81,7 @@ export class EmailService {
       if (!result.success) {
         // Try fallback if available
         if (this.fallbackProvider) {
-          console.warn(`Primary provider failed, trying fallback: ${result.error}`);
+          logger.warn(`Primary provider failed, trying fallback: ${result.error}`);
           const fallbackResult = await this.fallbackProvider.send(message);
           
           if (!fallbackResult.success) {
@@ -94,7 +96,7 @@ export class EmailService {
       
       return result.messageId || '';
     } catch (error) {
-      console.error('Email send error:', error);
+      logger.error('Email send error:', error);
       throw error;
     }
   }
@@ -108,7 +110,7 @@ export class EmailService {
     } catch (error) {
       // Try fallback if available
       if (this.fallbackProvider) {
-        console.warn('Primary provider batch send failed, trying fallback');
+        logger.warn('Primary provider batch send failed, trying fallback');
         return await this.fallbackProvider.sendBatch(messages);
       }
       throw error;
@@ -122,7 +124,7 @@ export class EmailService {
     try {
       return await this.provider.verifyConnection();
     } catch (error) {
-      console.error('Provider connection verification failed:', error);
+      logger.error('Provider connection verification failed:', error);
       return false;
     }
   }

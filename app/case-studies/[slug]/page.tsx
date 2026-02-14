@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { CaseStudy } from '@/types/marketing';
 import { ImpactMetricCard } from '@/components/marketing/impact-metric-card';
 import { HumanCenteredCallout } from '@/components/marketing/human-centered-callout';
+import { logger } from '@/lib/logger';
 
 interface CaseStudyPageProps {
   params: {
@@ -29,7 +30,7 @@ async function getCaseStudy(slug: string): Promise<CaseStudy | null> {
     const data = await response.json();
     return data.caseStudy;
   } catch (error) {
-    console.error('Failed to fetch case study:', error);
+    logger.error('Failed to fetch case study:', error);
     return null;
   }
 }

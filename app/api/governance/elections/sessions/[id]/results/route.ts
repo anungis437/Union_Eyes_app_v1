@@ -9,6 +9,7 @@ import { db } from '@/db';
 import { votingSessions, votes, votingOptions, votingAuditLog } from '@/db/schema/voting-schema';
 import { and, desc } from 'drizzle-orm';
 import crypto from 'crypto';
+import { logger } from '@/lib/logger';
 
 /**
  * GET /api/governance/elections/sessions/[id]/results
@@ -173,7 +174,7 @@ export async function GET(
       },
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching election results:', error);
+    logger.error('Error fetching election results:', error);
     return NextResponse.json(
       { error: 'Failed to fetch election results', details: error.message },
       { status: 500 }

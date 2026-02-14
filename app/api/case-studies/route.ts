@@ -13,6 +13,7 @@ import { db } from '@/db';
 import { caseStudies } from '@/db/schema/domains/marketing';
 import { eq } from 'drizzle-orm';
 import { requireAdmin } from '@/lib/middleware/admin-auth';
+import { logger } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   try {
@@ -50,7 +51,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ caseStudies: results });
   } catch (error) {
-    console.error('Failed to fetch case studies:', error);
+    logger.error('Failed to fetch case studies:', error);
     return NextResponse.json(
       { error: 'Failed to fetch case studies' },
       { status: 500 }
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ caseStudy }, { status: 201 });
   } catch (error) {
-    console.error('Failed to create case study:', error);
+    logger.error('Failed to create case study:', error);
     return NextResponse.json(
       { error: 'Failed to create case study' },
       { status: 500 }

@@ -49,6 +49,7 @@ import {
   CorrectiveActionTracker,
 } from "@/components/health-safety";
 import { toast } from "sonner";
+import { logger } from '@/lib/logger';
 
 type HazardStatus = "reported" | "assessed" | "in-progress" | "resolved" | "closed";
 type HazardPriority = "low" | "medium" | "high" | "critical";
@@ -92,7 +93,7 @@ export default function HazardsPage() {
         avgResolutionTime: 5.2,
       });
     } catch (error) {
-      console.error("Failed to load stats:", error);
+      logger.error("Failed to load stats:", error);
       toast.error("Failed to load hazard statistics");
     }
   };
@@ -109,7 +110,7 @@ export default function HazardsPage() {
       setShowReportForm(false);
       loadStats();
     } catch (error) {
-      console.error("Failed to submit hazard report:", error);
+      logger.error("Failed to submit hazard report:", error);
       toast.error("Failed to submit hazard report");
     }
   };

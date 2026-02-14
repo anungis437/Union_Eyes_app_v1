@@ -9,7 +9,7 @@ Finds the correct user in our database by extracting the Clerk user ID from the 
  * @param data The webhook data object from Whop
  * @returns The Clerk userId if found, undefined otherwise
  */
-export function extractUserId(data: Record<string, unknown>) Record<string, unknown>): string | undefined {
+export function extractUserId(data: Record<string, unknown>): string | undefined {
   if (!data) {
 return undefined;
   }

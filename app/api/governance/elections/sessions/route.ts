@@ -11,6 +11,7 @@ import { votingSessions, voterEligibility, votes, votingOptions } from '@/db/sch
 import { and, desc, or, like } from 'drizzle-orm';
 import { z } from 'zod';
 import { requireUserForOrganization } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 // Validation schema for creating voting session
 const createSessionSchema = z.object({
@@ -134,7 +135,7 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching voting sessions:', error);
+    logger.error('Error fetching voting sessions:', error);
     return NextResponse.json(
       { error: 'Failed to fetch voting sessions', details: error.message },
       { status: 500 }
@@ -179,7 +180,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
     }
-    console.error('Error creating voting session:', error);
+    logger.error('Error creating voting session:', error);
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(

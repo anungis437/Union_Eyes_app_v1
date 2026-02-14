@@ -22,6 +22,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { FileText, Plus, CheckCircle, Clock } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface PaymentPlan {
   id: string;
@@ -50,7 +51,7 @@ export default function PaymentPlansPage() {
       const data = await api.dues.paymentPlans.list();
       setPlans(data);
     } catch (error) {
-      console.error('Error fetching payment plans:', error);
+      logger.error('Error fetching payment plans:', error);
     } finally {
       setLoading(false);
     }

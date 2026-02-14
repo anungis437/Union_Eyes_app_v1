@@ -6,6 +6,7 @@ import { MobileHeader } from '@/components/mobile/MobileHeader';
 import { SyncStatus } from '@/components/mobile/SyncStatus';
 import { useNetworkStatus } from '@/lib/mobile/service-worker-registration';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 
 interface DashboardStats {
   pendingClaims: number;
@@ -53,7 +54,7 @@ export default function MobileDashboardPage() {
         }
       }
     } catch (error) {
-      console.error('Failed to load dashboard data:', error);
+      logger.error('Failed to load dashboard data:', error);
     } finally {
       setIsLoading(false);
     }

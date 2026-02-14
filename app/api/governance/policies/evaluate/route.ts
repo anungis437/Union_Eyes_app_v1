@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { policyEngine } from '@/lib/services/policy-engine';
+import { logger } from '@/lib/logger';
 
 // Validation schema for evaluation request
 const evaluateSchema = z.object({
@@ -45,7 +46,7 @@ export async function POST(req: NextRequest) {
       result,
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error evaluating policy:', error);
+    logger.error('Error evaluating policy:', error);
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(

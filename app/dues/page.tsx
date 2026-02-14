@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { logger } from '@/lib/logger';
 import { 
   Table,
   TableBody,
@@ -68,7 +69,7 @@ export default function DuesDashboardPage() {
       setStats(statsData);
       setRemittances(remittancesData.remittances || []);
     } catch (error) {
-      console.error('Error fetching dues dashboard:', error);
+      logger.error('Error fetching dues dashboard', error);
       alert('Error loading dashboard data.');
     } finally {
       setLoading(false);

@@ -1,5 +1,6 @@
 import { Langfuse } from 'langfuse';
 import type OpenAI from 'openai';
+import { logger } from '@/lib/logger';
 
 /**
  * LLM Observability with Langfuse
@@ -36,12 +37,12 @@ function initializeLangfuse(): Langfuse | null {
     const enabled = process.env.LANGFUSE_ENABLED !== 'false';
 
     if (!enabled) {
-      console.info('[Observability] Langfuse explicitly disabled');
+      logger.info('[Observability] Langfuse explicitly disabled');
       return null;
     }
 
     if (!publicKey || !secretKey) {
-      console.info('[Observability] Langfuse not configured (missing keys), running without observability');
+      logger.info('[Observability] Langfuse not configured (missing keys), running without observability');
       return null;
     }
 
@@ -60,12 +61,12 @@ function initializeLangfuse(): Langfuse | null {
 
     langfuseInstance = new Langfuse(config);
     observabilityEnabled = true;
-    console.info('[Observability] Langfuse initialized successfully');
+    logger.info('[Observability] Langfuse initialized successfully');
 
     return langfuseInstance;
   } catch (error) {
-    console.error('[Observability] Failed to initialize Langfuse:', error);
-    console.info('[Observability] Continuing without observability (fail-open)');
+    logger.error('[Observability] Failed to initialize Langfuse:', error);
+    logger.info('[Observability] Continuing without observability (fail-open)');
     return null;
   }
 }
@@ -322,9 +323,9 @@ export async function flushObservability(): Promise<void> {
   if (langfuse) {
     try {
       await langfuse.flushAsync();
-      console.info('[Observability] Successfully flushed all pending data');
+      logger.info('[Observability] Successfully flushed all pending data');
     } catch (error) {
-      console.error('[Observability] Failed to flush data:', error);
+      logger.error('[Observability] Failed to flush data:', error);
     }
   }
 }
@@ -339,9 +340,9 @@ export async function shutdownObservability(): Promise<void> {
   if (langfuse) {
     try {
       await langfuse.shutdownAsync();
-      console.info('[Observability] Successfully shut down');
+      logger.info('[Observability] Successfully shut down');
     } catch (error) {
-      console.error('[Observability] Error during shutdown:', error);
+      logger.error('[Observability] Error during shutdown:', error);
     }
   }
 }

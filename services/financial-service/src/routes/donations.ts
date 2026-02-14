@@ -9,6 +9,7 @@ import Stripe from 'stripe';
 import { db } from '../db';
 import { sql } from 'drizzle-orm';
 import { logger } from '../../../lib/logger';
+import { logger } from '@/lib/logger';
 
 const router = Router();
 

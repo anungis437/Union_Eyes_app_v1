@@ -37,6 +37,7 @@ import {
 } from './services/defensibility-pack';
 import { defensibilityPacks } from '../db/schema/defensibility-packs-schema';
 import { addTimelineEntry } from './integrations/timeline-integration';
+import { logger } from '@/lib/logger';
 
 // Define valid status transitions
 export const STATUS_TRANSITIONS = {
@@ -461,7 +462,7 @@ export async function updateClaimStatus(
     ).catch((error) => {
       // Don&apos;t fail the status update if timeline integration fails
       // This is OK - timeline is supplementary to the main workflow
-      console.error('Timeline integration failed:', error);
+      logger.error('Timeline integration failed:', error);
     });
     return { success: true, claim: updatedClaim };
   } catch (error) {

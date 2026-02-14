@@ -244,7 +244,7 @@ export async function handleHelloSignWebhook(
 /**
  * Verify Adobe Sign webhook
  */
-function verifyAdobeSignWebhook(payload: any, Record<string, unknown>, clientId: string): boolean {
+function verifyAdobeSignWebhook(payload: any | Record<string, unknown>, clientId: string): boolean {
   try {
     // Adobe Sign uses client ID verification
     return payload.webhookInfo?.applicationId === clientId;
@@ -321,7 +321,7 @@ export async function handleAdobeSignWebhook(
 /**
  * Handle envelope sent event
  */
-async function handleEnvelopeSent(workflowId: string, payload: Record<string, unknown>) Record<string, unknown>): Promise<void> {
+async function handleEnvelopeSent(workflowId: string, payload: Record<string, unknown>): Promise<void> {
   try {
     logger.info("Processing envelope sent", { workflowId });
 
@@ -342,9 +342,9 @@ async function handleEnvelopeSent(workflowId: string, payload: Record<string, un
 /**
  * Handle recipient signed event
  */
-async function async function handleRecipientSigned(
+async function handleRecipientSigned(
   workflowId: string,
-  payload: any Record<string, unknown>
+  payload: any | Record<string, unknown>
 ): Promise<void> {
   try {
     logger.info("Processing recipient signed", { workflowId });
@@ -376,9 +376,9 @@ async function async function handleRecipientSigned(
 /**
  * Handle envelope completed event
  */
-async function async function handleEnvelopeCompleted(
+async function handleEnvelopeCompleted(
   workflowId: string,
-  payload: any Record<string, unknown>
+  payload: any | Record<string, unknown>
 ): Promise<void> {
   try {
     logger.info("Processing envelope completed", { workflowId });
@@ -403,9 +403,9 @@ async function async function handleEnvelopeCompleted(
 /**
  * Handle envelope declined event
  */
-async function async function handleEnvelopeDeclined(
+async function handleEnvelopeDeclined(
   workflowId: string,
-  payload: any Record<string, unknown>
+  payload: any | Record<string, unknown>
 ): Promise<void> {
   try {
     logger.info("Processing envelope declined", { workflowId });
@@ -488,9 +488,9 @@ Please review the workflow and take appropriate action.`,
 /**
  * Handle envelope voided event
  */
-async function async function handleEnvelopeVoided(
+async function handleEnvelopeVoided(
   workflowId: string,
-  payload: any Record<string, unknown>
+  payload: any | Record<string, unknown>
 ): Promise<void> {
   try {
     logger.info("Processing envelope voided", { workflowId });

@@ -18,7 +18,6 @@ import { db } from '@/db';
 import { claims } from '@/db/schema/domains/claims';
 import { sql } from 'drizzle-orm';
 import { logger } from './logger';
-
 interface JobConfig {
   name: string;
   schedule: string; // Cron expression

@@ -11,6 +11,7 @@ import { and, desc } from 'drizzle-orm';
 import { z } from 'zod';
 import { policyEngine } from '@/lib/services/policy-engine';
 import { requireUserForOrganization } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 // Validation schema for creating policy rule
 const createRuleSchema = z.object({
@@ -73,7 +74,7 @@ export async function GET(req: NextRequest) {
     
     return NextResponse.json({ rules });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching policy rules:', error);
+    logger.error('Error fetching policy rules:', error);
     return NextResponse.json(
       { error: 'Failed to fetch policy rules', details: error.message },
       { status: 500 }
@@ -117,7 +118,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
     }
-    console.error('Error creating policy rule:', error);
+    logger.error('Error creating policy rule:', error);
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(

@@ -19,7 +19,7 @@ import { revalidateAfterCancellation } from "./path-utils";
  * @param data The webhook event data from Whop
  * @param isValid Boolean indicating if membership is becoming valid (true) or invalid (false)
  */
-export async function handleMembershipChange(data: any, Record<string, unknown>, isValid: boolean) {
+export async function handleMembershipChange(data: any | Record<string, unknown>, isValid: boolean) {
   // We only handle cancellations now
   if (isValid) {
 return;
@@ -60,7 +60,7 @@ const existingProfile = await getProfileByWhopUserId(whopUserId);
  * 
  * @param data The webhook event data from Whop
  */
-async function handleMembershipCancellation(data: Record<string, unknown>) Record<string, unknown>) {
+async function handleMembershipCancellation(data: Record<string, unknown>) {
   const eventId = data.id || Date.now().toString();
 // Extract the clerk user ID
   const clerkUserId = extractUserId(data);

@@ -5,6 +5,7 @@ import { and } from 'drizzle-orm';
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { standardSuccessResponse } from '@/lib/api/standardized-responses';
+import { logger } from '@/lib/logger';
 
 interface AuthUser {
   id: string;
@@ -91,7 +92,7 @@ export const GET = withApiAuth(async (request: NextRequest, context) => {
     });
 
   } catch (error) {
-    console.error('Error fetching budget:', error);
+    logger.error('Error fetching budget:', error);
     return standardErrorResponse(
       ErrorCode.INTERNAL_ERROR,
       'Failed to fetch budget',
@@ -177,7 +178,7 @@ export const PATCH = withApiAuth(async (request: NextRequest, context) => {
     });
 
   } catch (error) {
-    console.error('Error updating budget:', error);
+    logger.error('Error updating budget:', error);
     return standardErrorResponse(
       ErrorCode.INTERNAL_ERROR,
       'Failed to update budget',
@@ -245,7 +246,7 @@ export const DELETE = withApiAuth(async (request: NextRequest, context) => {
     });
 
   } catch (error) {
-    console.error('Error deleting budget:', error);
+    logger.error('Error deleting budget:', error);
     return standardErrorResponse(
       ErrorCode.INTERNAL_ERROR,
       'Failed to delete budget',

@@ -80,7 +80,7 @@ export class SMSService {
       if (!result.success) {
         // Try fallback if available
         if (this.fallbackProvider) {
-          console.warn(`Primary SMS provider failed, trying fallback: ${result.error}`);
+          logger.warn(`Primary SMS provider failed, trying fallback: ${result.error}`);
           const fallbackResult = await this.fallbackProvider.send(message);
           
           if (!fallbackResult.success) {
@@ -95,7 +95,7 @@ export class SMSService {
       
       return result.messageId || '';
     } catch (error) {
-      console.error('SMS send error:', error);
+      logger.error('SMS send error:', error);
       throw error;
     }
   }
@@ -116,7 +116,7 @@ export class SMSService {
     } catch (error) {
       // Try fallback if available
       if (this.fallbackProvider) {
-        console.warn('Primary SMS provider batch send failed, trying fallback');
+        logger.warn('Primary SMS provider batch send failed, trying fallback');
         return await this.fallbackProvider.sendBatch(messages);
       }
       throw error;
@@ -130,7 +130,7 @@ export class SMSService {
     try {
       return await this.provider.verifyConnection();
     } catch (error) {
-      console.error('SMS provider connection verification failed:', error);
+      logger.error('SMS provider connection verification failed:', error);
       return false;
     }
   }
@@ -146,7 +146,7 @@ export class SMSService {
     try {
       return await this.provider.checkBalance();
     } catch (error) {
-      console.error('Failed to check SMS balance:', error);
+      logger.error('Failed to check SMS balance:', error);
       return null;
     }
   }
@@ -296,7 +296,7 @@ export class TwilioAdapter implements SMSProvider {
       const data = await response.json();
       return parseFloat(data.balance || '0');
     } catch (error) {
-      console.error('Failed to check Twilio balance:', error);
+      logger.error('Failed to check Twilio balance:', error);
       return 0;
     }
   }
@@ -315,7 +315,7 @@ export class MockSMSAdapter implements SMSProvider {
   private sentMessages: SMSMessage[] = [];
 
   async send(message: SMSMessage): Promise<SMSResult> {
-    console.log('[MOCK SMS] Sending:', message);
+    logger.info('[MOCK SMS] Sending:', message);
     this.sentMessages.push(message);
     
     return {
@@ -363,7 +363,7 @@ export function createSMSServiceFromEnv(): SMSService {
   switch (provider.toLowerCase()) {
     case 'twilio':
       if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_PHONE_NUMBER) {
-        console.warn('Twilio credentials not configured, using mock SMS provider');
+        logger.warn('Twilio credentials not configured, using mock SMS provider');
         primaryProvider = new MockSMSAdapter();
       } else {
         primaryProvider = new TwilioAdapter(

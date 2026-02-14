@@ -32,6 +32,7 @@ import type {
 } from '@/db/schema';
 import type { EmailService } from './email-service';
 import type { SMSService } from './sms-service';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // TYPES
@@ -451,7 +452,7 @@ export class CampaignService {
       try {
         await this.sendMessage(message);
       } catch (error) {
-        console.error(`Failed to send message ${message.id}:`, error);
+        logger.error(`Failed to send message ${message.id}:`, error);
         
         // Update message log with error
         await db

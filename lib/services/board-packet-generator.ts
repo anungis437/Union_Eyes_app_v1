@@ -18,6 +18,7 @@ import crypto from 'crypto';
 import { Document, Page, StyleSheet, Text, pdf } from '@react-pdf/renderer';
 import React from 'react';
 import { getEmailService } from '@/lib/services/messaging/email-service';
+import { logger } from '@/lib/logger';
 
 interface BoardPacketData {
   title: string;
@@ -96,7 +97,7 @@ export class BoardPacketGenerator {
       
       return packet;
     } catch (error) {
-      console.error('Error generating board packet:', error);
+      logger.error('Error generating board packet', error);
       throw error;
     }
   }
@@ -324,7 +325,7 @@ export class BoardPacketGenerator {
       
       return packet;
     } catch (error) {
-      console.error('Error finalizing board packet:', error);
+      logger.error('Error finalizing board packet', error);
       throw error;
     }
   }
@@ -404,7 +405,7 @@ export class BoardPacketGenerator {
       
       return distributions;
     } catch (error) {
-      console.error('Error distributing board packet:', error);
+      logger.error('Error distributing board packet', error);
       throw error;
     }
   }

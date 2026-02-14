@@ -15,6 +15,7 @@
  */
 
 import { db } from '@/db';
+import { logger } from '@/lib/logger';
 import {
   externalInvoices,
   externalPayments,
@@ -271,7 +272,7 @@ export async function allocatePayment(
     // - Record allocation timestamps and user
     // - Validate total allocated amount equals payment amount
     
-    console.log('Payment allocation (database storage pending):', {
+    logger.info('Payment allocation pending database storage', {
       organizationId,
       provider,
       paymentId,
@@ -292,7 +293,7 @@ export async function allocatePayment(
     
     return true;
   } catch (error) {
-    console.error('Payment allocation failed:', error);
+    logger.error('Payment allocation failed', error);
     return false;
   }
 }
@@ -656,10 +657,12 @@ export async function convertCurrency(
   // const rate = await getExchangeRate(fromCurrency, toCurrency, date);
   // return Math.round(amount * rate * 100) / 100;
   
-  console.warn(
-    `Currency conversion not yet implemented. Returning original amount. ` +
-    `Convert ${amount} ${fromCurrency} to ${toCurrency} on ${date?.toISOString() || 'latest'}`
-  );
+  logger.warn('Currency conversion not yet implemented, returning original amount', {
+    amount,
+    fromCurrency,
+    toCurrency,
+    date: date?.toISOString() || 'latest',
+  });
   
   return amount;
 }

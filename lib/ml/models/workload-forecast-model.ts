@@ -19,6 +19,7 @@
 import * as tf from '@tensorflow/tfjs-node';
 import * as path from 'path';
 import * as fs from 'fs/promises';
+import { logger } from '@/lib/logger';
 
 export interface WorkloadFeatures {
   dayOfWeek: number;        // 0-6 (Sunday=0)
@@ -128,17 +129,17 @@ export async function loadWorkloadModel(): Promise<tf.LayersModel> {
 
     modelInstance = await tf.loadLayersModel(`file://${modelJsonPath}`);
     modelLoaded = true;
-    console.log('✅ Loaded trained workload forecast model from disk');
+    logger.info('Loaded trained workload forecast model from disk');
     return modelInstance;
   } catch {
-    console.log('⚠️  No trained model found. Creating new model with synthetic initialization...');
+    logger.info('No trained model found, creating new model with synthetic initialization');
     modelInstance = createWorkloadModel();
 
     // Synthetic pre-training
     await syntheticPreTrain(modelInstance);
     
     modelLoaded = true;
-    console.log('✅ Created new workload forecast model with synthetic pre-training');
+    logger.info('Created new workload forecast model with synthetic pre-training');
     return modelInstance;
   }
 }
@@ -305,7 +306,7 @@ export async function predictWorkloadBatch(
 export async function saveWorkloadModel(model: tf.LayersModel): Promise<void> {
   await fs.mkdir(MODEL_PATH, { recursive: true });
   await model.save(`file://${MODEL_PATH}`);
-  console.log(`✅ Saved workload model to ${MODEL_PATH}`);
+  logger.info('Saved workload model', { path: MODEL_PATH });
 }
 
 /**

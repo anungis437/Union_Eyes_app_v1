@@ -22,6 +22,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { cron } from 'https://deno.land/x/deno_cron@v1.0.0/cron.ts';
 import { dbQuery } from '../_shared/azure-db.ts';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // TYPES AND INTERFACES
@@ -858,7 +859,7 @@ async function sendUserDigestEmail(user: any, digestType: string): Promise<void>
 
   const resendApiKey = Deno.env.get('RESEND_API_KEY');
   if (!resendApiKey) {
-    console.log('RESEND_API_KEY not configured. Skipping digest email.');
+    logger.info('RESEND_API_KEY not configured. Skipping digest email.');
     return;
   }
 
@@ -893,7 +894,7 @@ async function createBillingReport(period: string, organizationId?: string): Pro
 
     return result.rows[0] ?? { recordCount: 0, totalAmount: 0 };
   } catch (error) {
-    console.log('Failed to build billing report', error);
+    logger.info('Failed to build billing report', error);
     return { recordCount: 0, totalAmount: 0, error: 'billing_report_unavailable' };
   }
 }
@@ -910,7 +911,7 @@ async function createUsageAnalytics(period: string): Promise<any> {
 
     return { metricsCount: result.rows[0]?.metric_count ?? 0 };
   } catch (error) {
-    console.log('Failed to build usage analytics', error);
+    logger.info('Failed to build usage analytics', error);
     return { metricsCount: 0, error: 'usage_analytics_unavailable' };
   }
 }
@@ -929,7 +930,7 @@ async function collectPerformanceMetrics(): Promise<any> {
       totalConnections: result.rows[0]?.total_connections ?? 0,
     };
   } catch (error) {
-    console.log('Failed to collect performance metrics', error);
+    logger.info('Failed to collect performance metrics', error);
     return { dataPoints: 0, error: 'performance_metrics_unavailable' };
   }
 }
@@ -947,7 +948,7 @@ async function reviewSecurityLogs(lookbackHours: number): Promise<any[]> {
 
     return result.rows ?? [];
   } catch (error) {
-    console.log('Failed to review security logs', error);
+    logger.info('Failed to review security logs', error);
     return [];
   }
 }

@@ -9,6 +9,7 @@ import React, { useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../unified-auth';
 import { SessionManager } from '../session-manager';
 import { logger } from '../src/utils/logger';
+import { logger } from '@/lib/logger';
 
 // =========================================================================
 // TYPES

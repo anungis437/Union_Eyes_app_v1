@@ -15,6 +15,7 @@ import { auth } from '@clerk/nextjs/server';
 import { getCampaignService } from '@/lib/services/messaging/campaign-service';
 import { getEmailService } from '@/lib/services/messaging/email-service';
 import { getSMSService } from '@/lib/services/messaging/sms-service';
+import { logger } from '@/lib/logger';
 
 /**
  * POST /api/messaging/campaigns/[id]/send
@@ -91,7 +92,7 @@ export async function POST(
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error('Error sending campaign:', error);
+    logger.error('Error sending campaign:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to send campaign' },
       { status: 500 }

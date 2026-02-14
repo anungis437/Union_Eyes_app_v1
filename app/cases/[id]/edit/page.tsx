@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ArrowLeft, Save } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface CaseFormData {
   memberId: string;
@@ -76,7 +77,7 @@ export default function EditCasePage({ params }: { params: { id: string } }) {
         assignedTo: 'steward-1',
       });
     } catch (error) {
-      console.error('Error fetching case:', error);
+      logger.error('Error fetching case', error);
     } finally {
       setLoading(false);
     }
@@ -94,7 +95,7 @@ export default function EditCasePage({ params }: { params: { id: string } }) {
       alert('Case updated successfully!');
       router.push(`/cases/${params.id}`);
     } catch (error) {
-      console.error('Error updating case:', error);
+      logger.error('Error updating case', error);
       alert('Error updating case. Please try again.');
     }
   };

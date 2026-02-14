@@ -12,6 +12,7 @@ import type {
   ChartOfAccountsMapping,
 } from './types';
 import { AccountType } from './types';
+import { logger } from '@/lib/logger';
 
 export interface GLIntegrationConfig {
   strictValidation: boolean;
@@ -87,9 +88,9 @@ export class GeneralLedgerService {
       try {
         // Note: Import would need to use the correct schema path based on your project structure
         // For now, we'll use the default accounts as fallback
-        console.log('GL: Database mappings not configured, using ERP accounts');
+        logger.info('GL: Database mappings not configured, using ERP accounts');
       } catch (error) {
-        console.warn('GL: Failed to load database mappings, using ERP accounts');
+        logger.warn('GL: Failed to load database mappings, using ERP accounts');
       }
     }
     

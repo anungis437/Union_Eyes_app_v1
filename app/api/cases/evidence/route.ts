@@ -11,6 +11,7 @@ import { db } from '@/db';
 import { and, desc } from 'drizzle-orm';
 import { pgTable, uuid, text, timestamp, integer, jsonb, boolean } from 'drizzle-orm/pg-core';
 import { requireUserForOrganization } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 // Evidence schema (if not exists, this defines it)
 export const caseEvidence = pgTable('case_evidence', {
@@ -98,7 +99,7 @@ async function generateFileHash(fileUrl: string): Promise<string | null> {
     const hash = createHash('sha256').update(buffer).digest('hex');
     return hash;
   } catch (error) {
-    console.error('Error generating file hash:', error);
+    logger.error('Error generating file hash:', error);
     return null;
   }
 }
@@ -166,7 +167,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching evidence:', error);
+    logger.error('Error fetching evidence:', error);
     return NextResponse.json(
       { error: 'Failed to fetch evidence', details: error.message },
       { status: 500 }
@@ -223,7 +224,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    console.error('Error uploading evidence:', error);
+    logger.error('Error uploading evidence:', error);
     return NextResponse.json(
       { error: 'Failed to upload evidence', details: error.message },
       { status: 500 }

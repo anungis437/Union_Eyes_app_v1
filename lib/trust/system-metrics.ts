@@ -23,6 +23,7 @@ import {
   SystemStatus,
 } from '@/types/marketing';
 import { governanceService } from '@/services/governance-service';
+import { logger } from '@/lib/logger';
 
 /**
  * Get comprehensive trust metrics
@@ -95,7 +96,7 @@ export async function getImmutabilityMetrics(): Promise<ImmutabilityMetric> {
       lastAudit: new Date(),
     };
   } catch (error) {
-    console.error('Failed to check immutability metrics:', error);
+    logger.error('Failed to check immutability metrics', error);
     return {
       status: 'unknown',
       verification: false,
@@ -150,7 +151,7 @@ export async function getRLSMetrics(): Promise<RLSMetric> {
       tablesProtected: tablesWithRLS,
     };
   } catch (error) {
-    console.error('Failed to check RLS metrics:', error);
+    logger.error('Failed to check RLS metrics', error);
     return {
       status: 'unknown',
       verification: false,
@@ -188,7 +189,7 @@ export async function getFSMMetrics(): Promise<FSMMetric> {
       lastValidation: new Date(),
     };
   } catch (error) {
-    console.error('Failed to check FSM metrics:', error);
+    logger.error('Failed to check FSM metrics', error);
     return {
       status: 'unknown',
       verification: false,
@@ -220,7 +221,7 @@ export async function getGovernanceMetrics(): Promise<GovernanceMetric> {
       upcomingElection: undefined, // Would calculate based on election cycle
     };
   } catch (error) {
-    console.error('Failed to check governance metrics:', error);
+    logger.error('Failed to check governance metrics', error);
     return {
       status: 'unknown',
       verification: false,
@@ -266,7 +267,7 @@ export async function getAuditLogMetrics(): Promise<AuditLogMetric> {
       archivedEvents,
     };
   } catch (error) {
-    console.error('Failed to check audit log metrics:', error);
+    logger.error('Failed to check audit log metrics', error);
     return {
       status: 'unknown',
       verification: false,

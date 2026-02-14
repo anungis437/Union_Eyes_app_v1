@@ -159,7 +159,7 @@ return standardErrorResponse(
  * Find relevant arbitration decisions for a claim
  * In production, this would use vector similarity search on embeddings
  */
-async function findRelevantDecisions(claim: Record<string, unknown>, Record<string, unknown>, limit: number) {
+async function findRelevantDecisions(claim: Record<string, unknown>, limit: number) {
   // Simplified search based on keywords
   const keywords = extractKeywords(claim.description);
   
@@ -184,7 +184,7 @@ async function findRelevantDecisions(claim: Record<string, unknown>, Record<stri
  */
 async function analyzeClaimPrecedents(
   claimId: string,
-  claim: Record<string, unknown>, Record<string, unknown>,
+  claim: Record<string, unknown>,
   decisions: Array<Record<string, unknown>>,
   userId: string
 ) {
@@ -248,7 +248,7 @@ function extractKeywords(text: string): string[] {
     .slice(0, 10);
 }
 
-function calculateRelevanceScore(claim: Record<string, unknown>, decision: Record<string, unknown>) Record<string, unknown>): number {
+function calculateRelevanceScore(claim: Record<string, unknown>, decision: Record<string, unknown>): number {
   // Simplified relevance calculation
   // In production, use embedding cosine similarity
   const claimKeywords = new Set(extractKeywords(claim.description));
@@ -261,11 +261,11 @@ function calculateRelevanceScore(claim: Record<string, unknown>, decision: Recor
   return union.size > 0 ? intersection.size / union.size : 0;
 }
 
-function extractMatchingFactors(claim: Record<string, unknown>, decision: Record<string, unknown>) Record<string, unknown>): string[] {
+function extractMatchingFactors(claim: Record<string, unknown>, decision: Record<string, unknown>): string[] {
   return ["Similar workplace context", "Comparable issue type"];
 }
 
-function extractDivergingFactors(claim: Record<string, unknown>, decision: Record<string, unknown>) Record<string, unknown>): string[] {
+function extractDivergingFactors(claim: Record<string, unknown>, decision: Record<string, unknown>): string[] {
   return ["Different jurisdiction", "Time period variation"];
 }
 

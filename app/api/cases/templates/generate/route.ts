@@ -10,6 +10,7 @@ import { db } from '@/db';
 import { eq } from 'drizzle-orm';
 import { caseTemplates, generatedDocuments } from '../templates/route';
 import { requireUserForOrganization } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 // Validation schema for generating document
 const generateDocumentSchema = z.object({
@@ -116,7 +117,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    console.error('Error generating document:', error);
+    logger.error('Error generating document:', error);
     return NextResponse.json(
       { error: 'Failed to generate document', details: error.message },
       { status: 500 }

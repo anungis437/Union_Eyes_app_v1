@@ -28,6 +28,7 @@ import { db } from '@/db';
 import { organizationMembers } from '@/db/schema-organizations';
 import { eq, and, or } from 'drizzle-orm';
 import { processMessageQueue, getQueueStatus } from '@/lib/workers/message-queue-processor';
+import { logger } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   try {
@@ -83,7 +84,7 @@ export async function GET(request: NextRequest) {
 
     if (action === 'process') {
       // Process the message queue
-      console.log('[API] Starting message queue processing...');
+      logger.info('[API] Starting message queue processing...');
       const stats = await processMessageQueue();
       
       return NextResponse.json({
@@ -99,7 +100,7 @@ export async function GET(request: NextRequest) {
     );
 
   } catch (error) {
-    console.error('[API] Message queue processing error:', error);
+    logger.error('[API] Message queue processing error:', error);
     
     return NextResponse.json(
       { 

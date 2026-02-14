@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { logger } from '@/lib/logger';
 import { 
   Select, 
   SelectContent, 
@@ -173,7 +174,7 @@ export function PilotRequestForm() {
         alert('Something went wrong. Please try again.');
       }
     } catch (error) {
-      console.error('Submission error:', error);
+      logger.error('Submission error:', error);
       alert('Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);

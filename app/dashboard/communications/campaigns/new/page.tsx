@@ -33,6 +33,7 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { logger } from '@/lib/logger';
 import { 
   ArrowLeft, 
   ArrowRight, 
@@ -143,7 +144,7 @@ export default function NewCampaignPage() {
       const data = await response.json();
       setTemplates(data.templates);
     } catch (err) {
-      console.error('Failed to fetch templates:', err);
+      logger.error('Failed to fetch templates:', err);
     }
   };
 

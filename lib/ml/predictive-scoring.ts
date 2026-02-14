@@ -546,9 +546,9 @@ export function batchPredictOrganizerRetention(
  * });
  * 
  * if (prediction.score >= 70) {
- *   console.log('Approve pilot - high success probability');
+ *   logger.info('Approve pilot - high success probability');
  * } else {
- *   console.log('Defer or reject - address risk factors:', prediction.recommendations);
+ *   logger.info('Defer or reject - address risk factors:', prediction.recommendations);
  * }
  */
 

@@ -22,7 +22,7 @@ import { withRLSContext } from '@/lib/db/with-rls-context';
 
 import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // Helper to check if user can access precedent based on sharing level
-async function async function canAccessPrecedent(
+async function canAccessPrecedent(
   userId: string,
   userOrgId: string,
   userOrgHierarchyPath: string[],

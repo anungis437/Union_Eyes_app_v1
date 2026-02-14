@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { requireMinRole } from '@/lib/api-auth-guard';
 import { Shield, AlertTriangle, Activity, Lock, Eye, XCircle } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 // Fetch security events from API
 async function getSecurityEvents() {
@@ -26,14 +27,14 @@ async function getSecurityEvents() {
     });
     
     if (!response.ok) {
-      console.error('Failed to fetch security events');
+      logger.error('Failed to fetch security events');
       return [];
     }
     
     const data = await response.json();
     return data.data?.events || [];
   } catch (error) {
-    console.error('Error fetching security events:', error);
+    logger.error('Error fetching security events:', error);
     return [];
   }
 }

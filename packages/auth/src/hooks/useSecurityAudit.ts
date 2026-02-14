@@ -16,6 +16,7 @@ import { anomalyDetectionService } from '../services/anomalyDetectionService';
 import { complianceReportingService } from '../services/complianceReportingService';
 import { auditRetentionService } from '../services/auditRetentionService';
 import { logger } from '../utils/logger';
+import { logger } from '@/lib/logger';
 import type {
   AuditLog,
   AuditLogFilters,

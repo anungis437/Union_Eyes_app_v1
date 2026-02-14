@@ -170,10 +170,10 @@ return standardErrorResponse(
 });
 
 // Helper function to get claims by date range
-async function async function getClaimsByDateRange(
+async function getClaimsByDateRange(
   organizationId: string,
   dateRange: { startDate: Date; endDate: Date },
-  filters: any Record<string, unknown>
+  filters: any | Record<string, unknown>
 ) {
   const { startDate, endDate } = dateRange;
   

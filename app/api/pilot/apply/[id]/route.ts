@@ -11,6 +11,7 @@ import { db } from '@/db';
 import { pilotApplications } from '@/db/schema/domains/marketing';
 import { eq } from 'drizzle-orm';
 import { requireAdmin } from '@/lib/middleware/admin-auth';
+import { logger } from '@/lib/logger';
 import { 
   sendPilotApprovalNotification, 
   sendPilotRejectionNotification 
@@ -46,7 +47,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
 
     return NextResponse.json({ application });
   } catch (error) {
-    console.error('Error fetching application:', error);
+    logger.error('Error fetching application:', error);
     return NextResponse.json(
       { error: 'Failed to fetch application' },
       { status: 500 }
@@ -131,7 +132,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
         application.id,
         reviewNotes
       ).catch((error) => {
-        console.error('Failed to send approval notification:', error);
+        logger.error('Failed to send approval notification:', error);
         // Don&apos;t fail the request if notification fails
       });
     } else if (status === 'rejected' && application.contactEmail) {
@@ -143,14 +144,14 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
         application.id,
         reviewNotes
       ).catch((error) => {
-        console.error('Failed to send rejection notification:', error);
+        logger.error('Failed to send rejection notification:', error);
         // Don&apos;t fail the request if notification fails
       });
     }
 
     return NextResponse.json({ application });
   } catch (error) {
-    console.error('Error updating application:', error);
+    logger.error('Error updating application:', error);
     return NextResponse.json(
       { error: 'Failed to update application' },
       { status: 500 }

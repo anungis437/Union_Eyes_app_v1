@@ -14,6 +14,7 @@ import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { outreachSequences, outreachEnrollments } from '@/db/schema';
 import { and } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 interface RouteParams {
   params: {
@@ -88,7 +89,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       currentStats: stats,
     });
   } catch (error) {
-    console.error('[API] Error fetching outreach sequence:', error);
+    logger.error('[API] Error fetching outreach sequence:', error);
     return NextResponse.json(
       { error: 'Failed to fetch outreach sequence' },
       { status: 500 }
@@ -173,7 +174,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json(updated);
   } catch (error) {
-    console.error('[API] Error updating outreach sequence:', error);
+    logger.error('[API] Error updating outreach sequence:', error);
     return NextResponse.json(
       { error: 'Failed to update outreach sequence' },
       { status: 500 }
@@ -255,7 +256,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ success: true, sequence: deleted });
   } catch (error) {
-    console.error('[API] Error deleting outreach sequence:', error);
+    logger.error('[API] Error deleting outreach sequence:', error);
     return NextResponse.json(
       { error: 'Failed to delete outreach sequence' },
       { status: 500 }

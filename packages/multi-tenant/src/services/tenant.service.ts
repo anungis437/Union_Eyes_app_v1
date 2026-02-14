@@ -4,6 +4,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { ILogger, SimpleLogger } from '../utils/logger';
+import { logger } from '@/lib/logger';
 import {
   Tenant,
   TenantStatus,

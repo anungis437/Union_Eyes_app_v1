@@ -16,6 +16,7 @@ import {
 } from '../db/schema';
 import { eq, and, lt, sql } from 'drizzle-orm';
 import { queueNotification } from '../services/notification-service';
+import { logger } from '@/lib/logger';
 
 // Logger setup
 const logger = winston.createLogger({

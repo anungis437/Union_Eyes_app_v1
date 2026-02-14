@@ -10,6 +10,7 @@ import { db } from '@/db';
 import { and, desc } from 'drizzle-orm';
 import { memberDocuments } from '@/db/schema/member-profile-v2-schema';
 import { requireUser } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 // Validation schema
 const uploadDocumentSchema = z.object({
@@ -68,7 +69,7 @@ export async function GET(
       },
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching documents:', error);
+    logger.error('Error fetching documents:', error);
     return NextResponse.json(
       { error: 'Failed to fetch documents', details: error.message },
       { status: 500 }
@@ -113,7 +114,7 @@ export async function POST(
       })
       .returning();
 
-    console.log(`✅ Document uploaded: ${validatedData.documentName}`);
+    logger.info(`✅ Document uploaded: ${validatedData.documentName}`);
 
     return NextResponse.json(
       {
@@ -137,7 +138,7 @@ export async function POST(
         { status: 400 }
       );
     }
-    console.error('Error uploading document:', error);
+    logger.error('Error uploading document:', error);
     return NextResponse.json(
       { error: 'Failed to upload document', details: error.message },
       { status: 500 }

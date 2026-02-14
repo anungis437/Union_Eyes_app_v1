@@ -24,6 +24,7 @@ import {
 import { eq, and, gte, lte, sql, inArray } from 'drizzle-orm';
 import Stripe from 'stripe';
 import { queueNotification } from '../services/notification-service';
+import { logger } from '@/lib/logger';
 
 // Initialize Stripe
 const stripe = process.env.STRIPE_SECRET_KEY

@@ -10,6 +10,7 @@ import { votingSessions, voterEligibility, votes, votingOptions, votingAuditLog 
 import { and } from 'drizzle-orm';
 import { z } from 'zod';
 import crypto from 'crypto';
+import { logger } from '@/lib/logger';
 
 // Validation schema for casting vote
 const castVoteSchema = z.object({
@@ -192,7 +193,7 @@ export async function POST(
       },
     }, { status: 201 });
   } catch (error: Record<string, unknown>) {
-    console.error('Error casting vote:', error);
+    logger.error('Error casting vote:', error);
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -257,7 +258,7 @@ export async function GET(
       },
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error checking vote status:', error);
+    logger.error('Error checking vote status:', error);
     return NextResponse.json(
       { error: 'Failed to check vote status', details: error.message },
       { status: 500 }

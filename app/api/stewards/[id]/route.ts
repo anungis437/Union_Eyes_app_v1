@@ -10,6 +10,7 @@ import { db } from '@/db';
 import { stewardAssignments } from '@/db/schema/union-structure-schema';
 import { eq } from 'drizzle-orm';
 import { requireUser } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 // Validation schema for updating steward assignment
 const updateStewardSchema = z.object({
@@ -51,7 +52,7 @@ export async function GET(
 
     return NextResponse.json({ steward });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching steward assignment:', error);
+    logger.error('Error fetching steward assignment:', error);
     return NextResponse.json(
       { error: 'Failed to fetch steward assignment', details: error.message },
       { status: 500 }
@@ -121,7 +122,7 @@ export async function PUT(
         { status: 400 }
       );
     }
-    console.error('Error updating steward assignment:', error);
+    logger.error('Error updating steward assignment:', error);
     return NextResponse.json(
       { error: 'Failed to update steward assignment', details: error.message },
       { status: 500 }
@@ -172,7 +173,7 @@ export async function DELETE(
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
     }
-    console.error('Error ending steward assignment:', error);
+    logger.error('Error ending steward assignment:', error);
     return NextResponse.json(
       { error: 'Failed to end steward assignment', details: error.message },
       { status: 500 }

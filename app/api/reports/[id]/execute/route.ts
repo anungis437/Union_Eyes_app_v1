@@ -18,7 +18,7 @@ import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 async function postHandler(
   req: NextRequest,
-  context: any, Record<string, unknown>,
+  context: any | Record<string, unknown>,
   params?: any
 ) {
   // Extract params from context or params argument

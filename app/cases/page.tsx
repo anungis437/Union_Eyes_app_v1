@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { logger } from '@/lib/logger';
 import { Input } from '@/components/ui/input';
 import { api } from '@/lib/api';
 import {
@@ -92,7 +93,7 @@ export default function CasesDashboardPage() {
         }).length,
       });
     } catch (error) {
-      console.error('Error fetching cases:', error);
+      logger.error('Error fetching cases', error);
     } finally {
       setLoading(false);
     }

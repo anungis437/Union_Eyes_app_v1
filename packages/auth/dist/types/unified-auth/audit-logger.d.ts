@@ -4,6 +4,7 @@
  * Tracks all authentication events for security compliance and monitoring.
  */
 import { AuthChangeEvent } from '@supabase/supabase-js';
+import { logger } from '@/lib/logger';
 export interface AuthAuditEvent {
     event: AuthChangeEvent | 'SIGNED_UP' | 'PASSWORD_RECOVERY' | 'USER_UPDATED';
     userId: string;

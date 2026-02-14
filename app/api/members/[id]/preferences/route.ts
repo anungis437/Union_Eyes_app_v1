@@ -10,6 +10,7 @@ import { db } from '@/db';
 import { eq } from 'drizzle-orm';
 import { memberContactPreferences } from '@/db/schema/member-profile-v2-schema';
 import { requireUser } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 // Validation schema
 const updatePreferencesSchema = z.object({
@@ -62,7 +63,7 @@ export async function GET(
 
     return NextResponse.json({ preferences });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching preferences:', error);
+    logger.error('Error fetching preferences:', error);
     return NextResponse.json(
       { error: 'Failed to fetch preferences', details: error.message },
       { status: 500 }
@@ -147,7 +148,7 @@ export async function PUT(
         { status: 400 }
       );
     }
-    console.error('Error updating preferences:', error);
+    logger.error('Error updating preferences:', error);
     return NextResponse.json(
       { error: 'Failed to update preferences', details: error.message },
       { status: 500 }

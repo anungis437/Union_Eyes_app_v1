@@ -13,6 +13,7 @@ import { requireUser } from '@/lib/api-auth-guard';
 import { organizationMembers } from '@/db/schema-organizations';
 import { duesTransactions } from '@/db/schema/domains/finance/dues';
 import { documents } from '@/db/schema/domains/documents/documents';
+import { logger } from '@/lib/logger';
 
 // Import jobs schema
 export const importJobs = pgTable('import_jobs', {
@@ -116,11 +117,16 @@ export async function POST(request: NextRequest) {
       })
       .returning();
 
-    console.log(`✅ Import job created: ${job.id}`);
+    logger.info(`✅ Import job created: ${job.id}`);
 
     // Trigger async validation
     // In production, this would be a background job
-    validateImportJob(job.id).catch(console.error);
+    validateImportJob(job.id).catch((error) => {
+      logger.error('Import job validation failed', {
+        jobId: job.id,
+        error: error instanceof Error ? error.message : String(error)
+      });
+    });
 
     return NextResponse.json(
       {
@@ -144,7 +150,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    console.error('Error creating import job:', error);
+    logger.error('Error creating import job:', error);
     return NextResponse.json(
       { error: 'Failed to create import job', details: error.message },
       { status: 500 }
@@ -177,7 +183,7 @@ export async function GET(
 
     return NextResponse.json({ job });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching import job:', error);
+    logger.error('Error fetching import job:', error);
     return NextResponse.json(
       { error: 'Failed to fetch import job', details: error.message },
       { status: 500 }
@@ -213,7 +219,7 @@ export async function executeImport(jobId: string) {
       })
       .where(eq(importJobs.id, jobId));
 
-    console.log(`▶️  Starting import: ${jobId}`);
+    logger.info(`▶️  Starting import: ${jobId}`);
 
     // Execute import based on type
     const results = await executeImportByType(job);
@@ -231,7 +237,7 @@ export async function executeImport(jobId: string) {
       })
       .where(eq(importJobs.id, jobId));
 
-    console.log(`✅ Import complete: ${results.successful}/${results.total} successful`);
+    logger.info(`✅ Import complete: ${results.successful}/${results.total} successful`);
 
     return results;
   } catch (error: Record<string, unknown>) {
@@ -267,7 +273,7 @@ async function validateImportJob(jobId: string) {
       .set({ status: 'validating' })
       .where(eq(importJobs.id, jobId));
 
-    console.log(`🔍 Validating import: ${jobId}`);
+    logger.info(`🔍 Validating import: ${jobId}`);
 
     // Fetch and parse CSV
     // In production, fetch from job.fileUrl
@@ -294,9 +300,9 @@ async function validateImportJob(jobId: string) {
       })
       .where(eq(importJobs.id, jobId));
 
-    console.log(`✅ Validation complete: ${errors.length} errors found`);
+    logger.info(`✅ Validation complete: ${errors.length} errors found`);
   } catch (error) {
-    console.error('Validation error:', error);
+    logger.error('Validation error:', error);
     await db
       .update(importJobs)
       .set({ status: 'failed' })
@@ -335,7 +341,7 @@ function getValidationRules(importType: string): Record<string, unknown> {
 /**
  * Validate single row
  */
-function validateRow(row: Record<string, unknown>, Record<string, unknown>, rules: Record<string, unknown>, rowNumber: number): Array<Record<string, unknown>> {
+function validateRow(row: Record<string, unknown>, rules: Record<string, unknown>, rowNumber: number): Array<Record<string, unknown>> {
   const errors: Array<Record<string, unknown>> = [];
 
   Object.entries(rules).forEach(([field, rule]) => {
@@ -379,7 +385,7 @@ function validateRow(row: Record<string, unknown>, Record<string, unknown>, rule
 /**
  * Execute import by type
  */
-async function executeImportByType(job: Record<string, unknown>) Record<string, unknown>): Promise<{
+async function executeImportByType(job: Record<string, unknown>): Promise<{
   total: number;
   successful: number;
   failed: number;
@@ -425,18 +431,13 @@ export async function rollbackImport(jobId: string) {
       throw new Error('No import results found to rollback');
     }
 
-    // Extract surolled_back',
-        metadata: {
-          ...((job.metadata as Record<string, unknown>) || {}),
-          deletedCount,
-          rollbackCompletedAt: new Date().toISOString(),
-        },
-      })
-      .where(eq(importJobs.id, jobId));
+    // Extract successful record IDs
+    const recordIds = results
+      .filter(r => r.success && r.recordId)
+      .map(r => r.recordId as string);
 
-    console.log(`↩️  Import rolled back: ${jobId} (${deletedCount} records deleted)`);
-
-    return { success: true, deletedCountrecords to rollback');
+    if (recordIds.length === 0) {
+      logger.info('No records to rollback');
       await db
         .update(importJobs)
         .set({
@@ -477,7 +478,7 @@ export async function rollbackImport(jobId: string) {
       case 'cases':
         // Cases rollback would require more complex logic
         // due to related records (assignments, documents, etc.)
-        console.warn('⚠️  Cases rollback not fully implemented - requires cascade handling');
+        logger.warn('⚠️  Cases rollback not fully implemented - requires cascade handling');
         throw new Error('Cases rollback requires manual intervention');
       
       default:
@@ -488,15 +489,20 @@ export async function rollbackImport(jobId: string) {
       .update(importJobs)
       .set({
         rolledBackAt: new Date(),
-        status: 'pending',
+        status: 'rolled_back',
+        metadata: {
+          ...((job.metadata as Record<string, unknown>) || {}),
+          deletedCount,
+          rollbackCompletedAt: new Date().toISOString(),
+        },
       })
       .where(eq(importJobs.id, jobId));
 
-    console.log(`↩️  Import rolled back: ${jobId}`);
+    logger.info(`↩️  Import rolled back: ${jobId} (${deletedCount} records deleted)`);
 
-    return { success: true };
-  } catch (error: Record<string, unknown>) {
-    console.error('Rollback error:', error);
+    return { success: true, deletedCount };
+  } catch (error: any) {
+    logger.error('Rollback error:', error);
     throw error;
   }
 }

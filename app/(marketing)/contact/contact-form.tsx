@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Mail, CheckCircle2, AlertCircle } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface FormData {
   firstName: string;
@@ -50,7 +51,7 @@ export function ContactForm() {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Simulate API call
-      console.log('Contact form submitted:', formData);
+      logger.info('Contact form submitted:', formData);
       
       setSubmitStatus('success');
       setFormData({
@@ -63,7 +64,7 @@ export function ContactForm() {
         message: '',
       });
     } catch (error) {
-      console.error('Contact form error:', error);
+      logger.error('Contact form error:', error);
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);

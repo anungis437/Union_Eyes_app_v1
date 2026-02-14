@@ -5,6 +5,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseClient } from '@unioneyes/supabase';
 import { logger } from '../utils/logger';
+import { logger } from '@/lib/logger';
 
 // =============================================================================
 // TYPE DEFINITIONS

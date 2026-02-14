@@ -127,10 +127,10 @@ return standardErrorResponse(
     })(request);
 };
 
-async function async function generateFormPDF(
+async function generateFormPDF(
   templateId: string,
   formData: Record<string, string>,
-  campaignData: any Record<string, unknown>
+  campaignData: any | Record<string, unknown>
 ): Promise<Uint8Array> {
   // Create a new PDF document
   const pdfDoc = await PDFDocument.create();

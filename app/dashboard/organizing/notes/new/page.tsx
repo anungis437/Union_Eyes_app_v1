@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ArrowLeft, Save, X } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface NoteForm {
   memberId: string;
@@ -113,7 +114,7 @@ export default function NewFieldNotePage() {
       const note = await response.json();
       router.push(`/dashboard/organizing/notes/${note.id}`);
     } catch (err) {
-      console.error('Error creating note:', err);
+      logger.error('Error creating note:', err);
       setError(err instanceof Error ? err.message : 'Failed to create note');
     } finally {
       setSaving(false);

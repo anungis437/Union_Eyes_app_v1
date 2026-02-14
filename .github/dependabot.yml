@@ -1,0 +1,142 @@
+# Dependabot Configuration
+# Automated dependency updates for security patches and version bumps
+# See: https://docs.github.com/en/code-security/dependabot
+
+version: 2
+updates:
+  # ============================================================================
+  # NPM Dependencies (Root Package)
+  # ============================================================================
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "08:00"
+      timezone: "America/Toronto"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "anungis437"
+    labels:
+      - "dependencies"
+      - "security"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    # Group minor and patch updates together
+    groups:
+      production-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      development-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+    # Ignore specific packages if needed
+    ignore:
+      # Example: Ignore major version bumps for breaking changes
+      # - dependency-name: "next"
+      #   update-types: ["version-update:semver-major"]
+
+  # ============================================================================
+  # GitHub Actions Workflows
+  # ============================================================================
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Toronto"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "anungis437"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+
+  # ============================================================================
+  # Docker Dependencies
+  # ============================================================================
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "10:00"
+      timezone: "America/Toronto"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "anungis437"
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "chore(docker)"
+      include: "scope"
+
+  # ============================================================================
+  # Financial Service Dependencies
+  # ============================================================================
+  - package-ecosystem: "npm"
+    directory: "/services/financial-service"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "08:30"
+      timezone: "America/Toronto"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "anungis437"
+    labels:
+      - "dependencies"
+      - "financial-service"
+    commit-message:
+      prefix: "chore(deps/financial)"
+      include: "scope"
+
+  # ============================================================================
+  # CBA Intelligence Dependencies
+  # ============================================================================
+  - package-ecosystem: "npm"
+    directory: "/cba-intelligence"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "08:45"
+      timezone: "America/Toronto"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "anungis437"
+    labels:
+      - "dependencies"
+      - "cba-intelligence"
+    commit-message:
+      prefix: "chore(deps/cba)"
+      include: "scope"
+
+# Security Updates Configuration:
+# - Critical security updates are processed immediately (Dependabot Security Updates)
+# - All other updates follow the weekly schedule above
+# - Pull requests are auto-labeled for easy filtering
+# - Commits follow conventional commit format for changelog generation
+#
+# Best Practices:
+# 1. Review and merge security updates within 24 hours
+# 2. Test minor/patch updates in staging before merging
+# 3. Schedule major version upgrades during maintenance windows
+# 4. Use dependency groups to reduce PR noise
+# 5. Monitor Dependabot alerts in GitHub Security tab
+#
+# To enable Dependabot Security Updates:
+# 1. Go to GitHub Repository Settings
+# 2. Click "Security & analysis"
+# 3. Enable "Dependabot security updates"
+# 4. Enable "Dependabot alerts"

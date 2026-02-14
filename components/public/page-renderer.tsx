@@ -161,7 +161,7 @@ export function PublicPageRenderer({ pageSlug }: PublicPageRendererProps) {
               className={`inline-flex items-center justify-center rounded-md px-6 py-3 text-sm font-medium transition-colors ${buttonVariantClass}`}
             >
               {content.text}
-            </Link>
+            </a>
           </div>
         );
 
@@ -188,7 +188,7 @@ export function PublicPageRenderer({ pageSlug }: PublicPageRendererProps) {
                   className="inline-flex items-center justify-center rounded-md bg-white text-primary px-8 py-4 text-lg font-semibold hover:bg-gray-100 transition-colors"
                 >
                   {content.buttonText}
-                </Link>
+                </a>
               )}
             </div>
             <div className="absolute inset-0 bg-black/40 z-0" />
@@ -227,7 +227,7 @@ export function PublicPageRenderer({ pageSlug }: PublicPageRendererProps) {
                 className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-8 py-4 text-lg font-semibold hover:bg-primary/90 transition-colors"
               >
                 {content.buttonText}
-              </Link>
+              </a>
             )}
           </div>
         );

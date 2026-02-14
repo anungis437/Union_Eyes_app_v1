@@ -17,6 +17,7 @@ import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-
 import { checkEntitlement, consumeCredits, getCreditCost } from '@/lib/services/entitlements';
 
 import { standardSuccessResponse } from '@/lib/api/standardized-responses';
+import { logger } from '@/lib/logger';
 
 export const POST = withEnhancedRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
@@ -96,14 +97,14 @@ export const POST = withEnhancedRoleAuth(20, async (request, context) => {
           });
 
           if (vectorError) {
-            console.error('Vector search error:', vectorError);
+            logger.error('Vector search error:', vectorError);
             // Fall through to keyword search
           } else if (vectorChunks) {
             chunks = vectorChunks as Array<Record<string, unknown>>;
             usedVectorSearch = true;
           }
         } catch (error) {
-          console.error('Vector search failed:', error);
+          logger.error('Vector search failed:', error);
           // Fall through to keyword search
         }
       }
@@ -269,7 +270,7 @@ export const POST = withEnhancedRoleAuth(20, async (request, context) => {
 
       // 16. Consume credits for AI search (non-blocking, fire-and-forget)
       consumeCredits(organizationId!, getCreditCost('ai_search'), 'ai_search').catch((err) => {
-        console.error('Failed to consume credits:', err);
+        logger.error('Failed to consume credits:', err);
       });
 
       return NextResponse.json(response);
@@ -321,7 +322,7 @@ async function formatSources(supabase: any, chunks: Array<Record<string, unknown
 /**
  * Helper function to log AI query
  */
-async function async function logAiQuery({
+async function logAiQuery({
   supabase,
   organizationId,
   userId,
@@ -336,7 +337,7 @@ async function async function logAiQuery({
   organizationId: string;
   userId: string;
   queryText: string;
-  filters: any Record<string, unknown>;
+  filters: any | Record<string, unknown>;
   answer: string;
   sources: AiSource[];
   status: 'success' | 'error';

@@ -23,19 +23,30 @@ import { logger } from "@/lib/logger";
 
 // Legacy PostgreSQL client (for backward compatibility)
 // Consider migrating to getUnifiedDatabase() for multi-database support
+
+// Configure connection pool size based on environment
+// Test environments: 1 connection (single-threaded)
+// Development: 20 connections (default)
+// Production: 50-100 connections (configurable via DB_POOL_MAX)
 const maxConnections = (process.env.NODE_ENV === "test" || process.env.VITEST)
   ? 1
-  : 3;
+  : parseInt(process.env.DB_POOL_MAX || '20');
+
+// Configure timeouts based on environment
+const idleTimeout = parseInt(process.env.DB_IDLE_TIMEOUT || '30');
+const connectTimeout = parseInt(process.env.DB_CONNECTION_TIMEOUT || '10');
+const queryTimeout = parseInt(process.env.DB_QUERY_TIMEOUT || '30000');
 
 const connectionOptions = {
-  max: maxConnections,  // Lower max connections to prevent overloading
-  idle_timeout: 10,     // Shorter idle timeout
-  connect_timeout: 5,   // Shorter connect timeout
-  prepare: false,       // Disable prepared statements
-  keepalive: true,      // Keep connections alive
-  debug: false,         // Disable debug logging in production
+  max: maxConnections,         // Connection pool size (configurable)
+  idle_timeout: idleTimeout,   // Idle timeout in seconds (default: 30s)
+  connect_timeout: connectTimeout, // Connect timeout in seconds (default: 10s)
+  prepare: false,              // Disable prepared statements
+  keepalive: true,             // Keep connections alive
+  debug: false,                // Disable debug logging in production
   connection: {
-    application_name: "union-claims-app" // Identify app in database logs
+    application_name: "union-claims-app", // Identify app in database logs
+    statement_timeout: queryTimeout,       // Query timeout in milliseconds (default: 30s)
   }
 };
 

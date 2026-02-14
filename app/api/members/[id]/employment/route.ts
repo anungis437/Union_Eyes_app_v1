@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { eq } from 'drizzle-orm';
 import { memberEmploymentDetails } from '@/db/schema/member-profile-v2-schema';
+import { logger } from '@/lib/logger';
 
 // Validation schema
 const updateEmploymentSchema = z.object({
@@ -67,7 +68,7 @@ export async function GET(
 
     return NextResponse.json({ employment });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching employment details:', error);
+    logger.error('Error fetching employment details:', error);
     return NextResponse.json(
       { error: 'Failed to fetch employment details', details: error.message },
       { status: 500 }
@@ -147,7 +148,7 @@ export async function PUT(
         { status: 400 }
       );
     }
-    console.error('Error updating employment details:', error);
+    logger.error('Error updating employment details:', error);
     return NextResponse.json(
       { error: 'Failed to update employment details', details: error.message },
       { status: 500 }

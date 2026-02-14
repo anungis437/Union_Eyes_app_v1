@@ -10,6 +10,7 @@ import { db } from '@/db';
 import { and, desc, like } from 'drizzle-orm';
 import { pgTable, uuid, text, timestamp, jsonb, boolean } from 'drizzle-orm/pg-core';
 import { requireUser, requireUserForOrganization } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 // Case templates schema
 export const caseTemplates = pgTable('case_templates', {
@@ -209,7 +210,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching templates:', error);
+    logger.error('Error fetching templates:', error);
     return NextResponse.json(
       { error: 'Failed to fetch templates', details: error.message },
       { status: 500 }
@@ -264,7 +265,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    console.error('Error creating template:', error);
+    logger.error('Error creating template:', error);
     return NextResponse.json(
       { error: 'Failed to create template', details: error.message },
       { status: 500 }

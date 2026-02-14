@@ -10,6 +10,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { cacheGetOrSetStale } from './cache-service';
+import { logger } from '@/lib/logger';
 
 export interface ApiCacheOptions {
   /**
@@ -153,7 +154,7 @@ export function createApiRouteConfig(revalidate: number) {
 export async function invalidateApiCacheByTags(tags: string[]): Promise<void> {
   // This would integrate with your cache service
   // For now, it&apos;s a placeholder for future implementation
-  console.log('Invalidating API cache for tags:', tags);
+  logger.info('Invalidating API cache for tags', { tags });
 }
 
 /**

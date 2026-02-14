@@ -10,6 +10,7 @@ import { db } from '@/db';
 import { chatSessions, chatMessages } from '@/db/schema/ai-chatbot-schema';
 import { and, asc } from 'drizzle-orm';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 type MessagesResponse = {
   messages?: Array<Record<string, unknown>>;
@@ -53,7 +54,7 @@ export const GET = async (
       
       return NextResponse.json({ messages });
     } catch (error) {
-      console.error('Error fetching messages:', error);
+      logger.error('Error fetching messages:', error);
       return NextResponse.json(
         { error: 'Failed to fetch messages' },
         { status: 500 }

@@ -12,6 +12,7 @@ import { chatSessions } from '@/db/schema/ai-chatbot-schema';
 import { and, desc } from 'drizzle-orm';
 import { withRoleAuth } from '@/lib/api-auth-guard';
 import { v4 as uuidv4 } from 'uuid';
+import { logger } from '@/lib/logger';
 
 export const GET = withRoleAuth('member', async (request: NextRequest, context) => {
   const { userId } = context;
@@ -46,7 +47,7 @@ export const GET = withRoleAuth('member', async (request: NextRequest, context) 
       pagination: { limit, offset, hasMore: sessions.length === limit },
     });
   } catch (error) {
-    console.error('Error fetching sessions:', error);
+    logger.error('Error fetching sessions:', error);
     return NextResponse.json({ error: 'Failed to fetch sessions' }, { status: 500 });
   }
 });
@@ -72,7 +73,7 @@ export const POST = withRoleAuth('member', async (request: NextRequest, context)
     
     return NextResponse.json({ session: newSession }, { status: 201 });
   } catch (error) {
-    console.error('Error creating session:', error);
+    logger.error('Error creating session:', error);
     return NextResponse.json({ error: 'Failed to create session' }, { status: 500 });
   }
 });

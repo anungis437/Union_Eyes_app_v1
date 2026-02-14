@@ -12,6 +12,7 @@ import { SessionManager } from '../session-manager';
 import { AuditLogger } from './audit-logger';
 import type { UserRole, Permission } from '../rbac';
 import { logger } from '../src/utils/logger';
+import { logger } from '@/lib/logger';
 
 // Initialize supabase client
 const supabase = getSupabaseClient();

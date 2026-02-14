@@ -12,6 +12,7 @@ import { useState, useEffect } from 'react';
 import { CaseStudy } from '@/types/marketing';
 import { CaseStudyGrid } from '@/components/marketing/case-study-card';
 import { HumanCenteredCallout } from '@/components/marketing/human-centered-callout';
+import { logger } from '@/lib/logger';
 
 export default function CaseStudiesPage() {
   const [caseStudies, setCaseStudies] = useState<CaseStudy[]>([]);
@@ -35,7 +36,7 @@ export default function CaseStudiesPage() {
           setFilteredStudies(data.caseStudies || []);
         }
       } catch (error) {
-        console.error('Failed to load case studies:', error);
+        logger.error('Failed to load case studies:', error);
       } finally {
         setLoading(false);
       }

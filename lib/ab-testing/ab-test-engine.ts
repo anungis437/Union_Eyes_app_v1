@@ -21,6 +21,7 @@
 
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -179,7 +180,7 @@ export async function recordImpression(testId: string, variantId: string): Promi
   //   .set({ impressions: sql`impressions + 1` })
   //   .where(and(eq(abTestVariants.testId, testId), eq(abTestVariants.id, variantId)));
 
-  console.log(`Impression recorded: test=${testId}, variant=${variantId}`);
+  logger.info(`Impression recorded: test=${testId}, variant=${variantId}`);
 }
 
 /**
@@ -191,7 +192,7 @@ export async function recordConversion(testId: string, variantId: string): Promi
   //   .set({ conversions: sql`conversions + 1` })
   //   .where(and(eq(abTestVariants.testId, testId), eq(abTestVariants.id, variantId)));
 
-  console.log(`Conversion recorded: test=${testId}, variant=${variantId}`);
+  logger.info(`Conversion recorded: test=${testId}, variant=${variantId}`);
 }
 
 // ============================================================================
@@ -356,7 +357,7 @@ export async function startTest(testId: string): Promise<void> {
   // In production, update test status in database
   // await db.update(abTests).set({ status: 'active', startDate: new Date() }).where(eq(abTests.id, testId));
 
-  console.log(`Test ${testId} started`);
+  logger.info(`Test ${testId} started`);
 }
 
 /**
@@ -366,7 +367,7 @@ export async function pauseTest(testId: string): Promise<void> {
   // In production, update test status in database
   // await db.update(abTests).set({ status: 'paused' }).where(eq(abTests.id, testId));
 
-  console.log(`Test ${testId} paused`);
+  logger.info(`Test ${testId} paused`);
 }
 
 /**
@@ -376,7 +377,7 @@ export async function completeTest(testId: string, winnerId?: string): Promise<v
   // In production, update test status and winner in database
   // await db.update(abTests).set({ status: 'completed', endDate: new Date(), winner: winnerId }).where(eq(abTests.id, testId));
 
-  console.log(`Test ${testId} completed, winner: ${winnerId || 'none'}`);
+  logger.info(`Test ${testId} completed, winner: ${winnerId || 'none'}`);
 }
 
 // ============================================================================
@@ -495,7 +496,7 @@ export async function createTestFromTemplate(
  * // Check results
  * const result = determineWinner(test);
  * if (result.winner) {
- *   console.log(`Winner: ${result.winner.variantName} with ${result.winner.improvement}% improvement`);
+ *   logger.info(`Winner: ${result.winner.variantName} with ${result.winner.improvement}% improvement`);
  *   await completeTest(test.id, result.winner.variantId);
  * }
  */

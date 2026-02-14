@@ -13,6 +13,7 @@ import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { stewardAssignments } from '@/db/schema';
 import { and, or, isNull, desc } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 /**
  * GET /api/organizing/assignments
@@ -104,7 +105,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('[API] Error fetching steward assignments:', error);
+    logger.error('[API] Error fetching steward assignments:', error);
     return NextResponse.json(
       { error: 'Failed to fetch steward assignments' },
       { status: 500 }
@@ -184,7 +185,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(assignment, { status: 201 });
   } catch (error) {
-    console.error('[API] Error creating steward assignment:', error);
+    logger.error('[API] Error creating steward assignment:', error);
     return NextResponse.json(
       { error: 'Failed to create steward assignment' },
       { status: 500 }

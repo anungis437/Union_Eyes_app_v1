@@ -27,6 +27,7 @@ import { TentativeAgreementViewer } from "@/components/bargaining/TentativeAgree
 import { BargainingTeamList } from "@/components/bargaining/BargainingTeamList";
 import { ProposalStatusTracker } from "@/components/bargaining/ProposalStatusTracker";
 import { NegotiationSessionNotes } from "@/components/bargaining/NegotiationSessionNotes";
+import { logger } from '@/lib/logger';
 
 interface PageProps {
   params: { id: string };
@@ -48,7 +49,7 @@ async function fetchNegotiationData(id: string) {
     
     return response.json();
   } catch (error) {
-    console.error("Error fetching negotiation:", error);
+    logger.error("Error fetching negotiation:", error);
     return null;
   }
 }

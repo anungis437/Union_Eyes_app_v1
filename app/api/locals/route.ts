@@ -10,6 +10,7 @@ import { db } from '@/db';
 import { locals } from '@/db/schema/union-structure-schema';
 import { and, desc, like, or } from 'drizzle-orm';
 import { requireUserForOrganization } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 // Validation schema for creating local
 const createLocalSchema = z.object({
@@ -107,7 +108,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching locals:', error);
+    logger.error('Error fetching locals:', error);
     return NextResponse.json(
       { error: 'Failed to fetch locals', details: error.message },
       { status: 500 }
@@ -160,7 +161,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    console.error('Error creating local:', error);
+    logger.error('Error creating local:', error);
     return NextResponse.json(
       { error: 'Failed to create local', details: error.message },
       { status: 500 }

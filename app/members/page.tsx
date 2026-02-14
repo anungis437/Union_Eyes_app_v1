@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { logger } from '@/lib/logger';
 import { api } from '@/lib/api';
 import {
   Table,
@@ -65,7 +66,7 @@ export default function MembersPage() {
       
       setMembers(result.members);
     } catch (error) {
-      console.error('Error fetching members:', error);
+      logger.error('Error fetching members', error);
     } finally {
       setLoading(false);
     }
@@ -78,13 +79,13 @@ export default function MembersPage() {
       const result = await api.members.search(searchQuery);
       setMembers(result.members);
     } catch (error) {
-      console.error('Search error:', error);
+      logger.error('Search error', error);
     }
   };
 
   const handleBulkExport = () => {
     // TODO: Implement bulk export
-    console.log('Exporting members:', selectedMembers);
+    logger.info('Exporting members', { selectedMembers });
   };
 
   const handleBulkImport = () => {

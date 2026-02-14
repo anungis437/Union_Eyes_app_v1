@@ -38,6 +38,7 @@ import { startDuesCalculationWorkflow, stopDuesCalculationWorkflow } from './job
 import { startArrearsManagementWorkflow, stopArrearsManagementWorkflow } from './jobs/arrears-management-workflow';
 import { startPaymentCollectionWorkflow, stopPaymentCollectionWorkflow } from './jobs/payment-collection-workflow';
 import { startStipendProcessingWorkflow, stopStipendProcessingWorkflow } from './jobs/stipend-processing-workflow';
+import { logger } from '@/lib/logger';
 
 dotenv.config();
 

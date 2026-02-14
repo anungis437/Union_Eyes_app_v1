@@ -2,6 +2,7 @@ import cron from 'node-cron';
 import winston from 'winston';
 import { processAutomatedAlerts } from '../services/burn-rate-predictor';
 import { generateWeeklyForecastReport } from '../services/burn-rate-predictor';
+import { logger } from '@/lib/logger';
 
 // Logger setup
 const logger = winston.createLogger({

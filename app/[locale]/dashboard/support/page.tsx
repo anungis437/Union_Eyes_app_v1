@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { requireMinRole } from '@/lib/api-auth-guard';
 import { Headphones, Clock, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 // Fetch support metrics from API
 async function getSupportMetrics() {
@@ -26,13 +27,13 @@ async function getSupportMetrics() {
     });
     
     if (!response.ok) {
-      console.error('Failed to fetch support metrics');
+      logger.error('Failed to fetch support metrics');
       return null;
     }
     
     return await response.json();
   } catch (error) {
-    console.error('Error fetching support metrics:', error);
+    logger.error('Error fetching support metrics:', error);
     return null;
   }
 }
@@ -48,14 +49,14 @@ async function getSupportTickets() {
     });
     
     if (!response.ok) {
-      console.error('Failed to fetch support tickets');
+      logger.error('Failed to fetch support tickets');
       return [];
     }
     
     const data = await response.json();
     return data.data?.tickets || [];
   } catch (error) {
-    console.error('Error fetching support tickets:', error);
+    logger.error('Error fetching support tickets:', error);
     return [];
   }
 }

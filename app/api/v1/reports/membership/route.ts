@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
+import { logger } from '@/lib/logger';
 import { apiAccessTokens } from '@/db/schema/integration-schema';
 import { organizationMembers } from '@/db/schema/organization-members-schema';
 import { and } from 'drizzle-orm';
@@ -101,7 +102,7 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching membership report:', error);
+    logger.error('Error fetching membership report:', error);
     return NextResponse.json(
       { error: 'Failed to fetch membership report', details: error.message },
       { status: 500 }

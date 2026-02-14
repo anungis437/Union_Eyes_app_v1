@@ -14,6 +14,7 @@ import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { stewardAssignments } from '@/db/schema';
 import { and } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 interface RouteParams {
   params: {
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json(assignment[0]);
   } catch (error) {
-    console.error('[API] Error fetching steward assignment:', error);
+    logger.error('[API] Error fetching steward assignment:', error);
     return NextResponse.json(
       { error: 'Failed to fetch steward assignment' },
       { status: 500 }
@@ -131,7 +132,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json(updated);
   } catch (error) {
-    console.error('[API] Error updating steward assignment:', error);
+    logger.error('[API] Error updating steward assignment:', error);
     return NextResponse.json(
       { error: 'Failed to update steward assignment' },
       { status: 500 }
@@ -190,7 +191,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ success: true, assignment: deleted });
   } catch (error) {
-    console.error('[API] Error deleting steward assignment:', error);
+    logger.error('[API] Error deleting steward assignment:', error);
     return NextResponse.json(
       { error: 'Failed to delete steward assignment' },
       { status: 500 }

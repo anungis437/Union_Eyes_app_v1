@@ -22,6 +22,7 @@ import {
 } from '../db/schema';
 import { eq, and, inArray, sql } from 'drizzle-orm';
 import { NotificationService } from '../services/notification-service';
+import { logger } from '@/lib/logger';
 
 const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',

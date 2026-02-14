@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { logger } from '@/lib/logger';
 import { api } from '@/lib/api';
 import {
   Users, FileText, DollarSign, AlertCircle, 
@@ -64,7 +65,7 @@ export default function DashboardPage() {
       setStats(statsData);
       setActivities(activitiesData);
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      logger.error('Error fetching dashboard data', error);
     } finally {
       setLoading(false);
     }

@@ -16,7 +16,7 @@ import { withRLSContext } from '@/lib/db/with-rls-context';
 
 import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // Helper to check access
-async function async function canAccessPrecedent(
+async function canAccessPrecedent(
   userId: string,
   userOrgId: string,
   userOrgHierarchyPath: string[],

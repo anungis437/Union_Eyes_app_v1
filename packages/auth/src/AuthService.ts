@@ -23,6 +23,7 @@ export interface AuthService {
 
 // Supabase Auth implementation
 import { getSupabaseClient } from '@unioneyes/supabase';
+import { logger } from '@/lib/logger';
 
 const supabase = getSupabaseClient();
 
@@ -95,7 +96,7 @@ export class SupabaseAuthService implements AuthService {
         }
       }
     } catch (error) {
-      console.error('Error assigning role:', error);
+      logger.error('Error assigning role:', error);
       throw error;
     }
   }
@@ -131,7 +132,7 @@ export class SupabaseAuthService implements AuthService {
         throw new Error(`Failed to remove role: ${updateError.message}`);
       }
     } catch (error) {
-      console.error('Error removing role:', error);
+      logger.error('Error removing role:', error);
       throw error;
     }
   }

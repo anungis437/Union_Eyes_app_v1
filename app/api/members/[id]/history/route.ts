@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { and, desc, asc } from 'drizzle-orm';
 import { memberHistoryEvents } from '@/db/schema/member-profile-v2-schema';
+import { logger } from '@/lib/logger';
 
 // Validation schema
 const addEventSchema = z.object({
@@ -76,7 +77,7 @@ export async function GET(
       },
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching history:', error);
+    logger.error('Error fetching history:', error);
     return NextResponse.json(
       { error: 'Failed to fetch history', details: error.message },
       { status: 500 }
@@ -107,7 +108,7 @@ export async function POST(
       })
       .returning();
 
-    console.log(`✅ History event added: ${validatedData.eventTitle}`);
+    logger.info(`✅ History event added: ${validatedData.eventTitle}`);
 
     return NextResponse.json(
       {
@@ -123,7 +124,7 @@ export async function POST(
         { status: 400 }
       );
     }
-    console.error('Error adding history event:', error);
+    logger.error('Error adding history event:', error);
     return NextResponse.json(
       { error: 'Failed to add history event', details: error.message },
       { status: 500 }
@@ -139,7 +140,7 @@ export async function logProfileChange(
   organizationId: string,
   field: string,
   previousValue: any,
-  newValue: any, Record<string, unknown>,
+  newValue: any | Record<string, unknown>,
   actorId?: string
 ) {
   await db.insert(memberHistoryEvents).values({

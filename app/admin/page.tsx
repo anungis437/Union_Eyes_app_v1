@@ -5,13 +5,13 @@
  */
 
 'use client';
-import Link from 'next/link';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { logger } from '@/lib/logger';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
@@ -22,7 +22,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
-  Settings, Database, Shield, Link, Users, Activity, AlertCircle
+  Database, Link as LinkIcon, Users, AlertCircle
 } from 'lucide-react';
 import { api } from '@/lib/api';
 
@@ -59,15 +59,19 @@ export default function AdminDashboardPage() {
 
   const fetchAdminData = async () => {
     try {
-      const [statsData, integrationsData] = await Promise.all([
-        api.admin.stats(),
-        api.admin.integrations.list(),
-      ]);
+      const integrationsData = await api.admin.integrations.list();
       
-      setStats(statsData);
-      setIntegrations(integrationsData.integrations || []);
+      // Calculate stats from available data
+      const integrationsList = (integrationsData as unknown as { integrations?: Integration[] })?.integrations || [];
+      setStats({
+        totalUsers: 0, // TODO: Fetch from user management endpoint
+        activeIntegrations: integrationsList.filter((i: Integration) => i.status === 'active').length,
+        dataRetentionPolicies: 0, // TODO: Fetch from governance endpoint
+        pendingApprovals: 0, // TODO: Fetch from approvals endpoint
+      });
+      setIntegrations(integrationsList);
     } catch (error) {
-      console.error('Error fetching admin data:', error);
+      logger.error('Error fetching admin data', { error });
       alert('Error loading admin dashboard.');
     } finally {
       setLoading(false);
@@ -123,7 +127,7 @@ export default function AdminDashboardPage() {
                 {stats.activeIntegrations}
               </p>
             </div>
-            <Link className="h-8 w-8 text-green-600" />
+            <LinkIcon className="h-8 w-8 text-green-600" />
           </div>
         </Card>
 

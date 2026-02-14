@@ -10,6 +10,7 @@ import { db } from '@/db';
 import { stewardAssignments } from '@/db/schema/union-structure-schema';
 import { and, desc, or } from 'drizzle-orm';
 import { requireUserForOrganization } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 // Validation schema for creating steward assignment
 const createStewardSchema = z.object({
@@ -100,7 +101,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching steward assignments:', error);
+    logger.error('Error fetching steward assignments:', error);
     return NextResponse.json(
       { error: 'Failed to fetch steward assignments', details: error.message },
       { status: 500 }
@@ -182,7 +183,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    console.error('Error creating steward assignment:', error);
+    logger.error('Error creating steward assignment:', error);
     return NextResponse.json(
       { error: 'Failed to create steward assignment', details: error.message },
       { status: 500 }

@@ -22,6 +22,7 @@ import {
 } from '@/db/schema/domains/data/communication';
 import { IntegrationProvider } from '../../types';
 import { eq, and } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 const PAGE_SIZE = 50; // Microsoft Graph API default
 

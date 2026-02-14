@@ -10,6 +10,7 @@ import { apiIntegrations, integrationSyncLogs } from '@/db/schema/integration-sc
 import { and, desc } from 'drizzle-orm';
 import { z } from 'zod';
 import { requireUserForOrganization } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 // Validation schema for creating integration
 const createIntegrationSchema = z.object({
@@ -66,7 +67,7 @@ export async function GET(req: NextRequest) {
     
     return NextResponse.json({ integrations: sanitizedIntegrations });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching integrations:', error);
+    logger.error('Error fetching integrations:', error);
     return NextResponse.json(
       { error: 'Failed to fetch integrations', details: error.message },
       { status: 500 }
@@ -113,7 +114,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
     }
-    console.error('Error creating integration:', error);
+    logger.error('Error creating integration:', error);
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(

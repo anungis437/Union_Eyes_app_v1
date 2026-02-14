@@ -17,6 +17,7 @@ type SQLCondition = SQL<unknown> | undefined;
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { standardSuccessResponse } from '@/lib/api/standardized-responses';
+import { logger } from '@/lib/logger';
 
 const createVendorSchema = z.object({
   vendorName: z.string().min(1).max(255),
@@ -131,7 +132,7 @@ export const GET = withApiAuth(async (request: NextRequest, context) => {
     });
 
   } catch (error) {
-    console.error('Error fetching vendors:', error);
+    logger.error('Error fetching vendors:', error);
     return standardErrorResponse(
       ErrorCode.INTERNAL_ERROR,
       'Failed to fetch vendors',
@@ -237,7 +238,7 @@ export const POST = withApiAuth(async (request: NextRequest, context) => {
         'Vendor number conflict - please try again'
       );
     }
-    console.error('Error creating vendor:', error);
+    logger.error('Error creating vendor:', error);
     return standardErrorResponse(
       ErrorCode.INTERNAL_ERROR,
       'Failed to create vendor',

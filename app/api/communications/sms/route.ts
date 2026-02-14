@@ -210,7 +210,7 @@ async function getCampaignDetails(campaignId: string) {
   });
 }
 
-async function sendSingleSms(userId: string, body: Record<string, unknown>) Record<string, unknown>) {
+async function sendSingleSms(userId: string, body: Record<string, unknown>) {
   const { organizationId: organizationIdFromBody, phoneNumber, message, templateId, variables } = body;
   const organizationId = organizationIdFromBody;
 
@@ -259,7 +259,7 @@ async function sendSingleSms(userId: string, body: Record<string, unknown>) Reco
   });
 }
 
-async function sendBulkSmsAction(userId: string, body: Record<string, unknown>) Record<string, unknown>) {
+async function sendBulkSmsAction(userId: string, body: Record<string, unknown>) {
   const { organizationId: organizationIdFromBody, recipients, message, templateId, campaignId } = body;
   const organizationId = organizationIdFromBody;
 
@@ -290,7 +290,7 @@ async function sendBulkSmsAction(userId: string, body: Record<string, unknown>) 
   });
 }
 
-async function createTemplate(userId: string, contextOrganizationId: string, body: Record<string, unknown>) Record<string, unknown>) {
+async function createTemplate(userId: string, contextOrganizationId: string, body: Record<string, unknown>) {
   const { organizationId: organizationIdFromBody, name, description, messageTemplate, variables, category } = body;
   const organizationId = organizationIdFromBody ?? contextOrganizationId;
 
@@ -330,7 +330,7 @@ async function createTemplate(userId: string, contextOrganizationId: string, bod
     );
 }
 
-async function createCampaign(userId: string, contextOrganizationId: string, body: Record<string, unknown>) Record<string, unknown>) {
+async function createCampaign(userId: string, contextOrganizationId: string, body: Record<string, unknown>) {
   const { organizationId: organizationIdFromBody, name, description, message, templateId, recipientFilter, scheduledFor } = body;
   const organizationId = organizationIdFromBody ?? contextOrganizationId;
 
@@ -364,7 +364,7 @@ async function createCampaign(userId: string, contextOrganizationId: string, bod
     );
 }
 
-async function sendCampaignAction(userId: string, body: Record<string, unknown>) Record<string, unknown>) {
+async function sendCampaignAction(userId: string, body: Record<string, unknown>) {
   const { campaignId, recipients } = body;
 
   if (!campaignId) {
@@ -447,7 +447,7 @@ async function sendCampaignAction(userId: string, body: Record<string, unknown>)
   }
 }
 
-async function handleWebhook(body: Record<string, unknown>) Record<string, unknown>) {
+async function handleWebhook(body: Record<string, unknown>) {
   if (body.MessageSid && body.MessageStatus) {
     await handleTwilioWebhook(body);
     return NextResponse.json({ success: true });

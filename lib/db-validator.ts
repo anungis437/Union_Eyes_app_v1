@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Database Health Check & Validation
  * 
  * Provides utilities to validate database connection and health at startup.
@@ -8,7 +8,6 @@
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
 import { logger } from './logger';
-
 export interface DatabaseHealthStatus {
   healthy: boolean;
   responseTime: number;

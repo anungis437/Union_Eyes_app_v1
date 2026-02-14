@@ -38,6 +38,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Users, Plus, Filter, Trash2, Play } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface Segment {
   id: string;
@@ -81,7 +82,7 @@ export default function MemberSegmentsPage() {
       const data = await api.memberSegments.list();
       setSegments(data);
     } catch (error) {
-      console.error('Error fetching segments:', error);
+      logger.error('Error fetching segments:', error);
     } finally {
       setLoading(false);
     }
@@ -114,7 +115,7 @@ export default function MemberSegmentsPage() {
       const result = await api.memberSegments.preview(filters);
       setPreviewCount(result.count);
     } catch (error) {
-      console.error('Error previewing segment:', error);
+      logger.error('Error previewing segment:', error);
     }
   };
 
@@ -126,7 +127,7 @@ export default function MemberSegmentsPage() {
       setNewSegment({ name: '', description: '', filters: [] });
       setPreviewCount(null);
     } catch (error) {
-      console.error('Error creating segment:', error);
+      logger.error('Error creating segment:', error);
     }
   };
 
@@ -137,7 +138,7 @@ export default function MemberSegmentsPage() {
       await api.memberSegments.delete(id);
       fetchSegments();
     } catch (error) {
-      console.error('Error deleting segment:', error);
+      logger.error('Error deleting segment:', error);
     }
   };
 

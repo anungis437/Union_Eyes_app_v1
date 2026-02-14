@@ -26,6 +26,7 @@ import CLCAnalyticsDashboard from '@/components/admin/clc-analytics-dashboard';
 import { ClcRemittancesDashboard } from '@/components/admin/clc-remittances-dashboard';
 import { perCapitaRemittances } from '@/db/schema/domains/infrastructure/clc-per-capita';
 import { sql, and, eq, lt } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 export const metadata: Metadata = {
   title: 'CLC Executive Dashboard | Union Eyes',
@@ -133,7 +134,7 @@ async function getCLCMetrics(orgId: string) {
       affiliates,
     };
   } catch (error) {
-    console.error('Error fetching CLC metrics:', error);
+    logger.error('Error fetching CLC metrics:', error);
     return {
       totalAffiliates: 0,
       directCharteredUnions: 0,

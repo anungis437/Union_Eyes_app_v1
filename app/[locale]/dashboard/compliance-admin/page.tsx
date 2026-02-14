@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { requireMinRole } from '@/lib/api-auth-guard';
 import { Shield, FileText, AlertTriangle, CheckCircle2, Clock, Eye } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 // Fetch audit logs from API
 async function getAuditLogs() {
@@ -26,14 +27,14 @@ async function getAuditLogs() {
     });
     
     if (!response.ok) {
-      console.error('Failed to fetch audit logs');
+      logger.error('Failed to fetch audit logs');
       return [];
     }
     
     const data = await response.json();
     return data.data?.logs || [];
   } catch (error) {
-    console.error('Error fetching audit logs:', error);
+    logger.error('Error fetching audit logs:', error);
     return [];
   }
 }

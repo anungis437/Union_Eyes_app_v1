@@ -17,6 +17,7 @@ interface RequestContext {
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { standardSuccessResponse } from '@/lib/api/standardized-responses';
+import { logger } from '@/lib/logger';
 
 const updateVendorSchema = z.object({
   vendorName: z.string().min(1).max(255).optional(),
@@ -87,7 +88,7 @@ export const GET = withApiAuth(async (request: NextRequest, context) => {
     });
 
   } catch (error) {
-    console.error('Error fetching vendor:', error);
+    logger.error('Error fetching vendor:', error);
     return standardErrorResponse(
       ErrorCode.INTERNAL_ERROR,
       'Failed to fetch vendor',
@@ -174,7 +175,7 @@ export const PATCH = withApiAuth(async (request: NextRequest, context) => {
         'A vendor with this name already exists'
       );
     }
-    console.error('Error updating vendor:', error);
+    logger.error('Error updating vendor:', error);
     return standardErrorResponse(
       ErrorCode.INTERNAL_ERROR,
       'Failed to update vendor',

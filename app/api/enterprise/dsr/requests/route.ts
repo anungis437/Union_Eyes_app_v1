@@ -9,6 +9,7 @@ import { db } from '@/db';
 import { dsrRequests, dsrActivityLog } from '@/db/schema/data-governance-schema';
 import { and, desc } from 'drizzle-orm';
 import { z } from 'zod';
+import { logger } from '@/lib/logger';
 
 // Validation schema for DSR request
 const createDSRRequestSchema = z.object({
@@ -55,7 +56,7 @@ export async function GET(req: NextRequest) {
     
     return NextResponse.json({ requests });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching DSR requests:', error);
+    logger.error('Error fetching DSR requests:', error);
     return NextResponse.json(
       { error: 'Failed to fetch DSR requests', details: error.message },
       { status: 500 }
@@ -102,7 +103,7 @@ export async function POST(req: NextRequest) {
       request,
     }, { status: 201 });
   } catch (error: Record<string, unknown>) {
-    console.error('Error creating DSR request:', error);
+    logger.error('Error creating DSR request:', error);
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(

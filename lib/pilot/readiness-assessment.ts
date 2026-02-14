@@ -6,6 +6,7 @@
  */
 
 import { PilotApplicationInput } from '@/types/marketing';
+import { logger } from '@/lib/logger';
 
 export interface ReadinessAssessmentResult {
   score: number; // 0-100
@@ -411,6 +412,6 @@ function generateRecommendations(
  *   }
  * });
  * 
- * console.log(`Readiness: ${assessment.level} (${assessment.score}/100)`);
- * console.log(`Estimated setup: ${assessment.estimatedSetupTime}`);
+ * logger.info(`Readiness: ${assessment.level} (${assessment.score}/100)`);
+ * logger.info(`Estimated setup: ${assessment.estimatedSetupTime}`);
  */

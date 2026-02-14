@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 type FormStep = 'basic' | 'employment' | 'contact' | 'review';
 
@@ -105,7 +106,7 @@ export default function NewMemberPage() {
       alert('Member created successfully!');
       router.push('/members');
     } catch (error) {
-      console.error('Error creating member:', error);
+      logger.error('Error creating member:', error);
       alert('Error creating member. Please try again.');
     }
   };

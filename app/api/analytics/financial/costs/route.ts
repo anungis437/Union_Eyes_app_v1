@@ -3,7 +3,7 @@ import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { client } from '@/db/db';
 import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
-async function handler(req: NextRequest, context?: any) Record<string, unknown>) {
+async function handler(req: NextRequest, context?: any) {
   try {
     const user = context || await getCurrentUser();
     if (!user || !user.organizationId) {

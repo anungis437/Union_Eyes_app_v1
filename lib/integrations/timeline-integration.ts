@@ -15,6 +15,7 @@ import { grievances } from '@/db/schema/grievance-schema';
 import { eq } from 'drizzle-orm';
 import { generateStatusUpdateMessage } from '@/lib/member-experience/timeline-builder';
 import type { ClaimStatus } from '@/lib/workflow-engine';
+import { logger } from '@/lib/logger';
 
 export interface TimelineStatusEntry {
   status: string;
@@ -105,7 +106,7 @@ export async function addTimelineEntry(
 
     return { success: true };
   } catch (error) {
-    console.error('Failed to add timeline entry:', error);
+    logger.error('Failed to add timeline entry', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -183,7 +184,7 @@ export async function getEnrichedTimeline(
 
     return { success: true, timeline: enrichedTimeline };
   } catch (error) {
-    console.error('Failed to fetch enriched timeline:', error);
+    logger.error('Failed to fetch enriched timeline', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',

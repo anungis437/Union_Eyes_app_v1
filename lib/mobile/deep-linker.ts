@@ -251,7 +251,7 @@ export function registerDeepLinkHandlers(): void {
         'Union Eyes'
       );
     } catch (error) {
-      console.warn('Failed to register protocol handler', error);
+      logger.warn('Failed to register protocol handler', error);
     }
   }
 

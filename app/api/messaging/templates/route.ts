@@ -13,6 +13,7 @@ import { messageTemplates } from '@/db/schema';
 import { desc, and } from 'drizzle-orm';
 import { withRLSContext } from '@/lib/db/rls-context';
 import { auth } from '@clerk/nextjs/server';
+import { logger } from '@/lib/logger';
 
 /**
  * GET /api/messaging/templates
@@ -82,7 +83,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error('Error fetching templates:', error);
+    logger.error('Error fetching templates:', error);
     return NextResponse.json(
       { error: 'Failed to fetch templates' },
       { status: 500 }
@@ -143,7 +144,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(template, { status: 201 });
   } catch (error) {
-    console.error('Error creating template:', error);
+    logger.error('Error creating template:', error);
     return NextResponse.json(
       { error: 'Failed to create template' },
       { status: 500 }

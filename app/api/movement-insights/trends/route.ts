@@ -23,6 +23,7 @@ import {
   validateAggregationRequest 
 } from '@/lib/movement-insights/aggregation-service';
 import { validateConsent, meetsAggregationThreshold } from '@/lib/movement-insights/consent-manager';
+import { logger } from '@/lib/logger';
 
 /**
  * GET /api/movement-insights/trends
@@ -69,7 +70,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ trends });
   } catch (error) {
-    console.error('Error fetching trends:', error);
+    logger.error('Error fetching trends:', error);
     return NextResponse.json(
       { error: 'Failed to fetch trends' },
       { status: 500 }
@@ -159,7 +160,7 @@ export async function POST(request: NextRequest) {
       message 
     }, { status: 201 });
   } catch (error) {
-    console.error('Error calculating trend:', error);
+    logger.error('Error calculating trend:', error);
     return NextResponse.json(
       { error: 'Failed to calculate trend' },
       { status: 500 }
@@ -300,7 +301,7 @@ async function queryAggregateData(
         }));
     }
   } catch (error) {
-    console.error('Error querying aggregate data:', error);
+    logger.error('Error querying aggregate data:', error);
     // Return empty results on error
     return organizationIds.map((orgId) => ({
       organizationId: orgId,

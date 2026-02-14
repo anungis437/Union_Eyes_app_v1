@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { MobileHeader } from '@/components/mobile/MobileHeader';
 import { SyncStatusButton } from '@/components/mobile/SyncStatus';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 
 interface Claim {
   id: string;
@@ -81,7 +82,7 @@ export default function MobileClaimsPage() {
         setClaims(JSON.parse(cached));
       }
     } catch (error) {
-      console.error('Failed to load claims:', error);
+      logger.error('Failed to load claims:', error);
       
       // Try cached data
       const cached = localStorage.getItem('cached_claims');

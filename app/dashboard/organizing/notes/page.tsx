@@ -34,6 +34,7 @@ import {
   Frown,
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { logger } from '@/lib/logger';
 
 interface FieldNote {
   id: string;
@@ -113,7 +114,7 @@ export default function FieldNotesPage() {
       const data = await response.json();
       setNotes(data.notes);
     } catch (err) {
-      console.error('Error fetching notes:', err);
+      logger.error('Error fetching notes:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch notes');
     } finally {
       setLoading(false);

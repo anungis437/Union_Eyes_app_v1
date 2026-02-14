@@ -12,6 +12,7 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { dbQuery } from '../_shared/azure-db.ts';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // TYPES
@@ -212,7 +213,7 @@ async function enrichWithGeolocation(ipAddress?: string): Promise<GeolocationDat
     };
   } catch (error) {
     // Fallback to empty data on error
-    console.error('IP geolocation error:', error);
+    logger.error('IP geolocation error:', error);
     return {};
   }
 }

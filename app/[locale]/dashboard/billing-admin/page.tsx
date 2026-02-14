@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { requireMinRole } from '@/lib/api-auth-guard';
 import { DollarSign, CreditCard, TrendingUp, Users, FileText, AlertCircle } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 // Fetch billing subscriptions from API
 async function getBillingSubscriptions() {
@@ -26,13 +27,13 @@ async function getBillingSubscriptions() {
     });
     
     if (!response.ok) {
-      console.error('Failed to fetch billing subscriptions');
+      logger.error('Failed to fetch billing subscriptions');
       return null;
     }
     
     return await response.json();
   } catch (error) {
-    console.error('Error fetching billing subscriptions:', error);
+    logger.error('Error fetching billing subscriptions:', error);
     return null;
   }
 }

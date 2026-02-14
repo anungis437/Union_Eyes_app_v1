@@ -41,7 +41,7 @@ async function basicExample() {
     }
   );
 
-  console.log(answer);
+  logger.info(answer);
 }
 
 // ============================================================================
@@ -64,7 +64,7 @@ async function embeddingsExample() {
     }
   );
 
-  console.log('Embedding dimensions:', embedding.length);
+  logger.info('Embedding dimensions:', embedding.length);
 
   // Batch embeddings - each batch automatically tracked! ✨
   const documents = [
@@ -168,11 +168,11 @@ async function documentAnalysisWorkflow(
 
 export function initializeAIWithObservability() {
   if (isObservabilityEnabled()) {
-    console.log('✅ LLM Observability is ENABLED');
-    console.log('📊 Tracking all OpenAI API calls with Langfuse');
+    logger.info('✅ LLM Observability is ENABLED');
+    logger.info('📊 Tracking all OpenAI API calls with Langfuse');
   } else {
-    console.log('ℹ️ LLM Observability is DISABLED');
-    console.log('💡 Set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY to enable');
+    logger.info('ℹ️ LLM Observability is DISABLED');
+    logger.info('💡 Set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY to enable');
   }
 }
 
@@ -181,13 +181,13 @@ export function initializeAIWithObservability() {
 // ============================================================================
 
 export async function gracefulShutdown() {
-  console.log('🔄 Flushing observability data...');
+  logger.info('🔄 Flushing observability data...');
   await flushObservability();
   
-  console.log('🛑 Shutting down observability...');
+  logger.info('🛑 Shutting down observability...');
   await shutdownObservability();
   
-  console.log('✅ Graceful shutdown complete');
+  logger.info('✅ Graceful shutdown complete');
 }
 
 // Register shutdown handlers

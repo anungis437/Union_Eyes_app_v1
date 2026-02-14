@@ -19,6 +19,7 @@ import { db } from '@/db';
 import { perCapitaRemittances } from '@/db/schema';
 import { eq, and, count, sum, sql, lt } from 'drizzle-orm';
 import { getUserRoleInOrganization } from '@/lib/organization-utils';
+import { logger } from '@/lib/logger';
 
 interface MemberUnionData {
   id: string;
@@ -93,7 +94,7 @@ async function getFederationMetrics(orgId: string) {
       memberUnions,
     };
   } catch (error) {
-    console.error('Error fetching federation metrics:', error);
+    logger.error('Error fetching federation metrics:', error);
     return {
       totalMemberUnions: 0,
       totalMembers: 0,

@@ -5,6 +5,7 @@
  */
 
 import { useEffect, useState, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 
 export interface PushSubscriptionState {
   isSupported: boolean;
@@ -51,7 +52,7 @@ export function usePushNotifications(): PushSubscriptionState & {
           permission,
         }));
       } catch (error) {
-        console.error('Failed to check push subscription:', error);
+        logger.error('Failed to check push subscription', error);
         setState(prev => ({ ...prev, isSupported: true, permission }));
       }
     };
@@ -108,7 +109,7 @@ export function usePushNotifications(): PushSubscriptionState & {
 
       return subscription;
     } catch (error) {
-      console.error('Failed to subscribe to push:', error);
+      logger.error('Failed to subscribe to push', error);
       return null;
     }
   }, []);
@@ -132,7 +133,7 @@ export function usePushNotifications(): PushSubscriptionState & {
         subscription: null,
       }));
     } catch (error) {
-      console.error('Failed to unsubscribe:', error);
+      logger.error('Failed to unsubscribe', error);
     }
   }, [state.subscription]);
 

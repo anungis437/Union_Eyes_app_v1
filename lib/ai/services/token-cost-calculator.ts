@@ -54,7 +54,7 @@ export function calculateCost(
   const pricing = MODEL_PRICING[model];
   
   if (!pricing) {
-    console.warn(`No pricing data for model: ${model}. Returning 0 cost.`);
+    logger.warn(`No pricing data for model: ${model}. Returning 0 cost.`);
     return 0;
   }
   

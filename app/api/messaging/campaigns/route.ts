@@ -13,6 +13,7 @@ import { campaigns, messageTemplates } from '@/db/schema';
 import { desc, and } from 'drizzle-orm';
 import { withRLSContext } from '@/lib/db/rls-context';
 import { auth } from '@clerk/nextjs/server';
+import { logger } from '@/lib/logger';
 
 /**
  * GET /api/messaging/campaigns
@@ -92,7 +93,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error('Error fetching campaigns:', error);
+    logger.error('Error fetching campaigns:', error);
     return NextResponse.json(
       { error: 'Failed to fetch campaigns' },
       { status: 500 }
@@ -183,7 +184,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(campaign, { status: 201 });
   } catch (error) {
-    console.error('Error creating campaign:', error);
+    logger.error('Error creating campaign:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to create campaign' },
       { status: 500 }

@@ -16,6 +16,7 @@ import {
   duesTransactions 
 } from '../db/schema';
 import { eq, and, lte, gte, isNull, or, sql } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 // Logger setup
 const logger = winston.createLogger({

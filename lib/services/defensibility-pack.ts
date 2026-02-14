@@ -9,6 +9,7 @@
 
 import { createHash } from 'crypto';
 import { calculateCaseSlaStatus, type SlaStatus } from './sla-calculator';
+import { logger } from '@/lib/logger';
 
 /**
  * Visibility level for timeline events

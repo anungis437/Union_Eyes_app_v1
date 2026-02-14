@@ -10,6 +10,7 @@ import { db } from '@/db';
 import { memberDuesLedger, memberArrears } from '@/db/schema/dues-finance-schema';
 import { and, desc, eq, gte, lte, sql, lt } from 'drizzle-orm';
 import { requireUserForOrganization } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 // Validation schema for creating transaction
 const createTransactionSchema = z.object({
@@ -105,7 +106,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching dues ledger:', error);
+    logger.error('Error fetching dues ledger:', error);
     return NextResponse.json(
       { error: 'Failed to fetch dues ledger', details: error.message },
       { status: 500 }
@@ -198,7 +199,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    console.error('Error creating transaction:', error);
+    logger.error('Error creating transaction:', error);
     return NextResponse.json(
       { error: 'Failed to create transaction', details: error.message },
       { status: 500 }

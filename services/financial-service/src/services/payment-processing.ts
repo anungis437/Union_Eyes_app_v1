@@ -14,6 +14,7 @@ import { db } from '../db';
 import * as schema from '../db/schema';
 import { eq, and, sql } from 'drizzle-orm';
 import { logger } from '../../../lib/logger';
+import { logger } from '@/lib/logger';
 
 // Initialize Stripe (use test key in development)
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy', {

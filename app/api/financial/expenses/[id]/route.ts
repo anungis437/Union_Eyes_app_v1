@@ -17,6 +17,7 @@ interface RequestContext {
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { standardSuccessResponse } from '@/lib/api/standardized-responses';
+import { logger } from '@/lib/logger';
 
 const updateExpenseSchema = z.object({
   status: z.enum(['draft', 'submitted', 'approved', 'rejected', 'paid', 'cancelled']).optional(),
@@ -83,7 +84,7 @@ export const GET = withApiAuth(async (request: NextRequest, context) => {
     });
 
   } catch (error) {
-    console.error('Error fetching expense:', error);
+    logger.error('Error fetching expense:', error);
     return standardErrorResponse(
       ErrorCode.INTERNAL_ERROR,
       'Failed to fetch expense',
@@ -309,7 +310,7 @@ updateData.notes = data.notes;
     return standardErrorResponse(ErrorCode.VALIDATION_ERROR, 'No valid update action specified');
 
   } catch (error) {
-    console.error('Error updating expense:', error);
+    logger.error('Error updating expense:', error);
     return standardErrorResponse(
       ErrorCode.INTERNAL_ERROR,
       'Failed to update expense',

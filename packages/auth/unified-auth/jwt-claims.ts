@@ -9,6 +9,7 @@
 import { getSupabaseClient } from '@unioneyes/supabase';
 import type { UserRole, Permission } from '../rbac';
 import { logger } from '../src/utils/logger';
+import { logger } from '@/lib/logger';
 
 // =========================================================================
 // TYPES

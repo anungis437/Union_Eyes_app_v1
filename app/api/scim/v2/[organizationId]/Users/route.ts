@@ -11,6 +11,7 @@ import { scimConfigurations, scimEventsLog } from '@/db/schema/sso-scim-schema';
 import { users } from '@/db/schema/user-management-schema';
 import { and, like, or } from 'drizzle-orm';
 import crypto from 'crypto';
+import { logger } from '@/lib/logger';
 
 /**
  * Validate SCIM bearer token
@@ -50,7 +51,7 @@ async function logSCIMEvent(
   status: string,
   statusCode: number,
   requestBody?: any,
-  responseBody?: any, Record<string, unknown>,
+  responseBody?: any | Record<string, unknown>,
   errorMessage?: string
 ) {
   await db.insert(scimEventsLog).values({
@@ -184,7 +185,7 @@ export async function GET(
     
     return NextResponse.json(response);
   } catch (error: Record<string, unknown>) {
-    console.error('SCIM Users GET error:', error);
+    logger.error('SCIM Users GET error:', error);
     return NextResponse.json(
       {
         schemas: ['urn:ietf:params:scim:api:messages:2.0:Error'],
@@ -341,7 +342,7 @@ export async function POST(
     
     return NextResponse.json(scimUser, { status: 201 });
   } catch (error: Record<string, unknown>) {
-    console.error('SCIM Users POST error:', error);
+    logger.error('SCIM Users POST error:', error);
     return NextResponse.json(
       {
         schemas: ['urn:ietf:params:scim:api:messages:2.0:Error'],

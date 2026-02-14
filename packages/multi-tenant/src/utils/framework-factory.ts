@@ -6,6 +6,7 @@ import { TenantIsolationService, TenantIsolationConfig } from '../services/tenan
 import { TenantMiddleware, TenantMiddlewareConfig, TenantResolutionStrategy } from '../middleware/tenant-context.middleware';
 import { TenantIsolationType } from '../types';
 import { SimpleLogger } from './logger';
+import { logger } from '@/lib/logger';
 
 export interface MultiTenantFrameworkConfig {
   // Database configuration

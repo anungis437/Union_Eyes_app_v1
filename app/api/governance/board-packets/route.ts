@@ -11,6 +11,7 @@ import { and, desc, or, like } from 'drizzle-orm';
 import { z } from 'zod';
 import { boardPacketGenerator } from '@/lib/services/board-packet-generator';
 import { requireUserForOrganization } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 // Validation schema for generating board packet
 const generatePacketSchema = z.object({
@@ -131,7 +132,7 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching board packets:', error);
+    logger.error('Error fetching board packets:', error);
     return NextResponse.json(
       { error: 'Failed to fetch board packets', details: error.message },
       { status: 500 }
@@ -175,7 +176,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
     }
-    console.error('Error generating board packet:', error);
+    logger.error('Error generating board packet:', error);
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(

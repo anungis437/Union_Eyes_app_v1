@@ -12,6 +12,7 @@ import { pgTable, uuid, text, timestamp, jsonb } from 'drizzle-orm/pg-core';
 import { grievances } from '@/db/schema/domains/claims/grievances';
 import { grievanceStages, grievanceAssignments, grievanceDocuments, grievanceDeadlines, grievanceSettlements } from '@/db/schema/domains/claims/workflows';
 import { claims } from '@/db/schema/domains/claims/claims';
+import { logger } from '@/lib/logger';
 
 // Timeline events schema
 export const caseTimelineEvents = pgTable('case_timeline_events', {
@@ -137,7 +138,7 @@ export async function GET(request: NextRequest) {
       groupedByDate,
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching timeline:', error);
+    logger.error('Error fetching timeline:', error);
     return NextResponse.json(
       { error: 'Failed to fetch timeline', details: error.message },
       { status: 500 }
@@ -342,7 +343,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    console.error('Error generating timeline:', error);
+    logger.error('Error generating timeline:', error);
     return NextResponse.json(
       { error: 'Failed to generate timeline', details: error.message },
       { status: 500 }
@@ -353,7 +354,7 @@ export async function POST(request: NextRequest) {
 /**
  * Helper function to add timeline event (to be called by other services)
  */
-export async function async function addTimelineEvent(data: {
+export async function addTimelineEvent(data: {
   caseId: string;
   caseType: string;
   organizationId: string;
@@ -361,7 +362,7 @@ export async function async function addTimelineEvent(data: {
   eventCategory: string;
   eventTitle: string;
   eventDescription?: string;
-  eventData?: any Record<string, unknown>;
+  eventData?: any | Record<string, unknown>;
   actorId?: string;
   actorName?: string;
   actorRole?: string;

@@ -6,6 +6,7 @@
  */
 
 import geoip from 'geoip-lite';
+import { logger } from '@/lib/logger';
 
 export interface IPGeolocationResult {
   ip: string;
@@ -95,7 +96,7 @@ export async function getEnhancedIPGeolocation(
       source: 'ipapi',
     };
   } catch (error) {
-    console.error('Enhanced IP geolocation error:', error);
+    logger.error('Enhanced IP geolocation error:', error);
     // Fallback to local lookup
     return getIPGeolocation(ipAddress);
   }

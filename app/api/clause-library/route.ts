@@ -67,11 +67,11 @@ function anonymizeEmployerName(originalName: string): string {
 }
 
 // Helper to check if user can access clause based on sharing level
-async function async function canAccessClause(
+async function canAccessClause(
   userId: string,
   userOrgId: string,
   userOrgHierarchyPath: string,
-  clause: any Record<string, unknown>
+  clause: any | Record<string, unknown>
 ): Promise<boolean> {
   // Owner always has access
   if (clause.sourceOrganizationId === userOrgId) {

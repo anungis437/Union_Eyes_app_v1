@@ -12,6 +12,7 @@
  */
 
 import { MovementTrend } from '@/types/marketing';
+import { logger } from '@/lib/logger';
 
 export interface AggregationInput {
   trendType: string;
@@ -51,9 +52,10 @@ export function aggregateWithPrivacy(
 
   // Privacy check 1: Minimum organizations
   if (input.dataPoints.length < cfg.minOrganizations) {
-    console.warn(
-      `Aggregation rejected: Only ${input.dataPoints.length} organizations (minimum ${cfg.minOrganizations} required)`
-    );
+    logger.warn('Aggregation rejected: Insufficient organizations', {
+      count: input.dataPoints.length,
+      required: cfg.minOrganizations,
+    });
     return null;
   }
 
@@ -63,9 +65,10 @@ export function aggregateWithPrivacy(
     0
   );
   if (totalCases < cfg.minCases) {
-    console.warn(
-      `Aggregation rejected: Only ${totalCases} cases (minimum ${cfg.minCases} required)`
-    );
+    logger.warn('Aggregation rejected: Insufficient cases', {
+      count: totalCases,
+      required: cfg.minCases,
+    });
     return null;
   }
 

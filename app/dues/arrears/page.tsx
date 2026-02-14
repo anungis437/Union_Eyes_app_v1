@@ -32,6 +32,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertCircle, DollarSign, FileText, Mail, Phone } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface MemberInArrears {
   id: string;
@@ -63,7 +64,7 @@ export default function ArrearsPage() {
       const data = await api.dues.arrears.list();
       setMembers(data.members || []);
     } catch (error) {
-      console.error('Error fetching arrears:', error);
+      logger.error('Error fetching arrears:', error);
       alert('Error loading arrears data.');
     } finally {
       setLoading(false);
@@ -85,7 +86,7 @@ export default function ArrearsPage() {
       setSelectedMember(null);
       fetchMembersInArrears();
     } catch (error) {
-      console.error('Error recording payment:', error);
+      logger.error('Error recording payment:', error);
       alert('Error recording payment.');
     }
   };
@@ -99,7 +100,7 @@ export default function ArrearsPage() {
       await api.dues.arrears.sendReminder(member.id);
       alert(`Reminder email sent to ${member.memberName}`);
     } catch (error) {
-      console.error('Error sending reminder:', error);
+      logger.error('Error sending reminder:', error);
       alert('Error sending reminder email.');
     }
   };

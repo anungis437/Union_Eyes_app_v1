@@ -14,6 +14,7 @@ import {
   type NewPolicyEvaluation,
 } from '@/db/schema/policy-engine-schema';
 import { eq, and, gte, lte, sql } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 interface EvaluationContext {
   subjectType: 'member' | 'user' | 'organization' | 'action';
@@ -110,7 +111,7 @@ export class PolicyEngine {
       
       return result;
     } catch (error) {
-      console.error('Error evaluating policy:', error);
+      logger.error('Error evaluating policy:', error);
       throw error;
     }
   }
@@ -147,7 +148,7 @@ export class PolicyEngine {
         };
       }
     } catch (error) {
-      console.error('Error evaluating rule:', error);
+      logger.error('Error evaluating rule:', error);
       return {
         passed: false,
         failureReason: 'Rule evaluation error',
@@ -196,7 +197,7 @@ export class PolicyEngine {
         return !Array.isArray(expectedValue) || !expectedValue.includes(fieldValue);
       
       default:
-        console.warn(`Unknown operator: ${condition.operator}`);
+        logger.warn(`Unknown operator: ${condition.operator}`);
         return false;
     }
   }

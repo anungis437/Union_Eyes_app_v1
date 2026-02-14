@@ -369,7 +369,7 @@ export function getQueryPerformanceSummary(): QueryPerformanceSummary {
  * 
  * // Get performance summary
  * const summary = getQueryPerformanceSummary();
- * console.log(`Slow queries: ${summary.slowQueries}`);
- * console.log(`Average duration: ${summary.avgDurationMs.toFixed(2)}ms`);
+ * logger.info(`Slow queries: ${summary.slowQueries}`);
+ * logger.info(`Average duration: ${summary.avgDurationMs.toFixed(2)}ms`);
  * ```
  */

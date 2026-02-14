@@ -14,6 +14,7 @@ import {
   retryFailedNotifications,
 } from '../services/notification-service';
 import { logger } from '../../../lib/logger';
+import { logger } from '@/lib/logger';
 
 const router = Router();
 

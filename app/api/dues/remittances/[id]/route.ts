@@ -14,6 +14,7 @@ import {
 } from '@/db/schema/dues-finance-schema';
 import { eq } from 'drizzle-orm';
 import { requireUserForOrganization } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 /**
  * GET /api/dues/remittances/[id]
@@ -56,7 +57,7 @@ export async function GET(
       exceptions,
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching remittance:', error);
+    logger.error('Error fetching remittance:', error);
     return NextResponse.json(
       { error: 'Failed to fetch remittance', details: error.message },
       { status: 500 }
@@ -141,7 +142,7 @@ export async function PUT(
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
     }
-    console.error('Error updating remittance:', error);
+    logger.error('Error updating remittance:', error);
     return NextResponse.json(
       { error: 'Failed to update remittance', details: error.message },
       { status: 500 }

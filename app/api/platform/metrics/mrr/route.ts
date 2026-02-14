@@ -17,6 +17,7 @@ import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { db } from '@/services/financial-service/src/db';
 import { subscriptionEvents, mrrSnapshots } from '@/services/financial-service/src/db/schema-platform-economics';
 import { and, desc, sum } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 // Helper to safely parse numeric
 const parseNumeric = (val: any, defaultVal = 0): number => {
@@ -195,7 +196,7 @@ export async function GET(req: NextRequest) {
     });
     
   } catch (error) {
-    console.error('Error calculating MRR:', error);
+    logger.error('Error calculating MRR:', error);
     return NextResponse.json(
       { error: 'Failed to calculate MRR metrics', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }

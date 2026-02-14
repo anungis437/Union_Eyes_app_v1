@@ -3,6 +3,7 @@
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { ILogger, SimpleLogger } from '../utils/logger';
+import { logger } from '@/lib/logger';
 import {
   Tenant,
   TenantIsolation,

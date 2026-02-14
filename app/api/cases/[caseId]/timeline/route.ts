@@ -12,6 +12,7 @@ import { eq, and } from 'drizzle-orm';
 import { TimelineContext } from '@/lib/member-experience/timeline-builder';
 import { requireUserForOrganization } from '@/lib/api-auth-guard';
 import { getNotificationService } from '@/lib/services/notification-service';
+import { logger } from '@/lib/logger';
 
 interface RouteParams {
   params: {
@@ -81,7 +82,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ timeline: timelineContext });
   } catch (error) {
-    console.error('Failed to fetch case timeline:', error);
+    logger.error('Failed to fetch case timeline:', error);
     return NextResponse.json(
       { error: 'Failed to fetch case timeline' },
       { status: 500 }
@@ -191,7 +192,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       }
     } catch (notificationError) {
       // Log error but don't fail the status update
-      console.error('Failed to send status update notification:', notificationError);
+      logger.error('Failed to send status update notification:', notificationError);
     }
 
     return NextResponse.json({ success: true });
@@ -204,7 +205,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
     }
-    console.error('Failed to update case status:', error);
+    logger.error('Failed to update case status:', error);
     return NextResponse.json(
       { error: 'Failed to update case status' },
       { status: 500 }

@@ -9,6 +9,7 @@ import { db } from '@/db';
 import { organizerImpacts, OrganizerImpact } from '@/db/schema/domains/marketing';
 import { and } from 'drizzle-orm';
 import { calculateOrganizerImpact, ImpactCalculationInput, generateRecognitionEvents } from '@/lib/marketing/organizer-impact';
+import { logger } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   try {
@@ -63,7 +64,7 @@ export async function GET(request: NextRequest) {
       previous: previousImpact,
     });
   } catch (error) {
-    console.error('Failed to fetch organizer impact:', error);
+    logger.error('Failed to fetch organizer impact:', error);
     return NextResponse.json(
       { error: 'Failed to fetch impact data' },
       { status: 500 }
@@ -158,7 +159,7 @@ async function calculateFromCaseData(
     //
     // return impact;
   } catch (error) {
-    console.error('Failed to calculate impact from case data:', error);
+    logger.error('Failed to calculate impact from case data:', error);
     return null;
   }
 }
@@ -201,7 +202,7 @@ export async function POST(request: NextRequest) {
       { status: 404 }
     );
   } catch (error) {
-    console.error('Failed to recalculate impact:', error);
+    logger.error('Failed to recalculate impact:', error);
     return NextResponse.json(
       { error: 'Failed to recalculate impact' },
       { status: 500 }

@@ -10,6 +10,7 @@ import { db } from '@/db';
 import { locals } from '@/db/schema/union-structure-schema';
 import { eq } from 'drizzle-orm';
 import { requireUserForOrganization } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 // Validation schema for updating local
 const updateLocalSchema = z.object({
@@ -57,7 +58,7 @@ export async function GET(
 
     return NextResponse.json({ local });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching local:', error);
+    logger.error('Error fetching local:', error);
     return NextResponse.json(
       { error: 'Failed to fetch local', details: error.message },
       { status: 500 }
@@ -134,7 +135,7 @@ export async function PUT(
         { status: 400 }
       );
     }
-    console.error('Error updating local:', error);
+    logger.error('Error updating local:', error);
     return NextResponse.json(
       { error: 'Failed to update local', details: error.message },
       { status: 500 }
@@ -198,7 +199,7 @@ export async function DELETE(
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
     }
-    console.error('Error deleting local:', error);
+    logger.error('Error deleting local:', error);
     return NextResponse.json(
       { error: 'Failed to delete local', details: error.message },
       { status: 500 }

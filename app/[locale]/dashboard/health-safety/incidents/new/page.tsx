@@ -19,6 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { FileWarning, ArrowLeft, AlertCircle } from "lucide-react";
 import { IncidentReportForm } from "@/components/health-safety";
 import { toast } from "sonner";
+import { logger } from '@/lib/logger';
 
 export default function NewIncidentPage() {
   const router = useRouter();
@@ -43,7 +44,7 @@ export default function NewIncidentPage() {
       // Redirect to incidents list
       router.push("/dashboard/health-safety/incidents");
     } catch (error) {
-      console.error("Failed to submit incident report:", error);
+      logger.error("Failed to submit incident report:", error);
       toast.error("Failed to submit incident report", {
         description: "Please try again or contact support if the issue persists.",
       });

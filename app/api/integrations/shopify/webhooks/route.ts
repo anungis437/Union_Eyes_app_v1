@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
  * When a Shopify order is paid, mark the redemption as "ordered".
  * This confirms that the member completed checkout successfully.
  */
-async function handleOrderPaid(payload: Record<string, unknown>) Record<string, unknown>) {
+async function handleOrderPaid(payload: Record<string, unknown>) {
   const orderId = String(payload.id);
   const orderNumber = payload.order_number;
   const discountCodes = payload.discount_codes || [];
@@ -195,7 +195,7 @@ async function handleOrderPaid(payload: Record<string, unknown>) Record<string, 
  * When a Shopify order is fulfilled (shipped), mark the redemption as "fulfilled".
  * This completes the redemption lifecycle.
  */
-async function handleOrderFulfilled(payload: Record<string, unknown>) Record<string, unknown>) {
+async function handleOrderFulfilled(payload: Record<string, unknown>) {
   const orderId = String(payload.id);
   const orderNumber = payload.order_number;
   const fulfillments = payload.fulfillments || [];
@@ -241,7 +241,7 @@ async function handleOrderFulfilled(payload: Record<string, unknown>) Record<str
  * When a Shopify order is refunded, return credits to the member's wallet.
  * This ensures members aren&apos;t charged for cancelled/returned orders.
  */
-async function handleRefundCreated(payload: Record<string, unknown>) Record<string, unknown>) {
+async function handleRefundCreated(payload: Record<string, unknown>) {
   const refundId = String(payload.id);
   const orderId = String(payload.order_id);
   const refundLineItems = payload.refund_line_items || [];

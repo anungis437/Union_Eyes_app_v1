@@ -14,6 +14,7 @@
 import { Redis } from '@upstash/redis';
 import { logger } from './logger';
 import { circuitBreakers, CIRCUIT_BREAKERS, CircuitBreakerOpenError } from './circuit-breaker';
+import { logger } from '@/lib/logger';
 
 // Initialize Redis client (using Upstash for serverless-friendly Redis)
 const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
@@ -830,17 +831,298 @@ export const RATE_LIMITS = {
 } as const;
 
 /**
+ * Multi-layer rate limit configuration
+ * 
+ * Enables defense-in-depth rate limiting where a request must pass
+ * multiple rate limit checks (per-user, per-IP, per-endpoint).
+ */
+export interface MultiLayerRateLimitConfig {
+  /** Per-user rate limit (based on userId) */
+  perUser?: RateLimitConfig;
+  
+  /** Per-IP rate limit (based on client IP address) */
+  perIP?: RateLimitConfig;
+  
+  /** Per-endpoint/operation rate limit (global for all users) */
+  perEndpoint?: RateLimitConfig;
+}
+
+/**
+ * Multi-layer rate limit result with detailed failure information
+ */
+export interface MultiLayerRateLimitResult {
+  /** Whether all rate limits were satisfied */
+  allowed: boolean;
+  
+  /** Which layer failed (if any): 'user', 'ip', 'endpoint', or null */
+  failedLayer: 'user' | 'ip' | 'endpoint' | null;
+  
+  /** Individual rate limit results for each layer */
+  layers: {
+    user?: RateLimitResult;
+    ip?: RateLimitResult;
+    endpoint?: RateLimitResult;
+  };
+  
+  /** Most restrictive limit that applies */
+  limit: number;
+  
+  /** Most restrictive remaining count */
+  remaining: number;
+  
+  /** Shortest reset time (when the next request might succeed) */
+  resetIn: number;
+}
+
+/**
+ * Check multi-layer rate limits (per-user, per-IP, per-endpoint)
+ * 
+ * Provides defense-in-depth rate limiting by checking multiple rate limit
+ * layers. A request must pass ALL configured rate limits to proceed.
+ * 
+ * Benefits:
+ * - If user account compromised, IP rate limit still protects
+ * - If attacker uses multiple accounts, per-user limits still protect
+ * - If distributed attack uses multiple IPs, per-endpoint limits protect
+ * 
+ * @param keys - Object containing userId, ipAddress, endpointKey
+ * @param config - Multi-layer rate limit configuration
+ * @returns Multi-layer rate limit result
+ * 
+ * @example
+ * ```typescript
+ * const result = await checkMultiLayerRateLimit(
+ *   {
+ *     userId: 'user-123',
+ *     ipAddress: '192.168.1.1',
+ *     endpointKey: 'financial-write'
+ *   },
+ *   {
+ *     perUser: RATE_LIMITS.FINANCIAL_WRITE,
+ *     perIP: RATE_LIMITS_PER_IP.FINANCIAL_WRITE,
+ *     perEndpoint: RATE_LIMITS_PER_ENDPOINT.FINANCIAL_WRITE
+ *   }
+ * );
+ * 
+ * if (!result.allowed) {
+ *   return NextResponse.json(
+ *     { 
+ *       error: 'Rate limit exceeded',
+ *       failedLayer: result.failedLayer,
+ *       resetIn: result.resetIn 
+ *     },
+ *     { status: 429 }
+ *   );
+ * }
+ * ```
+ */
+export async function checkMultiLayerRateLimit(
+  keys: {
+    userId?: string;
+    ipAddress?: string;
+    endpointKey?: string;
+  },
+  config: MultiLayerRateLimitConfig
+): Promise<MultiLayerRateLimitResult> {
+  const layers: MultiLayerRateLimitResult['layers'] = {};
+  let allowed = true;
+  let failedLayer: MultiLayerRateLimitResult['failedLayer'] = null;
+  let mostRestrictiveLimit = Infinity;
+  let mostRestrictiveRemaining = Infinity;
+  let shortestResetIn = 0;
+
+  // Check per-user rate limit
+  if (config.perUser && keys.userId) {
+    const userResult = await checkRateLimit(keys.userId, config.perUser);
+    layers.user = userResult;
+    
+    if (!userResult.allowed) {
+      allowed = false;
+      failedLayer = 'user';
+    }
+    
+    // Update most restrictive values
+    if (userResult.remaining < mostRestrictiveRemaining) {
+      mostRestrictiveRemaining = userResult.remaining;
+      mostRestrictiveLimit = userResult.limit;
+    }
+    if (userResult.resetIn > shortestResetIn) {
+      shortestResetIn = userResult.resetIn;
+    }
+  }
+
+  // Check per-IP rate limit (always check, even if user limit failed - for metrics)
+  if (config.perIP && keys.ipAddress) {
+    const ipResult = await checkRateLimit(keys.ipAddress, config.perIP);
+    layers.ip = ipResult;
+    
+    if (!ipResult.allowed && allowed) {
+      // Only set as failed layer if user limit didn't already fail
+      allowed = false;
+      failedLayer = 'ip';
+    }
+    
+    // Update most restrictive values
+    if (ipResult.remaining < mostRestrictiveRemaining) {
+      mostRestrictiveRemaining = ipResult.remaining;
+      mostRestrictiveLimit = ipResult.limit;
+    }
+    if (ipResult.resetIn > shortestResetIn) {
+      shortestResetIn = ipResult.resetIn;
+    }
+  }
+
+  // Check per-endpoint rate limit (global limit)
+  if (config.perEndpoint && keys.endpointKey) {
+    const endpointResult = await checkRateLimit(
+      keys.endpointKey,
+      config.perEndpoint
+    );
+    layers.endpoint = endpointResult;
+    
+    if (!endpointResult.allowed && allowed) {
+      // Only set as failed layer if user/IP limits didn't already fail
+      allowed = false;
+      failedLayer = 'endpoint';
+    }
+    
+    // Update most restrictive values
+    if (endpointResult.remaining < mostRestrictiveRemaining) {
+      mostRestrictiveRemaining = endpointResult.remaining;
+      mostRestrictiveLimit = endpointResult.limit;
+    }
+    if (endpointResult.resetIn > shortestResetIn) {
+      shortestResetIn = endpointResult.resetIn;
+    }
+  }
+
+  return {
+    allowed,
+    failedLayer,
+    layers,
+    limit: mostRestrictiveLimit === Infinity ? 0 : mostRestrictiveLimit,
+    remaining: mostRestrictiveRemaining === Infinity ? 0 : mostRestrictiveRemaining,
+    resetIn: shortestResetIn,
+  };
+}
+
+/**
+ * Predefined per-IP rate limit configurations
+ * 
+ * More restrictive than per-user limits to prevent distributed attacks
+ * using multiple accounts from the same IP.
+ */
+export const RATE_LIMITS_PER_IP = {
+  /**
+   * Authentication endpoints per IP
+   * Stricter than per-user to prevent credential stuffing
+   * 10 attempts per 15 minutes per IP
+   */
+  AUTH: {
+    limit: 10,
+    window: 900, // 15 minutes
+    identifier: 'auth-per-ip',
+  },
+
+  /**
+   * Sign-up endpoints per IP
+   * Prevent mass account creation from single IP
+   * 5 accounts per hour per IP
+   */
+  SIGNUP: {
+    limit: 5,
+    window: 3600, // 1 hour
+    identifier: 'signup-per-ip',
+  },
+
+  /**
+   * Password reset per IP
+   * Prevent email bombing from single IP
+   * 5 requests per hour per IP
+   */
+  PASSWORD_RESET: {
+    limit: 5,
+    window: 3600, // 1 hour
+    identifier: 'password-reset-per-ip',
+  },
+
+  /**
+   * Financial write operations per IP
+   * Prevent payment fraud from single IP with multiple accounts
+   * 50 requests per hour per IP
+   */
+  FINANCIAL_WRITE: {
+    limit: 50,
+    window: 3600, // 1 hour
+    identifier: 'financial-write-per-ip',
+  },
+
+  /**
+   * AI query endpoints per IP
+   * Prevent cost abuse from single IP with multiple accounts
+   * 50 requests per hour per IP
+   */
+  AI_QUERY: {
+    limit: 50,
+    window: 3600, // 1 hour
+    identifier: 'ai-query-per-ip',
+  },
+
+  /**
+   * Document uploads per IP
+   * Prevent storage abuse from single IP
+   * 100 uploads per hour per IP
+   */
+  DOCUMENT_UPLOAD: {
+    limit: 100,
+    window: 3600, // 1 hour
+    identifier: 'document-upload-per-ip',
+  },
+
+  /**
+   * Exports per IP
+   * Prevent resource exhaustion from single IP
+   * 100 exports per hour per IP
+   */
+  EXPORTS: {
+    limit: 100,
+    window: 3600, // 1 hour
+    identifier: 'exports-per-ip',
+  },
+
+  /**
+   * General API requests per IP
+   * Broad protection against API abuse
+   * 2000 requests per hour per IP (2x per-user general limit)
+   */
+  GENERAL_API: {
+    limit: 2000,
+    window: 3600, // 1 hour
+    identifier: 'general-api-per-ip',
+  },
+} as const;
+
+/**
  * Helper to create rate limit response headers
  * 
- * @param result - Rate limit result
+ * @param result - Rate limit result or multi-layer result
  * @returns Headers object for Next.js Response
  */
-export function createRateLimitHeaders(result: RateLimitResult): Record<string, string> {
-  return {
+export function createRateLimitHeaders(
+  result: RateLimitResult | MultiLayerRateLimitResult
+): Record<string, string> {
+  const headers: Record<string, string> = {
     'X-RateLimit-Limit': result.limit.toString(),
     'X-RateLimit-Remaining': result.remaining.toString(),
     'X-RateLimit-Reset': result.resetIn.toString(),
     'Retry-After': result.resetIn.toString(),
   };
+
+  // Add failed layer information for multi-layer results
+  if ('failedLayer' in result && result.failedLayer) {
+    headers['X-RateLimit-Failed-Layer'] = result.failedLayer;
+  }
+
+  return headers;
 }
 

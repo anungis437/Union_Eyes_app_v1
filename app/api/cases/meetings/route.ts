@@ -10,6 +10,7 @@ import { db } from '@/db';
 import { and, desc } from 'drizzle-orm';
 import { pgTable, uuid, text, timestamp, jsonb, boolean } from 'drizzle-orm/pg-core';
 import { requireUserForOrganization } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 // Case meetings schema
 export const caseMeetings = pgTable('case_meetings', {
@@ -174,7 +175,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching meetings:', error);
+    logger.error('Error fetching meetings:', error);
     return NextResponse.json(
       { error: 'Failed to fetch meetings', details: error.message },
       { status: 500 }
@@ -228,7 +229,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    console.error('Error scheduling meeting:', error);
+    logger.error('Error scheduling meeting:', error);
     return NextResponse.json(
       { error: 'Failed to schedule meeting', details: error.message },
       { status: 500 }

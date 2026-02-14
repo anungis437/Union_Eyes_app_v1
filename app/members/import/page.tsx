@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { api } from '@/lib/api';
+import { logger } from '@/lib/logger';
 import { 
   Upload, FileText, CheckCircle, XCircle, AlertTriangle, ArrowLeft 
 } from 'lucide-react';
@@ -48,7 +49,7 @@ export default function BulkImportPage() {
       setJobId(result.job?.id);
       setCurrentStep('complete');
     } catch (error) {
-      console.error('Import error:', error);
+      logger.error('Import error:', error);
       alert('Error importing members. Please try again.');
     }
   };

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { MobileHeader } from '@/components/mobile/MobileHeader';
 import { SyncStatusButton } from '@/components/mobile/SyncStatus';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 
 interface Member {
   id: string;
@@ -62,7 +63,7 @@ export default function MobileMembersPage() {
         setMembers(JSON.parse(cached));
       }
     } catch (error) {
-      console.error('Failed to load members:', error);
+      logger.error('Failed to load members:', error);
       const cached = localStorage.getItem('cached_members');
       if (cached) {
         setMembers(JSON.parse(cached));

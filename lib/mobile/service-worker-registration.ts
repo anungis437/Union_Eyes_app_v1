@@ -5,6 +5,7 @@
  */
 
 import { useEffect, useState, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 
 export interface ServiceWorkerState {
   isSupported: boolean;
@@ -67,7 +68,7 @@ export function useServiceWorker(): ServiceWorkerState {
           isReady: true,
         }));
       } catch (error) {
-        console.error('Service worker registration failed:', error);
+        logger.error('Service worker registration failed', error);
       }
     };
 

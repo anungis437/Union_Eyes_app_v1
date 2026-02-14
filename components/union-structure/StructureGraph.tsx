@@ -7,6 +7,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { logger } from "@/lib/logger";
 import { Building2, MapPin, Users,  Building, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -41,7 +42,7 @@ export function StructureGraph({ organizationId }: StructureGraphProps) {
         setEmployers(data.data || []);
       }
     } catch (error) {
-      console.error("Failed to fetch structure data:", error);
+      logger.error("Failed to fetch structure data", error);
     } finally {
       setIsLoading(false);
     }

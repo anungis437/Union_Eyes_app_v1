@@ -24,6 +24,7 @@ import {
   CheckCircle, XCircle, AlertTriangle, Search, RefreshCw 
 } from 'lucide-react';
 import { api } from '@/lib/api';
+import { logger } from '@/lib/logger';
 
 interface ReconciliationItem {
   id: string;
@@ -58,7 +59,7 @@ export default function ReconciliationPage() {
       const data = await api.dues.reconciliation.queue();
       setItems(data.items || []);
     } catch (error) {
-      console.error('Error fetching reconciliation queue:', error);
+      logger.error('Error fetching reconciliation queue:', error);
       alert('Error loading reconciliation queue.');
     } finally {
       setLoading(false);
@@ -71,7 +72,7 @@ export default function ReconciliationPage() {
       setItems(items.filter(item => item.id !== itemId));
       alert('Match successful!');
     } catch (error) {
-      console.error('Error matching item:', error);
+      logger.error('Error matching item:', error);
       alert('Error matching remittance.');
     }
   };
@@ -82,7 +83,7 @@ export default function ReconciliationPage() {
       setItems(items.filter(item => item.id !== itemId));
       alert('Item rejected successfully.');
     } catch (error) {
-      console.error('Error rejecting item:', error);
+      logger.error('Error rejecting item:', error);
       alert('Error rejecting item.');
     }
   };
@@ -94,7 +95,7 @@ export default function ReconciliationPage() {
       alert(`Auto-reconciliation complete! Matched ${result.matched || 0} records.`);
       await fetchReconciliationQueue();
     } catch (error) {
-      console.error('Error running auto-reconciliation:', error);
+      logger.error('Error running auto-reconciliation:', error);
       alert('Error running auto-reconciliation.');
     } finally {
       setLoading(false);

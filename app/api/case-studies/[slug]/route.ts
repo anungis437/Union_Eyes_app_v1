@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { caseStudies } from '@/db/schema/domains/marketing';
 import { eq } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 interface RouteParams {
   params: {
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ caseStudy });
   } catch (error) {
-    console.error('Failed to fetch case study:', error);
+    logger.error('Failed to fetch case study:', error);
     return NextResponse.json(
       { error: 'Failed to fetch case study' },
       { status: 500 }
@@ -69,7 +70,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ caseStudy: updated });
   } catch (error) {
-    console.error('Failed to update case study:', error);
+    logger.error('Failed to update case study:', error);
     return NextResponse.json(
       { error: 'Failed to update case study' },
       { status: 500 }
@@ -93,7 +94,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Failed to delete case study:', error);
+    logger.error('Failed to delete case study:', error);
     return NextResponse.json(
       { error: 'Failed to delete case study' },
       { status: 500 }

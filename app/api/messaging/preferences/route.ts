@@ -13,6 +13,7 @@ import { communicationPreferences, consentRecords } from '@/db/schema';
 import { and } from 'drizzle-orm';
 import { withRLSContext } from '@/lib/db/rls-context';
 import { auth } from '@clerk/nextjs/server';
+import { logger } from '@/lib/logger';
 
 /**
  * GET /api/messaging/preferences
@@ -80,7 +81,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(preferences);
   } catch (error) {
-    console.error('Error fetching preferences:', error);
+    logger.error('Error fetching preferences:', error);
     return NextResponse.json(
       { error: 'Failed to fetch preferences' },
       { status: 500 }
@@ -197,7 +198,7 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error('Error updating preferences:', error);
+    logger.error('Error updating preferences:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to update preferences' },
       { status: 500 }

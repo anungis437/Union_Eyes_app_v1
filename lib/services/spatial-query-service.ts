@@ -7,6 +7,7 @@
 
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 export interface Point {
   latitude: number;
@@ -44,7 +45,7 @@ export async function isPointInGeofence(
     };
   } catch (error) {
     // Fallback to Haversine formula
-    console.warn('PostGIS unavailable, using Haversine fallback:', error);
+    logger.warn('PostGIS unavailable, using Haversine fallback:', error);
     return isPointInGeofenceHaversine(point, geofenceId);
   }
 }
@@ -115,7 +116,7 @@ export async function findNearbyLocations(
       timestamp: new Date(row.timestamp),
     }));
   } catch (error) {
-    console.error('PostGIS nearby locations query failed:', error);
+    logger.error('PostGIS nearby locations query failed:', error);
     return [];
   }
 }
@@ -142,7 +143,7 @@ export async function createCircularGeofence(
 
     return (result[0]?.geojson as string) || null;
   } catch (error) {
-    console.error('PostGIS geofence creation failed:', error);
+    logger.error('PostGIS geofence creation failed:', error);
     return null;
   }
 }

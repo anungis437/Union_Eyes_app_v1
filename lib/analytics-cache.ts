@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Analytics Cache Service
  * 
  * Provides distributed Redis-based caching layer for analytics queries to improve performance
@@ -16,7 +16,6 @@
 
 import { Redis } from '@upstash/redis';
 import { logger } from './logger';
-
 interface CacheEntry<T> {
   data: T;
   timestamp: number;

@@ -10,6 +10,7 @@ import { db } from '@/db';
 import { and, desc } from 'drizzle-orm';
 import { memberConsents } from '@/db/schema/member-profile-v2-schema';
 import { requireUser } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 // Validation schema
 const recordConsentSchema = z.object({
@@ -70,7 +71,7 @@ export async function GET(
       },
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching consents:', error);
+    logger.error('Error fetching consents:', error);
     return NextResponse.json(
       { error: 'Failed to fetch consents', details: error.message },
       { status: 500 }
@@ -113,7 +114,7 @@ export async function POST(
       })
       .returning();
 
-    console.log(`✅ Consent recorded: ${validatedData.consentType} - ${validatedData.granted ? 'granted' : 'denied'}`);
+    logger.info(`✅ Consent recorded: ${validatedData.consentType} - ${validatedData.granted ? 'granted' : 'denied'}`);
 
     return NextResponse.json(
       {
@@ -137,7 +138,7 @@ export async function POST(
         { status: 400 }
       );
     }
-    console.error('Error recording consent:', error);
+    logger.error('Error recording consent:', error);
     return NextResponse.json(
       { error: 'Failed to record consent', details: error.message },
       { status: 500 }
@@ -175,14 +176,14 @@ export async function DELETE(
       );
     }
 
-    console.log(`✅ Consent revoked: ${revoked.consentType}`);
+    logger.info(`✅ Consent revoked: ${revoked.consentType}`);
 
     return NextResponse.json({
       message: 'Consent revoked successfully',
       consent: revoked,
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error revoking consent:', error);
+    logger.error('Error revoking consent:', error);
     return NextResponse.json(
       { error: 'Failed to revoke consent', details: error.message },
       { status: 500 }

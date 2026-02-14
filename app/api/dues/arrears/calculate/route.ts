@@ -6,6 +6,7 @@
 
 import { db } from '@/db';
 import { and } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 // Import schemas (assuming from dues-finance-schema)
 // import { memberDuesLedger, memberArrears } from '@/db/schema/dues-finance-schema';
@@ -25,7 +26,7 @@ interface ArrearsCalculation {
  * Calculate detailed arrears for a member
  */
 export async function calculateMemberArrears(userId: string): Promise<ArrearsCalculation> {
-  console.log(`📊 Calculating arrears for member: ${userId}`);
+  logger.info(`📊 Calculating arrears for member: ${userId}`);
 
   // Get all unpaid charges (where balance hasn&apos;t been paid off)
   // const unpaidCharges = await db
@@ -113,7 +114,7 @@ export async function calculateMemberArrears(userId: string): Promise<ArrearsCal
     daysInArrears,
   };
 
-  console.log(`✅ Arrears calculated: ${status}, ${daysInArrears} days, $${currentBalance}`);
+  logger.info(`✅ Arrears calculated: ${status}, ${daysInArrears} days, $${currentBalance}`);
 
   return calculation;
 }
@@ -162,14 +163,14 @@ export async function updateMemberArrearsRecord(userId: string): Promise<void> {
   //   });
   // }
 
-  console.log(`✅ Arrears record updated for member: ${userId}`);
+  logger.info(`✅ Arrears record updated for member: ${userId}`);
 }
 
 /**
  * Batch calculate arrears for all members with balances
  */
 export async function batchCalculateArrears(organizationId?: string): Promise<void> {
-  console.log('🔄 Starting batch arrears calculation...');
+  logger.info('🔄 Starting batch arrears calculation...');
 
   // Get all members with balances
   // const membersWithBalances = await db
@@ -187,11 +188,11 @@ export async function batchCalculateArrears(organizationId?: string): Promise<vo
   //   try {
   //     await updateMemberArrearsRecord(userId);
   //   } catch (error) {
-  //     console.error(`Error calculating arrears for ${userId}:`, error);
+  //     logger.error(`Error calculating arrears for ${userId}:`, error);
   //   }
   // }
 
-  console.log('✅ Batch arrears calculation complete');
+  logger.info('✅ Batch arrears calculation complete');
 }
 
 /**
@@ -261,7 +262,7 @@ export async function POST(request: Request) {
       );
     }
   } catch (error: Record<string, unknown>) {
-    console.error('Error calculating arrears:', error);
+    logger.error('Error calculating arrears:', error);
     return Response.json(
       { error: 'Failed to calculate arrears', details: error.message },
       { status: 500 }
@@ -291,7 +292,7 @@ export async function GET(request: Request) {
       calculatedAt: new Date().toISOString(),
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching arrears summary:', error);
+    logger.error('Error fetching arrears summary:', error);
     return Response.json(
       { error: 'Failed to fetch summary', details: error.message },
       { status: 500 }

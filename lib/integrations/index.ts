@@ -72,5 +72,5 @@ export async function initializeIntegrationFramework(): Promise<void> {
   // Initialize sync engine
   const syncEngine = SyncEngine.getInstance();
   
-  console.log('✅ Integration framework initialized');
+  logger.info('Integration framework initialized');
 }

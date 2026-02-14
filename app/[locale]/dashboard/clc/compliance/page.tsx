@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { getUserRoleInOrganization } from '@/lib/organization-utils';
+import { logger } from '@/lib/logger';
 import {
   Select,
   SelectContent,
@@ -121,7 +122,7 @@ async function getComplianceMetrics(_clcId: string) {
       complianceTrends,
     };
   } catch (error) {
-    console.error('Error fetching compliance metrics:', error);
+    logger.error('Error fetching compliance metrics:', error);
     return {
       national: {
         totalAffiliates: 0,

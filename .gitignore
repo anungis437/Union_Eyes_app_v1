@@ -99,3 +99,12 @@ docs/archive/*secrets*
 
 # Validation temporary files
 _validation*.txt
+
+# Playwright E2E Testing
+/test-results/
+/playwright-report/
+/playwright/.cache/
+/.auth/
+/e2e-results/
+*.trace
+*.webm

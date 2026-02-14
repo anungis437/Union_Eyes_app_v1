@@ -22,7 +22,7 @@ import { standardSuccessResponse } from '@/lib/api/standardized-responses';
  */
 async function getHandler(
   req: NextRequest,
-  context: any, Record<string, unknown>,
+  context: any | Record<string, unknown>,
   params?: any
 ) {
   const reportId = params?.id || context?.params?.id;
@@ -82,7 +82,7 @@ return standardErrorResponse(
  */
 async function postHandler(
   req: NextRequest,
-  context: any, Record<string, unknown>,
+  context: any | Record<string, unknown>,
   params?: any
 ) {
   const reportId = params?.id || context?.params?.id;
@@ -228,7 +228,7 @@ return standardErrorResponse(
  */
 async function deleteHandler(
   req: NextRequest,
-  context: any, Record<string, unknown>,
+  context: any | Record<string, unknown>,
   params?: any
 ) {
   const reportId = params?.id || context?.params?.id;

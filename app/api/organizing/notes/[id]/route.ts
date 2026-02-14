@@ -15,6 +15,7 @@ import { db } from '@/db';
 import { fieldNotes } from '@/db/schema';
 import { organizationMembers } from '@/db/schema-organizations';
 import { and, or, eq } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 interface RouteParams {
   params: {
@@ -81,7 +82,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json(note[0]);
   } catch (error) {
-    console.error('[API] Error fetching field note:', error);
+    logger.error('[API] Error fetching field note:', error);
     return NextResponse.json(
       { error: 'Failed to fetch field note' },
       { status: 500 }
@@ -173,7 +174,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json(updated);
   } catch (error) {
-    console.error('[API] Error updating field note:', error);
+    logger.error('[API] Error updating field note:', error);
     return NextResponse.json(
       { error: 'Failed to update field note' },
       { status: 500 }
@@ -231,7 +232,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ success: true, message: 'Note deleted successfully' });
   } catch (error) {
-    console.error('[API] Error deleting field note:', error);
+    logger.error('[API] Error deleting field note:', error);
     return NextResponse.json(
       { error: 'Failed to delete field note' },
       { status: 500 }

@@ -73,7 +73,7 @@ export default function ApiDocsPage() {
               className="text-primary hover:underline"
             >
               Documentation Guide
-            </a>
+            </Link>
           </p>
         </div>
       </div>

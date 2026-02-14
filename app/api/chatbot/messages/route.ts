@@ -98,6 +98,7 @@ function getTemplate(role: string, isFrench: boolean, isMobile: boolean) {
 
 // Import transparency types
 import { AIDisclosure, ConfidenceLevel } from '@/lib/ai/transparency';
+import { logger } from '@/lib/logger';
 
 export const POST = withRoleAuth('member', async (request: NextRequest, context) => {
   const { userId, organizationId } = context;
@@ -286,7 +287,7 @@ export const POST = withRoleAuth('member', async (request: NextRequest, context)
     });
     
   } catch (error) {
-    console.error('Chat message error:', error);
+    logger.error('Chat message error:', error);
     
     // Fallback response
     const fallbackContent = "I apologize, but I&apos;m having trouble processing your request right now. Please try again in a few moments.";

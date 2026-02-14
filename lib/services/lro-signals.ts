@@ -10,6 +10,7 @@
 import { differenceInBusinessDays } from 'date-fns';
 import { calculateCaseSlaStatus, type SlaStatus } from './sla-calculator';
 import type { CaseState } from './case-workflow-fsm';
+import { logger } from '@/lib/logger';
 
 /**
  * Signal severity levels

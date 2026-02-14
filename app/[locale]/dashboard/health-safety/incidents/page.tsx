@@ -46,6 +46,7 @@ import {
   IncidentTrendChart,
 } from "@/components/health-safety";
 import { toast } from "sonner";
+import { logger } from '@/lib/logger';
 
 type IncidentStatus = "reported" | "investigating" | "resolved" | "closed";
 type IncidentSeverity = "minor" | "moderate" | "serious" | "critical";
@@ -88,7 +89,7 @@ export default function IncidentsPage() {
         avgResolutionTime: 4.5,
       });
     } catch (error) {
-      console.error("Failed to load stats:", error);
+      logger.error("Failed to load stats:", error);
       toast.error("Failed to load incident statistics");
     }
   };

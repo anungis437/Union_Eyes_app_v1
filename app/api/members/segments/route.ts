@@ -10,6 +10,7 @@ import { db } from '@/db';
 import { and, desc } from 'drizzle-orm';
 import { pgTable, uuid, text, timestamp, jsonb, integer, boolean } from 'drizzle-orm/pg-core';
 import { requireUser } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 // Segments schema
 export const memberSegments = pgTable('member_segments', {
@@ -92,7 +93,7 @@ export async function GET(request: NextRequest) {
       total: segments.length,
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching segments:', error);
+    logger.error('Error fetching segments:', error);
     return NextResponse.json(
       { error: 'Failed to fetch segments', details: error.message },
       { status: 500 }
@@ -129,7 +130,7 @@ export async function POST(request: NextRequest) {
       })
       .returning();
 
-    console.log(`✅ Segment created: ${validatedData.name} (${memberCount} members)`);
+    logger.info(`✅ Segment created: ${validatedData.name} (${memberCount} members)`);
 
     return NextResponse.json(
       {
@@ -153,7 +154,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    console.error('Error creating segment:', error);
+    logger.error('Error creating segment:', error);
     return NextResponse.json(
       { error: 'Failed to create segment', details: error.message },
       { status: 500 }
@@ -212,7 +213,7 @@ export async function getSegmentMembers(
       },
     };
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching segment members:', error);
+    logger.error('Error fetching segment members:', error);
     throw error;
   }
 }
@@ -221,7 +222,7 @@ export async function getSegmentMembers(
  * PUT /api/members/segments/[id]
  * Update segment
  */
-export async function updateSegment(segmentId: string, updates: Record<string, unknown>) Record<string, unknown>) {
+export async function updateSegment(segmentId: string, updates: Record<string, unknown>) {
   try {
     const [updated] = await db
       .update(memberSegments)
@@ -246,7 +247,7 @@ export async function updateSegment(segmentId: string, updates: Record<string, u
 
     return updated;
   } catch (error: Record<string, unknown>) {
-    console.error('Error updating segment:', error);
+    logger.error('Error updating segment:', error);
     throw error;
   }
 }
@@ -254,7 +255,7 @@ export async function updateSegment(segmentId: string, updates: Record<string, u
 /**
  * Helper: Calculate dynamic segment member count
  */
-async function calculateDynamicSegmentCount(query: Record<string, unknown>) Record<string, unknown>): Promise<number> {
+async function calculateDynamicSegmentCount(query: Record<string, unknown>): Promise<number> {
   try {
     // Build count query based on filters
     const filters = query.filters || {};
@@ -284,7 +285,7 @@ async function calculateDynamicSegmentCount(query: Record<string, unknown>) Reco
  * Helper: Execute dynamic segment query
  */
 async function executeDynamicSegmentQuery(
-  query: any, Record<string, unknown>,
+  query: any | Record<string, unknown>,
   limit: number,
   offset: number
 ): Promise<Record<string, unknown>> {

@@ -11,6 +11,7 @@ import type {
 import { PensionProcessorError } from './types';
 import { CPPQPPProcessor } from './processors/cpp-qpp-processor';
 import { OTTPProcessor } from './processors/otpp-processor';
+import { logger } from '@/lib/logger';
 
 /**
  * Factory configuration
@@ -50,11 +51,11 @@ export class PensionProcessorFactory {
    */
   async initialize(config: PensionFactoryConfig): Promise<void> {
     if (this.initialized) {
-      console.warn('Pension factory already initialized');
+      logger.warn('Pension factory already initialized');
       return;
     }
 
-    console.log('Initializing pension processor factory', {
+    logger.info('Initializing pension processor factory', {
       defaultPlan: config.defaultPlan,
       plansCount: Object.keys(config.plans).length,
     });
@@ -81,7 +82,7 @@ export class PensionProcessorFactory {
 
     this.initialized = true;
     
-    console.log('Pension processor factory initialized', {
+    logger.info('Pension processor factory initialized', {
       defaultPlan: this.defaultPlan,
       processorsCount: this.processors.size,
       processors: Array.from(this.processors.keys()),
@@ -104,7 +105,7 @@ export class PensionProcessorFactory {
         return new OTTPProcessor(config);
       
       default:
-        console.error(`Unknown pension plan type: ${planType}`);
+        logger.error('Unknown pension plan type', undefined, { planType });
         return null;
     }
   }
@@ -118,9 +119,9 @@ export class PensionProcessorFactory {
   ): Promise<void> {
     try {
       await processor.initialize();
-      console.log(`Initialized ${planType} processor successfully`);
+      logger.info('Initialized processor successfully', { planType });
     } catch (error) {
-      console.error(`Failed to initialize ${planType} processor`, { error });
+      logger.error('Failed to initialize processor', error, { planType });
       // Remove failed processor
       this.processors.delete(planType);
       throw error;

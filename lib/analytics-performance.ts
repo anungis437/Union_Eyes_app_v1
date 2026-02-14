@@ -20,7 +20,6 @@
 
 import { Redis } from '@upstash/redis';
 import { logger } from './logger';
-
 interface QueryMetric {
   endpoint: string;
   duration: number;

@@ -6,6 +6,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { logger } from "@/lib/logger";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -135,7 +136,7 @@ export function WorksiteManagement({ organizationId, onUpdate }: WorksiteManagem
       const data = await response.json();
       setEmployers(data.data || []);
     } catch (error) {
-      console.error("Failed to load employers:", error);
+      logger.error("Failed to load employers", error);
     }
   };
 

@@ -17,6 +17,7 @@ import {
 } from '../services/userProfileService';
 import { getSupabaseClient } from '@unioneyes/supabase';
 import { logger } from '../utils/logger';
+import { logger } from '@/lib/logger';
 
 // =============================================================================
 // TYPE DEFINITIONS

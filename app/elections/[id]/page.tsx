@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { logger } from '@/lib/logger';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -71,7 +72,7 @@ export default function ElectionDetailPage({ params }: { params: { id: string } 
       const data = await api.elections.get(params.id);
       setElection(data);
     } catch (error) {
-      console.error('Error fetching election:', error);
+      logger.error('Error fetching election', error);
     } finally {
       setLoading(false);
     }
@@ -108,7 +109,7 @@ export default function ElectionDetailPage({ params }: { params: { id: string } 
       alert('Your vote has been submitted successfully!');
       router.push('/elections');
     } catch (error) {
-      console.error('Error submitting ballot:', error);
+      logger.error('Error submitting ballot', error);
       alert('Failed to submit vote. Please try again.');
     }
   };

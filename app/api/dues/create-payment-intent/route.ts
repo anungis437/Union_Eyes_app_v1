@@ -6,7 +6,8 @@ import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
-import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
+import { checkAndEnforceMultiLayerRateLimit } from '@/lib/middleware/rate-limit-middleware';
+import { RATE_LIMITS, RATE_LIMITS_PER_IP } from '@/lib/rate-limiter';
 
 import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
@@ -46,27 +47,34 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
   const body = parsed.data;
   const { userId, organizationId } = context;
 
-  // Rate limiting: 20 financial write operations per hour per user
-  const rateLimitResult = await checkRateLimit(userId, RATE_LIMITS.FINANCIAL_WRITE);
-  if (!rateLimitResult.allowed) {
+  // ENHANCED SECURITY: Multi-layer rate limiting (per-user + per-IP)
+  // Protects against:
+  // - Compromised accounts (IP rate limit still protects)
+  // - Multi-account attacks from single IP (per-user limit still protects)
+  // - Payment fraud attempts
+  const rateLimitResponse = await checkAndEnforceMultiLayerRateLimit(
+    request,
+    {
+      perUser: RATE_LIMITS.FINANCIAL_WRITE,      // 20/hour per user
+      perIP: RATE_LIMITS_PER_IP.FINANCIAL_WRITE, // 50/hour per IP
+    },
+    { userId }
+  );
+
+  if (rateLimitResponse) {
     logApiAuditEvent({
-      timestamp: new Date().toISOString(), userId,
+      timestamp: new Date().toISOString(),
+      userId,
       endpoint: '/api/dues/create-payment-intent',
       method: 'POST',
       eventType: 'auth_failed',
-      severity: 'medium',
-      details: { reason: 'Rate limit exceeded' },
-    });
-    return NextResponse.json(
-      { 
-        error: 'Rate limit exceeded. Too many financial write requests.',
-        resetIn: rateLimitResult.resetIn 
+      severity: 'high', // Elevated to high for financial endpoint
+      details: { 
+        reason: 'Multi-layer rate limit exceeded',
+        ip: request.headers.get('x-forwarded-for') || 'unknown',
       },
-      { 
-        status: 429,
-        headers: createRateLimitHeaders(rateLimitResult),
-      }
-    );
+    });
+    return rateLimitResponse;
   }
 
   const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];

@@ -20,6 +20,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { logger } from "@/lib/logger";
 import {
   Dialog,
   DialogContent,
@@ -185,7 +186,7 @@ export function CommitteeManagement({
       const data = await response.json();
       setUnits(data.data || []);
     } catch (error) {
-      console.error("Failed to fetch bargaining units:", error);
+      logger.error("Failed to fetch bargaining units", error);
     }
   };
 
@@ -199,7 +200,7 @@ export function CommitteeManagement({
       const data = await response.json();
       setWorksites(data.data || []);
     } catch (error) {
-      console.error("Failed to fetch worksites:", error);
+      logger.error("Failed to fetch worksites", error);
     }
   };
 

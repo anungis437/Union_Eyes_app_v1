@@ -6,6 +6,7 @@
  */
 
 import { Decimal } from 'decimal.js';
+import { logger } from '@/lib/logger';
 import {
   ERPConnector,
   ERPConnectorConfig,
@@ -691,7 +692,7 @@ export class XeroConnector implements ERPConnector {
 
   async updateExchangeRates(rates: Omit<CurrencyExchangeRate, 'id'>[]): Promise<void> {
     // Xero doesn't support exchange rate updates via API
-    console.warn('Xero does not support exchange rate updates via API');
+    logger.warn('Xero does not support exchange rate updates via API');
   }
 
   // ============================================================================

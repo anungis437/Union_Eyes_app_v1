@@ -16,6 +16,7 @@ import {
   outreachStepsLog 
 } from '@/db/schema';
 import { and } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 interface RouteParams {
   params: {
@@ -158,7 +159,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       enrollments,
     }, { status: 201 });
   } catch (error) {
-    console.error('[API] Error enrolling members in sequence:', error);
+    logger.error('[API] Error enrolling members in sequence:', error);
     return NextResponse.json(
       { error: 'Failed to enroll members in sequence' },
       { status: 500 }

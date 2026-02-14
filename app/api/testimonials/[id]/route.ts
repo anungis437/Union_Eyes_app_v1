@@ -8,6 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
+import { logger } from '@/lib/logger';
 import { testimonials } from '@/db/schema/domains/marketing';
 import { eq } from 'drizzle-orm';
 import { requireAdmin } from '@/lib/middleware/admin-auth';
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
 
     return NextResponse.json({ testimonial });
   } catch (error) {
-    console.error('Error fetching testimonial:', error);
+    logger.error('Error fetching testimonial:', error);
     return NextResponse.json(
       { error: 'Failed to fetch testimonial' },
       { status: 500 }
@@ -120,7 +121,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 
     return NextResponse.json({ testimonial });
   } catch (error) {
-    console.error('Error updating testimonial:', error);
+    logger.error('Error updating testimonial:', error);
     return NextResponse.json(
       { error: 'Failed to update testimonial' },
       { status: 500 }
@@ -159,7 +160,7 @@ export async function DELETE(request: NextRequest, { params }: RouteContext) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting testimonial:', error);
+    logger.error('Error deleting testimonial', error);
     return NextResponse.json(
       { error: 'Failed to delete testimonial' },
       { status: 500 }

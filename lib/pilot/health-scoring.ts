@@ -6,6 +6,7 @@
  */
 
 import { PilotMetrics, PilotHealthScoreBreakdown, PilotMilestone } from '@/types/marketing';
+import { logger } from '@/lib/logger';
 
 /**
  * Calculate overall pilot health score (0-100)
@@ -284,7 +285,7 @@ export function generateHealthReport(metrics: PilotMetrics): {
  * const breakdown = calculatePilotHealthBreakdown(metrics);
  * const report = generateHealthReport(metrics);
  * 
- * console.log(`Health: ${health}/100`);
- * console.log(`Adoption: ${breakdown.adoption}/100`);
- * console.log(`Status: ${report.status.label}`);
+ * logger.info(`Health: ${health}/100`);
+ * logger.info(`Adoption: ${breakdown.adoption}/100`);
+ * logger.info(`Status: ${report.status.label}`);
  */

@@ -7,6 +7,7 @@
 import { getSupabaseClient } from '@unioneyes/supabase';
 import { AuthChangeEvent } from '@supabase/supabase-js';
 import { logger } from '../src/utils/logger';
+import { logger } from '@/lib/logger';
 
 // Initialize supabase client
 const supabase = getSupabaseClient();

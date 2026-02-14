@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
 import { and } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 // Import schemas (assuming they exist from previous implementation)
 // import { employerRemittances, remittanceLineItems, remittanceExceptions, memberDuesLedger } from '@/db/schema/dues-finance-schema';
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { remittanceId, autoPost, fuzzyMatchThreshold } = reconcileSchema.parse(body);
 
-    console.log(`🔄 Starting reconciliation for remittance: ${remittanceId}`);
+    logger.info(`🔄 Starting reconciliation for remittance: ${remittanceId}`);
 
     // 1. Get remittance and line items
     // const [remittance] = await db
@@ -91,7 +92,7 @@ export async function POST(request: NextRequest) {
     //   })
     //   .where(eq(employerRemittances.id, remittanceId));
 
-    console.log(`✅ Reconciliation complete: ${exactMatches} exact, ${fuzzyMatches} fuzzy, ${unmatched} unmatched`);
+    logger.info(`✅ Reconciliation complete: ${exactMatches} exact, ${fuzzyMatches} fuzzy, ${unmatched} unmatched`);
 
     return NextResponse.json({
       message: 'Reconciliation completed',
@@ -113,7 +114,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    console.error('Error during reconciliation:', error);
+    logger.error('Error during reconciliation:', error);
     return NextResponse.json(
       { error: 'Reconciliation failed', details: error.message },
       { status: 500 }
@@ -125,7 +126,7 @@ export async function POST(request: NextRequest) {
  * Match a line item to a member
  */
 async function matchLineItem(
-  lineitem: Record<string, unknown>, Record<string, unknown>,
+  lineitem: Record<string, unknown>,
   fuzzyThreshold: number
 ): Promise<MatchResult> {
   // 1. Try exact match on member ID
@@ -221,7 +222,7 @@ async function fuzzyMatchByName(name: string): Promise<{ memberId: string; score
 /**
  * Post matched payment to member ledger
  */
-async function postToLedger(memberId: string, lineitem: Record<string, unknown>) Record<string, unknown>): Promise<void> {
+async function postToLedger(memberId: string, lineitem: Record<string, unknown>): Promise<void> {
   // await db.insert(memberDuesLedger).values({
   //   userId: memberId,
   //   type: 'payment',
@@ -237,7 +238,7 @@ async function postToLedger(memberId: string, lineitem: Record<string, unknown>)
   //   },
   // });
 
-  console.log(`✅ Posted ${lineItem.amount} to member ${memberId}`);
+  logger.info(`✅ Posted ${lineItem.amount} to member ${memberId}`);
 }
 
 /**
@@ -245,7 +246,7 @@ async function postToLedger(memberId: string, lineitem: Record<string, unknown>)
  */
 async function createException(
   remittanceId: string,
-  lineitem: Record<string, unknown>, Record<string, unknown>,
+  lineitem: Record<string, unknown>,
   match: MatchResult
 ): Promise<void> {
   const exceptionType = 
@@ -268,7 +269,7 @@ async function createException(
   //   },
   // });
 
-  console.log(`⚠️  Created exception: ${exceptionType}`);
+  logger.info(`⚠️  Created exception: ${exceptionType}`);
 }
 
 /**
@@ -301,7 +302,7 @@ export async function GET(request: NextRequest) {
       note: 'Reconciliation statistics endpoint ready',
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching reconciliation stats:', error);
+    logger.error('Error fetching reconciliation stats:', error);
     return NextResponse.json(
       { error: 'Failed to fetch stats', details: error.message },
       { status: 500 }

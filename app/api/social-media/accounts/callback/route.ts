@@ -169,13 +169,13 @@ return NextResponse.redirect(
 /**
  * Handle Meta (Facebook/Instagram) OAuth callback
  */
-async function async function handleMetaCallback(
+async function handleMetaCallback(
   code: string,
   redirectUri: string,
   platform: string,
   organizationId: string,
   userId: string,
-  supabase: any Record<string, unknown>
+  supabase: any | Record<string, unknown>
 ) {
   const metaClient = createMetaClient();
 
@@ -256,13 +256,13 @@ async function async function handleMetaCallback(
 /**
  * Handle Twitter OAuth callback
  */
-async function async function handleTwitterCallback(
+async function handleTwitterCallback(
   code: string,
   codeVerifier: string,
   redirectUri: string,
   organizationId: string,
   userId: string,
-  supabase: any Record<string, unknown>
+  supabase: any | Record<string, unknown>
 ) {
   const twitterClient = createTwitterClient();
 
@@ -324,12 +324,12 @@ async function async function handleTwitterCallback(
 /**
  * Handle LinkedIn OAuth callback
  */
-async function async function handleLinkedInCallback(
+async function handleLinkedInCallback(
   code: string,
   redirectUri: string,
   organizationId: string,
   userId: string,
-  supabase: any Record<string, unknown>
+  supabase: any | Record<string, unknown>
 ) {
   const linkedInClient = createLinkedInClient();
 

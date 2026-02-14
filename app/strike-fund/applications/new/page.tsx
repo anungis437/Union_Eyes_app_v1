@@ -9,6 +9,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { logger } from '@/lib/logger';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -70,7 +71,7 @@ export default function NewStrikeFundApplicationPage() {
       alert('Application submitted successfully!');
       router.push('/strike-fund');
     } catch (error) {
-      console.error('Error submitting application:', error);
+      logger.error('Error submitting application', error);
       alert('Error submitting application. Please try again.');
     }
   };

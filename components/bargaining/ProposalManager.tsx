@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { logger } from "@/lib/logger";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -100,7 +101,7 @@ export function ProposalManager({ negotiationId }: ProposalManagerProps) {
       const data = await response.json();
       setProposals(data.proposals || []);
     } catch (error) {
-      console.error("Failed to fetch proposals:", error);
+      logger.error("Failed to fetch proposals", error);
     } finally {
       setLoading(false);
     }
@@ -136,7 +137,7 @@ export function ProposalManager({ negotiationId }: ProposalManagerProps) {
         });
       }
     } catch (error) {
-      console.error("Failed to create proposal:", error);
+      logger.error("Failed to create proposal", error);
     }
   };
 

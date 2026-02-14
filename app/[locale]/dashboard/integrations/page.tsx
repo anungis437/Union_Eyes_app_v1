@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { requireMinRole } from '@/lib/api-auth-guard';
 import { Key, Webhook, Activity, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 // Fetch API keys from API
 async function getApiKeys() {
@@ -26,14 +27,14 @@ async function getApiKeys() {
     });
     
     if (!response.ok) {
-      console.error('Failed to fetch API keys');
+      logger.error('Failed to fetch API keys');
       return [];
     }
     
     const data = await response.json();
     return data.data?.keys || [];
   } catch (error) {
-    console.error('Error fetching API keys:', error);
+    logger.error('Error fetching API keys:', error);
     return [];
   }
 }
@@ -49,14 +50,14 @@ async function getWebhooks() {
     });
     
     if (!response.ok) {
-      console.error('Failed to fetch webhooks');
+      logger.error('Failed to fetch webhooks');
       return [];
     }
     
     const data = await response.json();
     return data.data?.webhooks || [];
   } catch (error) {
-    console.error('Error fetching webhooks:', error);
+    logger.error('Error fetching webhooks:', error);
     return [];
   }
 }

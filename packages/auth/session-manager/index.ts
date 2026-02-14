@@ -7,6 +7,7 @@
 
 import { Session } from '@supabase/supabase-js';
 import { logger } from '../src/utils/logger';
+import { logger } from '@/lib/logger';
 
 // =========================================================================
 // CONSTANTS

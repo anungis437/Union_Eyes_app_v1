@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { InvitationService, Invitation, InvitationCreate, InvitationAccept } from '../services/invitationService';
 import { logger } from '../src/utils/logger';
+import { logger } from '@/lib/logger';
 
 interface UseInvitationsOptions {
   organizationId?: string;

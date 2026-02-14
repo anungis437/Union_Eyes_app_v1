@@ -78,7 +78,7 @@ function verifyDocuSignSignature(body: string, signature: string | null): boolea
   return computed === signature;
 }
 
-async function processDocuSignEvent(payload: Record<string, unknown>) Record<string, unknown>) {
+async function processDocuSignEvent(payload: Record<string, unknown>) {
   const event = payload.event;
   const envelopeId = payload.data?.envelopeId;
 

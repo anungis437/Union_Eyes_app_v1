@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { buildCaseTimeline, getCaseJourneySummary, calculateCaseProgress, TimelineContext } from '@/lib/member-experience/timeline-builder';
 import { GrievanceTimeline, TimelineSummary } from '@/components/marketing/grievance-timeline';
 import { HumanCenteredCallout } from '@/components/marketing/human-centered-callout';
+import { logger } from '@/lib/logger';
 
 interface TimelinePageProps {
   params: {
@@ -32,7 +33,7 @@ async function getCaseDetails(caseId: string): Promise<TimelineContext | null> {
     const data = await response.json();
     return data.timeline;
   } catch (error) {
-    console.error('Failed to fetch case timeline:', error);
+    logger.error('Failed to fetch case timeline:', error);
     return null;
   }
 }
@@ -231,13 +232,13 @@ export default async function CaseTimelinePage({ params }: TimelinePageProps) {
                 className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-md font-medium text-center hover:bg-blue-700 transition-colors"
               >
                 Message Your Steward
-              </Link>
+              </a>
               <a
                 href={`/${params.locale}/dashboard/member/cases/${params.caseId}`}
                 className="flex-1 bg-gray-200 text-gray-700 px-6 py-3 rounded-md font-medium text-center hover:bg-gray-300 transition-colors"
               >
                 View Case Details
-              </Link>
+              </a>
             </div>
           </div>
         </div>

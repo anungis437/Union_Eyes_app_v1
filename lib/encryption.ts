@@ -52,7 +52,6 @@ import { DefaultAzureCredential } from '@azure/identity';
 import { KeyClient, CryptographyClient } from '@azure/keyvault-keys';
 import crypto from 'crypto';
 import { logger } from './logger';
-
 // Configuration
 const KEY_VAULT_URL = process.env.AZURE_KEY_VAULT_URL;
 const ENCRYPTION_KEY_NAME = process.env.ENCRYPTION_KEY_NAME || 'pii-encryption-key';
@@ -931,7 +930,7 @@ export function getKeyVersionsInfo(): { version: number; createdAt: Date; isActi
  * ```typescript
  * // Emergency rotation
  * await forceKeyRotation();
- * console.log('Key rotated to version:', getCurrentKeyVersion());
+ * logger.info('Key rotated to version:', getCurrentKeyVersion());
  * ```
  */
 export async function forceKeyRotation(): Promise<void> {

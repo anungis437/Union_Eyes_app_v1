@@ -26,6 +26,7 @@ import { db } from '@/db';
 import { clcOrganizationSyncLog } from '@/db/schema/clc-sync-audit-schema';
 import { perCapitaRemittances, remittanceApprovals } from '@/db/schema/clc-per-capita-schema';
 import { eq, desc, count, and, sql, lte } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 export const metadata: Metadata = {
   title: 'CLC Staff Dashboard | Union Eyes',
@@ -107,7 +108,7 @@ async function getCLCOperationalMetrics(_orgId: string) {
       recentActivity: recentSyncs || [],
     };
   } catch (error) {
-    console.error('Error fetching CLC operational metrics:', error);
+    logger.error('Error fetching CLC operational metrics:', error);
     return {
       pendingSyncs: 0,
       failedSyncs: 0,
@@ -369,12 +370,12 @@ export default async function CLCStaffDashboardPage() {
           onApprove={async (id) => {
             'use server';
             // TODO: Implement approval logic
-            console.log('Approved:', id);
+            logger.info('Approved:', id);
           }}
           onReject={async (id) => {
             'use server';
             // TODO: Implement rejection logic
-            console.log('Rejected:', id);
+            logger.info('Rejected:', id);
           }}
         />
       </div>

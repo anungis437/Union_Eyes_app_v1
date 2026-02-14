@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { requireMinRole } from '@/lib/api-auth-guard';
 import { BarChart3, Users, FileText, TrendingUp, Database, Activity } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 // Fetch cross-tenant analytics from API
 async function getCrossTenantAnalytics() {
@@ -25,13 +26,13 @@ async function getCrossTenantAnalytics() {
     });
     
     if (!response.ok) {
-      console.error('Failed to fetch cross-tenant analytics');
+      logger.error('Failed to fetch cross-tenant analytics');
       return null;
     }
     
     return await response.json();
   } catch (error) {
-    console.error('Error fetching cross-tenant analytics:', error);
+    logger.error('Error fetching cross-tenant analytics:', error);
     return null;
   }
 }

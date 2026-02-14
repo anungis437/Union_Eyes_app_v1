@@ -17,7 +17,7 @@ import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 async function getHandler(
   req: NextRequest,
-  context: any, Record<string, unknown>,
+  context: any | Record<string, unknown>,
   params?: { id: string }
 ) {
   const { userId, organizationId } = context;
@@ -81,7 +81,7 @@ async function getHandler(
 
 async function putHandler(
   req: NextRequest,
-  context: any, Record<string, unknown>,
+  context: any | Record<string, unknown>,
   params?: { id: string }
 ) {
   const { userId, organizationId } = context;
@@ -147,7 +147,7 @@ async function putHandler(
 
 async function deleteHandler(
   req: NextRequest,
-  context: any, Record<string, unknown>,
+  context: any | Record<string, unknown>,
   params?: { id: string }
 ) {
   const { userId, organizationId } = context;

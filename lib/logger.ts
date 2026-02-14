@@ -1,6 +1,4 @@
-﻿import { randomUUID } from 'crypto';
-
-/**
+﻿/**
  * Production-grade structured logger with Sentry integration
  * 
  * Features:
@@ -44,7 +42,7 @@ class Logger {
   private correlationId: string;
 
   private constructor() {
-    this.correlationId = randomUUID();
+    this.correlationId = crypto.randomUUID();
   }
 
   static getInstance(): Logger {
@@ -307,7 +305,7 @@ export function setRequestCorrelationId(request: Request): string {
   const correlationId = 
     request.headers.get('x-correlation-id') || 
     request.headers.get('x-request-id') || 
-    randomUUID();
+    crypto.randomUUID();
   
   logger.setCorrelationId(correlationId);
   return correlationId;

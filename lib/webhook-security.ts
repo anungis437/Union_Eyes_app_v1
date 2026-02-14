@@ -1,7 +1,6 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 import { NextResponse } from 'next/server';
 import { logger } from './logger';
-
 /**
  * World-class webhook security
  * 

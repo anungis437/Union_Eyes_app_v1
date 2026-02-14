@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { requireMinRole } from '@/lib/api-auth-guard';
 import { FileText, BookOpen, Video, Download, Eye, TrendingUp } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 // Fetch content templates from API
 async function getContentTemplates() {
@@ -26,14 +27,14 @@ async function getContentTemplates() {
     });
     
     if (!response.ok) {
-      console.error('Failed to fetch content templates');
+      logger.error('Failed to fetch content templates');
       return [];
     }
     
     const data = await response.json();
     return data.data?.templates || [];
   } catch (error) {
-    console.error('Error fetching content templates:', error);
+    logger.error('Error fetching content templates:', error);
     return [];
   }
 }

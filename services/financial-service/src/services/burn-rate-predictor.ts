@@ -20,6 +20,7 @@ import {
 import { eq, and, gte, lte, sql, desc } from 'drizzle-orm';
 import { queueNotification } from './notification-service';
 import { logger } from '../../../lib/logger';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // TYPES & INTERFACES

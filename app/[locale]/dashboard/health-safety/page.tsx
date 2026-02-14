@@ -36,6 +36,7 @@ import {
   HealthSafetyDashboard,
 } from "@/components/health-safety";
 import { toast } from "sonner";
+import { logger } from '@/lib/logger';
 
 export default function HealthSafetyPage() {
   const organizationId = useOrganizationId();
@@ -71,7 +72,7 @@ export default function HealthSafetyPage() {
         complianceRate: 94,
       });
     } catch (error) {
-      console.error("Failed to load stats:", error);
+      logger.error("Failed to load stats:", error);
       toast.error("Failed to load health & safety statistics");
     }
   };

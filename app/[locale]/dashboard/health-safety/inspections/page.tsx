@@ -48,6 +48,7 @@ import {
   InspectionFindingsCard,
 } from "@/components/health-safety";
 import { toast } from "sonner";
+import { logger } from '@/lib/logger';
 
 type InspectionStatus = "scheduled" | "in-progress" | "completed" | "overdue";
 type InspectionType = "routine" | "compliance" | "incident-follow-up" | "spot-check";
@@ -91,7 +92,7 @@ export default function InspectionsPage() {
         avgScore: 88.5,
       });
     } catch (error) {
-      console.error("Failed to load stats:", error);
+      logger.error("Failed to load stats:", error);
       toast.error("Failed to load inspection statistics");
     }
   };

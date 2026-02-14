@@ -20,7 +20,7 @@ export const revalidate = 0;
 /**
  * Send notifications for critical insights
  */
-async function async function sendInsightNotifications(organizationId: string, insights: any Record<string, unknown>[]): Promise<void> {
+async function sendInsightNotifications(organizationId: string, insights: any | Record<string, unknown>[]): Promise<void> {
   try {
     const notificationService = getNotificationService();
     

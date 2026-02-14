@@ -28,6 +28,7 @@ import {
 import { eq, and, lte, inArray, sql } from 'drizzle-orm';
 import { getEmailService } from '@/lib/services/messaging/email-service';
 import { getSMSService } from '@/lib/services/messaging/sms-service';
+import { logger } from '@/lib/logger';
 
 // Configuration
 const BATCH_SIZE = 100; // Process 100 messages at a time
@@ -56,17 +57,17 @@ export async function processMessageQueue(): Promise<ProcessingStats> {
   };
 
   try {
-    console.log('[MessageQueue] Starting message queue processing...');
+    logger.info('Starting message queue processing');
 
     // Fetch queued messages that are ready to send
     const queuedMessages = await fetchQueuedMessages();
     
     if (queuedMessages.length === 0) {
-      console.log('[MessageQueue] No messages in queue');
+      logger.info('No messages in queue');
       return stats;
     }
 
-    console.log(`[MessageQueue] Found ${queuedMessages.length} messages to process`);
+    logger.info('Found messages to process', { count: queuedMessages.length });
 
     // Process in batches
     for (let i = 0; i < queuedMessages.length; i += BATCH_SIZE) {
@@ -87,10 +88,10 @@ export async function processMessageQueue(): Promise<ProcessingStats> {
       }
     }
 
-    console.log('[MessageQueue] Processing complete:', stats);
+    logger.info('Processing complete', stats);
     return stats;
   } catch (error) {
-    console.error('[MessageQueue] Fatal error:', error);
+    logger.error('Fatal error in message queue processing', error);
     stats.errors.push(`Fatal error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     return stats;
   }
@@ -201,7 +202,7 @@ async function processBatch(messages: any[]): Promise<ProcessingStats> {
       await sleep(1000 / RATE_LIMIT_PER_SECOND);
 
     } catch (error) {
-      console.error(`[MessageQueue] Failed to send message ${message.id}:`, error);
+      logger.error('Failed to send message', error, { messageId: message.id });
       
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       stats.errors.push(`Message ${message.id}: ${errorMessage}`);
@@ -213,7 +214,11 @@ async function processBatch(messages: any[]): Promise<ProcessingStats> {
         // Schedule retry
         const nextRetryAt = new Date(Date.now() + RETRY_DELAYS[retryCount]);
         await scheduleRetry(message.id, retryCount + 1, nextRetryAt, errorMessage);
-        console.log(`[MessageQueue] Scheduled retry ${retryCount + 1} for message ${message.id} at ${nextRetryAt}`);
+        logger.info('Scheduled message retry', { 
+          messageId: message.id, 
+          retryCount: retryCount + 1, 
+          nextRetryAt 
+        });
       } else {
         // Max retries reached, mark as failed
         await updateMessageStatus(message.id, 'failed', errorMessage);
@@ -265,7 +270,7 @@ async function shouldSkipMessage(message: any): Promise<boolean> {
 
     return false;
   } catch (error) {
-    console.error('[MessageQueue] Error checking if should skip:', error);
+    logger.error('Error checking if should skip', error);
     return false; // Don&apos;t skip on error
   }
 }
@@ -404,7 +409,7 @@ export async function processCampaignMessages(campaignId: string): Promise<Proce
   };
 
   try {
-    console.log(`[MessageQueue] Processing campaign ${campaignId}`);
+    logger.info('Processing campaign', { campaignId });
 
     // Fetch all queued messages for this campaign
     const messages = await db
@@ -419,7 +424,7 @@ export async function processCampaignMessages(campaignId: string): Promise<Proce
       .orderBy(message_log.createdAt);
 
     if (messages.length === 0) {
-      console.log(`[MessageQueue] No queued messages for campaign ${campaignId}`);
+      logger.info('No queued messages for campaign', { campaignId });
       return stats;
     }
 
@@ -473,12 +478,12 @@ export async function processCampaignMessages(campaignId: string): Promise<Proce
         })
         .where(eq(campaigns.id, campaignId));
       
-      console.log(`[MessageQueue] Campaign ${campaignId} completed`);
+      logger.info('Campaign completed', { campaignId });
     }
 
     return stats;
   } catch (error) {
-    console.error(`[MessageQueue] Error processing campaign ${campaignId}:`, error);
+    logger.error('Error processing campaign', error, { campaignId });
     stats.errors.push(`Campaign error: ${error instanceof Error ? error.message : 'Unknown'}`);
     return stats;
   }

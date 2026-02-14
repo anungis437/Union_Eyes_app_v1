@@ -29,7 +29,7 @@ import { isFrictionlessPayment, handleFrictionlessPayment, createOrUpdatePending
  * 
  * @param data The webhook event data
  */
-export async function handlePaymentSuccess(data: Record<string, unknown>) Record<string, unknown>) {
+export async function handlePaymentSuccess(data: Record<string, unknown>) {
   const eventId = data.id || Date.now().toString();
 try {
     // Debug the frictionless detection
@@ -146,7 +146,7 @@ await new Promise(resolve => setTimeout(resolve, backoffMs));
  * Helper function to prepare profile update data from webhook data
  * Extracts common fields needed for both authenticated and unauthenticated payments
  */
-function prepareProfileUpdateData(data: Record<string, unknown>) Record<string, unknown>) {
+function prepareProfileUpdateData(data: Record<string, unknown>) {
   // Calculate billing cycle details
   let billingCycleStart = new Date();
   let billingCycleEnd = null;
@@ -211,7 +211,7 @@ function prepareProfileUpdateData(data: Record<string, unknown>) Record<string, 
  * 
  * @param data The webhook event data
  */
-export async function handlePaymentFailed(data: Record<string, unknown>) Record<string, unknown>): Promise<void> {
+export async function handlePaymentFailed(data: Record<string, unknown>): Promise<void> {
   if (!data) {
 return;
   }

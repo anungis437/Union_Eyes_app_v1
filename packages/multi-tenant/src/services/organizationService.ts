@@ -10,6 +10,7 @@
 
 import { SupabaseClient } from '@supabase/supabase-js';
 import { SimpleLogger } from '../utils/logger';
+import { logger } from '@/lib/logger';
 
 // =====================================================
 // TYPE DEFINITIONS

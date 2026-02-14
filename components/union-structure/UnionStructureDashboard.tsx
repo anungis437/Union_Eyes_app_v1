@@ -7,6 +7,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { logger } from "@/lib/logger";
 import { 
   Building2, 
   MapPin, 
@@ -78,7 +79,7 @@ export function UnionStructureDashboard({ organizationId }: UnionStructureDashbo
         totalMembers: 0, // TODO: Calculate from profiles
       });
     } catch (error) {
-      console.error("Failed to fetch structure stats:", error);
+      logger.error("Failed to fetch structure stats", error);
     } finally {
       setIsLoading(false);
     }

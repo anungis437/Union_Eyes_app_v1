@@ -19,6 +19,7 @@ import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { organizationMembers } from '@/db/schema-organizations';
 import { eq, and, or } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 import { 
   processPendingNotifications, 
   retryFailedNotifications 
@@ -74,7 +75,7 @@ export async function GET(request: NextRequest) {
     if (action === 'retry') {
       // Retry failed notifications
       const maxAttempts = parseInt(request.nextUrl.searchParams.get('maxAttempts') || '3');
-      console.log('[API] Retrying failed notifications...');
+      logger.info('[API] Retrying failed notifications...');
       const retried = await retryFailedNotifications(maxAttempts);
       
       return NextResponse.json({
@@ -87,7 +88,7 @@ export async function GET(request: NextRequest) {
 
     if (action === 'process') {
       // Process pending notifications
-      console.log('[API] Processing pending notifications...');
+      logger.info('[API] Processing pending notifications...');
       const processed = await processPendingNotifications(batchSize);
       
       return NextResponse.json({
@@ -103,7 +104,7 @@ export async function GET(request: NextRequest) {
       { status: 400 }
     );
   } catch (error) {
-    console.error('[API] Error processing notifications:', error);
+    logger.error('[API] Error processing notifications:', error);
     return NextResponse.json(
       {
         success: false,

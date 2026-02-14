@@ -5,6 +5,7 @@ import { and, desc } from 'drizzle-orm';
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { standardSuccessResponse } from '@/lib/api/standardized-responses';
+import { logger } from '@/lib/logger';
 
 interface AuthUser {
   id: string;
@@ -127,7 +128,7 @@ export const GET = withApiAuth(async (request: NextRequest, context) => {
     });
 
   } catch (error) {
-    console.error('Error fetching budgets:', error);
+    logger.error('Error fetching budgets:', error);
     return standardErrorResponse(
       ErrorCode.INTERNAL_ERROR,
       'Failed to fetch budgets',
@@ -235,7 +236,7 @@ export const POST = withApiAuth(async (request: NextRequest, context) => {
         'A budget with this name already exists for this fiscal year'
       );
     }
-    console.error('Error creating budget:', error);
+    logger.error('Error creating budget:', error);
     return standardErrorResponse(
       ErrorCode.INTERNAL_ERROR,
       'Failed to create budget',

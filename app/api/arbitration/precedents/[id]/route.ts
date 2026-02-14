@@ -25,7 +25,7 @@ type RouteContext = {
 };
 
 // Helper to check if user can access precedent
-async function async function canAccessPrecedent(
+async function canAccessPrecedent(
   userId: string,
   userOrgId: string,
   userOrgHierarchyPath: string[],

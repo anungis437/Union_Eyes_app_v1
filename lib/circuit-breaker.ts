@@ -15,7 +15,6 @@
  */
 
 import { logger } from './logger';
-
 export enum CircuitState {
   CLOSED = 'CLOSED',     // Normal operation
   OPEN = 'OPEN',         // Failing fast

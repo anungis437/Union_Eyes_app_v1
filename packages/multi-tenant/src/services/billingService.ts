@@ -11,6 +11,7 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
 import { SimpleLogger } from '../utils/logger';
+import { logger } from '@/lib/logger';
 
 // =====================================================
 // TYPE DEFINITIONS

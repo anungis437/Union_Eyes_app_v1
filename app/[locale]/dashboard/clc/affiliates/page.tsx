@@ -24,6 +24,7 @@ import Link from 'next/link';
 import { db } from '@/db';
 import { getUserRoleInOrganization } from '@/lib/organization-utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { logger } from '@/lib/logger';
 import {
   Select,
   SelectContent,
@@ -104,7 +105,7 @@ async function getAffiliateData(clcId: string) {
       },
     };
   } catch (error) {
-    console.error('Error fetching affiliate data:', error);
+    logger.error('Error fetching affiliate data:', error);
     return {
       affiliates: [],
       summary: {

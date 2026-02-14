@@ -9,6 +9,7 @@ import { db } from '@/db';
 import { votingSessions, voterEligibility, votes, votingOptions, votingAuditLog } from '@/db/schema/voting-schema';
 import { and, desc } from 'drizzle-orm';
 import { z } from 'zod';
+import { logger } from '@/lib/logger';
 
 // Validation schema for updating session
 const updateSessionSchema = z.object({
@@ -123,7 +124,7 @@ export async function GET(
       },
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching voting session:', error);
+    logger.error('Error fetching voting session:', error);
     return NextResponse.json(
       { error: 'Failed to fetch voting session', details: error.message },
       { status: 500 }
@@ -230,7 +231,7 @@ export async function PUT(
       });
     }
   } catch (error: Record<string, unknown>) {
-    console.error('Error updating voting session:', error);
+    logger.error('Error updating voting session:', error);
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -297,7 +298,7 @@ export async function DELETE(
       session: cancelledSession,
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error cancelling voting session:', error);
+    logger.error('Error cancelling voting session:', error);
     return NextResponse.json(
       { error: 'Failed to cancel voting session', details: error.message },
       { status: 500 }

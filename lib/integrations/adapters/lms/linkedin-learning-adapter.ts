@@ -23,6 +23,7 @@ import {
 } from '@/db/schema/domains/data/lms';
 import { IntegrationProvider } from '../../types';
 import { eq, and } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 const PAGE_SIZE = 50; // LinkedIn Learning pagination
 

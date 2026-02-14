@@ -16,6 +16,7 @@ import { SecurityAuditService } from './securityAuditService';
 import type { AuditLog, AuditLogFilters } from './securityAuditService';
 
 import { logger } from '../utils/logger';
+import { logger } from '@/lib/logger';
 // ============================================================================
 // TYPES & INTERFACES
 // ============================================================================

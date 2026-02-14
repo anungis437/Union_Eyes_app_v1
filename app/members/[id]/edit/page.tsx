@@ -1,4 +1,4 @@
-/**
+ing /**
  * Edit Member Page
  * 
  * Edit existing member information
@@ -9,6 +9,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { logger } from '@/lib/logger';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -88,7 +89,7 @@ export default function EditMemberPage({ params }: { params: { id: string } }) {
         postalCode: data.postalCode || '',
       });
     } catch (error) {
-      console.error('Error fetching member:', error);
+      logger.error('Error fetching member', error);
     } finally {
       setLoading(false);
     }
@@ -105,7 +106,7 @@ export default function EditMemberPage({ params }: { params: { id: string } }) {
       await api.members.update(params.id, formData);
       router.push(`/members/${params.id}`);
     } catch (error) {
-      console.error('Error updating member:', error);
+      logger.error('Error updating member', error);
       alert('Failed to update member');
     }
   };

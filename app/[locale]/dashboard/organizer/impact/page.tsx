@@ -11,6 +11,7 @@ import { useState, useEffect } from 'react';
 import { OrganizerImpact } from '@/types/marketing';
 import { getImpactSummary, compareImpactPeriods } from '@/lib/marketing/organizer-impact';
 import { HumanCenteredCallout } from '@/components/marketing/human-centered-callout';
+import { logger } from '@/lib/logger';
 
 export default function OrganizerImpactPage() {
   const [currentImpact, setCurrentImpact] = useState<OrganizerImpact | null>(null);
@@ -28,7 +29,7 @@ export default function OrganizerImpactPage() {
           setPreviousImpact(data.previous);
         }
       } catch (error) {
-        console.error('Failed to load impact data:', error);
+        logger.error('Failed to load impact data:', error);
       } finally {
         setLoading(false);
       }

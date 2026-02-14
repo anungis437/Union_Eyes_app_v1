@@ -13,6 +13,7 @@
 import { getSupabaseClient } from '@unioneyes/supabase';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { logger } from '../utils/logger';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // TYPES & INTERFACES

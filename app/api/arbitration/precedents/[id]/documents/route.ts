@@ -22,7 +22,7 @@ type RouteContext = {
  * Check if user's organization can access a precedent based on sharing level
  */
 async function checkPrecedentAccess(
-  precedent: Record<string, unknown>, Record<string, unknown>,
+  precedent: Record<string, unknown>,
   userOrgId: string
 ): Promise<boolean> {
   // Owner always has access

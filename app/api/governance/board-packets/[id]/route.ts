@@ -10,6 +10,7 @@ import { boardPackets, boardPacketDistributions } from '@/db/schema/board-packet
 import { sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { boardPacketGenerator } from '@/lib/services/board-packet-generator';
+import { logger } from '@/lib/logger';
 
 // Validation schema for finalization
 const finalizePacketSchema = z.object({
@@ -70,7 +71,7 @@ export async function GET(
       stats,
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching board packet:', error);
+    logger.error('Error fetching board packet:', error);
     return NextResponse.json(
       { error: 'Failed to fetch board packet', details: error.message },
       { status: 500 }
@@ -101,7 +102,7 @@ export async function POST(
       packet,
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error finalizing board packet:', error);
+    logger.error('Error finalizing board packet:', error);
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(

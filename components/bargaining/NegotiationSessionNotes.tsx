@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { logger } from "@/lib/logger";
 import { Plus, FileText, Calendar, Users } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
@@ -48,7 +49,7 @@ export function NegotiationSessionNotes({ negotiationId, cbaId }: NegotiationSes
       const data = await response.json();
       setNotes(data.notes || []);
     } catch (error) {
-      console.error("Failed to fetch notes:", error);
+      logger.error("Failed to fetch notes", error);
     } finally {
       setLoading(false);
     }

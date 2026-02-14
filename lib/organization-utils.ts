@@ -10,7 +10,6 @@ import { organizations, organizationMembers } from "@/db/schema-organizations";
 import { eq, and } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { logger } from "./logger";
-
 /**
  * Default organization ID used for system operations
  * This points to the Default Organization where all users start

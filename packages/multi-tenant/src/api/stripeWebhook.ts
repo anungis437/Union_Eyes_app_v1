@@ -10,6 +10,7 @@
 import Stripe from 'stripe';
 import { BillingService } from '../services/billingService';
 import { SimpleLogger } from '../utils/logger';
+import { logger } from '@/lib/logger';
 
 export interface WebhookHandlerConfig {
   /** Stripe webhook signing secret */

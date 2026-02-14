@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { logger } from '@/lib/logger';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { api } from '@/lib/api';
 import {
@@ -84,7 +85,7 @@ export default function CaseDetailPage({ params }: { params: { id: string } }) {
       setTimeline(timelineData);
       setEvidence(evidenceData);
     } catch (error) {
-      console.error('Error fetching case:', error);
+      logger.error('Error fetching case', error);
     } finally {
       setLoading(false);
     }
@@ -100,7 +101,7 @@ export default function CaseDetailPage({ params }: { params: { id: string } }) {
       const timelineData = await api.cases.timeline(params.id);
       setTimeline(timelineData);
     } catch (error) {
-      console.error('Error adding note:', error);
+      logger.error('Error adding note', error);
     }
   };
 

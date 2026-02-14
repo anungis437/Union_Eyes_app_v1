@@ -11,6 +11,7 @@
 
 import NodeGeocoder from 'node-geocoder';
 import type { Options as GeocoderOptions, Entry as GeocodeResult } from 'node-geocoder';
+import { logger } from '@/lib/logger';
 
 export interface AddressInput {
   addressLine1: string;
@@ -124,7 +125,7 @@ export class MultiProviderGeocodingService {
           return this.mapToGeocodingResult(result, provider.name);
         }
       } catch (error) {
-        console.warn(`Geocoding failed for provider ${provider.name}:`, error);
+        logger.warn(`Geocoding failed for provider ${provider.name}:`, error);
         // Continue to next provider
       }
     }
@@ -193,7 +194,7 @@ export class MultiProviderGeocodingService {
           };
         }
       } catch (error) {
-        console.warn(`Reverse geocoding failed for provider ${provider.name}:`, error);
+        logger.warn(`Reverse geocoding failed for provider ${provider.name}:`, error);
         // Continue to next provider
       }
     }

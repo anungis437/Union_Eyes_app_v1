@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { pilotApplications, pilotMetrics } from '@/db/schema/domains/marketing';
 import { eq } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
   try {
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error('Pilot application error:', error);
+    logger.error('Pilot application error:', error);
     return NextResponse.json(
       { error: 'Failed to submit application' },
       { status: 500 }
@@ -85,7 +86,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ applications });
   } catch (error) {
-    console.error('Failed to fetch applications:', error);
+    logger.error('Failed to fetch applications:', error);
     return NextResponse.json(
       { error: 'Failed to fetch applications' },
       { status: 500 }

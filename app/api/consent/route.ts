@@ -21,6 +21,7 @@ import {
   sendConsentRevokedNotification 
 } from '@/lib/integrations/marketing-notifications';
 import { requireUser, requireUserForOrganization } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 /**
  * GET /api/consent
@@ -59,7 +60,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
     }
-    console.error('Error fetching consent:', error);
+    logger.error('Error fetching consent:', error);
     return NextResponse.json(
       { error: 'Failed to fetch consent' },
       { status: 500 }
@@ -135,7 +136,7 @@ export async function POST(request: NextRequest) {
         body.userName,
         dataTypes
       ).catch((error) => {
-        console.error('Failed to send consent granted notification:', error);
+        logger.error('Failed to send consent granted notification:', error);
         // Don&apos;t fail the request if notification fails
       });
     }
@@ -150,7 +151,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
     }
-    console.error('Error creating consent:', error);
+    logger.error('Error creating consent:', error);
     return NextResponse.json(
       { error: 'Failed to grant consent' },
       { status: 500 }
@@ -191,7 +192,7 @@ export async function PATCH(request: NextRequest) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
     }
-    console.error('Error updating consent:', error);
+    logger.error('Error updating consent:', error);
     return NextResponse.json(
       { error: 'Failed to update consent' },
       { status: 500 }
@@ -234,7 +235,7 @@ export async function DELETE(request: NextRequest) {
         revokedDataTypes,
         reason
       ).catch((error) => {
-        console.error('Failed to send consent revoked notification:', error);
+        logger.error('Failed to send consent revoked notification:', error);
         // Don&apos;t fail the request if notification fails
       });
     }
@@ -249,7 +250,7 @@ export async function DELETE(request: NextRequest) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
     }
-    console.error('Error revoking consent:', error);
+    logger.error('Error revoking consent:', error);
     return NextResponse.json(
       { error: 'Failed to revoke consent' },
       { status: 500 }

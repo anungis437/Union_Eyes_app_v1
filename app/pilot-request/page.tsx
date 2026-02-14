@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { PilotApplicationInput } from '@/types/marketing';
 import { calculateReadinessScore, ReadinessAssessmentResult } from '@/lib/pilot/readiness-assessment';
 import { HumanCenteredCallout } from '@/components/marketing/human-centered-callout';
+import { logger } from '@/lib/logger';
 
 export default function PilotRequestPage() {
   const [step, setStep] = useState(1);
@@ -77,7 +78,7 @@ export default function PilotRequestPage() {
         alert('Submission failed. Please try again.');
       }
     } catch (error) {
-      console.error('Submission error:', error);
+      logger.error('Submission error:', error);
       alert('Submission failed. Please try again.');
     } finally {
       setSubmitting(false);

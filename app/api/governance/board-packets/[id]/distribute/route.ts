@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { boardPacketGenerator } from '@/lib/services/board-packet-generator';
+import { logger } from '@/lib/logger';
 
 // Validation schema for distribution
 const distributePacketSchema = z.object({
@@ -48,7 +49,7 @@ export async function POST(
       },
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error distributing board packet:', error);
+    logger.error('Error distributing board packet:', error);
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(

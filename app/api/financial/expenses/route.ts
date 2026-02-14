@@ -5,6 +5,7 @@ import { and, desc, inArray } from 'drizzle-orm';
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { standardSuccessResponse } from '@/lib/api/standardized-responses';
+import { logger } from '@/lib/logger';
 
 interface AuthUser {
   id: string;
@@ -137,7 +138,7 @@ export const GET = withApiAuth(async (request: NextRequest, context) => {
     });
 
   } catch (error) {
-    console.error('Error fetching expenses:', error);
+    logger.error('Error fetching expenses:', error);
     return standardErrorResponse(
       ErrorCode.INTERNAL_ERROR,
       'Failed to fetch expenses',
@@ -256,7 +257,7 @@ export const POST = withApiAuth(async (request: NextRequest, context) => {
         'Request number conflict - please try again'
       );
     }
-    console.error('Error creating expense:', error);
+    logger.error('Error creating expense:', error);
     return standardErrorResponse(
       ErrorCode.INTERNAL_ERROR,
       'Failed to create expense',

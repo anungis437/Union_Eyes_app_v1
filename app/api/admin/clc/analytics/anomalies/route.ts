@@ -16,6 +16,7 @@ import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/a
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
 import { standardSuccessResponse } from '@/lib/api/standardized-responses';
+import { logger } from '@/lib/logger';
 
 export const GET = withRoleAuth(90, async (request: NextRequest, context) => {
   try {
@@ -76,7 +77,7 @@ export const GET = withRoleAuth(90, async (request: NextRequest, context) => {
         });
 
       } catch (error) {
-        console.error('Anomaly detection error:', error);
+        logger.error('Anomaly detection error:', error);
         return standardErrorResponse(
           ErrorCode.INTERNAL_ERROR,
           'Failed to fetch anomaly data',

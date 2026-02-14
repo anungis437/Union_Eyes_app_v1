@@ -25,6 +25,7 @@ import { grievances } from '@/db/schema/grievance-schema';
 import { testimonials } from '@/db/schema/domains/marketing';
 import { getNotificationService } from '@/lib/services/notification-service';
 import { eq, and, gte, desc } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -392,7 +393,7 @@ export async function recordTestimonialAcceptance(
   //   .set({ acceptedAt: new Date(), submittedTestimonialId: testimonialId })
   //   .where(eq(testimonialInvitations.candidateId, candidateId));
 
-  console.log(`Testimonial accepted: candidate=${candidateId}, testimonial=${testimonialId}`);
+  logger.info(`Testimonial accepted: candidate=${candidateId}, testimonial=${testimonialId}`);
 }
 
 /**
@@ -404,7 +405,7 @@ export async function recordTestimonialRejection(candidateId: string, reason?: s
   //   .set({ rejectedAt: new Date(), rejectionReason: reason })
   //   .where(eq(testimonialInvitations.candidateId, candidateId));
 
-  console.log(`Testimonial declined: candidate=${candidateId}, reason=${reason || 'not provided'}`);
+  logger.info(`Testimonial declined: candidate=${candidateId}, reason=${reason || 'not provided'}`);
 }
 
 // ============================================================================
@@ -506,11 +507,11 @@ export async function runAutomatedTestimonialCampaign(
  * Example 1: Manual candidate review
  * 
  * const candidates = await identifyTestimonialCandidates('org-123', 20);
- * console.log(`Found ${candidates.length} testimonial-worthy cases`);
+ * logger.info(`Found ${candidates.length} testimonial-worthy cases`);
  * 
  * for (const candidate of candidates) {
- *   console.log(`Case ${candidate.caseNumber}: ${candidate.reason} (score: ${candidate.score})`);
- *   console.log(`Draft: "${candidate.draftContent.quote}"`);
+ *   logger.info(`Case ${candidate.caseNumber}: ${candidate.reason} (score: ${candidate.score})`);
+ *   logger.info(`Draft: "${candidate.draftContent.quote}"`);
  * }
  */
 
@@ -521,16 +522,16 @@ export async function runAutomatedTestimonialCampaign(
  * const topCandidate = candidates[0];
  * 
  * const invitation = await sendTestimonialInvitation(topCandidate, 'member');
- * console.log(`Invitation sent to ${invitation.recipientEmail}`);
+ * logger.info(`Invitation sent to ${invitation.recipientEmail}`);
  */
 
 /**
  * Example 3: Automated campaign
  * 
  * const result = await runAutomatedTestimonialCampaign('org-123', 10);
- * console.log(`Campaign results: ${result.invitationsSent} invitations sent`);
+ * logger.info(`Campaign results: ${result.invitationsSent} invitations sent`);
  * if (result.errors.length > 0) {
- *   console.error('Errors:', result.errors);
+ *   logger.error('Errors:', result.errors);
  * }
  */
 
@@ -538,6 +539,6 @@ export async function runAutomatedTestimonialCampaign(
  * Example 4: Track metrics
  * 
  * const metrics = await getStoryAutomationMetrics('org-123');
- * console.log(`Acceptance rate: ${metrics.acceptanceRate}%`);
- * console.log(`Most common case type: ${metrics.topCaseTypes[0].caseType}`);
+ * logger.info(`Acceptance rate: ${metrics.acceptanceRate}%`);
+ * logger.info(`Most common case type: ${metrics.topCaseTypes[0].caseType}`);
  */

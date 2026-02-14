@@ -17,7 +17,6 @@
 
 import { circuitBreakers, CIRCUIT_BREAKERS } from './circuit-breaker';
 import { logger } from './logger';
-
 export interface ApiClientConfig {
   /** Base URL for the API */
   baseURL?: string;

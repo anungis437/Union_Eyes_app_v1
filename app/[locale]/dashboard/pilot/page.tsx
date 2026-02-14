@@ -13,6 +13,7 @@ import { PilotMetrics } from '@/types/marketing';
 import { calculatePilotHealthBreakdown, getHealthScoreStatus } from '@/lib/pilot/health-scoring';
 import { SystemStatusBadge } from '@/components/marketing/system-status-badge';
 import { HumanCenteredCallout } from '@/components/marketing/human-centered-callout';
+import { logger } from '@/lib/logger';
 
 export default function PilotDashboardPage() {
   const [metrics, setMetrics] = useState<PilotMetrics | null>(null);
@@ -28,7 +29,7 @@ export default function PilotDashboardPage() {
           setMetrics(data.metrics);
         }
       } catch (error) {
-        console.error('Failed to load pilot metrics:', error);
+        logger.error('Failed to load pilot metrics:', error);
       } finally {
         setLoading(false);
       }
@@ -329,7 +330,7 @@ export default function PilotDashboardPage() {
               className="bg-white text-blue-600 px-6 py-3 rounded-md font-medium hover:bg-blue-50 transition-colors"
             >
               Email Support
-            </Link>
+            </a>
             <Link href="/trust"
               className="bg-blue-700 text-white px-6 py-3 rounded-md font-medium hover:bg-blue-800 transition-colors"
             >

@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { and, desc } from 'drizzle-orm';
 import { pgTable, uuid, text, timestamp, jsonb, decimal, boolean } from 'drizzle-orm/pg-core';
+import { logger } from '@/lib/logger';
 
 // Case outcomes schema
 export const caseOutcomes = pgTable('case_outcomes', {
@@ -146,7 +147,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ outcomes });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching outcomes:', error);
+    logger.error('Error fetching outcomes:', error);
     return NextResponse.json(
       { error: 'Failed to fetch outcomes', details: error.message },
       { status: 500 }
@@ -189,7 +190,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    console.error('Error creating outcome:', error);
+    logger.error('Error creating outcome:', error);
     return NextResponse.json(
       { error: 'Failed to create outcome', details: error.message },
       { status: 500 }

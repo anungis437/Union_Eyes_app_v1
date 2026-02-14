@@ -21,6 +21,7 @@ import {
 } from '../db/schema';
 import { eq, and, gte, lte, sql, desc } from 'drizzle-orm';
 import { logger } from '../../../lib/logger';
+import { logger } from '@/lib/logger';
 
 const router = Router();
 

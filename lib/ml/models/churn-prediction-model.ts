@@ -17,6 +17,7 @@
 import * as tf from '@tensorflow/tfjs-node';
 import * as path from 'path';
 import * as fs from 'fs/promises';
+import { logger } from '@/lib/logger';
 
 export interface ChurnFeatures {
   daysSinceLastActivity: number;
@@ -122,18 +123,18 @@ export async function loadChurnModel(): Promise<tf.LayersModel> {
     // Load existing model
     modelInstance = await tf.loadLayersModel(`file://${modelJsonPath}`);
     modelLoaded = true;
-    console.log('✅ Loaded trained churn prediction model from disk');
+    logger.info('Loaded trained churn prediction model from disk');
     return modelInstance;
   } catch {
-    // Model doesn&apos;t exist yet - create new one with synthetic pre-training
-    console.log('⚠️  No trained model found. Creating new model with synthetic initialization...');
+    // Model doesn't exist yet - create new one with synthetic pre-training
+    logger.info('No trained model found, creating new model with synthetic initialization');
     modelInstance = createChurnModel();
 
     // Apply simple synthetic training to ensure better-than-random predictions
     await syntheticPreTrain(modelInstance);
     
     modelLoaded = true;
-    console.log('✅ Created new churn prediction model with synthetic pre-training');
+    logger.info('Created new churn prediction model with synthetic pre-training');
     return modelInstance;
   }
 }
@@ -250,7 +251,7 @@ export async function saveChurnModel(model: tf.LayersModel): Promise<void> {
 
   // Save model
   await model.save(`file://${MODEL_PATH}`);
-  console.log(`✅ Saved churn model to ${MODEL_PATH}`);
+  logger.info('Saved churn model', { path: MODEL_PATH });
 }
 
 /**

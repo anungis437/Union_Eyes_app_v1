@@ -5,6 +5,7 @@ import { Request, Response, NextFunction } from 'express';
 import { TenantService } from '../services/tenant.service';
 import { TenantIsolationService } from '../services/tenant-isolation.service';
 import { ILogger, SimpleLogger } from '../utils/logger';
+import { logger } from '@/lib/logger';
 import {
   Tenant,
   TenantContext,

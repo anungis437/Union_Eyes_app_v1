@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ArrowLeft, Calculator, Save } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface Member {
   id: string;
@@ -72,7 +73,7 @@ export default function NewPaymentPlanPage() {
         arrearsAmount: data.arrearsAmount || parseFloat(prefilledAmount || '0'),
       });
     } catch (error) {
-      console.error('Error fetching member:', error);
+      logger.error('Error fetching member:', error);
       alert('Error loading member data.');
     } finally {
       setLoading(false);
@@ -108,7 +109,7 @@ export default function NewPaymentPlanPage() {
       alert('Payment plan created successfully!');
       router.push('/dues/payment-plans');
     } catch (error) {
-      console.error('Error creating payment plan:', error);
+      logger.error('Error creating payment plan:', error);
       alert('Error creating payment plan. Please try again.');
     }
   };

@@ -16,6 +16,7 @@ import type {
   AnnualPensionStatement,
   PensionPlanConfig,
 } from './types';
+import { logger as appLogger } from '@/lib/logger';
 
 /**
  * Base logger interface
@@ -37,15 +38,15 @@ class ConsoleLogger implements Logger {
   }
 
   info(message: string, context?: Record<string, unknown>): void {
-    console.log(this.formatMessage('INFO', message, context));
+    appLogger.info(message, context);
   }
 
   warn(message: string, context?: Record<string, unknown>): void {
-    console.warn(this.formatMessage('WARN', message, context));
+    appLogger.warn(message, context);
   }
 
   error(message: string, context?: Record<string, unknown>): void {
-    console.error(this.formatMessage('ERROR', message, context));
+    appLogger.error(message, undefined, context);
   }
 }
 

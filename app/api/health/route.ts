@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db/db';
+import { sql } from 'drizzle-orm';
 import * as Sentry from '@sentry/nextjs';
 import { Redis } from '@upstash/redis';
 import { ErrorCode } from '@/lib/api/standardized-responses';

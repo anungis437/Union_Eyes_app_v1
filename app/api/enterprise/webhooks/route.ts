@@ -11,6 +11,7 @@ import { and, desc } from 'drizzle-orm';
 import { z } from 'zod';
 import crypto from 'crypto';
 import { requireUserForOrganization } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 // Validation schema for creating webhook subscription
 const createWebhookSchema = z.object({
@@ -60,7 +61,7 @@ export async function GET(req: NextRequest) {
     
     return NextResponse.json({ subscriptions: sanitizedSubscriptions });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching webhooks:', error);
+    logger.error('Error fetching webhooks:', error);
     return NextResponse.json(
       { error: 'Failed to fetch webhooks', details: error.message },
       { status: 500 }
@@ -114,7 +115,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
     }
-    console.error('Error creating webhook:', error);
+    logger.error('Error creating webhook:', error);
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(

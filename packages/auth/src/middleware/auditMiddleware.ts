@@ -202,6 +202,7 @@ function extractIpAddress(req: NextRequest): string | undefined {
   );
 }
 import { logger } from '../utils/logger';
+import { logger } from '@/lib/logger';
 
 /**
  * Log API request

@@ -15,6 +15,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import * as PaymentService from '../services/payment-processing';
 import { logger } from '../../../lib/logger';
+import { logger } from '@/lib/logger';
 
 const router = Router();
 

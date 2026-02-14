@@ -13,6 +13,7 @@ import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { outreachSequences } from '@/db/schema';
 import { and, desc, ilike, or } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 /**
  * GET /api/organizing/sequences
@@ -88,7 +89,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('[API] Error fetching outreach sequences:', error);
+    logger.error('[API] Error fetching outreach sequences:', error);
     return NextResponse.json(
       { error: 'Failed to fetch outreach sequences' },
       { status: 500 }
@@ -166,7 +167,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(sequence, { status: 201 });
   } catch (error) {
-    console.error('[API] Error creating outreach sequence:', error);
+    logger.error('[API] Error creating outreach sequence:', error);
     return NextResponse.json(
       { error: 'Failed to create outreach sequence' },
       { status: 500 }

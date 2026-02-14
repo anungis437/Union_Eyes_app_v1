@@ -48,11 +48,18 @@ export function getDatabaseConfig(): DatabaseConfig {
   const dbType = (process.env.DATABASE_TYPE || 'postgresql') as DatabaseType;
   const connectionString = process.env.DATABASE_URL || process.env.AZURE_SQL_CONNECTION_STRING || '';
 
+  // Environment-aware defaults:
+  // - Test: max 1 connection
+  // - Development: max 20 connections
+  // - Production: max 50+ connections (configurable)
+  const isTest = process.env.NODE_ENV === 'test' || process.env.VITEST;
+  const defaultMaxConnections = isTest ? 1 : 20;
+
   return {
     type: dbType,
     connectionString,
     options: {
-      max: parseInt(process.env.DB_POOL_MAX || '10'),
+      max: parseInt(process.env.DB_POOL_MAX || String(defaultMaxConnections)),
       idleTimeout: parseInt(process.env.DB_IDLE_TIMEOUT || '30'),
       connectionTimeout: parseInt(process.env.DB_CONNECTION_TIMEOUT || '10'),
       ssl: process.env.DB_SSL === 'true',

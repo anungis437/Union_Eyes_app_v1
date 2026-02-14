@@ -7,6 +7,7 @@ import fs from 'fs';
 import path from 'path';
 import { NextResponse } from 'next/server';
 import yaml from 'js-yaml';
+import { logger } from '@/lib/logger';
 
 export async function GET() {
   try {
@@ -29,7 +30,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error('Error loading OpenAPI spec:', error);
+    logger.error('Error loading OpenAPI spec:', error);
     return NextResponse.json(
       { error: 'Failed to load API specification' },
       { status: 500 }

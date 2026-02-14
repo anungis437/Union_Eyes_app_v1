@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { and } from 'drizzle-orm';
 import { pgTable, uuid, text, timestamp, decimal, integer, jsonb } from 'drizzle-orm/pg-core';
+import { logger } from '@/lib/logger';
 
 // Payment plan installments schema
 export const paymentPlanInstallments = pgTable('payment_plan_installments', {
@@ -81,7 +82,7 @@ export async function GET(request: NextRequest) {
       note: 'Payment plans endpoint ready. Requires paymentPlans table query.',
     });
   } catch (error: Record<string, unknown>) {
-    console.error('Error fetching payment plans:', error);
+    logger.error('Error fetching payment plans:', error);
     return NextResponse.json(
       { error: 'Failed to fetch payment plans', details: error.message },
       { status: 500 }
@@ -98,7 +99,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = createPlanSchema.parse(body);
 
-    console.log('📋 Creating payment plan...');
+    logger.info('📋 Creating payment plan...');
 
     // Calculate installment schedule
     const schedule = calculateInstallmentSchedule(
@@ -134,7 +135,7 @@ export async function POST(request: NextRequest) {
     //   )
     // );
 
-    console.log(`✅ Payment plan created with ${schedule.length} installments`);
+    logger.info(`✅ Payment plan created with ${schedule.length} installments`);
 
     return NextResponse.json(
       {
@@ -153,7 +154,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    console.error('Error creating payment plan:', error);
+    logger.error('Error creating payment plan:', error);
     return NextResponse.json(
       { error: 'Failed to create payment plan', details: error.message },
       { status: 500 }
@@ -165,15 +166,15 @@ export async function POST(request: NextRequest) {
  * POST /api/dues/payment-plans/[id]/pay
  * Record payment for an installment
  */
-export async function async function recordInstallmentPayment(
+export async function recordInstallmentPayment(
   planId: string,
   installmentId: string,
-  paymentData: any Record<string, unknown>
+  paymentData: any | Record<string, unknown>
 ) {
   try {
     const { amount, paymentMethod, paymentDate } = recordPaymentSchema.parse(paymentData);
 
-    console.log(`💳 Recording payment: $${amount} for installment ${installmentId}`);
+    logger.info(`💳 Recording payment: $${amount} for installment ${installmentId}`);
 
     // Get installment
     // const [installment] = await db
@@ -223,14 +224,14 @@ export async function async function recordInstallmentPayment(
     // Update plan balance
     // await updatePlanBalance(planId);
 
-    console.log('✅ Payment recorded successfully');
+    logger.info('✅ Payment recorded successfully');
 
     return {
       success: true,
       message: 'Payment recorded',
     };
   } catch (error: Record<string, unknown>) {
-    console.error('Error recording payment:', error);
+    logger.error('Error recording payment:', error);
     throw error;
   }
 }
@@ -311,7 +312,7 @@ async function updatePlanBalance(planId: string): Promise<void> {
  * Check for missed payments and update status
  */
 export async function checkMissedPayments(): Promise<void> {
-  console.log('🔍 Checking for missed payments...');
+  logger.info('🔍 Checking for missed payments...');
 
   const today = new Date();
 
@@ -341,5 +342,5 @@ export async function checkMissedPayments(): Promise<void> {
   //     .where(eq(paymentPlanInstallments.id, installment.id));
   // }
 
-  console.log(`✅ Checked missed payments`);
+  logger.info(`✅ Checked missed payments`);
 }

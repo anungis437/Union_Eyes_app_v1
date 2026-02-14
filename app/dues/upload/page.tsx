@@ -23,6 +23,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, Upload, FileText, CheckCircle, AlertCircle } from 'lucide-react';
 import { api } from '@/lib/api';
+import { logger } from '@/lib/logger';
 
 type UploadStep = 'details' | 'upload' | 'processing' | 'complete';
 
@@ -78,7 +79,7 @@ export default function UploadRemittancePage() {
 
       setCurrentStep('complete');
     } catch (error) {
-      console.error('Error uploading remittance:', error);
+      logger.error('Error uploading remittance:', error);
       alert('Error uploading remittance. Please try again.');
     }
   };

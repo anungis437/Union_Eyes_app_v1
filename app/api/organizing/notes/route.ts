@@ -14,6 +14,7 @@ import { db } from '@/db';
 import { fieldNotes } from '@/db/schema';
 import { organizationMembers } from '@/db/schema-organizations';
 import { and, desc, ilike, or, eq } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 /**
  * GET /api/organizing/notes
@@ -147,7 +148,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('[API] Error fetching field notes:', error);
+    logger.error('[API] Error fetching field notes:', error);
     return NextResponse.json(
       { error: 'Failed to fetch field notes' },
       { status: 500 }
@@ -207,7 +208,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(note, { status: 201 });
   } catch (error) {
-    console.error('[API] Error creating field note:', error);
+    logger.error('[API] Error creating field note:', error);
     return NextResponse.json(
       { error: 'Failed to create field note' },
       { status: 500 }

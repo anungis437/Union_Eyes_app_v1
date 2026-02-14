@@ -12,6 +12,7 @@ import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-
 import { checkEntitlement, consumeCredits, getCreditCost } from '@/lib/services/entitlements';
 
 import { standardSuccessResponse } from '@/lib/api/standardized-responses';
+import { logger } from '@/lib/logger';
 /**
  * POST /api/ai/summarize
  * Generate case summary or brief draft (U2 use case)
@@ -135,7 +136,7 @@ export const POST = withEnhancedRoleAuth(20, async (request, context) => {
     // 9. Validate summary structure
     const validation = validateSummaryStructure(summaryText);
     if (!validation.valid) {
-      console.warn('Summary validation failed. Missing sections:', validation.missingSections);
+      logger.warn('Summary validation failed. Missing sections:', validation.missingSections);
     }
 
     // 10. Store summary in database
@@ -186,7 +187,7 @@ export const POST = withEnhancedRoleAuth(20, async (request, context) => {
 /**
  * Helper function to format case content for summarization
  */
-function formatCaseContent(claim: Record<string, unknown>) Record<string, unknown>): string {
+function formatCaseContent(claim: Record<string, unknown>): string {
   let content = '';
 
   // Basic info
