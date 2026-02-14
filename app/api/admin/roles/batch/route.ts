@@ -15,13 +15,13 @@ import { db } from '@/db';
 import { organizationMembers } from '@/db/schema';
 import { withApiAuth } from '@/lib/api-auth-guard';
 import { z } from 'zod';
-import { eq, and, inArray } from 'drizzle-orm';
+import { and, inArray } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { pgTable, uuid, text, timestamp, integer, boolean, jsonb } from 'drizzle-orm/pg-core';
 
 // ============================================================================
 // LOCAL TABLE DEFINITIONS
-// Note: These tables exist in DB but aren't exported in main schema yet
+// Note: These tables exist in DB but aren&apos;t exported in main schema yet
 // ============================================================================
 
 const memberRoles = pgTable('member_roles', {
@@ -113,7 +113,7 @@ const RoleAssignmentSchema = z.object({
 
 const BatchRoleAssignmentRequestSchema = z.object({
   assignments: z.array(RoleAssignmentSchema).min(1).max(100), // Max 100 per batch
-  dryRun: z.boolean().default(false), // Test mode - validate but don't commit
+  dryRun: z.boolean().default(false), // Test mode - validate but don&apos;t commit
   stopOnError: z.boolean().default(false), // Stop batch if any assignment fails
 });
 
@@ -540,7 +540,7 @@ async function batchRoleAssignmentHandler(req: NextRequest, context: RequestCont
       }
 
       if (dryRun) {
-        // Validate only, don't execute
+        // Validate only, don&apos;t execute
         const validation = await validateAssignment(
           assignment,
           user.id,

@@ -103,7 +103,7 @@ export function signVote(
  * Verify vote signature
  * 
  * Validates that vote signature matches the vote data
- * and hasn't been tampered with
+ * and hasn&apos;t been tampered with
  */
 export function verifyVoteSignature(
   voteData: {
@@ -208,7 +208,7 @@ export function generateVoteReceipt(
  * Verify vote receipt
  * 
  * Allows voter to verify their vote using verification code
- * And ensures vote hasn't been modified
+ * And ensures vote hasn&apos;t been modified
  */
 export function verifyVoteReceipt(
   receipt: VoteReceipt,

@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
-import { eq, and, desc, sql } from 'drizzle-orm';
+import { and, desc } from 'drizzle-orm';
 import { pgTable, uuid, text, timestamp, jsonb, integer, boolean } from 'drizzle-orm/pg-core';
 
 // Segments schema
@@ -24,7 +24,7 @@ export const memberSegments = pgTable('member_segments', {
   
   // Query Definition (for dynamic segments)
   query: jsonb('query').$type<{
-    filters?: Record<string, any>;
+    filters?: Record<string, unknown>;
     searchQuery?: string;
   }>(),
   
@@ -44,7 +44,7 @@ export const memberSegments = pgTable('member_segments', {
   tags: jsonb('tags').$type<string[]>(),
   
   // Metadata
-  metadata: jsonb('metadata').$type<Record<string, any>>(),
+  metadata: jsonb('metadata').$type<Record<string, unknown>>(),
   
   // Audit
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
       segments,
       total: segments.length,
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching segments:', error);
     return NextResponse.json(
       { error: 'Failed to fetch segments', details: error.message },
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },
@@ -201,7 +201,7 @@ export async function getSegmentMembers(
         totalPages: Math.ceil(segment.memberCount / limit),
       },
     };
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching segment members:', error);
     throw error;
   }
@@ -211,7 +211,7 @@ export async function getSegmentMembers(
  * PUT /api/members/segments/[id]
  * Update segment
  */
-export async function updateSegment(segmentId: string, updates: any) {
+export async function updateSegment(segmentId: string, updates: Record<string, unknown>) Record<string, unknown>) {
   try {
     const [updated] = await db
       .update(memberSegments)
@@ -235,7 +235,7 @@ export async function updateSegment(segmentId: string, updates: any) {
     }
 
     return updated;
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error updating segment:', error);
     throw error;
   }
@@ -244,7 +244,7 @@ export async function updateSegment(segmentId: string, updates: any) {
 /**
  * Helper: Calculate dynamic segment member count
  */
-async function calculateDynamicSegmentCount(query: any): Promise<number> {
+async function calculateDynamicSegmentCount(query: Record<string, unknown>) Record<string, unknown>): Promise<number> {
   try {
     // Build count query based on filters
     const filters = query.filters || {};
@@ -263,7 +263,7 @@ async function calculateDynamicSegmentCount(query: any): Promise<number> {
       countQuery = sql`${countQuery} WHERE ${sql.join(conditions, sql` AND `)}`;
     }
 
-    const [{ count }] = await db.execute(countQuery) as any[];
+    const [{ count }] = await db.execute(countQuery) as Array<Record<string, unknown>>;
     return Number(count);
   } catch {
     return 0;
@@ -274,10 +274,10 @@ async function calculateDynamicSegmentCount(query: any): Promise<number> {
  * Helper: Execute dynamic segment query
  */
 async function executeDynamicSegmentQuery(
-  query: any,
+  query: any, Record<string, unknown>,
   limit: number,
   offset: number
-): Promise<any> {
+): Promise<Record<string, unknown>> {
   try {
     const filters = query.filters || {};
     const conditions = [];

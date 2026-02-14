@@ -11,10 +11,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import {
-  standardErrorResponse,
-  standardSuccessResponse,
-  ErrorCode,
+import { standardSuccessResponse,
 } from '@/lib/api/standardized-responses';
 import { getSLAMetrics } from '@/lib/services/support-service';
 import { logger } from '@/lib/logger';
@@ -92,7 +89,7 @@ export const GET = async (request: NextRequest) => {
       // Get SLA metrics
       const slaMetrics = await getSLAMetrics({
         organizationId: filters.organization_id,
-        priority: filters.priority as any,
+        priority: filters.priority,
         category: filters.category,
         startDate,
         endDate,

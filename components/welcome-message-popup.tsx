@@ -46,7 +46,7 @@ export default function WelcomeMessagePopup({ profile }: WelcomeMessagePopupProp
     // Check if another popup is already active
     try {
       const activePopup = localStorage.getItem('active_popup');
-      // Don't show if another popup is active (especially payment_success)
+      // Don&apos;t show if another popup is active (especially payment_success)
       if (activePopup) {
         return;
       }
@@ -65,7 +65,7 @@ export default function WelcomeMessagePopup({ profile }: WelcomeMessagePopupProp
     const url = new URL(window.location.href);
     const isPaymentSuccess = url.searchParams.get('payment') === 'success';
 // Show the popup if:
-    // 1. We haven't shown it before AND the user is new, OR
+    // 1. We haven&apos;t shown it before AND the user is new, OR
     // 2. Payment was successful (paid user should see confirmation regardless of timing)
     // Note: For payment success, the payment success popup has higher priority
     if ((!hasShownWelcome && isNewUser) && !isPaymentSuccess) {
@@ -159,7 +159,7 @@ const timer = setTimeout(() => {
     ? formatDate(profile.nextCreditRenewal)
     : "in 4 weeks";
   
-  // Don't render anything until mounted to prevent hydration issues
+  // Don&apos;t render anything until mounted to prevent hydration issues
   if (!isMounted) {
     return null;
   }
@@ -218,7 +218,7 @@ const timer = setTimeout(() => {
               </p>
             </div>
             
-            {/* What's included list */}
+            {/* What&apos;s included list */}
             <div className="mb-5">
               <h5 className="text-sm font-medium text-gray-700 mb-2">Your {planType} Plan Includes:</h5>
               <ul className="space-y-2.5">

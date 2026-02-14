@@ -315,7 +315,7 @@ export class FreshBooksAdapter extends BaseIntegration {
 
           const paymentData = {
             customerId: payment.invoiceid.toString(),
-            customerName: payment.type, // FreshBooks doesn't provide customer name in payment
+            customerName: payment.type, // FreshBooks doesn&apos;t provide customer name in payment
             paymentDate: new Date(payment.date),
             amount: parseFloat(payment.amount.amount).toFixed(2),
             lastSyncedAt: new Date(),

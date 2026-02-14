@@ -13,7 +13,7 @@ import {
   movementTrends, 
   organizations 
 } from '@/db/schema';
-import { eq, and, gte, sql, inArray } from 'drizzle-orm';
+import { and, inArray } from 'drizzle-orm';
 import { 
   aggregateWithPrivacy, 
   calculateTrendWithConfidence,
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
     }
 
     // TODO: Query actual case data from grievances table based on trendType
-    // This is a placeholder - in production, you'd query real data
+    // This is a placeholder - in production, you&apos;d query real data
     const mockDataPoints = consents.map((consent) => ({
       organizationId: consent.organizationId,
       value: Math.random() * 100, // Replace with real query

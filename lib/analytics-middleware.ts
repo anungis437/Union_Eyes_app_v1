@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Analytics Middleware
  * 
  * Integrates caching and aggregation services with analytics APIs
@@ -16,11 +16,11 @@ import { aggregationService } from './analytics-aggregation';
  */
 export function withAnalyticsCache<T>(
   endpoint: string,
-  handler: (req: NextRequest, organizationId: string, params: any) => Promise<T>,
+  handler: (req: NextRequest, organizationId: string, params: unknown) => Promise<T>,
   ttl: number = 5 * 60 * 1000 // 5 minutes default
 ) {
   return async (req: NextRequest) => {
-    const organizationId = (req as any).organizationId;
+    const organizationId = (req as unknown).organizationId;
     if (!organizationId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

@@ -1,4 +1,4 @@
-﻿import { logApiAuditEvent } from "@/lib/middleware/api-security";
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * API Route: Pension Trustees
  * CRUD operations for trustee management
@@ -8,16 +8,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { pensionTrustees } from '@/db/schema';
-import { eq, and, sql } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {

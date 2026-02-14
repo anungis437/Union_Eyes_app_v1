@@ -6,11 +6,7 @@ import { governanceEvents } from "@/db/schema/domains/governance";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 const listEventsSchema = z.object({
   limit: z.string().optional().transform(value => (value ? parseInt(value, 10) : 50)),
 });

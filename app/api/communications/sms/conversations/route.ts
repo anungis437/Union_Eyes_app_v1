@@ -1,15 +1,11 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { smsConversations } from '@/db/schema/domains/communications';
-import { and, desc, eq, ilike, or } from 'drizzle-orm';
-import { withRoleAuth, getUserContext } from '@/lib/api-auth-guard';
+import { and, desc, ilike, or } from 'drizzle-orm';
+import { getUserContext } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
-type SmsConversationsContext = { params?: Record<string, any>; organizationId?: string; userId?: string };
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
+type SmsConversationsContext = { params?: Record<string, unknown>; organizationId?: string; userId?: string };
 
 export const GET = withRoleAuth<SmsConversationsContext>('member', async (request, context) => {
   try {

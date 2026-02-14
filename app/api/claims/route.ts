@@ -10,12 +10,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { claims } from "@/db/schema/domains/claims";
-import { eq, desc, and, or, like, sql } from "drizzle-orm";
+import { desc, and, or, like } from "drizzle-orm";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
-import { standardErrorResponse, standardSuccessResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 /**
  * Validation schema for creating claims
@@ -72,7 +72,7 @@ export const GET = withRoleAuth(30, async (request, context) => {
             or(
               like(claims.claimNumber, `%${search}%`),
               like(claims.description, `%${search}%`)
-            ) as any
+            ) as Record<string, unknown>
           );
         }
         

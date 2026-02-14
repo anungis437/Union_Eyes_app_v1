@@ -11,13 +11,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { externalCalendarConnections } from '@/db/schema/calendar-schema';
 import { exchangeCodeForTokens } from '@/lib/external-calendar-sync/google-calendar-service';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;

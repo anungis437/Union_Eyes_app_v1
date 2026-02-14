@@ -9,7 +9,7 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySignature, verifyDocumentIntegrity } from '@/services/pki/verification-service';
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 
 const adminPkiSignaturesVerifySchema = z.object({

@@ -42,7 +42,7 @@ export function getIPGeolocation(ipAddress: string): IPGeolocationResult | null 
 
   return {
     ip: ipAddress,
-    city: undefined, // geoip-lite doesn't provide city-level data
+    city: undefined, // geoip-lite doesn&apos;t provide city-level data
     region: geo.region,
     country: geo.country,
     countryCode: geo.country,

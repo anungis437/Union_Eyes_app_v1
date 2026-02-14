@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Automated Billing Scheduler
  * 
  * Phase 2: Dues & Payments - Automated Billing
@@ -229,7 +229,7 @@ export class BillingScheduler {
    */
   private static async notifyBillingCompleted(
     organizationId: string,
-    result: any
+    result: unknown
   ): Promise<void> {
     // Placeholder for notification
     logger.info('Billing completion notification would be sent', {

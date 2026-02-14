@@ -1,0 +1,651 @@
+﻿
+C:\APPS\Union_Eyes_app_v1\lib\accessibility\accessibility-service.ts
+  579:5  warning  'options' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\ai\data-ingestion.ts
+  241:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\ai\experiments.ts
+  156:11  warning  'winner' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\ai\insights-generator.ts
+  75:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\ai\mamba-service.ts
+  66:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\ai\pipeline.ts
+  186:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\ai\rag-pipeline.ts
+  288:17  warning  'id' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\ai\resilience.ts
+  81:7  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\ai\services\rate-limiter.ts
+  20:24  warning  'lte' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\ai\template-engine.ts
+  1114:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\analytics-aggregation.ts
+  264:3  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\analytics-cache.ts
+  80:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\analytics-middleware.ts
+  47:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\analytics-performance.ts
+  171:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\analytics\advanced-metrics.ts
+   21:3   warning  'dataAggregationConsent' is defined but never used  @typescript-eslint/no-unused-vars
+   23:24  warning  'sql' is defined but never used                     @typescript-eslint/no-unused-vars
+  169:17  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  234:65  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  422:46  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  430:50  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  436:57  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\api-auth-guard.ts
+  388:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\api-client.ts
+  144:14  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\api-versioning\version-middleware.ts
+  140:32  warning  'T' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\api\index.ts
+  42:5  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\api\standardized-responses.ts
+  382:2  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\audit-logger.ts
+  163:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\auth\hierarchy-access-control.ts
+  134:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\auth\permissions.ts
+  81:6  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\auth\rbac-hooks.ts
+  75:9  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\auth\rbac-server.ts
+  68:5  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\auth\roles.ts
+  250:3  error  Duplicate enum member value manage_affiliates        @typescript-eslint/no-duplicate-enum-values
+  251:3  error  Duplicate enum member value view_all_organizations   @typescript-eslint/no-duplicate-enum-values
+  252:3  error  Duplicate enum member value manage_organizations     @typescript-eslint/no-duplicate-enum-values
+  253:3  error  Duplicate enum member value view_compliance_reports  @typescript-eslint/no-duplicate-enum-values
+  254:3  error  Duplicate enum member value manage_sector_analytics  @typescript-eslint/no-duplicate-enum-values
+
+C:\APPS\Union_Eyes_app_v1\lib\automation\story-automation.ts
+  482:9  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\azure-keyvault.ts
+  129:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\azure-speech.ts
+   71:34  warning  's' is defined but never used  @typescript-eslint/no-unused-vars
+   71:37  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+  146:34  warning  's' is defined but never used  @typescript-eslint/no-unused-vars
+  146:37  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\calendar-reminder-scheduler.ts
+  124:6  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\case-assignment-engine.ts
+  187:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\chaos-engineering\chaos-monkey.ts
+  204:7  warning  'sum' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\chaos-engineering\experiments.ts
+  118:3  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\chart-utils.ts
+  22:4   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  47:4   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  85:79  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  86:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\circuit-breaker.ts
+  103:7  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\claim-notifications.ts
+  91:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\config\env-validation.ts
+  290:2  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\console-wrapper.ts
+  40:21  warning  'args' is defined but never used          @typescript-eslint/no-unused-vars
+  40:27  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  46:22  warning  'args' is defined but never used          @typescript-eslint/no-unused-vars
+  46:28  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  51:28  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  60:29  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  78:23  warning  'args' is defined but never used          @typescript-eslint/no-unused-vars
+  78:29  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\csrf-client.ts
+  268:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\csrf-protection.ts
+  70:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\data-export-import.ts
+  75:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\database\multi-db-client.ts
+  118:5  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\date-utils.ts
+  43:5  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\db-validator.ts
+  54:5  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\db\connection-pool-monitor.ts
+  118:5  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\db\query-performance-monitor.ts
+  123:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\db\with-rls-context.ts
+  202:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\deadline-service.ts
+  72:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\deadline-tracking-system.ts
+  215:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\document-management-system.ts
+  140:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\documents\batch-operations-service.ts
+  97:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\dues-calculation-engine.ts
+  245:8  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\email-service.ts
+  82:5  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\email\report-email-templates.ts
+  42:5  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\email\training-notifications.ts
+  78:5  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\encryption.ts
+  234:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\engagement-scoring.ts
+    9:29  warning  'desc' is defined but never used                @typescript-eslint/no-unused-vars
+  373:9   warning  'startDate' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\enterprise-role-middleware.ts
+  222:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\entitlement-sat-validator.ts
+  11:42  warning  'TIER_FEATURES' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\error-handler.ts
+  126:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\events\event-bus.ts
+  302:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\examples\static-generation-patterns.ts
+    1:1   error    Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+   24:10  warning  'organizations' is defined but never used                      @typescript-eslint/no-unused-vars
+  186:12  warning  'err' is defined but never used                                @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\external-calendar-sync\google-calendar-service.ts
+  115:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\external-calendar-sync\microsoft-calendar-service.ts
+  122:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\feature-flags.ts
+  174:2  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\gdpr\consent-manager.ts
+  273:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\geo\ip-geolocation.ts
+  67:5  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\graphql\resolvers.ts
+  516:9  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\i18n-utils.ts
+  1:10  warning  'getRequestConfig' is defined but never used  @typescript-eslint/no-unused-vars
+  2:10  warning  'notFound' is defined but never used          @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\accounting\freshbooks-adapter.ts
+  77:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\accounting\freshbooks-client.ts
+  161:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\accounting\quickbooks-adapter.ts
+  80:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\accounting\quickbooks-client.ts
+  183:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\accounting\sage-intacct-adapter.ts
+  74:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\accounting\sage-intacct-client.ts
+  149:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\accounting\sync-utils.ts
+  296:2  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\accounting\wave-adapter.ts
+  76:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\accounting\wave-client.ts
+  138:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\accounting\xero-adapter.ts
+  80:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\accounting\xero-client.ts
+  209:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\communication\slack-adapter.ts
+  107:6  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\communication\slack-client.ts
+  177:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\communication\teams-adapter.ts
+  108:6  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\communication\teams-client.ts
+  164:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\documents\sharepoint-adapter.ts
+  103:6  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\documents\sharepoint-client.ts
+  166:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\hris\adp-adapter.ts
+  72:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\hris\adp-client.ts
+  169:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\hris\bamboohr-adapter.ts
+  74:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\hris\bamboohr-client.ts
+  118:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\hris\sync-utils.ts
+  135:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\hris\workday-adapter.ts
+  72:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\hris\workday-client.ts
+  137:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\insurance\canadalife-adapter.ts
+  77:10  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\insurance\canadalife-client.ts
+  110:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\insurance\greenshield-adapter.ts
+  84:12  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\insurance\greenshield-client.ts
+  130:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\insurance\ia-adapter.ts
+  76:10  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\insurance\ia-client.ts
+  120:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\insurance\manulife-adapter.ts
+  84:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\insurance\manulife-client.ts
+  135:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\insurance\sunlife-adapter.ts
+  84:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\insurance\sunlife-client.ts
+  131:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\lms\linkedin-learning-adapter.ts
+  111:7  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\lms\linkedin-learning-client.ts
+  128:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\base-integration.ts
+  188:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\factory.ts
+  143:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\index.ts
+  64:9  warning  'registry' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  67:9  warning  'factory' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  70:9  warning  'webhookRouter' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  73:9  warning  'syncEngine' is assigned a value but never used     @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\marketing-notifications.ts
+  84:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\sync-engine.ts
+  126:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\timeline-integration.ts
+  108:8  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\types.ts
+    8:10  warning  'Decimal' is defined but never used                        @typescript-eslint/no-unused-vars
+  194:18  error    Unsafe declaration merging between classes and interfaces  @typescript-eslint/no-unsafe-declaration-merging
+  305:14  error    Unsafe declaration merging between classes and interfaces  @typescript-eslint/no-unsafe-declaration-merging
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\webhook-router.ts
+  123:6  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\job-queue.ts
+  15:25  warning  'WorkerImpl' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  15:72  warning  'JobImpl' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  29:20  error    A `require()` style import is forbidden          @typescript-eslint/no-require-imports
+  35:19  error    A `require()` style import is forbidden          @typescript-eslint/no-require-imports
+  36:12  warning  'e' is defined but never used                    @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\jobs\billing-scheduler.ts
+  139:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\jobs\dues-reminder-scheduler.ts
+  163:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\jobs\failed-payment-retry.ts
+  129:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\jurisdiction-helpers.ts
+  44:5  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\logger.ts
+  348:7  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\member-experience\human-explainers.ts
+  205:54  warning  'daysInState' is defined but never used          @typescript-eslint/no-unused-vars
+  217:9   warning  'thresholds' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\middleware\admin-auth.ts
+  53:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\middleware\api-security.ts
+  182:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\middleware\auth-middleware.ts
+  171:7  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\middleware\rate-limit-middleware.ts
+  149:6  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\middleware\request-validation.ts
+  191:2  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\middleware\sql-injection-prevention.ts
+  265:5  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\migrations\batch-migration.ts
+  223:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\migrations\data-integrity.ts
+  160:2  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\migrations\rollback.ts
+  69:6  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\migrations\tenant-to-org-mapper.ts
+  122:6  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\ml\predictive-analytics.ts
+  115:65  warning  'i' is defined but never used  @typescript-eslint/no-unused-vars
+  269:27  warning  'i' is defined but never used  @typescript-eslint/no-unused-vars
+  396:35  warning  '_' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\mobile\analytics.ts
+  247:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\mobile\background-sync.ts
+  56:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\mobile\biometric-auth.ts
+  111:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\mobile\crash-reporting.ts
+  138:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\mobile\deep-linker.ts
+  105:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\mobile\mobile-engine.ts
+  331:9  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\mobile\providers\apns-provider.ts
+  125:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\mobile\providers\fcm-provider.ts
+  96:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\mobile\push-notifications.ts
+  54:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\mobile\service-worker-registration.ts
+  69:9  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\mobile\social-media.ts
+  105:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\monitoring\status-page.ts
+  75:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\movement-insights\consent-manager.ts
+  127:3  warning  'updatedBy' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\notification-templates\dues-notifications.ts
+   51:13  warning  'data' is defined but never used  @typescript-eslint/no-unused-vars
+  123:15  warning  'data' is defined but never used  @typescript-eslint/no-unused-vars
+  126:13  warning  'data' is defined but never used  @typescript-eslint/no-unused-vars
+  161:15  warning  'data' is defined but never used  @typescript-eslint/no-unused-vars
+  164:13  warning  'data' is defined but never used  @typescript-eslint/no-unused-vars
+  205:15  warning  'data' is defined but never used  @typescript-eslint/no-unused-vars
+  208:13  warning  'data' is defined but never used  @typescript-eslint/no-unused-vars
+  260:15  warning  'data' is defined but never used  @typescript-eslint/no-unused-vars
+  263:13  warning  'data' is defined but never used  @typescript-eslint/no-unused-vars
+  310:15  warning  'data' is defined but never used  @typescript-eslint/no-unused-vars
+  313:13  warning  'data' is defined but never used  @typescript-eslint/no-unused-vars
+  351:13  warning  'data' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\observability\distributed-tracing.ts
+  301:9  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\observability\telemetry.ts
+  113:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\organization-middleware.ts
+  65:6  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\organization-utils.ts
+  113:6  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\payment-processor\examples\refactored-dues-payment-route.ts
+  157:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\payment-processor\processors\paypal-processor.ts
+  159:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\pension-processor\pension-factory.ts
+  123:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\pension-processor\processors\cpp-qpp-processor.ts
+  21:3  warning  'EmploymentStatus' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\pension-processor\processors\otpp-processor.ts
+   21:3   warning  'EmploymentStatus' is defined but never used                     @typescript-eslint/no-unused-vars
+  139:11  warning  'newYTDEmployerContribution' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\pilot\health-scoring.ts
+  189:9  warning  'healthScore' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\rate-limiter.ts
+  161:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\receipt-generator.ts
+  110:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\recurring-events-service.ts
+  137:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\report-executor.ts
+   58:12  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   75:10  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  338:5   warning  'groupBy' is defined but never used       @typescript-eslint/no-unused-vars
+  450:5   warning  'dataSource' is defined but never used    @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\resilience\circuit-breaker.ts
+  140:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\resilience\retry.ts
+  122:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\role-middleware.ts
+  119:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\scheduled-jobs.ts
+  42:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\scheduled-report-executor.ts
+  106:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\security\rls-gap-remediation.ts
+    9:13  warning  'fs' is defined but never used                                  @typescript-eslint/no-unused-vars
+   10:13  warning  'path' is defined but never used                                @typescript-eslint/no-unused-vars
+  479:1   warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+C:\APPS\Union_Eyes_app_v1\lib\settlement-recommendation-engine.ts
+  149:6  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\signature\providers.ts
+  180:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\signature\signature-service.ts
+  238:6  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\social-media\linkedin-api-client.ts
+  540:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  541:82  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\social-media\meta-api-client.ts
+   11:10  warning  'createClient' is defined but never used  @typescript-eslint/no-unused-vars
+  100:38  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  452:14  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  489:14  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  517:14  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  555:14  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  724:46  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\social-media\social-media-service.ts
+  205:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\social-media\twitter-api-client.ts
+  119:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\tenant-middleware.ts
+  31:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\trust\system-metrics.ts
+  97:5  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\utils\autopay-utils.ts
+  56:5  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\utils\excel-generator.ts
+  219:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  220:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  262:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  282:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  304:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  340:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  341:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  342:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  394:10  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\utils\hierarchy-validation.ts
+   13:14  warning  'and' is defined but never used           @typescript-eslint/no-unused-vars
+  109:40  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\utils\member-data-utils.ts
+  46:5  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\utils\pdf-generator.ts
+  111:7  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\utils\rewards-stats-utils.ts
+  75:6  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\utils\smart-onboarding.ts
+  150:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\validation.ts
+  282:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\webhook-security.ts
+  52:5  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\websocket.ts
+  129:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\workers\cleanup-worker.ts
+  97:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\workers\email-worker.ts
+  88:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\workers\message-queue-processor.ts
+  93:4  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\workers\notification-worker.ts
+  154:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\workers\report-worker.ts
+  56:2  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\workers\sms-worker.ts
+  75:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\workflow-automation-engine.ts
+  155:0  error  Parsing error: 'catch' or 'finally' expected
+
+C:\APPS\Union_Eyes_app_v1\lib\workflow-engine.ts
+  103:4  error  Parsing error: 'catch' or 'finally' expected
+
+Γ£û 264 problems (205 errors, 59 warnings)
+

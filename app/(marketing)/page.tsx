@@ -37,7 +37,7 @@ const reviews = [
   {
     name: "Robert M.",
     title: "Legal Coordinator",
-    content: "The AI Workbench's contract analysis and legal research capabilities are game-changing. It's like having a research assistant available 24/7.",
+    content: "The AI Workbench's contract analysis and legal research capabilities are game-changing. It&apos;s like having a research assistant available 24/7.",
     rating: 5
   },
   {

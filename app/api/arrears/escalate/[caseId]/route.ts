@@ -3,14 +3,10 @@ import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { db } from '@/db';
 import { arrearsCases, members } from '@/services/financial-service/src/db/schema';
-import { eq, and } from 'drizzle-orm';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { and } from 'drizzle-orm';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * Validation schema for escalating arrears case
  */
@@ -164,7 +160,7 @@ escalationHistory = [];
           escalationHistory.push(escalationRecord);
 
           // Prepare update data
-          const updateData: any = {
+          const updateData = {
             escalationLevel: newLevel,
             escalationHistory: JSON.stringify(escalationHistory),
             lastEscalationDate: new Date(),

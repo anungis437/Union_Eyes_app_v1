@@ -10,11 +10,7 @@ import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 async function postHandler(req: NextRequest, context) {
   const { userId, organizationId } = context;
 
@@ -60,7 +56,7 @@ async function postHandler(req: NextRequest, context) {
 
     return NextResponse.json({
       success: true,
-      refreshedViews: results.map((r: any) => ({
+      refreshedViews: results.map((r: Record<string, unknown>) => ({
         viewName: r.view_name,
         status: r.refresh_status,
         durationMs: r.duration_ms,
@@ -90,7 +86,7 @@ async function getHandler(req: NextRequest, context) {
     const stats = await getViewRefreshStats();
 
     return NextResponse.json({
-      views: stats.map((v: any) => ({
+      views: stats.map((v: Record<string, unknown>) => ({
         schemaName: v.schemaname,
         viewName: v.matviewname,
         lastRefresh: v.last_refresh,

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Batch Operations Service - Phase 11
  * 
  * Backend service for performing bulk operations on documents.
@@ -534,7 +534,7 @@ export async function bulkCopy(
  */
 export async function bulkUpdateMetadata(
   documentIds: string[],
-  metadataUpdates: Record<string, any>,
+  metadataUpdates: Record<string, unknown>,
   tenantId: string,
   userId: string
 ): Promise<BatchOperationResult> {

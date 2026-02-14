@@ -11,11 +11,7 @@ import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { checkEntitlement, consumeCredits, getCreditCost } from '@/lib/services/entitlements';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * POST /api/ai/summarize
  * Generate case summary or brief draft (U2 use case)
@@ -37,7 +33,7 @@ const SummarizeRequestSchema = z.object({
   purpose: z.enum(['arbitration', 'negotiation', 'internal']).optional(),
 });
 
-export const POST = withEnhancedRoleAuth<any>(20, async (request, context) => {
+export const POST = withEnhancedRoleAuth(20, async (request, context) => {
   const { userId, organizationId } = context;
 
   // CRITICAL: Rate limit AI calls (expensive OpenAI API)
@@ -190,7 +186,7 @@ export const POST = withEnhancedRoleAuth<any>(20, async (request, context) => {
 /**
  * Helper function to format case content for summarization
  */
-function formatCaseContent(claim: any): string {
+function formatCaseContent(claim: Record<string, unknown>) Record<string, unknown>): string {
   let content = '';
 
   // Basic info
@@ -221,8 +217,8 @@ ${claim.description}
     content += `TIMELINE:
 `;
     claim.activities
-      .sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-      .forEach((activity: any) => {
+      .sort((a: Record<string, unknown>, b: Record<string, unknown>) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+      .forEach((activity: Record<string, unknown>) => {
         content += `[${activity.created_at}] ${activity.activity_type}: ${activity.description}
 `;
       });

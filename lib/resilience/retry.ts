@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Retry Pattern with Exponential Backoff
  * 
  * Automatically retries failed operations with configurable backoff strategies.
@@ -131,7 +131,7 @@ export class RetryPolicy {
           throw lastError;
         }
 
-        // Don't wait after last attempt
+        // Don&apos;t wait after last attempt
         if (attempt >= this.maxAttempts) {
           break;
         }
@@ -222,7 +222,7 @@ export async function withRetry<T>(
  */
 export function retry(options?: RetryOptions) {
   return function (
-    target: any,
+    target: unknown,
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
@@ -232,7 +232,7 @@ export function retry(options?: RetryOptions) {
       name: options?.name || `${target.constructor.name}.${propertyKey}`,
     });
 
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (...args: unknown[]) {
       return policy.execute(() => originalMethod.apply(this, args));
     };
 

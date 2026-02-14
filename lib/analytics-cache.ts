@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Analytics Cache Service
  * 
  * Provides distributed Redis-based caching layer for analytics queries to improve performance
@@ -34,7 +34,7 @@ interface CacheStats {
 // Initialize Redis client
 const redis = (() => {
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-    // Only warn if we're not in test/build environment
+    // Only warn if we&apos;re not in test/build environment
     if (process.env.NODE_ENV !== 'test' && !process.env.BUILDING) {
       logger.warn('Redis not configured - analytics cache will fail at runtime', {
         component: 'analytics-cache',
@@ -100,7 +100,7 @@ class AnalyticsCacheService {
   private generateKey(
     organizationId: string,
     endpoint: string,
-    params: Record<string, any> = {}
+    params: Record<string, unknown> = {}
   ): string {
     const sortedParams = Object.keys(params)
       .sort()
@@ -116,7 +116,7 @@ class AnalyticsCacheService {
   async get<T>(
     organizationId: string,
     endpoint: string,
-    params: Record<string, any> = {}
+    params: Record<string, unknown> = {}
   ): Promise<T | null> {
     if (!redis) {
       logger.warn('Redis not configured - cache miss', { component: 'analytics-cache' });
@@ -135,7 +135,7 @@ class AnalyticsCacheService {
         return null;
       }
 
-      // Redis TTL handles expiration automatically, so if we got data, it's valid
+      // Redis TTL handles expiration automatically, so if we got data, it&apos;s valid
       entry.hits++;
       this.stats.hits++;
       
@@ -158,7 +158,7 @@ class AnalyticsCacheService {
     organizationId: string,
     endpoint: string,
     data: T,
-    params: Record<string, any> = {},
+    params: Record<string, unknown> = {},
     ttl: number = this.DEFAULT_TTL
   ): Promise<void> {
     if (!redis) {
@@ -224,7 +224,7 @@ class AnalyticsCacheService {
     
     try {
       // Get approximate size using DBSIZE (includes all keys, not just analytics)
-      // For accurate count, we'd need to SCAN all analytics:cache:* keys
+      // For accurate count, we&apos;d need to SCAN all analytics:cache:* keys
       const allKeys = await redis.keys('analytics:cache:*');
       const size = allKeys.length;
       
@@ -303,7 +303,7 @@ export const analyticsCache = new AnalyticsCacheService();
 export async function withCache<T>(
   organizationId: string,
   endpoint: string,
-  params: Record<string, any>,
+  params: Record<string, unknown>,
   fetchFn: () => Promise<T>,
   ttl?: number
 ): Promise<T> {

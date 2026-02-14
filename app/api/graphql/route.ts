@@ -14,7 +14,7 @@ import { createYoga } from 'graphql-yoga';
 import { schema } from '@/lib/graphql/schema';
 import { resolvers } from '@/lib/graphql/resolvers';
 import { withApiAuth } from '@/lib/api-auth-guard';
-import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { ErrorCode } from '@/lib/api/standardized-responses';
 
 const yoga = createYoga({
   schema,

@@ -107,7 +107,7 @@ async function updateClaimDeadlinesColumn() {
 
     console.log('\n✅ Migration complete!');
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('\n❌ Error:', error.message || error);
   } finally {
     await client.end();

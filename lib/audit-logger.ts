@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Audit Logging Service
  * 
  * Comprehensive audit logging for security-sensitive operations.
@@ -103,12 +103,12 @@ export interface AuditLogEntry {
   resource?: string;
   resourceId?: string;
   action?: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   ipAddress?: string;
   userAgent?: string;
   outcome?: 'success' | 'failure' | 'denied';
   errorMessage?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -152,7 +152,7 @@ export async function auditLog(entry: AuditLogEntry): Promise<void> {
           });
         });
       } catch (dbError) {
-        // If database logging fails, log the error but don't throw
+        // If database logging fails, log the error but don&apos;t throw
         logger.error('Failed to store audit log in database', dbError as Error, {
           eventType: entry.eventType,
           organizationId: entry.organizationId,
@@ -177,7 +177,7 @@ export async function auditDataAccess(params: {
   resource: string;
   resourceId?: string;
   action: 'read' | 'list' | 'search';
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   ipAddress?: string;
 }): Promise<void> {
   return auditLog({
@@ -197,9 +197,9 @@ export async function auditDataMutation(params: {
   resource: string;
   resourceId?: string;
   action: 'create' | 'update' | 'delete';
-  details?: Record<string, any>;
-  previousState?: Record<string, any>;
-  newState?: Record<string, any>;
+  details?: Record<string, unknown>;
+  previousState?: Record<string, unknown>;
+  newState?: Record<string, unknown>;
   ipAddress?: string;
 }): Promise<void> {
   const eventTypeMap = {
@@ -263,7 +263,7 @@ export async function auditSecurityEvent(params: {
   userId?: string;
   organizationId?: string;
   severity?: AuditSeverity;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   ipAddress?: string;
   outcome?: 'success' | 'failure' | 'denied';
 }): Promise<void> {
@@ -282,7 +282,7 @@ export async function auditAdminAction(params: {
   organizationId: string;
   action: string;
   targetUserId?: string;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   ipAddress?: string;
 }): Promise<void> {
   return auditLog({
@@ -322,7 +322,7 @@ export async function auditBulkOperation(params: {
   action: 'bulk_update' | 'bulk_delete' | 'bulk_export';
   affectedCount: number;
   resourceIds?: string[];
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   ipAddress?: string;
 }): Promise<void> {
   const eventTypeMap = {

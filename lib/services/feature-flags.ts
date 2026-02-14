@@ -157,7 +157,7 @@ export async function evaluateFeature(
       where: eq(featureFlags.name, featureName),
     });
     
-    // Feature doesn't exist → disabled by default
+    // Feature doesn&apos;t exist → disabled by default
     if (!flag) {
       return {
         enabled: false,

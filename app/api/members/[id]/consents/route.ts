@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
-import { eq, and, desc } from 'drizzle-orm';
+import { and, desc } from 'drizzle-orm';
 import { memberConsents } from '@/db/schema/member-profile-v2-schema';
 
 // Validation schema
@@ -68,7 +68,7 @@ export async function GET(
         revoked: consents.filter(c => c.revokedAt).length,
       },
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching consents:', error);
     return NextResponse.json(
       { error: 'Failed to fetch consents', details: error.message },
@@ -113,7 +113,7 @@ export async function POST(
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },
@@ -164,7 +164,7 @@ export async function DELETE(
       message: 'Consent revoked successfully',
       consent: revoked,
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error revoking consent:', error);
     return NextResponse.json(
       { error: 'Failed to revoke consent', details: error.message },

@@ -54,7 +54,7 @@ async function main() {
           updated_at = NOW();
       `);
       syncedCount++;
-    } catch (e: any) {
+    } catch (e: unknown) {
       // Skip if there's a constraint violation (tenant already exists with that slug)
       if (e.code !== '23505') {
         throw e;

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Meta Graph API Client - Phase 10
  * 
  * Handles Facebook and Instagram API integration using Meta's Graph API.
@@ -237,7 +237,7 @@ export class MetaAPIClient {
       published?: boolean;
     }
   ): Promise<MetaPostResponse> {
-    const params: any = {
+    const params: unknown = {
       message: content.message,
       access_token: pageAccessToken,
     };
@@ -303,7 +303,7 @@ export class MetaAPIClient {
     for (const url of photoUrls) {
       const params = new URLSearchParams({
         url,
-        published: 'false', // Don't publish individual photos
+        published: 'false', // Don&apos;t publish individual photos
         access_token: pageAccessToken,
       });
 
@@ -350,7 +350,7 @@ export class MetaAPIClient {
     }
 
     // Step 1: Create media container
-    const containerParams: any = {
+    const containerParams: unknown = {
       access_token: this.accessToken,
     };
 
@@ -449,8 +449,8 @@ export class MetaAPIClient {
     period: 'day' | 'week' | 'days_28' = 'day',
     since?: Date,
     until?: Date
-  ): Promise<any[]> {
-    const params: any = {
+  ): Promise<unknown[]> {
+    const params: unknown = {
       metric: metrics.join(','),
       period,
       access_token: pageAccessToken,
@@ -486,7 +486,7 @@ export class MetaAPIClient {
       'post_comments',
       'post_shares',
     ]
-  ): Promise<any[]> {
+  ): Promise<unknown[]> {
     const params = {
       metric: metrics.join(','),
       access_token: accessToken,
@@ -514,12 +514,12 @@ export class MetaAPIClient {
     period: 'day' | 'week' | 'days_28' | 'lifetime' = 'day',
     since?: Date,
     until?: Date
-  ): Promise<any[]> {
+  ): Promise<unknown[]> {
     if (!this.accessToken) {
       throw new Error('Access token required');
     }
 
-    const params: any = {
+    const params: unknown = {
       metric: metrics.join(','),
       period,
       access_token: this.accessToken,
@@ -552,7 +552,7 @@ export class MetaAPIClient {
       'reach',
       'saved',
     ]
-  ): Promise<any[]> {
+  ): Promise<unknown[]> {
     if (!this.accessToken) {
       throw new Error('Access token required');
     }
@@ -594,7 +594,7 @@ export class MetaAPIClient {
 
     try {
       const parsed = JSON.parse(usage);
-      const appUsage = Object.values(parsed)[0] as any;
+      const appUsage = Object.values(parsed)[0] as unknown;
       
       this.rateLimitInfo = {
         call_count: appUsage.call_count || 0,
@@ -609,13 +609,13 @@ export class MetaAPIClient {
   }
 
   /**
-   * Check if we're approaching rate limits
+   * Check if we&apos;re approaching rate limits
    */
   isApproachingRateLimit(): boolean {
     if (!this.rateLimitInfo) return false;
     
     // Meta uses a sliding window with thresholds at 75% and 100%
-    // Warn if we're above 75% on any metric
+    // Warn if we&apos;re above 75% on any metric
     return (
       this.rateLimitInfo.call_count > 75 ||
       this.rateLimitInfo.total_time > 75 ||
@@ -635,7 +635,7 @@ export class MetaAPIClient {
    */
   private async makeRequest<T>(
     endpoint: string,
-    params: Record<string, any> = {}
+    params: Record<string, unknown> = {}
   ): Promise<T> {
     const queryParams = new URLSearchParams({
       ...params,
@@ -721,7 +721,7 @@ export function createMetaClient(accessToken?: string): MetaAPIClient {
 /**
  * Helper to format Meta insights data
  */
-export function formatMetaInsights(insights: any[]): Record<string, number> {
+export function formatMetaInsights(insights: unknown[]): Record<string, number> {
   const formatted: Record<string, number> = {};
 
   for (const insight of insights) {

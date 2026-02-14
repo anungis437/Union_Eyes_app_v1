@@ -104,7 +104,7 @@ async function checkMessagingRLS() {
     console.log('\n✨ Check complete!');
     process.exit(0);
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('\n❌ Error:');
     console.error(error.message);
     console.error(error.stack);

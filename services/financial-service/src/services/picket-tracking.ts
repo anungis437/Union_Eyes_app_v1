@@ -246,7 +246,7 @@ export async function checkIn(
       attendanceId: attendance.id,
       distance,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
 return {
       success: false,
       error: error.message || 'Failed to check in',
@@ -308,7 +308,7 @@ export async function checkOut(
       success: true,
       hoursWorked,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
 return {
       success: false,
       error: error.message || 'Failed to check out',
@@ -463,7 +463,7 @@ export async function coordinatorOverride(
       success: true,
       attendanceId: attendance.id,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return {
       success: false,
       error: error.message || 'Failed to create manual attendance record',

@@ -7,11 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { searchMembers } from '@/db/queries/organization-members-queries';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = withApiAuth(async (request: NextRequest) => {
@@ -34,7 +30,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
     const department = searchParams.get('department');
 
     // Build filters object
-    const filters: any = {};
+    const filters = {};
     if (role) filters.role = role;
     if (status) filters.status = status;
     if (department) filters.department = department;

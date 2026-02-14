@@ -1,10 +1,9 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   Play,
   Save,
   Plus,
   Trash2,
-  Settings,
   ZoomIn,
   ZoomOut,
   Maximize2,
@@ -32,7 +31,7 @@ interface WorkflowNode {
   type: string;
   name: string;
   description?: string;
-  config: Record<string, any>;
+  config: Record<string, unknown>;
   position: { x: number; y: number };
 }
 
@@ -51,7 +50,7 @@ interface WorkflowDefinition {
   category: 'claim-processing' | 'approval' | 'notification' | 'custom';
   nodes: WorkflowNode[];
   edges: WorkflowEdge[];
-  variables: Record<string, any>;
+  variables: Record<string, unknown>;
   isActive: boolean;
 }
 
@@ -97,7 +96,6 @@ export function WorkflowBuilder({
 
   const [selectedNode, setSelectedNode] = useState<WorkflowNode | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<WorkflowEdge | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
   const [draggedNodeType, setDraggedNodeType] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -128,7 +126,6 @@ export function WorkflowBuilder({
   // Handle drag start from palette
   const handleDragStart = (type: string) => {
     setDraggedNodeType(type);
-    setIsDragging(true);
   };
 
   // Handle drop on canvas
@@ -142,7 +139,6 @@ export function WorkflowBuilder({
 
     addNode(draggedNodeType, { x, y });
 
-    setIsDragging(false);
     setDraggedNodeType(null);
   };
 
@@ -268,7 +264,7 @@ export function WorkflowBuilder({
       if (onSave) {
         onSave(saved);
       }
-    } catch (error) {
+    } catch (_error) {
     }
   };
 
@@ -306,7 +302,7 @@ export function WorkflowBuilder({
       try {
         const imported = JSON.parse(event.target?.result as string);
         setWorkflow(imported);
-      } catch (error) {
+      } catch (_error) {
       }
     };
     reader.readAsText(file);
@@ -354,7 +350,7 @@ export function WorkflowBuilder({
               <Label>Category</Label>
               <Select
                 value={workflow.category}
-                onValueChange={(value: any) => setWorkflow(prev => ({ ...prev, category: value }))}
+                onValueChange={(value: 'claim-processing' | 'approval' | 'notification' | 'custom') => setWorkflow(prev => ({ ...prev, category: value }))}
               >
                 <SelectTrigger>
                   <SelectValue />

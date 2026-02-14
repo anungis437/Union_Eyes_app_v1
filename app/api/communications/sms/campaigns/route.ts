@@ -11,14 +11,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { smsCampaigns } from '@/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { desc } from 'drizzle-orm';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = withOrganizationAuth(async (request: NextRequest, context) => {
   try {
     const { organizationId } = context;

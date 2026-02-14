@@ -308,7 +308,7 @@ export default async function TrustPage() {
           <HumanCenteredCallout
             variant="trust"
             title="Questions about our security?"
-            description="We're committed to transparency. If you have questions about any of these safeguards or want to discuss Union Eyes security in depth, reach out to our team."
+            description="We&apos;re committed to transparency. If you have questions about any of these safeguards or want to discuss Union Eyes security in depth, reach out to our team."
           >
             <Button variant="outline" className="mt-2">
               Contact Security Team

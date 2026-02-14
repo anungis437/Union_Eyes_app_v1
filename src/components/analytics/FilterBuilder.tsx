@@ -55,7 +55,7 @@ interface ReportFilter {
   id: string;
   fieldId: string;
   operator: 'equals' | 'not_equals' | 'contains' | 'greater_than' | 'less_than' | 'between' | 'in';
-  value: any;
+  value: string | number | boolean | { from: string | number; to: string | number } | Array<string | number>;
   logicalOperator?: 'AND' | 'OR';
 }
 
@@ -107,8 +107,8 @@ export function FilterBuilder({
 }: FilterBuilderProps) {
   const [selectedFieldId, setSelectedFieldId] = useState<string>('');
   const [operator, setOperator] = useState<string>('equals');
-  const [value, setValue] = useState<any>('');
-  const [valueTo, setValueTo] = useState<any>(''); // For "between" operator
+  const [value, setValue] = useState<string | number>('');
+  const [valueTo, setValueTo] = useState<string | number>(''); // For "between" operator
   const [logicalOperator, setLogicalOperator] = useState<'AND' | 'OR'>('AND');
   const [dateValue, setDateValue] = useState<Date | undefined>();
   const [dateValueTo, setDateValueTo] = useState<Date | undefined>();
@@ -128,7 +128,7 @@ export function FilterBuilder({
   const handleAddFilter = () => {
     if (!selectedField) return;
 
-    let finalValue = value;
+    let finalValue: string | number | boolean | { from: string | number; to: string | number } | Array<string | number> = value;
 
     // Handle date values
     if (selectedField.type === 'date') {
@@ -152,13 +152,13 @@ export function FilterBuilder({
 
     // Handle "in" operator (comma-separated list)
     if (operator === 'in') {
-      finalValue = value.split(',').map((v: string) => v.trim());
+      finalValue = String(value).split(',').map((v: string) => v.trim());
     }
 
     const filter: ReportFilter = {
       id: `filter_${Date.now()}`,
       fieldId: selectedFieldId,
-      operator: operator as any,
+      operator: operator as 'equals' | 'not_equals' | 'contains' | 'greater_than' | 'less_than' | 'between' | 'in',
       value: finalValue,
       logicalOperator,
     };

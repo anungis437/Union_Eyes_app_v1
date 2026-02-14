@@ -5,7 +5,6 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { jsPDF } from 'jspdf';
 import { put } from '@vercel/blob';
@@ -13,11 +12,7 @@ import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const taxRl1GenerateSchema = z.object({
   year: z.unknown().optional(),

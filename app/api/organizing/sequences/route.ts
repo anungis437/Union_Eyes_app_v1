@@ -12,7 +12,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { outreachSequences } from '@/db/schema';
-import { and, eq, desc, sql, ilike, or } from 'drizzle-orm';
+import { and, desc, ilike, or } from 'drizzle-orm';
 
 /**
  * GET /api/organizing/sequences
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     const conditions = [eq(outreachSequences.organizationId, organizationId)];
 
     if (status) {
-      conditions.push(eq(outreachSequences.status, status as any));
+      conditions.push(eq(outreachSequences.status, status));
     }
 
     if (isActive !== null && isActive !== undefined) {
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
         or(
           ilike(outreachSequences.name, `%${search}%`),
           ilike(outreachSequences.description, `%${search}%`)
-        ) as any
+        ) as Record<string, unknown>
       );
     }
 

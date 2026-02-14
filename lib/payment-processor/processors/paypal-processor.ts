@@ -303,7 +303,7 @@ export class PayPalProcessor extends BasePaymentProcessor {
     try {
       this.logOperation('cancelPaymentIntent', { paymentIntentId });
 
-      // PayPal doesn't have a direct cancel, retrieve current state
+      // PayPal doesn&apos;t have a direct cancel, retrieve current state
       const order = await this.retrievePaymentIntent(paymentIntentId);
       
       // Only CREATED or APPROVED orders can be effectively "cancelled" by ignoring them
@@ -396,7 +396,7 @@ export class PayPalProcessor extends BasePaymentProcessor {
         amount: new Decimal(refund.amount.value),
         currency: refund.amount.currency_code.toLowerCase(),
         status: this.mapPayPalRefundStatus(refund.status),
-        paymentIntentId: '', // PayPal doesn't return original order ID in refund
+        paymentIntentId: '', // PayPal doesn&apos;t return original order ID in refund
         createdAt: new Date(refund.create_time),
       };
     } catch (error: unknown) {

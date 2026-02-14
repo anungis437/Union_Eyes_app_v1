@@ -159,7 +159,7 @@ export function createApiClient(name: string, config: ApiClientConfig = {}) {
       } catch (error) {
         lastError = error as ApiError;
 
-        // Don't retry on certain errors
+        // Don&apos;t retry on certain errors
         const shouldNotRetry = 
           lastError.status === 400 || // Bad request
           lastError.status === 401 || // Unauthorized

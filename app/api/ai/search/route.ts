@@ -16,13 +16,9 @@ import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { checkEntitlement, consumeCredits, getCreditCost } from '@/lib/services/entitlements';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
-export const POST = withEnhancedRoleAuth<any>(20, async (request, context) => {
+export const POST = withEnhancedRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
 
     // CRITICAL: Rate limit AI calls (expensive OpenAI API)
@@ -83,7 +79,7 @@ export const POST = withEnhancedRoleAuth<any>(20, async (request, context) => {
 
       // 4. Search for similar chunks using vector search when available, fallback to keyword search
       const useVectorSearch = process.env.AI_VECTOR_SEARCH === 'true';
-      let chunks: any[] = [];
+      let chunks: Array<Record<string, unknown>> = [];
       let usedVectorSearch = false;
 
       if (useVectorSearch) {
@@ -94,7 +90,7 @@ export const POST = withEnhancedRoleAuth<any>(20, async (request, context) => {
 
           const { data: vectorChunks, error: vectorError } = await (supabase.rpc as any)('search_ai_chunks', {
             query_embedding: embedding,
-            org_id: (organizationId || 'test-org-001') as any,
+            org_id: (organizationId || 'test-org-001') as Record<string, unknown>,
             max_results: maxSources * 2,
             similarity_threshold: 0.7,
           });
@@ -103,7 +99,7 @@ export const POST = withEnhancedRoleAuth<any>(20, async (request, context) => {
             console.error('Vector search error:', vectorError);
             // Fall through to keyword search
           } else if (vectorChunks) {
-            chunks = vectorChunks as any[];
+            chunks = vectorChunks as Array<Record<string, unknown>>;
             usedVectorSearch = true;
           }
         } catch (error) {
@@ -116,7 +112,7 @@ export const POST = withEnhancedRoleAuth<any>(20, async (request, context) => {
         const { data: keywordChunks, error: searchError } = await supabase
           .from('ai_chunks')
           .select('id, document_id, content, metadata')
-          .eq('organization_id', (organizationId || 'test-org-001') as any)
+          .eq('organization_id', (organizationId || 'test-org-001') as Record<string, unknown>)
           .textSearch('content', query, { type: 'websearch', config: 'english' })
           .limit(maxSources * 2);
 
@@ -134,25 +130,25 @@ export const POST = withEnhancedRoleAuth<any>(20, async (request, context) => {
       let filteredChunks = chunks || [];
       
       if (filters.employer) {
-        filteredChunks = filteredChunks.filter((chunk: any) =>
+        filteredChunks = filteredChunks.filter((chunk: Record<string, unknown>) =>
           chunk.metadata?.employer?.toLowerCase().includes(filters.employer!.toLowerCase())
         );
       }
       
       if (filters.arbitrator) {
-        filteredChunks = filteredChunks.filter((chunk: any) =>
+        filteredChunks = filteredChunks.filter((chunk: Record<string, unknown>) =>
           chunk.metadata?.arbitrator?.toLowerCase().includes(filters.arbitrator!.toLowerCase())
         );
       }
       
       if (filters.issue_type) {
-        filteredChunks = filteredChunks.filter((chunk: any) =>
+        filteredChunks = filteredChunks.filter((chunk: Record<string, unknown>) =>
           chunk.metadata?.issue_type?.includes(filters.issue_type!)
         );
       }
       
       if (filters.date_range?.start || filters.date_range?.end) {
-        filteredChunks = filteredChunks.filter((chunk: any) => {
+        filteredChunks = filteredChunks.filter((chunk: Record<string, unknown>) => {
           const chunkDate = chunk.metadata?.date ? new Date(chunk.metadata.date) : null;
           if (!chunkDate) return false;
           
@@ -300,9 +296,9 @@ export const POST = withEnhancedRoleAuth<any>(20, async (request, context) => {
 /**
  * Helper function to format sources from chunks
  */
-async function formatSources(supabase: any, chunks: any[]): Promise<AiSource[]> {
+async function formatSources(supabase: any, chunks: Array<Record<string, unknown>>): Promise<AiSource[]> {
   return Promise.all(
-    chunks.map(async (chunk: any) => {
+    chunks.map(async (chunk: Record<string, unknown>) => {
       // Get document details for citation
       const { data: document } = await supabase
         .from('ai_documents')
@@ -325,7 +321,7 @@ async function formatSources(supabase: any, chunks: any[]): Promise<AiSource[]> 
 /**
  * Helper function to log AI query
  */
-async function logAiQuery({
+async function async function logAiQuery({
   supabase,
   organizationId,
   userId,
@@ -340,7 +336,7 @@ async function logAiQuery({
   organizationId: string;
   userId: string;
   queryText: string;
-  filters: any;
+  filters: any Record<string, unknown>;
   answer: string;
   sources: AiSource[];
   status: 'success' | 'error';

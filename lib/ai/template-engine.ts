@@ -1,4 +1,4 @@
-/**
+﻿/**
  * UnionEyes AI Template Engine
  * 
  * World-Class Hereditary-Attentive Template-Based LLM System
@@ -458,7 +458,7 @@ COMMON QUESTIONS:
 - Changes to dues amounts
 
 TEMPLATE RESPONSE FOR ARREARS:
-"I understand you're asking about your dues status. Based on our records:
+"I understand you&apos;re asking about your dues status. Based on our records:
 - Last payment received: [DATE]
 - Current balance: [AMOUNT]
 - To bring your account current, you can: [OPTIONS]
@@ -768,7 +768,7 @@ ELECTION PROCESS:
 
     // Build inheritance chain
     const inheritanceChain: string[] = [templateId];
-    let currentTemplate: PromptTemplate | undefined = template;
+    const currentTemplate: PromptTemplate | undefined = template;
 
     // Follow inheritance chain (simplified - could be recursive)
     while (currentTemplate?.metadata?.deprecationNotice) {
@@ -1122,7 +1122,7 @@ class AttentionMechanismEngine {
   private async getCaseFSMState(caseId: string, userRole: string): Promise<{
     currentStatus: ClaimStatus | null;
     allowedTransitions: string[];
-    requirements: Record<string, any>;
+    requirements: Record<string, unknown>;
   }> {
     try {
       const [claim] = await db
@@ -1138,7 +1138,7 @@ class AttentionMechanismEngine {
       const currentStatus = claim.status as ClaimStatus;
       const allowedTransitions = getAllowedClaimTransitions(currentStatus, userRole);
       
-      const requirements: Record<string, any> = {};
+      const requirements: Record<string, unknown> = {};
       for (const target of allowedTransitions.slice(0, 3)) {
         requirements[target] = getTransitionRequirements(currentStatus, target as ClaimStatus);
       }
@@ -1165,8 +1165,8 @@ class AttentionMechanismEngine {
 
       const caseState = {
         id: claim.claimId,
-        status: claim.status as any,
-        priority: claim.priority as any,
+        status: claim.status as unknown,
+        priority: claim.priority as unknown,
         createdAt: claim.createdAt || new Date(),
         updatedAt: claim.updatedAt || claim.createdAt || new Date(),
         assignedTo: claim.assignedTo,
@@ -1435,7 +1435,7 @@ class AttentionMechanismEngine {
       const caseState = {
         id: claim.claimId,
         status: claim.status as ClaimStatus,
-        priority: claim.priority as any,
+        priority: claim.priority as unknown,
         createdAt: claim.createdAt || new Date(),
         updatedAt: claim.updatedAt || claim.createdAt || new Date(),
         assignedTo: claim.assignedTo,
@@ -1458,7 +1458,7 @@ class AttentionMechanismEngine {
   private async getCaseFSMState(caseId: string, userRole: string = 'member'): Promise<{
     currentStatus: ClaimStatus | null;
     allowedTransitions: string[];
-    requirements: Record<string, any>;
+    requirements: Record<string, unknown>;
   }> {
     try {
       const [claim] = await db
@@ -1482,7 +1482,7 @@ class AttentionMechanismEngine {
       const allowedTransitions = getAllowedClaimTransitions(currentStatus, userRole);
 
       // Get requirements for common transitions
-      const requirements: Record<string, any> = {};
+      const requirements: Record<string, unknown> = {};
       for (const target of allowedTransitions.slice(0, 3)) {
         requirements[target] = getTransitionRequirements(currentStatus, target as ClaimStatus);
       }
@@ -1750,7 +1750,7 @@ export class UnionEyesAIController {
         requestId: this.governanceLayer.generateRequestId()
       };
 
-      // 9. Log audit trail (async, don't block)
+      // 9. Log audit trail (async, don&apos;t block)
       this.governanceLayer.logRequest(request, result).catch(err => {
         logger.error('Audit logging failed', { error: err });
       });

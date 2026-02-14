@@ -7,13 +7,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withRoleAuth } from '@/lib/role-middleware';
 import { db } from '@/db/db';
 import { claims } from '@/db/schema/domains/claims';
-import { eq, and, desc } from 'drizzle-orm';
+import { and, desc } from 'drizzle-orm';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 // Members can view their own claims, stewards+ can view all claims

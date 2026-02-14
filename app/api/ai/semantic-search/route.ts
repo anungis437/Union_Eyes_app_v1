@@ -14,15 +14,11 @@ import {
   findSimilarClauses,
 } from '@/lib/services/ai/vector-search-service';
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { checkEntitlement, consumeCredits, getCreditCost } from '@/lib/services/entitlements';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const semanticSearchSchema = z.object({
   query: z.string().max(1000, 'Query too long').optional(),

@@ -152,7 +152,7 @@ export function createApiRouteConfig(revalidate: number) {
  */
 export async function invalidateApiCacheByTags(tags: string[]): Promise<void> {
   // This would integrate with your cache service
-  // For now, it's a placeholder for future implementation
+  // For now, it&apos;s a placeholder for future implementation
   console.log('Invalidating API cache for tags:', tags);
 }
 

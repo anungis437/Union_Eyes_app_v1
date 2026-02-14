@@ -19,7 +19,7 @@ import { revalidateAfterCancellation } from "./path-utils";
  * @param data The webhook event data from Whop
  * @param isValid Boolean indicating if membership is becoming valid (true) or invalid (false)
  */
-export async function handleMembershipChange(data: any, isValid: boolean) {
+export async function handleMembershipChange(data: any, Record<string, unknown>, isValid: boolean) {
   // We only handle cancellations now
   if (isValid) {
 return;
@@ -40,7 +40,7 @@ return;
     } else {
 }
     
-    // FALLBACK PATH: Try to find a profile with this Whop user ID when metadata doesn't have Clerk ID
+    // FALLBACK PATH: Try to find a profile with this Whop user ID when metadata doesn&apos;t have Clerk ID
     const whopUserId = data.user_id;
 const existingProfile = await getProfileByWhopUserId(whopUserId);
     
@@ -60,7 +60,7 @@ const existingProfile = await getProfileByWhopUserId(whopUserId);
  * 
  * @param data The webhook event data from Whop
  */
-async function handleMembershipCancellation(data: any) {
+async function handleMembershipCancellation(data: Record<string, unknown>) Record<string, unknown>) {
   const eventId = data.id || Date.now().toString();
 // Extract the clerk user ID
   const clerkUserId = extractUserId(data);
@@ -69,12 +69,12 @@ return;
   }
 // Skip profile fetching entirely - just update what we need directly
   
-  // Prepare minimal update data - only what's absolutely necessary
+  // Prepare minimal update data - only what&apos;s absolutely necessary
 const updateData = {
     membership: "free" as "free",  // Explicitly type as the enum value
     status: "canceled",            // Mark as canceled
     planDuration: null,            // Clear plan duration 
-    // We're not touching credits, keeping whatever they currently have
+    // We&apos;re not touching credits, keeping whatever they currently have
   };
 // Update profile with retries and timeout
   let updateSuccess = false;
@@ -92,7 +92,7 @@ while (retries < maxRetries && !updateSuccess) {
       
       await updatePromise;
 updateSuccess = true;
-    } catch (error: any) {
+    } catch (error: Record<string, unknown>) {
       retries++;
 if (retries < maxRetries) {
         const backoffMs = 1000 * Math.pow(2, retries);

@@ -9,7 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { duesTransactions } from '@/db/schema/domains/finance/dues';
-import { eq, and, desc, sql } from 'drizzle-orm';
+import { and, desc } from 'drizzle-orm';
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logger } from '@/lib/logger';
 

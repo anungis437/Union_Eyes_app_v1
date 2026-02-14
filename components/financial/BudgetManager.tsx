@@ -102,7 +102,7 @@ export default function BudgetManager({ organizationId }: BudgetManagerProps) {
       setIsCreateDialogOpen(false);
       resetForm();
       fetchBudgets();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Error',
         description: error.message,

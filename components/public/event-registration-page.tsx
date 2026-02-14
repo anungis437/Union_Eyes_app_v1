@@ -110,7 +110,7 @@ function EventCheckoutForm({
         const ticket = await response.json();
         onSuccess(ticket);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setMessage(err.message);
     } finally {
       setIsProcessing(false);
@@ -320,7 +320,7 @@ END:VCALENDAR`;
       <div className="container mx-auto px-4 py-16 text-center">
         <h1 className="text-3xl font-bold mb-4">Event Not Found</h1>
         <p className="text-muted-foreground mb-8">
-          The event you're looking for doesn't exist or has been cancelled.
+          The event you&apos;re looking for doesn&apos;t exist or has been cancelled.
         </p>
         <Button onClick={() => window.location.href = '/events'}>
           View All Events
@@ -338,7 +338,7 @@ END:VCALENDAR`;
             <div className="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Check className="h-8 w-8 text-green-600" />
             </div>
-            <h1 className="text-3xl font-bold mb-2">You're Registered!</h1>
+            <h1 className="text-3xl font-bold mb-2">You&apos;re Registered!</h1>
             <p className="text-muted-foreground">
               Confirmation sent to {ticket.attendeeEmail}
             </p>

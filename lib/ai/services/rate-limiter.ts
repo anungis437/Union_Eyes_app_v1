@@ -71,7 +71,7 @@ export class AIRateLimiter {
     estimatedCostUSD: number
   ): Promise<RateLimitResult> {
     if (!redis) {
-      // Fail open if Redis not configured (don't block requests)
+      // Fail open if Redis not configured (don&apos;t block requests)
       logger.error('Redis not available for rate limiting');
       return {
         allowed: true,

@@ -38,7 +38,7 @@ class AuthService {
       // This will be implemented with Clerk's useSignIn hook in components
       // For now, this is a placeholder structure
       throw new Error('signIn should be called from component using useSignIn hook');
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false,
         error: {
@@ -84,7 +84,7 @@ class AuthService {
         user: session.user,
         tokens: session.tokens,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false,
         error: {
@@ -102,7 +102,7 @@ class AuthService {
     try {
       // This will be implemented with Clerk's useSignUp hook in components
       throw new Error('signUp should be called from component using useSignUp hook');
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false,
         error: {

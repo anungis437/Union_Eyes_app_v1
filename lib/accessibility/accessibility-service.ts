@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Accessibility Audit Service
  * 
  * WCAG 2.2 AA compliance testing
@@ -34,7 +34,7 @@ export class AccessibilityAuditManager {
     targetEnvironment: string;
     wcagVersion?: string;
     conformanceLevel?: "A" | "AA" | "AAA";
-    toolsUsed?: Array<{ name: string; version: string; config?: any }>;
+    toolsUsed?: Array<{ name: string; version: string; config?: unknown }>;
     scheduledBy?: string;
     triggeredBy?: string;
   }): Promise<AccessibilityAudit> {
@@ -43,7 +43,7 @@ export class AccessibilityAuditManager {
       .values({
         ...data,
         tenantId: data.organizationId,
-        conformanceLevel: (data.conformanceLevel as any) || "AA",
+        conformanceLevel: (data.conformanceLevel as unknown) || "AA",
         status: "pending",
         startedAt: new Date(),
       })
@@ -78,7 +78,7 @@ export class AccessibilityAuditManager {
       
       // Process and save issues
       const issues: NewAccessibilityIssue[] = scanResults.violations.map(
-        (violation: any) => ({
+        (violation: unknown) => ({
           auditId,
           tenantId: audit[0].organizationId /* was tenantId */,
           issueTitle: violation.description,
@@ -88,7 +88,7 @@ export class AccessibilityAuditManager {
             .find((t: string) => t.startsWith("wcag"))
             ?.replace("wcag", "")
             .replace(/([a-z])(\d)/gi, "$1.$2") || "unknown",
-          wcagLevel: this.extractWCAGLevel(violation.tags) as any,
+          wcagLevel: this.extractWCAGLevel(violation.tags) as unknown,
           wcagTitle: violation.description,
           wcagUrl: violation.helpUrl,
           pageUrl: audit[0].targetUrl,
@@ -140,7 +140,7 @@ export class AccessibilityAuditManager {
   /**
    * Run axe-core scan (placeholder - implement with Playwright)
    */
-  private async runAxeScan(url: string): Promise<any> {
+  private async runAxeScan(url: string): Promise<unknown> {
     // This is a placeholder. In production, you would:
     // 1. Launch Playwright/Puppeteer browser
     // 2. Navigate to URL
@@ -215,7 +215,7 @@ export class AccessibilityAuditManager {
     
     if (options.severity && options.severity.length > 0) {
       query = query.where(
-        inArray(accessibilityIssues.severity as any, options.severity)
+        inArray(accessibilityIssues.severity as unknown, options.severity)
       );
     }
     
@@ -227,7 +227,7 @@ export class AccessibilityAuditManager {
     
     if (options.status) {
       query = query.where(
-        eq(accessibilityIssues.status as any, options.status)
+        eq(accessibilityIssues.status as unknown, options.status)
       );
     }
     
@@ -266,7 +266,7 @@ export class AccessibilityAuditManager {
   private mapAxeSeverityToOurs(
     axeSeverity: string
   ): "critical" | "serious" | "moderate" | "minor" {
-    const mapping: Record<string, any> = {
+    const mapping: Record<string, unknown> = {
       critical: "critical",
       serious: "serious",
       moderate: "moderate",

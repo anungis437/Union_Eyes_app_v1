@@ -16,13 +16,9 @@ import { claims, organizationMembers, profiles } from "@/db/schema";
 import { v4 as uuidv4 } from 'uuid';
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const adminSeedTestDataSchema = z.object({
   organizationId: z.string().uuid('Invalid organizationId'),

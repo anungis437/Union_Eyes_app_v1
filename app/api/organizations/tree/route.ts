@@ -5,16 +5,12 @@ import { requireUser } from '@/lib/api-auth-guard';
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withAuth, logApiAuditEvent } from '@/lib/middleware/api-security';
+import { logApiAuditEvent } from '@/lib/middleware/api-security';
 
 import { getOrganizationTree } from '@/db/queries/organization-queries';
 import { logger } from '@/lib/logger';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * GET /api/organizations/tree
  * Get the complete organization hierarchy as a tree structure

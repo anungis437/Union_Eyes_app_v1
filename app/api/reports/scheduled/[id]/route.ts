@@ -10,12 +10,8 @@
 
 import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
-import { withOrganizationAuth, OrganizationContext } from '@/lib/organization-middleware';
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { OrganizationContext } from '@/lib/organization-middleware';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 import {
   getScheduledReportById,
   updateScheduledReport,

@@ -165,7 +165,7 @@ export const DuesNotificationTemplates = {
       `Payment Overdue`,
     
     body: (data: DuesNotificationData) => 
-      `Hi ${data.memberName},\n\nYour union dues payment of $${data.amount} was due on ${data.dueDate} and is now OVERDUE.\n\nPlease make your payment immediately to maintain your membership in good standing.\n\nIf you're experiencing financial hardship, please contact us to discuss payment options.\n\n${data.organizationName}`,
+      `Hi ${data.memberName},\n\nYour union dues payment of $${data.amount} was due on ${data.dueDate} and is now OVERDUE.\n\nPlease make your payment immediately to maintain your membership in good standing.\n\nIf you&apos;re experiencing financial hardship, please contact us to discuss payment options.\n\n${data.organizationName}`,
     
     htmlBody: (data: DuesNotificationData) => `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -189,7 +189,7 @@ export const DuesNotificationTemplates = {
         ` : ''}
         
         <p><strong>Please make your payment immediately to maintain your membership in good standing.</strong></p>
-        <p style="color: #6c757d;">If you're experiencing financial hardship, please contact us to discuss payment options.</p>
+        <p style="color: #6c757d;">If you&apos;re experiencing financial hardship, please contact us to discuss payment options.</p>
         <p style="margin-top: 30px; color: #6c757d; font-size: 14px;">
           ${data.organizationName}
         </p>
@@ -314,7 +314,7 @@ export const DuesNotificationTemplates = {
       `Payment Retry Scheduled`,
     
     body: (data: DuesNotificationData) => 
-      `Hi ${data.memberName},\n\nYour previous payment attempt of $${data.amount} failed. We'll automatically retry your payment on ${data.retryDate}.\n\nIf you'd like to update your payment method before the retry, please visit your account dashboard.\n\n${data.organizationName}`,
+      `Hi ${data.memberName},\n\nYour previous payment attempt of $${data.amount} failed. We&apos;ll automatically retry your payment on ${data.retryDate}.\n\nIf you&apos;d like to update your payment method before the retry, please visit your account dashboard.\n\n${data.organizationName}`,
     
     htmlBody: (data: DuesNotificationData) => `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -323,11 +323,11 @@ export const DuesNotificationTemplates = {
         <p>Your previous payment attempt of <strong>$${data.amount}</strong> failed (Attempt ${data.attemptNumber || 1}).</p>
         
         <div style="background: #d1ecf1; border-left: 4px solid #17a2b8; padding: 15px; margin: 20px 0;">
-          <p style="margin: 0;"><strong>We'll automatically retry your payment on ${data.retryDate}.</strong></p>
+          <p style="margin: 0;"><strong>We&apos;ll automatically retry your payment on ${data.retryDate}.</strong></p>
         </div>
         
         ${data.paymentUrl ? `
-          <p>If you'd like to update your payment method before the retry:</p>
+          <p>If you&apos;d like to update your payment method before the retry:</p>
           <div style="text-align: center; margin: 20px 0;">
             <a href="${data.paymentUrl}" style="background: #17a2b8; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">Update Payment Method</a>
           </div>

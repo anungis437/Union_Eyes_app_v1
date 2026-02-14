@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
-import { eq, and, sql } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 
 // Import schemas (assuming they exist from previous implementation)
 // import { employerRemittances, remittanceLineItems, remittanceExceptions, memberDuesLedger } from '@/db/schema/dues-finance-schema';
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     //   .where(eq(remittanceLineItems.remittanceId, remittanceId));
 
     // Simulated data structure for now
-    const lineItems = [] as any[];
+    const lineItems = [] as Array<Record<string, unknown>>;
     const matchResults: MatchResult[] = [];
     let exactMatches = 0;
     let fuzzyMatches = 0;
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
       },
       matches: matchResults,
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },
@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
  * Match a line item to a member
  */
 async function matchLineItem(
-  lineItem: any,
+  lineitem: Record<string, unknown>, Record<string, unknown>,
   fuzzyThreshold: number
 ): Promise<MatchResult> {
   // 1. Try exact match on member ID
@@ -221,7 +221,7 @@ async function fuzzyMatchByName(name: string): Promise<{ memberId: string; score
 /**
  * Post matched payment to member ledger
  */
-async function postToLedger(memberId: string, lineItem: any): Promise<void> {
+async function postToLedger(memberId: string, lineitem: Record<string, unknown>) Record<string, unknown>): Promise<void> {
   // await db.insert(memberDuesLedger).values({
   //   userId: memberId,
   //   type: 'payment',
@@ -245,7 +245,7 @@ async function postToLedger(memberId: string, lineItem: any): Promise<void> {
  */
 async function createException(
   remittanceId: string,
-  lineItem: any,
+  lineitem: Record<string, unknown>, Record<string, unknown>,
   match: MatchResult
 ): Promise<void> {
   const exceptionType = 
@@ -300,7 +300,7 @@ export async function GET(request: NextRequest) {
       },
       note: 'Reconciliation statistics endpoint ready',
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching reconciliation stats:', error);
     return NextResponse.json(
       { error: 'Failed to fetch stats', details: error.message },

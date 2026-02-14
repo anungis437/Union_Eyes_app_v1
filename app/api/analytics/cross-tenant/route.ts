@@ -11,16 +11,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import {
-  standardErrorResponse,
-  standardSuccessResponse,
-  ErrorCode,
+import { standardSuccessResponse,
 } from '@/lib/api/standardized-responses';
 import { logger } from '@/lib/logger';
 import { db } from '@/database';
 import { organizations } from '@/db/schema-organizations';
 import { users } from '@/db/schema/domains/member';
-import { count, sql } from 'drizzle-orm';
+import { count } from 'drizzle-orm';
 import { z } from 'zod';
 
 // ============================================================================
@@ -89,7 +86,7 @@ export const GET = async (request: NextRequest) => {
       const { metric_type, start_date, end_date, include_inactive } = validation.data;
 
       // Build analytics data
-      const analytics: any = {
+      const analytics = {
         generatedAt: new Date().toISOString(),
         period: {
           start: start_date,

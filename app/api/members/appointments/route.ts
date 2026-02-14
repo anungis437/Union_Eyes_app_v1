@@ -11,7 +11,7 @@ import { z } from "zod";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { withRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit } from "@/lib/rate-limiter";
-import { standardErrorResponse, standardSuccessResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 /**
  * Validation schema for creating an appointment

@@ -121,7 +121,7 @@ class BiometricService {
           error: result.error || 'Authentication failed',
         };
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false,
         error: error.message || 'Authentication failed',
@@ -168,7 +168,7 @@ class BiometricService {
       await SecureStore.setItemAsync(BIOMETRIC_ENABLED_KEY, 'true');
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false,
         error: error.message || 'Failed to enroll biometric',
@@ -265,7 +265,7 @@ class BiometricService {
         success: true,
         credentials,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false,
         error: error.message || 'Failed to sign in with biometric',

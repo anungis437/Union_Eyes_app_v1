@@ -14,7 +14,7 @@ import {
   getDocumentWorkflows,
 } from '@/services/pki/workflow-engine';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
-import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { ErrorCode } from '@/lib/api/standardized-responses';
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {

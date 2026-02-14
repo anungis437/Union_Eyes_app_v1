@@ -2,7 +2,7 @@ import { logApiAuditEvent, SQLInjectionScanner } from "@/lib/middleware/api-secu
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { votingSessions, votingOptions, voterEligibility, votes } from '@/db/schema/domains/governance';
-import { eq, and } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import {
   deriveVotingSessionKey,
   signVote,
@@ -12,11 +12,7 @@ import {
 import { z } from "zod";
 import { withRoleAuth } from "@/lib/api-auth-guard";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 interface RouteParams {
   params: {

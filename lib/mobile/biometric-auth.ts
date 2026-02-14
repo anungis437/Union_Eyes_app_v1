@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Biometric Authentication Library
  * 
  * Provides WebAuthn/FIDO2 biometric authentication for mobile devices
@@ -123,12 +123,12 @@ export class BiometricAuth {
    */
   private async detectBiometricType(): Promise<BiometricType> {
     // Check for Touch ID (Safari)
-    if ((window as any).TouchID) {
+    if ((window as unknown).TouchID) {
       return 'fingerprint';
     }
 
     // Check for Face ID (Safari)
-    if ((window as any).FaceID) {
+    if ((window as unknown).FaceID) {
       return 'face';
     }
 

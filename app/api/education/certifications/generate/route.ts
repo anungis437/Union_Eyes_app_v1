@@ -8,7 +8,7 @@ import {
   members,
   memberCertifications,
 } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { and } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { put } from "@vercel/blob";
 import { renderToStream } from "@react-pdf/renderer";
@@ -17,14 +17,10 @@ import {
   createUnionCertificate,
 } from "@/components/pdf/certificate-template";
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { organizations } from '@/db/schema-organizations';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // GET /api/education/certifications/generate?registrationId={id} - Generate certificate PDF
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(10, async (request, context) => {
@@ -122,7 +118,7 @@ export const GET = async (request: NextRequest) => {
       }
 
       // Create certificate data
-      // Note: members table in db/migrations/schema doesn't have memberNumber field
+      // Note: members table in db/migrations/schema doesn&apos;t have memberNumber field
       const memberFullName = [registration.memberFirstName, registration.memberLastName]
         .filter(Boolean)
         .join(" ");
@@ -365,7 +361,7 @@ export const POST = async (request: NextRequest) => {
           }
         } catch (emailError) {
           logger.error("Failed to send certificate email", { error: emailError, registrationId });
-          // Don't fail the entire request if email fails
+          // Don&apos;t fail the entire request if email fails
         }
       }
 

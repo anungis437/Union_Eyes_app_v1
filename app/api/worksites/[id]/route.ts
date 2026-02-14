@@ -6,7 +6,6 @@
  * @module app/api/worksites/[id]/route
  */
 
-import { NextRequest } from "next/server";
 import { withAdminAuth } from "@/lib/api-auth-guard";
 import {
   getWorksiteById,
@@ -15,10 +14,7 @@ import {
 } from "@/db/queries/union-structure-queries";
 import { updateWorksiteSchema } from "@/lib/validation/union-structure-schemas";
 import { logApiAuditEvent, SQLInjectionScanner } from "@/lib/middleware/api-security";
-import {
-  standardErrorResponse,
-  standardSuccessResponse,
-  ErrorCode,
+import { standardSuccessResponse,
 } from "@/lib/api/standardized-responses";
 import { logger } from "@/lib/logger";
 
@@ -139,7 +135,7 @@ export const PUT = async (request: NextRequest, { params }: RouteParams) => {
       const worksite = await updateWorksite(id, {
         ...validation.data,
         updatedBy: userId,
-      } as any);
+      });
 
       logApiAuditEvent({
         timestamp: new Date().toISOString(),

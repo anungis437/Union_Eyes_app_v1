@@ -6,7 +6,7 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { db, organizations } from "@/db";
+import { organizations } from "@/db";
 import { 
   sharedClauseLibrary,
   crossOrgAccessLog,
@@ -19,11 +19,7 @@ import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { validateSharingLevel } from '@/lib/auth/hierarchy-access-control';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // Helper to log cross-org access
 async function logCrossOrgAccess(
   userId: string,
@@ -60,7 +56,7 @@ async function logCrossOrgAccess(
     });
   } catch (error) {
     logger.warn('Failed to log cross-org access', { error: error instanceof Error ? error.message : String(error) });
-    // Don't fail the request if logging fails
+    // Don&apos;t fail the request if logging fails
   }
 }
 
@@ -94,7 +90,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         return await db.query.sharedClauseLibrary.findFirst({
         where: (c, { eq }) => eq(c.id, clauseId),
         with: {
-          tags: true, // Tags don't cause issues
+          tags: true, // Tags don&apos;t cause issues
           sourceOrganization: {
             columns: {
               id: true,
@@ -288,7 +284,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
       } = body;
 
       // Build update object (only include provided fields)
-      const updates: any = {
+      const updates = {
         updatedAt: new Date(),
       };
 

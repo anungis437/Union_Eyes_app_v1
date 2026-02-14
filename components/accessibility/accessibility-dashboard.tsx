@@ -107,7 +107,7 @@ export function AccessibilityDashboard() {
   const [issues, setIssues] = useState<AccessibilityIssue[]>([]);
   const [selectedIssue, setSelectedIssue] = useState<AccessibilityIssue | null>(null);
   const [isRunningAudit, setIsRunningAudit] = useState(false);
-  const [complianceReport, setComplianceReport] = useState<any>(null);
+  const [complianceReport, setComplianceReport] = useState<Record<string, unknown> | null>(null);
   
   const { toast } = useToast();
   
@@ -124,8 +124,9 @@ export function AccessibilityDashboard() {
         const data = await response.json();
         setAudits(data.audits);
       }
-    } catch (error) {
-}
+    } catch {
+      // Error handled silently
+    }
   };
   
   const loadIssues = async () => {
@@ -135,8 +136,9 @@ export function AccessibilityDashboard() {
         const data = await response.json();
         setIssues(data.issues);
       }
-    } catch (error) {
-}
+    } catch {
+      // Error handled silently
+    }
   };
   
   const loadComplianceReport = async () => {
@@ -146,8 +148,9 @@ export function AccessibilityDashboard() {
         const data = await response.json();
         setComplianceReport(data.report);
       }
-    } catch (error) {
-}
+    } catch {
+      // Error handled silently
+    }
   };
   
   const runAudit = async () => {
@@ -205,7 +208,7 @@ export function AccessibilityDashboard() {
           }
         }, 3000);
       }
-    } catch (error) {
+    } catch {
       setIsRunningAudit(false);
       toast({
         title: "Error",
@@ -234,7 +237,7 @@ export function AccessibilityDashboard() {
           description: "Accessibility issue has been marked as resolved",
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to resolve issue",

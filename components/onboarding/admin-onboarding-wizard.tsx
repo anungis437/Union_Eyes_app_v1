@@ -126,7 +126,7 @@ export function AdminOnboardingWizard() {
           Administrator Onboarding
         </h1>
         <p className="text-gray-600 dark:text-gray-300 mt-2">
-          Welcome to your admin role. Let's configure your organization.
+          Welcome to your admin role. Let&apos;s configure your organization.
         </p>
       </div>
 
@@ -456,7 +456,7 @@ function ReportingStep() {
 
       <div className="text-center p-4 bg-green-100 rounded-lg">
         <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-2" />
-        <h4 className="font-medium text-green-900">You're All Set!</h4>
+        <h4 className="font-medium text-green-900">You&apos;re All Set!</h4>
         <p className="text-green-800 text-sm">
           Complete onboarding to access your admin dashboard.
         </p>

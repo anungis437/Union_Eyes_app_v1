@@ -1,4 +1,5 @@
 "use client";
+import Link from 'next/link';
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -672,12 +673,11 @@ export default function NotificationsPage() {
                 </li>
                 <li>
                   • Configure notification preferences in{" "}
-                  <a
-                    href="/dashboard/settings"
+                  <Link href="/dashboard/settings"
                     className="text-blue-600 hover:underline"
                   >
                     Settings
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>

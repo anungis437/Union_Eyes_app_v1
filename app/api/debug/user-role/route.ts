@@ -4,8 +4,8 @@ import { db } from '@/db/db';
 import { organizationMembers } from '@/db/schema-organizations';
 import { eq } from 'drizzle-orm';
 import { getUserRoleInOrganization, getOrganizationIdForUser } from '@/lib/organization-utils';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
-import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { ErrorCode } from '@/lib/api/standardized-responses';
 
 const DEFAULT_ORG_ID = '458a56cb-251a-4c91-a0b5-81bb8ac39087';
 

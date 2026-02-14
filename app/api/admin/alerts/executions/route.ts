@@ -1,16 +1,13 @@
-﻿/**
+/**
  * Alert Executions API
  */
 
 import { z } from "zod";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc } from "drizzle-orm";
 import { withRLSContext } from "@/lib/db/with-rls-context";
 import { withRoleAuth } from "@/lib/api-auth-guard";
 import { alertExecutions, alertRules } from "@/db/schema";
-import {
-  ErrorCode,
-  standardErrorResponse,
-  standardSuccessResponse,
+import { standardSuccessResponse,
 } from "@/lib/api/standardized-responses";
 
 const listExecutionsSchema = z.object({
@@ -41,7 +38,7 @@ export const GET = withRoleAuth("admin", async (request, context) => {
   const query = parsed.data;
 
   try {
-    return await withRLSContext(async (tx: any) => {
+    return await withRLSContext(async (tx: Record<string, unknown>) => {
       const conditions = [eq(alertRules.organizationId, organizationId)];
 
       if (query.ruleId) {

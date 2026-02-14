@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { createDocument } from "@/lib/services/document-service";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 import { put } from "@vercel/blob";
 
@@ -31,11 +31,7 @@ const ALLOWED_MIME_TYPES_LIST = [
   'application/x-rar-compressed',
 ] as const;
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * Maximum file size: 50MB
  */

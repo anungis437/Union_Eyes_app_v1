@@ -87,8 +87,8 @@ export function WorkflowAnalytics({
       if (!response.ok) throw new Error('Failed to fetch workflows');
 
       const data = await response.json();
-      setWorkflows(data.map((w: any) => ({ id: w.id, name: w.name })));
-    } catch (error) {
+      setWorkflows(data.map((w: { id: string; name: string }) => ({ id: w.id, name: w.name })));
+    } catch (_error) {
     }
   }, [organizationId]);
 

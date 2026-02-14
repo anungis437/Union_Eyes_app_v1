@@ -6,8 +6,6 @@
 
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
-import { sql } from 'drizzle-orm';
-
 interface ReadinessCheck {
   ready: boolean;
   timestamp: string;
@@ -41,7 +39,7 @@ export async function GET() {
     };
 
     return NextResponse.json(response, { status: ready ? 200 : 503 });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     return NextResponse.json({
       ready: false,
       timestamp: new Date().toISOString(),

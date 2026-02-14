@@ -2,13 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, getCurrentUser } from "@/lib/api-auth-guard";
 import { db } from "@/db";
 import { gdprDataRequests } from "@/db/schema";
-import { and, eq, desc } from "drizzle-orm";
+import { and, desc } from "drizzle-orm";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 type GdprRequestType = typeof gdprDataRequests.$inferSelect.requestType;
 
 export const GET = withApiAuth(async (request: NextRequest) => {

@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 
 import { useEffect, useState } from 'react';
 
@@ -160,7 +161,7 @@ export function PublicPageRenderer({ pageSlug }: PublicPageRendererProps) {
               className={`inline-flex items-center justify-center rounded-md px-6 py-3 text-sm font-medium transition-colors ${buttonVariantClass}`}
             >
               {content.text}
-            </a>
+            </Link>
           </div>
         );
 
@@ -187,7 +188,7 @@ export function PublicPageRenderer({ pageSlug }: PublicPageRendererProps) {
                   className="inline-flex items-center justify-center rounded-md bg-white text-primary px-8 py-4 text-lg font-semibold hover:bg-gray-100 transition-colors"
                 >
                   {content.buttonText}
-                </a>
+                </Link>
               )}
             </div>
             <div className="absolute inset-0 bg-black/40 z-0" />
@@ -226,7 +227,7 @@ export function PublicPageRenderer({ pageSlug }: PublicPageRendererProps) {
                 className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-8 py-4 text-lg font-semibold hover:bg-primary/90 transition-colors"
               >
                 {content.buttonText}
-              </a>
+              </Link>
             )}
           </div>
         );
@@ -264,14 +265,13 @@ export function PublicPageRenderer({ pageSlug }: PublicPageRendererProps) {
       <div className="container mx-auto px-4 py-16 text-center">
         <h1 className="text-3xl font-bold mb-4">Page Not Found</h1>
         <p className="text-muted-foreground mb-8">
-          The page you're looking for doesn't exist or is no longer available.
+          The page you&apos;re looking for doesn&apos;t exist or is no longer available.
         </p>
-        <a
-          href="/"
+        <Link href="/"
           className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-6 py-3 font-medium hover:bg-primary/90 transition-colors"
         >
           Go Home
-        </a>
+        </Link>
       </div>
     );
   }

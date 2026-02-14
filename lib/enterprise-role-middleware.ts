@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Enhanced RBAC Middleware for Enterprise Unions
  * 
  * @deprecated This module has been consolidated into @/lib/api-auth-guard
@@ -118,13 +118,13 @@ export function withEnhancedRoleAuth<T = any>(
     isSensitive?: boolean; // Flag as sensitive action
   } = {}
 ) {
-  return withOrganizationAuth(async (request: NextRequest, orgContext: any) => {
+  return withOrganizationAuth(async (request: NextRequest, orgContext: unknown) => {
     const startTime = Date.now();
     const { organizationId, userId } = orgContext;
     
     try {
       // Get member from context (requires tenant middleware to populate this)
-      const memberId = (orgContext as any).memberId;
+      const memberId = (orgContext as unknown).memberId;
       if (!memberId) {
         await logAuditDenial(
           orgContext,
@@ -245,12 +245,12 @@ export function withPermission<T = any>(
     allowExceptions?: boolean; // Allow permission exceptions (default: true)
   } = {}
 ) {
-  return withOrganizationAuth(async (request: NextRequest, orgContext: any) => {
+  return withOrganizationAuth(async (request: NextRequest, orgContext: unknown) => {
     const startTime = Date.now();
     const { organizationId, userId } = orgContext;
     
     try {
-      const memberId = (orgContext as any).memberId;
+      const memberId = (orgContext as unknown).memberId;
       if (!memberId) {
         await logAuditDenial(
           { organizationId, userId, memberId: '' },
@@ -358,12 +358,12 @@ export function withScopedRoleAuth<T = any>(
     isSensitive?: boolean;
   } = {}
 ) {
-  return withOrganizationAuth(async (request: NextRequest, orgContext: any) => {
+  return withOrganizationAuth(async (request: NextRequest, orgContext: unknown) => {
     const startTime = Date.now();
     const { organizationId, userId } = orgContext;
     
     try {
-      const memberId = (orgContext as any).memberId;
+      const memberId = (orgContext as unknown).memberId;
       if (!memberId) {
         await logAuditDenial(
           { organizationId, userId, memberId: '' },
@@ -569,7 +569,7 @@ async function checkMemberPermission(
       try {
         await incrementExceptionUsage(exceptionId);
       } catch (error) {
-// Don't fail the request if usage tracking fails
+// Don&apos;t fail the request if usage tracking fails
       }
       
       return {
@@ -589,7 +589,7 @@ async function checkMemberPermission(
  * Log denied access attempt
  */
 async function logAuditDenial(
-  context: any,
+  context: unknown,
   action: string,
   resourceType: string,
   reason: string,

@@ -48,7 +48,7 @@ async function testInsert() {
     
     process.exit(0);
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('\n❌ INSERT failed:');
     console.error('Error:', error.message);
     console.error('\nFull error:', error);

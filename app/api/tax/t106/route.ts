@@ -10,7 +10,7 @@ import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
-import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { ErrorCode } from '@/lib/api/standardized-responses';
 
 /**
  * T106 Filing API / T4A / RL-1 Generation

@@ -4,14 +4,10 @@ import { db } from "@/db";
 import { ProvincialPrivacyService, type Province } from "@/services/provincial-privacy-service";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * Helper to check if user has admin/privacy officer role
  */
@@ -91,7 +87,7 @@ export const POST = async (request: NextRequest) => {
         message: "Data subject access request created successfully",
         responseDeadline: dsar.responseDeadline,
       });
-    } catch (error: any) {
+    } catch (error: Record<string, unknown>) {
       logger.error("DSAR creation error:", { error });
       return NextResponse.json(
         { error: error.message || "Failed to create DSAR" },
@@ -120,7 +116,7 @@ export const GET = async (request: NextRequest) => {
       logger.info('Retrieved overdue DSARs', { userId, count: dsars.length });
 
       return NextResponse.json({ dsars, count: dsars.length });
-    } catch (error: any) {
+    } catch (error: Record<string, unknown>) {
       logger.error("DSAR retrieval error:", { error });
       return NextResponse.json(
         { error: error.message || "Failed to retrieve DSARs" },

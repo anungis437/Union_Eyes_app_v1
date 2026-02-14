@@ -469,7 +469,7 @@ async function applyPolicies() {
       await db.execute(sql.raw(policy.sql));
       console.log(`✅ ${policy.name} - Success\n`);
       successCount++;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log(`⚠️  ${policy.name} - ${error.message}\n`);
       failCount++;
     }

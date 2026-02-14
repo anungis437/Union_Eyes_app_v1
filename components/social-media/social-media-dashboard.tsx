@@ -497,7 +497,7 @@ export default function SocialMediaDashboard() {
               <div className="space-y-2">
                 <Label>Post Content</Label>
                 <Textarea
-                  placeholder="What's happening?"
+                  placeholder="What&apos;s happening?"
                   value={newPostContent}
                   onChange={(e) => setNewPostContent(e.target.value)}
                   rows={6}

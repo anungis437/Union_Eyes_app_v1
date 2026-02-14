@@ -11,15 +11,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
 import { certifications, organizationMembers } from '@/db/schema';
-import { eq, inArray, and, lte } from 'drizzle-orm';
+import { inArray, and } from 'drizzle-orm';
 import { withRoleAuth } from '@/lib/api-auth-guard';
 import { sendEmail } from '@/lib/email-service';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 const renewalSchema = z.object({
   certificationIds: z.array(z.string()).min(1),
 });

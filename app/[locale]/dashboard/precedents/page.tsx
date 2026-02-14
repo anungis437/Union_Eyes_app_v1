@@ -100,7 +100,7 @@ export default function PrecedentsPage() {
   });
   const pageSize = 20;
 
-  // Use ref to track if we're currently fetching to prevent race conditions
+  // Use ref to track if we&apos;re currently fetching to prevent race conditions
   const isFetchingRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const lastFetchParamsRef = useRef<string>("");
@@ -214,7 +214,7 @@ setPrecedentsData({
             limit: pageSize,
           });
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Ignore abort errors
         if (error.name !== "AbortError") {
 setPrecedentsData({

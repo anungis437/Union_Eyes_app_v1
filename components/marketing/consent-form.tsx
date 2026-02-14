@@ -86,7 +86,7 @@ export default function ConsentForm({ organizationId }: ConsentFormProps) {
       setTimeout(() => {
         router.refresh();
       }, 2000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message);
     } finally {
       setLoading(false);

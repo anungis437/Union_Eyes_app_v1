@@ -6,16 +6,12 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { messageThreads, messages } from '@/db/schema/domains/communications';
-import { eq, and, desc } from 'drizzle-orm';
+import { and, desc } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest, { params }: { params: { threadId: string } }) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
@@ -125,7 +121,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { thread
       }
 
       // Update thread
-      const updates: any = { updatedAt: new Date() };
+      const updates = { updatedAt: new Date() };
       if (status) updates.status = status;
       if (priority) updates.priority = priority;
       if (staffId !== undefined) updates.staffId = staffId;

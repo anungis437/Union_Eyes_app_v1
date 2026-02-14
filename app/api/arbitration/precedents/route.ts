@@ -7,30 +7,26 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 
 import { NextRequest, NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
-import { db, organizations } from "@/db";
+import { organizations } from "@/db";
 import { 
   arbitrationPrecedents,
   precedentTags,
   NewArbitrationPrecedent,
   ArbitrationPrecedent
 } from "@/db/schema";
-import { eq, and, or, ilike, inArray, gte, lte, sql } from "drizzle-orm";
+import { and, or, ilike, inArray } from "drizzle-orm";
 import { getOrCreateUserUuid } from "@/lib/utils/user-uuid-helpers";
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // Helper to check if user can access precedent based on sharing level
-async function canAccessPrecedent(
+async function async function canAccessPrecedent(
   userId: string,
   userOrgId: string,
   userOrgHierarchyPath: string[],
-  precedent: any
+  precedent: Record<string, unknown>
 ): Promise<boolean> {
   // Owner always has access
   if (precedent.sourceOrganizationId === userOrgId) {
@@ -136,7 +132,7 @@ export const GET = async (request: NextRequest) => {
       const toDate = searchParams.get("toDate");
 
       // Build filters
-      const filters: any[] = [];
+      const filters: Array<Record<string, unknown>> = [];
 
       if (grievanceType) {
         filters.push(eq(arbitrationPrecedents.grievanceType, grievanceType));
@@ -214,7 +210,7 @@ export const GET = async (request: NextRequest) => {
 
       const filteredPrecedents = accessiblePrecedents.filter((p): p is ArbitrationPrecedent & { 
         sourceOrganization: { id: string; name: string; slug: string; };
-        tags: any[];
+        tags: Array<Record<string, unknown>>;
       } => p !== null);
 
       // Get total count for pagination with RLS

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Advanced Analytics Service
  * 
  * SPRINT 8: Advanced Features
@@ -166,7 +166,7 @@ export async function analyzePilotConversionFunnel(
  * Calculate average time spent in a status
  */
 function calculateAverageTimeInStage(
-  applications: any[],
+  applications: unknown[],
   status: string
 ): number {
   const inStatus = applications.filter((a) => a.status === status);
@@ -231,7 +231,7 @@ export async function analyzePilotCohorts(): Promise<CohortAnalysis[]> {
 /**
  * Create cohort analysis from applications
  */
-function createCohortAnalysis(cohortName: string, applications: any[]): CohortAnalysis {
+function createCohortAnalysis(cohortName: string, applications: unknown[]): CohortAnalysis {
   const cohortSize = applications.length;
   if (cohortSize === 0) {
     return {
@@ -419,7 +419,7 @@ function createTrendAnalysis(
   };
 }
 
-function calculateApprovalRate(applications: any[]): number {
+function calculateApprovalRate(applications: unknown[]): number {
   if (applications.length === 0) return 0;
   const approved = applications.filter(
     (a) => a.status === 'approved' || a.status === 'active' || a.status === 'completed'
@@ -427,13 +427,13 @@ function calculateApprovalRate(applications: any[]): number {
   return (approved / applications.length) * 100;
 }
 
-function calculateAverageReadiness(applications: any[]): number {
+function calculateAverageReadiness(applications: unknown[]): number {
   if (applications.length === 0) return 0;
   const total = applications.reduce((sum, a) => sum + (a.readinessScore ? parseFloat(a.readinessScore) : 0), 0);
   return total / applications.length;
 }
 
-function calculateTestimonialApprovalRate(testimonials: any[]): number {
+function calculateTestimonialApprovalRate(testimonials: unknown[]): number {
   if (testimonials.length === 0) return 0;
   const approved = testimonials.filter((t) => t.status === 'approved').length;
   return (approved / testimonials.length) * 100;
@@ -455,7 +455,7 @@ function calculateTestimonialApprovalRate(testimonials: any[]): number {
 export async function analyzeAttribution(): Promise<AttributionMetrics[]> {
   const applications = await db.select().from(pilotApplications);
 
-  // For now, use placeholder logic since we don't have explicit attribution tracking
+  // For now, use placeholder logic since we don&apos;t have explicit attribution tracking
   // In production, this would use UTM parameters, referrer headers, or application notes
 
   const attributionSources: AttributionMetrics[] = [

@@ -96,7 +96,7 @@ export async function sendPaymentReceivedNotification(
       recipientId,
       amount,
     });
-    // Don't throw - continue processing even if notification fails
+    // Don&apos;t throw - continue processing even if notification fails
   }
 }
 
@@ -401,7 +401,7 @@ export async function sendStrikeBenefitNotification(
       priority: "high",
       subject: "Strike Benefits Available",
       title: "Receive Strike Benefits",
-      body: `You're now eligible to receive $${amount.toFixed(2)} in strike benefits from the strike that began on ${strikeStartDate.toLocaleDateString()}`,
+      body: `You&apos;re now eligible to receive $${amount.toFixed(2)} in strike benefits from the strike that began on ${strikeStartDate.toLocaleDateString()}`,
       templateId: "STRIKE_STARTED",
       templateData: {
         amount: amount.toFixed(2),

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * LinkedIn API Client - Phase 10
  * 
  * Handles LinkedIn integration using OAuth 2.0.
@@ -237,7 +237,7 @@ export class LinkedInAPIClient {
     // Extract organizations from nested structure
     const orgs: LinkedInOrganization[] = [];
     for (const element of response.elements || []) {
-      const org = (element as any)['organization~'];
+      const org = (element as unknown)['organization~'];
       if (org) {
         orgs.push(org);
       }
@@ -429,7 +429,7 @@ export class LinkedInAPIClient {
       },
     };
 
-    const response = await this.makeRequest<any>(
+    const response = await this.makeRequest<unknown>(
       '/assets?action=registerUpload',
       {},
       {
@@ -537,8 +537,8 @@ export class LinkedInAPIClient {
     organizationId: string,
     count: number = 20,
     start: number = 0
-  ): Promise<{ elements: LinkedInShare[]; paging: any }> {
-    const response = await this.makeRequest<{ elements: LinkedInShare[]; paging: any }>(
+  ): Promise<{ elements: LinkedInShare[]; paging: unknown }> {
+    const response = await this.makeRequest<{ elements: LinkedInShare[]; paging: unknown }>(
       '/ugcPosts',
       {
         q: 'authors',
@@ -566,7 +566,7 @@ export class LinkedInAPIClient {
    */
   isApproachingRateLimit(threshold: number = 0.1): boolean {
     if (!this.rateLimitRemaining) return false;
-    // LinkedIn doesn't publish exact limits, but typically ~500 requests per user per day
+    // LinkedIn doesn&apos;t publish exact limits, but typically ~500 requests per user per day
     // Assume 500 as baseline
     const estimatedLimit = 500;
     const ratio = this.rateLimitRemaining / estimatedLimit;
@@ -578,7 +578,7 @@ export class LinkedInAPIClient {
    */
   private async makeRequest<T>(
     endpoint: string,
-    params: Record<string, any> = {},
+    params: Record<string, unknown> = {},
     options: RequestInit = {}
   ): Promise<T> {
     if (!this.accessToken) {

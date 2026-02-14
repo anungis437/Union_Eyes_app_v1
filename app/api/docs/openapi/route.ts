@@ -20,7 +20,7 @@ export async function GET() {
     }
     
     const yamlContent = fs.readFileSync(openApiPath, 'utf-8');
-    const spec = yaml.load(yamlContent) as any;
+    const spec = yaml.load(yamlContent) as Record<string, unknown>;
     
     return NextResponse.json(spec, {
       headers: {

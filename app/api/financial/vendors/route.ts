@@ -1,8 +1,7 @@
-import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/services/financial-service/src/db';
 import { vendors } from '@/services/financial-service/src/db/schema';
-import { eq, and, or, ilike, sql } from 'drizzle-orm';
+import { and, or, ilike } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
 
 interface AuthUser {
@@ -17,11 +16,7 @@ interface RequestContext {
 type SQLCondition = SQL<unknown> | undefined;
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const createVendorSchema = z.object({
   vendorName: z.string().min(1).max(255),

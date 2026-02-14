@@ -3,11 +3,7 @@ import { NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = async () => {
   return withEnhancedRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
@@ -40,12 +36,12 @@ export const GET = async () => {
       
       // Calculate totals from pending transactions
       const balance = {
-        totalOwed: data.transactions?.reduce((sum: number, t: any) => sum + t.totalAmount, 0) || 0,
-        duesAmount: data.transactions?.reduce((sum: number, t: any) => sum + t.duesAmount, 0) || 0,
-        copeAmount: data.transactions?.reduce((sum: number, t: any) => sum + t.copeAmount, 0) || 0,
-        pacAmount: data.transactions?.reduce((sum: number, t: any) => sum + t.pacAmount, 0) || 0,
-        strikeFundAmount: data.transactions?.reduce((sum: number, t: any) => sum + t.strikeFundAmount, 0) || 0,
-        lateFees: data.transactions?.reduce((sum: number, t: any) => sum + t.lateFeeAmount, 0) || 0,
+        totalOwed: data.transactions?.reduce((sum: number, t: Record<string, unknown>) => sum + t.totalAmount, 0) || 0,
+        duesAmount: data.transactions?.reduce((sum: number, t: Record<string, unknown>) => sum + t.duesAmount, 0) || 0,
+        copeAmount: data.transactions?.reduce((sum: number, t: Record<string, unknown>) => sum + t.copeAmount, 0) || 0,
+        pacAmount: data.transactions?.reduce((sum: number, t: Record<string, unknown>) => sum + t.pacAmount, 0) || 0,
+        strikeFundAmount: data.transactions?.reduce((sum: number, t: Record<string, unknown>) => sum + t.strikeFundAmount, 0) || 0,
+        lateFees: data.transactions?.reduce((sum: number, t: Record<string, unknown>) => sum + t.lateFeeAmount, 0) || 0,
         nextDueDate: data.transactions?.[0]?.dueDate || null,
       };
 

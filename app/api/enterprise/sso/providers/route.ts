@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { ssoProviders } from '@/db/schema/sso-scim-schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { and, desc } from 'drizzle-orm';
 import { z } from 'zod';
 
 // Validation schema for creating SSO provider
@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
     }));
     
     return NextResponse.json({ providers: sanitizedProviders });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching SSO providers:', error);
     return NextResponse.json(
       { error: 'Failed to fetch SSO providers', details: error.message },
@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
         oidcClientSecret: provider.oidcClientSecret ? '***REDACTED***' : null,
       },
     }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error creating SSO provider:', error);
     
     if (error instanceof z.ZodError) {

@@ -117,7 +117,7 @@ export default function MobileDashboardPage() {
       {/* Offline Banner */}
       {!isOnline && (
         <div className="bg-amber-500 text-white px-4 py-2 text-center text-sm">
-          You're offline. Some features may be limited.
+          You&apos;re offline. Some features may be limited.
         </div>
       )}
 

@@ -16,18 +16,14 @@ import { getMemberCount } from '@/db/queries/organization-members-queries';
 import { db } from '@/db/db';
 import { claims } from '@/db/schema/domains/claims';
 import { organizationUsers } from '@/db/schema/domains/member';
-import { eq, and, sql } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { validateBody, bodySchemas } from '@/lib/validation';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser, getUserRole } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser, getUserRole } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * GET /api/organizations
  * List organizations based on query parameters
@@ -329,7 +325,7 @@ export const POST = async (request: NextRequest) => {
       undefined,
       201
     );
-      } catch (error: any) {
+      } catch (error: Record<string, unknown>) {
         logger.error('Error creating organization', error as Error, {      organizationSlug: error.detail,
           correlationId: request.headers.get('x-correlation-id')
         });

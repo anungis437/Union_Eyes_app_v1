@@ -6,7 +6,7 @@ import { ReactNode } from 'react';
 type Props = {
   children: ReactNode;
   locale: string;
-  messages: any;
+  messages: Record<string, unknown>;
 };
 
 export function NextIntlProvider({ children, locale, messages }: Props) {

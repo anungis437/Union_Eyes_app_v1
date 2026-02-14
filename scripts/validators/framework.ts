@@ -79,7 +79,7 @@ export class ValidatorRunner {
         const result = await validator.validate();
         results.push(result);
         this.printResult(result);
-      } catch (error: any) {
+      } catch (error: unknown) {
         results.push({
           check: validator.name,
           status: 'FAIL',

@@ -10,13 +10,9 @@ import { organizationUsers } from '@/db/schema/domains/member';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // This route uses dynamic features and must not be statically generated
 export const dynamic = 'force-dynamic';
 
@@ -114,7 +110,7 @@ export const GET = withRoleAuth(90, async (request, context) => {
 
         return NextResponse.json({
           queue,
-          failed: failedJobs.map((job: any) => ({
+          failed: failedJobs.map((job: Record<string, unknown>) => ({
             id: job.id,
             name: job.name,
             data: job.data,

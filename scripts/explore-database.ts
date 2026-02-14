@@ -101,7 +101,7 @@ async function checkDatabase() {
     console.log('\n✨ Exploration complete!');
     process.exit(0);
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('\n❌ Error during exploration:');
     console.error(error);
     process.exit(1);

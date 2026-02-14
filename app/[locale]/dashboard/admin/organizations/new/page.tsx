@@ -162,7 +162,7 @@ export default function NewOrganizationPage() {
 
       const result = await response.json();
       router.push(`/dashboard/admin/organizations/${result.data.id}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError(error.message);
       setIsSubmitting(false);
     }

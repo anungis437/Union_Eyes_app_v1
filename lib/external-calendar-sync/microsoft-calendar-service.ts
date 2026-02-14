@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Microsoft Outlook Calendar Sync Service
  * 
  * Handles OAuth authentication and bidirectional sync with Microsoft Outlook/Office 365.
@@ -104,7 +104,7 @@ export async function refreshAccessToken(connectionId: string): Promise<string> 
     
     const response = await msalClient.acquireTokenSilent({
       scopes: SCOPES,
-      account: { homeAccountId: connection.providerAccountId! } as any,
+      account: { homeAccountId: connection.providerAccountId! } as unknown,
     });
 
     // Update connection with new tokens
@@ -379,7 +379,7 @@ throw error;
 /**
  * Map Microsoft Outlook event to local event format
  */
-function mapMicrosoftEventToLocal(msEvent: any, calendarId: string, tenantId: string) {
+function mapMicrosoftEventToLocal(msEvent: unknown, calendarId: string, tenantId: string) {
   return {
     calendarId,
     tenantId,
@@ -411,8 +411,8 @@ function mapMicrosoftEventToLocal(msEvent: any, calendarId: string, tenantId: st
 /**
  * Map local event to Microsoft Outlook event format
  */
-function mapLocalEventToMicrosoft(localEvent: any) {
-  const msEvent: any = {
+function mapLocalEventToMicrosoft(localEvent: unknown) {
+  const msEvent: unknown = {
     subject: localEvent.title,
     body: {
       contentType: 'HTML',
@@ -451,7 +451,7 @@ function mapLocalEventToMicrosoft(localEvent: any) {
 /**
  * Map Microsoft recurrence to RRULE
  */
-function mapMicrosoftRecurrenceToRRule(recurrence: any): string {
+function mapMicrosoftRecurrenceToRRule(recurrence: unknown): string {
   const pattern = recurrence.pattern;
   const range = recurrence.range;
 
@@ -482,9 +482,9 @@ function mapMicrosoftRecurrenceToRRule(recurrence: any): string {
 /**
  * Map RRULE to Microsoft recurrence
  */
-function mapRRuleToMicrosoftRecurrence(rrule: string): any {
+function mapRRuleToMicrosoftRecurrence(rrule: string): unknown {
   const parts = rrule.split(';');
-  const recurrence: any = {
+  const recurrence: unknown = {
     pattern: {},
     range: {},
   };
@@ -585,7 +585,7 @@ async function updateDeltaLink(
 
     if (!connection) return;
 
-    const mappings = (connection.calendarMappings as any) || {};
+    const mappings = (connection.calendarMappings as unknown) || {};
     
     if (!mappings[microsoftCalendarId]) {
       mappings[microsoftCalendarId] = {};
@@ -609,7 +609,7 @@ async function updateDeltaLink(
 /**
  * Get delta link for a calendar
  */
-export function getDeltaLink(connection: any, microsoftCalendarId: string): string | null {
+export function getDeltaLink(connection: unknown, microsoftCalendarId: string): string | null {
   const mappings = connection.calendarMappings || {};
   return mappings[microsoftCalendarId]?.deltaLink || null;
 }

@@ -3,8 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { db } from '@/db/db';
 import { claims } from '@/db/schema/domains/claims';
-import { eq, and, gte, sql } from 'drizzle-orm';
-import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { and } from 'drizzle-orm';
+import { ErrorCode } from '@/lib/api/standardized-responses';
 
 async function handler(req: NextRequest, context) {
   const { organizationId } = context;

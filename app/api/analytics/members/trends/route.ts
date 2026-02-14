@@ -8,14 +8,10 @@
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
-import { sql, db } from '@/db';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { db } from '@/db';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 interface EngagementTrend {
   month: string;
   activeMembers: number;
@@ -76,7 +72,7 @@ async function handler(req: NextRequest, context) {
         GROUP BY TO_CHAR(DATE_TRUNC('month', c.created_at), 'YYYY-MM')
       ),
       churned_estimate AS (
-        -- Estimate churned as members who haven't been active in 180+ days
+        -- Estimate churned as members who haven&apos;t been active in 180+ days
         SELECT 
           TO_CHAR(DATE_TRUNC('month', last_activity + INTERVAL '180 days'), 'YYYY-MM') AS month,
           COUNT(*) AS churned_count
@@ -102,7 +98,7 @@ async function handler(req: NextRequest, context) {
       LEFT JOIN active_members am ON am.month = mm.month
       LEFT JOIN churned_estimate ce ON ce.month = mm.month
       ORDER BY mm.month_series
-    `) as any[];
+    `) as Array<Record<string, unknown>>;
     });
 
     const engagementTrends: EngagementTrend[] = trends.map(row => ({

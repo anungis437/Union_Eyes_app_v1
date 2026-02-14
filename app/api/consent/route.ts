@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
         dataTypes
       ).catch((error) => {
         console.error('Failed to send consent granted notification:', error);
-        // Don't fail the request if notification fails
+        // Don&apos;t fail the request if notification fails
       });
     }
 
@@ -210,7 +210,7 @@ export async function DELETE(request: NextRequest) {
         reason
       ).catch((error) => {
         console.error('Failed to send consent revoked notification:', error);
-        // Don't fail the request if notification fails
+        // Don&apos;t fail the request if notification fails
       });
     }
 

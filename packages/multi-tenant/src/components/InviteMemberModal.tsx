@@ -112,7 +112,7 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
       } else {
         setErrors({ submit: 'Failed to invite member. Please try again.' });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       setErrors({ submit: error.message || 'An unexpected error occurred' });
     } finally {
       setIsSubmitting(false);

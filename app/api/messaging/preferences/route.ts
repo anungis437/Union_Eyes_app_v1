@@ -10,7 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { communicationPreferences, consentRecords } from '@/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { withRLSContext } from '@/lib/db/rls-context';
 import { auth } from '@clerk/nextjs/server';
 
@@ -179,7 +179,7 @@ export async function PUT(request: NextRequest) {
           organizationId: orgId,
           userId,
           consentType: `${change.channel}_marketing`,
-          channel: change.channel as any,
+          channel: change.channel,
           status: change.newValue ? 'granted' : 'revoked',
           method: 'web_form',
           consentText: `User ${change.newValue ? 'enabled' : 'disabled'} ${change.channel} communications`,

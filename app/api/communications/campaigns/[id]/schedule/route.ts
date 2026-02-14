@@ -16,16 +16,12 @@ import {
   newsletterRecipients,
   newsletterListSubscribers 
 } from '@/db/schema';
-import { eq, and, inArray } from 'drizzle-orm';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { and, inArray } from 'drizzle-orm';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 const scheduleSchema = z.object({
   scheduledAt: z.string().nullable(),
   timezone: z.string().default('UTC'),

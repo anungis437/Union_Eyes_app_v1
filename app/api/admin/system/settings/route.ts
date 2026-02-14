@@ -14,14 +14,10 @@ import { logger } from "@/lib/logger";
 import { z } from "zod";
 import { getSystemConfigs, updateSystemConfig } from "@/actions/admin-actions";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * Validation schemas
  */

@@ -13,13 +13,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
 import { newsletterTemplates } from '@/db/schema';
-import { eq, and, or, like, desc } from 'drizzle-orm';
+import { and, or, like, desc } from 'drizzle-orm';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const createTemplateSchema = z.object({
   name: z.string().min(1, 'Template name is required'),

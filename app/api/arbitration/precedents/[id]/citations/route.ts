@@ -7,23 +7,19 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 
 import { NextRequest, NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
-import { db, organizations } from "@/db";
+import { organizations } from "@/db";
 import { 
   arbitrationPrecedents,
   precedentCitations,
   NewPrecedentCitation,
 } from "@/db/schema";
-import { eq, and, or } from "drizzle-orm";
+import { and, or } from "drizzle-orm";
 import { getOrCreateUserUuid } from "@/lib/utils/user-uuid-helpers";
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from "@/lib/db/with-rls-context";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 type RouteContext = {
   params: Promise<{ id: string }>;
 };

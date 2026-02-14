@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Predictive Engagement Scoring
  * 
  * SPRINT 8: Advanced Features
@@ -33,7 +33,7 @@ export interface PredictionResult {
   factors: {
     name: string;
     impact: number; // -100 to +100
-    value: any;
+    value: unknown;
   }[];
   recommendations: string[];
 }

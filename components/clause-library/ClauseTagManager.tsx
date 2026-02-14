@@ -63,7 +63,7 @@ export function ClauseTagManager({
     try {
       await onAddTag(trimmedTag);
       setNewTagName("");
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || "Failed to add tag");
     } finally {
       setIsAdding(false);
@@ -76,7 +76,7 @@ export function ClauseTagManager({
 
     try {
       await onRemoveTag(tagName);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || "Failed to remove tag");
     } finally {
       setRemovingTags((prev) => {

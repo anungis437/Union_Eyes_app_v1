@@ -27,7 +27,7 @@ async function applyMigration() {
     try {
       await db.execute(sql.raw(migrationSQL));
       console.log('✅ Migration executed successfully!\n');
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMsg = error.message || String(error);
       console.error(`❌ Error executing migration: ${errorMsg}\n`);
       
@@ -79,7 +79,7 @@ async function applyMigration() {
     console.log('\n✨ Migration application complete!');
     process.exit(0);
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('\n❌ Fatal error during migration:');
     console.error(error);
     process.exit(1);

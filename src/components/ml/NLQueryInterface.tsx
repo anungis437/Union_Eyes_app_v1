@@ -14,7 +14,7 @@ interface NLQueryInterfaceProps {
 
 interface QueryResult {
   answer: string;
-  data?: any;
+  data?: Array<Record<string, unknown>>;
   sql?: string;
   confidence: number;
   sources: string[];
@@ -67,7 +67,7 @@ export function NLQueryInterface({ className = '' }: NLQueryInterfaceProps) {
       setResult(data);
       setHistory([{ query, result: data }, ...history.slice(0, 4)]);
       setQuery('');
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to process query. Please try again.');
     } finally {
       setIsLoading(false);
@@ -178,9 +178,9 @@ export function NLQueryInterface({ className = '' }: NLQueryInterfaceProps) {
                         </tr>
                       </thead>
                       <tbody>
-                        {result.data.slice(0, 10).map((row: any, i: number) => (
+                        {result.data.slice(0, 10).map((row: Record<string, unknown>, i: number) => (
                           <tr key={i} className="border-t">
-                            {Object.values(row).map((value: any, j: number) => (
+                            {Object.values(row).map((value: unknown, j: number) => (
                               <td key={j} className="px-4 py-2">
                                 {typeof value === 'number' 
                                   ? value.toLocaleString() 

@@ -2,16 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { approveDeadlineExtension, denyDeadlineExtension } from '@/db/queries/deadline-queries';
 import { withMinRole, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * PATCH /api/extensions/[id]
  * Approve or deny a deadline extension request
  */
-export const PATCH = withMinRole('steward', async (request: NextRequest, context: any) => {
+export const PATCH = withMinRole('steward', async (request: NextRequest, context: Record<string, unknown>) => {
   try {
     const user = await getCurrentUser();
     const userId = user?.id;

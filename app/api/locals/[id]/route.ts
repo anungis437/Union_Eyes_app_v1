@@ -55,7 +55,7 @@ export async function GET(
     }
 
     return NextResponse.json({ local });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching local:', error);
     return NextResponse.json(
       { error: 'Failed to fetch local', details: error.message },
@@ -77,7 +77,7 @@ export async function PUT(
     const body = await request.json();
     const validatedData = updateLocalSchema.parse(body);
 
-    const updateData: any = {
+    const updateData = {
       ...validatedData,
       updatedAt: new Date(),
       lastModifiedBy: 'system', // TODO: Get from auth
@@ -104,7 +104,7 @@ export async function PUT(
       message: 'Local updated successfully',
       local: updatedLocal,
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },
@@ -152,7 +152,7 @@ export async function DELETE(
       message: 'Local deactivated successfully',
       local: deletedLocal,
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error deleting local:', error);
     return NextResponse.json(
       { error: 'Failed to delete local', details: error.message },

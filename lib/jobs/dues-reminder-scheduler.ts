@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Dues Reminder Scheduler
  * Automated reminders for dues payments
  * 
@@ -168,7 +168,7 @@ export class DuesReminderScheduler {
   /**
    * Get transactions needing 7-day reminder
    */
-  private static async getTransactionsForSevenDayReminder(): Promise<any[]> {
+  private static async getTransactionsForSevenDayReminder(): Promise<unknown[]> {
     try {
       const today = new Date();
       const sevenDaysFromNow = new Date(today);
@@ -215,7 +215,7 @@ export class DuesReminderScheduler {
   /**
    * Get transactions needing 1-day reminder
    */
-  private static async getTransactionsForOneDayReminder(): Promise<any[]> {
+  private static async getTransactionsForOneDayReminder(): Promise<unknown[]> {
     try {
       const today = new Date();
       const tomorrow = new Date(today);
@@ -261,7 +261,7 @@ export class DuesReminderScheduler {
   /**
    * Get overdue transactions
    */
-  private static async getOverdueTransactions(): Promise<any[]> {
+  private static async getOverdueTransactions(): Promise<unknown[]> {
     try {
       const today = new Date().toISOString().split('T')[0];
 
@@ -313,7 +313,7 @@ export class DuesReminderScheduler {
   /**
    * Send 7-day reminder
    */
-  private static async sendSevenDayReminder(transaction: any): Promise<boolean> {
+  private static async sendSevenDayReminder(transaction: unknown): Promise<boolean> {
     try {
       // Get member details
       const member = await this.getMemberDetails(transaction.memberId);
@@ -394,7 +394,7 @@ export class DuesReminderScheduler {
   /**
    * Send 1-day reminder
    */
-  private static async sendOneDayReminder(transaction: any): Promise<boolean> {
+  private static async sendOneDayReminder(transaction: unknown): Promise<boolean> {
     try {
       const member = await this.getMemberDetails(transaction.memberId);
       if (!member) {
@@ -486,7 +486,7 @@ export class DuesReminderScheduler {
   /**
    * Send overdue notice
    */
-  private static async sendOverdueNotice(transaction: any): Promise<boolean> {
+  private static async sendOverdueNotice(transaction: unknown): Promise<boolean> {
     try {
       const member = await this.getMemberDetails(transaction.memberId);
       if (!member) {
@@ -597,7 +597,7 @@ export class DuesReminderScheduler {
         return null;
       }
 
-      const metadata = (member[0].metadata as any) || {};
+      const metadata = (member[0].metadata as unknown) || {};
       return {
         name: member[0].name,
         email: member[0].email,

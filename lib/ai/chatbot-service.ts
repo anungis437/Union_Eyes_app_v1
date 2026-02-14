@@ -1,4 +1,4 @@
-/**
+﻿/**
  * AI Chatbot Service
  * 
  * Union rights Q&A bot with RAG (Retrieval-Augmented Generation)
@@ -175,7 +175,7 @@ class AnthropicProvider implements AIProvider {
   }
   
   async generateEmbedding(text: string): Promise<number[]> {
-    // Anthropic doesn't have embeddings API, fallback to OpenAI
+    // Anthropic doesn&apos;t have embeddings API, fallback to OpenAI
     const openaiKey = process.env.OPENAI_API_KEY;
     if (!openaiKey) {
       throw new Error("OpenAI API key required for embeddings");
@@ -238,7 +238,7 @@ class GoogleAIProvider implements AIProvider {
   }
   
   async generateEmbedding(text: string): Promise<number[]> {
-    // Google doesn't have embeddings API in Gemini, fallback to OpenAI
+    // Google doesn&apos;t have embeddings API in Gemini, fallback to OpenAI
     const openaiKey = process.env.OPENAI_API_KEY;
     if (!openaiKey) {
       throw new Error("OpenAI API key required for embeddings");
@@ -300,7 +300,7 @@ export class ChatSessionManager {
         userId: data.userId,
         tenantId: data.organizationId,
         title: data.title || "New conversation",
-        aiProvider: (data.aiProvider as any) || "openai",
+        aiProvider: (data.aiProvider as unknown) || "openai",
         model: data.model || "gpt-4",
         contextTags: data.contextTags,
         relatedEntityType: data.relatedEntityType,
@@ -341,7 +341,7 @@ export class ChatSessionManager {
       .where(eq(chatSessions.userId, userId));
     
     if (options.status) {
-      query = query.where(eq(chatSessions.status, options.status as any));
+      query = query.where(eq(chatSessions.status, options.status as unknown));
     }
     
     query = query.orderBy(desc(chatSessions.lastMessageAt));
@@ -417,7 +417,7 @@ export class RAGService {
     await db.insert(knowledgeBase).values({
       ...data,
       tenantId: data.organizationId,
-      documentType: data.documentType as any,
+      documentType: data.documentType as unknown,
       embedding: JSON.stringify(embedding),
       embeddingModel: "text-embedding-ada-002",
     });
@@ -548,7 +548,7 @@ export class ChatbotService {
     }));
     
     // Perform RAG if enabled
-    let retrievedDocs: any[] = [];
+    let retrievedDocs: unknown[] = [];
     if (data.useRAG !== false) {
       retrievedDocs = await this.ragService.searchDocuments(data.content, {
         organizationId: session.organizationId /* was tenantId */,

@@ -77,7 +77,7 @@ export default function VendorForm({ vendor, mode }: VendorFormProps) {
 
       router.push('/dashboard/financial/vendors');
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Error',
         description: error.message,

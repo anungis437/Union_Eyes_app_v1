@@ -9,6 +9,7 @@
  */
 
 import * as React from 'react';
+import Link from 'next/link';
 import { Metadata } from 'next';
 import {
   HumanCenteredCallout,
@@ -86,7 +87,7 @@ export default function StoryPage() {
             <PrincipleCard
               icon={<Shield className="h-6 w-6" />}
               title="No surveillance, no weaponized metrics"
-              description="We don't track 'organizer productivity' or 'case closure rates.' We don't build leaderboards. We don't measure things that could be used against workers. System health, yes. People surveillance, never."
+              description="We don&apos;t track 'organizer productivity' or 'case closure rates.' We don&apos;t build leaderboards. We don&apos;t measure things that could be used against workers. System health, yes. People surveillance, never."
             />
             <PrincipleCard
               icon={<Heart className="h-6 w-6" />}
@@ -96,7 +97,7 @@ export default function StoryPage() {
             <PrincipleCard
               icon={<Handshake className="h-6 w-6" />}
               title="Democratic governance baked in"
-              description="Union Eyes has a golden share structure. Union members elect representatives who can veto any sale or mission change. This isn't marketing—it's in our shareholder agreement."
+              description="Union Eyes has a golden share structure. Union members elect representatives who can veto any sale or mission change. This isn&apos;t marketing—it&apos;s in our shareholder agreement."
             />
           </div>
         </section>
@@ -158,12 +159,12 @@ export default function StoryPage() {
           </h2>
           <div className="space-y-6">
             <TestimonialCard
-              quote="For the first time, I can actually see all my cases in one place. I'm not drowning in sticky notes. I'm not afraid of losing documentation. I can focus on fighting for my members."
+              quote="For the first time, I can actually see all my cases in one place. I&apos;m not drowning in sticky notes. I&apos;m not afraid of losing documentation. I can focus on fighting for my members."
               author="Maria R."
               role="Shop Steward, Healthcare Union"
             />
             <TestimonialCard
-              quote="They asked us what would make our jobs easier, not what would make us more 'efficient.' That difference matters. They understand we're not trying to optimize—we're trying to win."
+              quote="They asked us what would make our jobs easier, not what would make us more 'efficient.' That difference matters. They understand we&apos;re not trying to optimize—we&apos;re trying to win."
               author="James T."
               role="Chief Steward, Manufacturing Local"
             />
@@ -175,7 +176,7 @@ export default function StoryPage() {
           </div>
         </section>
 
-        {/* What We're Not */}
+        {/* What We&apos;re Not */}
         <section className="mb-16">
           <h2 className="text-3xl font-bold text-slate-900 mb-6">
             What we&apos;re <em>not</em>
@@ -223,7 +224,7 @@ export default function StoryPage() {
           <CalloutPresets.BuiltWithUnions />
           <div className="mt-6">
             <Button variant="outline" asChild>
-              <a href="/trust">View our trust dashboard →</a>
+              <Link href="/trust">View our trust dashboard →</Link>
             </Button>
           </div>
         </section>
@@ -240,10 +241,10 @@ export default function StoryPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" asChild>
-              <a href="/pilot-request">Request a pilot program</a>
+              <Link href="/pilot-request">Request a pilot program</Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <a href="/contact">Start a conversation</a>
+              <Link href="/contact">Start a conversation</Link>
             </Button>
           </div>
         </section>

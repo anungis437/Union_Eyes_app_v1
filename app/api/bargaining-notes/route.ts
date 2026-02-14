@@ -17,13 +17,9 @@ import {
   getSessionTypes
 } from "@/lib/services/bargaining-notes-service";
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(10, async (request, context) => {
   try {
@@ -71,7 +67,7 @@ export const GET = async (request: NextRequest) => {
       }
 
       // Build filters
-      const filters: any = {};
+      const filters = {};
       
       if (cbaId) {
         filters.cbaId = cbaId;

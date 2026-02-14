@@ -2,11 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/lib/api-auth-guard";
 import { getProfileByUserId, updateProfile } from "@/db/queries/profiles-queries";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 export const POST = withApiAuth(async (request: NextRequest, context) => {
   try {

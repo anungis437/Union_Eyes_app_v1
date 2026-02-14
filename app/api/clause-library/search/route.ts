@@ -1,4 +1,4 @@
-﻿import { logApiAuditEvent } from "@/lib/middleware/api-security";
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * Phase 5B: Shared Clause Library API - Search
  * Route: /api/clause-library/search
@@ -6,20 +6,16 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { db, organizations } from "@/db";
+import { organizations } from "@/db";
 import { sharedClauseLibrary } from "@/db/schema";
-import { eq, and, or, ilike, inArray, gte, lte, sql, isNull } from "drizzle-orm";
+import { and, or, ilike, inArray, isNull } from "drizzle-orm";
 import { logger } from '@/lib/logger';
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { validateSharingLevel } from '@/lib/auth/hierarchy-access-control';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // POST /api/clause-library/search - Advanced search with full-text
 
 const clauseLibrarySearchSchema = z.object({
@@ -91,7 +87,7 @@ export const POST = async (request: NextRequest) => {
       const offset = (page - 1) * limit;
 
       // Build filters
-      const filters: any[] = [];
+      const filters: Array<Record<string, unknown>> = [];
 
       // Full-text search on title and text
       if (query) {

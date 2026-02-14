@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { surveys, surveyQuestions, surveyResponses, surveyAnswers } from '@/db/schema';
-import { and, eq } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import ExcelJS from 'exceljs';
 import { withApiAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // GET /api/communications/surveys/[surveyId]/export - Export responses
 export const GET = withApiAuth(async (
   request: NextRequest,
@@ -165,7 +161,7 @@ export const GET = withApiAuth(async (
       responses.forEach((response) => {
         const responseAnswers = answerMap.get(response.id) || new Map();
         
-        const rowData: any = {
+        const rowData = {
           id: response.id,
           name: response.respondentName || '',
           email: response.respondentEmail || '',

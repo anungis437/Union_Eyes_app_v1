@@ -6,7 +6,7 @@
 
 import { NextResponse } from 'next/server';
 import { getSystemStatus } from '@/lib/monitoring';
-import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { ErrorCode } from '@/lib/api/standardized-responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

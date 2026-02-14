@@ -10,11 +10,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 /**
  * GET /api/audits

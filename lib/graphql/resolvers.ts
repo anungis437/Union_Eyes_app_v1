@@ -1,4 +1,4 @@
-/**
+﻿/**
  * GraphQL Resolvers
  * 
  * Resolver functions for GraphQL queries, mutations, and subscriptions
@@ -26,14 +26,14 @@ import { IntegrationProvider } from '@/lib/integrations/types';
 export const resolvers = {
   Query: {
     // Claims
-    claim: async (_parent: any, { id }: { id: string }, _context: YogaInitialContext) => {
+    claim: async (_parent: unknown, { id }: { id: string }, _context: YogaInitialContext) => {
       const result = await db.select().from(claims).where(eq(claims.claimId, id)).limit(1);
       return result[0] || null;
     },
 
     claims: async (
-      _parent: any,
-      { filters, pagination }: any,
+      _parent: unknown,
+      { filters, pagination }: unknown,
       _context: YogaInitialContext
     ) => {
       const limit = pagination?.first || 20;
@@ -63,14 +63,14 @@ export const resolvers = {
     },
 
     // Members
-    member: async (_parent: any, { id }: { id: string }, _context: YogaInitialContext) => {
+    member: async (_parent: unknown, { id }: { id: string }, _context: YogaInitialContext) => {
       const result = await db.select().from(profiles).where(eq(profiles.userId, id)).limit(1);
       return result[0] || null;
     },
 
     members: async (
-      _parent: any,
-      { status, pagination }: any,
+      _parent: unknown,
+      { status, pagination }: unknown,
       _context: YogaInitialContext
     ) => {
       const limit = pagination?.first || 20;
@@ -120,7 +120,7 @@ export const resolvers = {
       });
     },
 
-    pensionProcessor: async (_parent: any, { planType }: { planType: string }) => {
+    pensionProcessor: async (_parent: unknown, { planType }: { planType: string }) => {
       const factory = PensionProcessorFactory.getInstance();
       const processor = factory.getProcessor(planType as PensionPlanType);
       const capabilities = processor.getCapabilities();
@@ -138,7 +138,7 @@ export const resolvers = {
     },
 
     contributionRates: async (
-      _parent: any, 
+      _parent: unknown, 
       { planType, year }: { planType: string; year: number }
     ) => {
       const factory = PensionProcessorFactory.getInstance();
@@ -156,7 +156,7 @@ export const resolvers = {
       };
     },
 
-    remittance: async (_parent: any, { id }: { id: string }) => {
+    remittance: async (_parent: unknown, { id }: { id: string }) => {
       // Mock implementation - would fetch from database in production
       return {
         id,
@@ -175,7 +175,7 @@ export const resolvers = {
     },
 
     remittances: async (
-      _parent: any, 
+      _parent: unknown, 
       { planType, status }: { planType?: string; status?: string }
     ) => {
       // Mock implementation - would fetch from database in production
@@ -199,8 +199,8 @@ export const resolvers = {
 
     // Insurance
     insuranceClaims: async (
-      _parent: any,
-      { provider, status, startDate, endDate, pagination }: any
+      _parent: unknown,
+      { provider, status, startDate, endDate, pagination }: unknown
     ) => {
       const limit = pagination?.first || 50;
       
@@ -245,8 +245,8 @@ export const resolvers = {
     },
 
     insurancePolicies: async (
-      _parent: any,
-      { provider, status }: any
+      _parent: unknown,
+      { provider, status }: unknown
     ) => {
       let query = db.select().from(externalInsurancePolicies);
 
@@ -300,8 +300,8 @@ export const resolvers = {
   Mutation: {
     // Claims
     createClaim: async (
-      _parent: any,
-      { input }: { input: any },
+      _parent: unknown,
+      { input }: { input: unknown },
       _context: YogaInitialContext
     ) => {
       const result = await db.insert(claims).values({
@@ -323,8 +323,8 @@ export const resolvers = {
     },
 
     updateClaim: async (
-      _parent: any,
-      { id, input }: { id: string; input: any },
+      _parent: unknown,
+      { id, input }: { id: string; input: unknown },
       _context: YogaInitialContext
     ) => {
       const result = await db
@@ -340,7 +340,7 @@ export const resolvers = {
     },
 
     deleteClaim: async (
-      _parent: any,
+      _parent: unknown,
       { id }: { id: string },
       _context: YogaInitialContext
     ) => {
@@ -350,7 +350,7 @@ export const resolvers = {
 
     // Voting
     castVote: async (
-      _parent: any,
+      _parent: unknown,
       { voteId, optionId }: { voteId: string; optionId: string },
       _context: YogaInitialContext
     ) => {
@@ -360,8 +360,8 @@ export const resolvers = {
 
     // Pension Contributions
     calculatePensionContribution: async (
-      _parent: any,
-      { input }: { input: any }
+      _parent: unknown,
+      { input }: { input: unknown }
     ) => {
       const factory = PensionProcessorFactory.getInstance();
       const processor = factory.getProcessor(input.planType as PensionPlanType);
@@ -373,7 +373,7 @@ export const resolvers = {
         lastName: 'Unknown',
         dateOfBirth: new Date(input.dateOfBirth),
         hireDate: new Date(),
-        employmentStatus: 'FULL_TIME' as any,
+        employmentStatus: 'FULL_TIME' as unknown,
         province: input.province,
         annualSalary: input.yearToDateEarnings || 0,
       };
@@ -403,8 +403,8 @@ export const resolvers = {
     },
 
     createRemittance: async (
-      _parent: any,
-      { input }: { input: any }
+      _parent: unknown,
+      { input }: { input: unknown }
     ) => {
       const factory = PensionProcessorFactory.getInstance();
       const processor = factory.getProcessor(input.planType as PensionPlanType);
@@ -413,7 +413,7 @@ export const resolvers = {
       const contributions = input.contributions.map((id: string) => ({
         memberId: id,
         planType: input.planType,
-        contributionPeriod: 'MONTHLY' as any,
+        contributionPeriod: 'MONTHLY' as unknown,
         periodStartDate: new Date(input.periodStart),
         periodEndDate: new Date(input.periodEnd),
         grossEarnings: 100,
@@ -454,7 +454,7 @@ export const resolvers = {
     },
 
     submitRemittance: async (
-      _parent: any,
+      _parent: unknown,
       { id }: { id: string }
     ) => {
       // Mock implementation - would fetch remittance and submit
@@ -481,7 +481,7 @@ export const resolvers = {
 
     // Insurance Sync
     syncInsuranceProvider: async (
-      _parent: any,
+      _parent: unknown,
       { provider }: { provider: string }
     ) => {
       try {
@@ -529,7 +529,7 @@ export const resolvers = {
 
   // Field Resolvers
   Claim: {
-    claimant: async (parent: any, _args: any, _context: YogaInitialContext) => {
+    claimant: async (parent: unknown, _args: unknown, _context: YogaInitialContext) => {
       if (!parent.memberId) return null;
       const result = await db
         .select()
@@ -539,7 +539,7 @@ export const resolvers = {
       return result[0] || null;
     },
 
-    assignee: async (parent: any, _args: any, _context: YogaInitialContext) => {
+    assignee: async (parent: unknown, _args: unknown, _context: YogaInitialContext) => {
       if (!parent.assignedTo) return null;
       const result = await db
         .select()
@@ -551,7 +551,7 @@ export const resolvers = {
   },
 
   Member: {
-    claims: async (parent: any, _args: any, _context: YogaInitialContext) => {
+    claims: async (parent: unknown, _args: unknown, _context: YogaInitialContext) => {
       const results = await db
         .select()
         .from(claims)

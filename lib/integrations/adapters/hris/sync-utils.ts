@@ -1,4 +1,4 @@
-/**
+﻿/**
  * HRIS Sync Utilities
  * 
  * Helper functions for HRIS data synchronization, validation, and mapping.
@@ -23,8 +23,8 @@ export interface EmployeeMapping {
 export interface SyncConflict {
   externalEmployeeId: string;
   field: string;
-  externalValue: any;
-  internalValue: any;
+  externalValue: unknown;
+  internalValue: unknown;
   suggestedResolution: 'keep_external' | 'keep_internal' | 'manual_review';
 }
 
@@ -85,7 +85,7 @@ export async function findEmployeeMappings(
 
       // Try email match (high confidence)
       if (employee.email) {
-        const emailMatch = (members as any[]).find(
+        const emailMatch = (members as unknown[]).find(
           m => m.email?.toLowerCase() === employee.email?.toLowerCase()
         );
         if (emailMatch) {
@@ -102,7 +102,7 @@ export async function findEmployeeMappings(
 
       // Try name match (medium confidence)
       if (employee.firstName && employee.lastName) {
-        const nameMatch = (members as any[]).find(
+        const nameMatch = (members as unknown[]).find(
           m =>
             m.first_name?.toLowerCase() === employee.firstName?.toLowerCase() &&
             m.last_name?.toLowerCase() === employee.lastName?.toLowerCase()
@@ -175,9 +175,9 @@ export async function detectSyncConflicts(
         WHERE id = ${mapping.internalMemberId}
       `);
 
-      if (!internal || (internal as any[]).length === 0) continue;
+      if (!internal || (internal as unknown[]).length === 0) continue;
 
-      const member = (internal as any[])[0];
+      const member = (internal as unknown[])[0];
 
       // Check for conflicts in key fields
       const fieldsToCheck = [

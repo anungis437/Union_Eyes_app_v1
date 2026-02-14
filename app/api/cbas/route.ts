@@ -16,11 +16,7 @@ import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { logger } from "@/lib/logger";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
   try {
@@ -52,7 +48,7 @@ export const GET = async (request: NextRequest) => {
       }
 
       // Build filters
-      const filters: any = {};
+      const filters = {};
       
       if (organizationId) {
         filters.organizationId = organizationId;

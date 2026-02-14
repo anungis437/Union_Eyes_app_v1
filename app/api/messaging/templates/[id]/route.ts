@@ -11,7 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { messageTemplates, campaigns } from '@/db/schema';
-import { eq, and, sql } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { withRLSContext } from '@/lib/db/rls-context';
 import { auth } from '@clerk/nextjs/server';
 

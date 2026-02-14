@@ -118,7 +118,7 @@ export async function getOrganizationIdForUser(userId: string): Promise<string> 
 /**
  * Get the default organization ID.
  * 
- * Use this function when you need an organization ID but don't have a user context,
+ * Use this function when you need an organization ID but don&apos;t have a user context,
  * such as in background jobs or system operations.
  * 
  * @returns The default organization ID

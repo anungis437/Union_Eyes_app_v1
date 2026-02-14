@@ -8,14 +8,10 @@
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
-import { sql, db } from '@/db';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { db } from '@/db';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 interface TrendDataPoint {
   date: string;
   newClaims: number;
@@ -87,7 +83,7 @@ async function handler(req: NextRequest, context) {
         TO_CHAR(c2.resolved_at, ${dateFormat}) = TO_CHAR(ds.report_date, ${dateFormat})
       GROUP BY ds.report_date
       ORDER BY ds.report_date
-    `) as any[];
+    `) as Array<Record<string, unknown>>;
     });
 
     const trendData: TrendDataPoint[] = trends.map(row => ({

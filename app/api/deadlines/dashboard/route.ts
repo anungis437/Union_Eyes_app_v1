@@ -7,11 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDashboardSummary } from '@/lib/deadline-service';
 import { withApiAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = withApiAuth(async (request: NextRequest) => {
   const { searchParams } = new URL(request.url);
   const organizationId = searchParams.get('organizationId') ?? searchParams.get('orgId') ?? searchParams.get('organization_id') ?? searchParams.get('org_id');

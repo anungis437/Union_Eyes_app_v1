@@ -15,7 +15,7 @@ import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
-import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { ErrorCode } from '@/lib/api/standardized-responses';
 
 // Lazy initialization for Supabase client
 let supabase: SupabaseClient | null = null;
@@ -169,13 +169,13 @@ return NextResponse.redirect(
 /**
  * Handle Meta (Facebook/Instagram) OAuth callback
  */
-async function handleMetaCallback(
+async function async function handleMetaCallback(
   code: string,
   redirectUri: string,
   platform: string,
   organizationId: string,
   userId: string,
-  supabase: any
+  supabase: any Record<string, unknown>
 ) {
   const metaClient = createMetaClient();
 
@@ -256,13 +256,13 @@ async function handleMetaCallback(
 /**
  * Handle Twitter OAuth callback
  */
-async function handleTwitterCallback(
+async function async function handleTwitterCallback(
   code: string,
   codeVerifier: string,
   redirectUri: string,
   organizationId: string,
   userId: string,
-  supabase: any
+  supabase: any Record<string, unknown>
 ) {
   const twitterClient = createTwitterClient();
 
@@ -324,12 +324,12 @@ async function handleTwitterCallback(
 /**
  * Handle LinkedIn OAuth callback
  */
-async function handleLinkedInCallback(
+async function async function handleLinkedInCallback(
   code: string,
   redirectUri: string,
   organizationId: string,
   userId: string,
-  supabase: any
+  supabase: any Record<string, unknown>
 ) {
   const linkedInClient = createLinkedInClient();
 

@@ -1,16 +1,13 @@
-﻿/**
+/**
  * Alert Recipients API
  */
 
 import { z } from "zod";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc } from "drizzle-orm";
 import { withRLSContext } from "@/lib/db/with-rls-context";
 import { withRoleAuth } from "@/lib/api-auth-guard";
 import { alertRecipients } from "@/db/schema";
-import {
-  ErrorCode,
-  standardErrorResponse,
-  standardSuccessResponse,
+import { standardSuccessResponse,
 } from "@/lib/api/standardized-responses";
 
 const listRecipientsSchema = z.object({
@@ -42,8 +39,8 @@ export const GET = withRoleAuth("admin", async (request, context) => {
   const query = parsed.data;
 
   try {
-    return await withRLSContext(async (tx: any) => {
-      const conditions = [] as any[];
+    return await withRLSContext(async (tx: Record<string, unknown>) => {
+      const conditions = [] as Array<Record<string, unknown>>;
       if (query.ruleId) {
         conditions.push(eq(alertRecipients.alertRuleId, query.ruleId));
       }
@@ -87,7 +84,7 @@ export const POST = withRoleAuth("admin", async (request, context) => {
   const payload = parsed.data;
 
   try {
-    return await withRLSContext(async (tx: any) => {
+    return await withRLSContext(async (tx: Record<string, unknown>) => {
       const [recipient] = await tx
         .insert(alertRecipients)
         .values({

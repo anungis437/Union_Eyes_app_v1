@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { DEFAULT_REDIRECT_URL } from "../webhooks/utils/constants";
 import crypto from "crypto";
 import { logger } from '@/lib/logger';
-import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { ErrorCode } from '@/lib/api/standardized-responses';
 
 /**
  * API endpoint to create a Whop checkout session for unauthenticated users
@@ -74,7 +74,7 @@ export async function POST(req: Request) {
     
     // Always redirect to signup page regardless of any provided redirectUrl
     // This ensures consistent authentication flow for frictionless payments
-    let baseUrl = new URL(DEFAULT_REDIRECT_URL).origin;
+    const baseUrl = new URL(DEFAULT_REDIRECT_URL).origin;
     const signupUrl = `${baseUrl}/signup`;
     
     // Add email and token to redirect URL

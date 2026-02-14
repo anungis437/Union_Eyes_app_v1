@@ -142,7 +142,7 @@ export async function generateT4A(
                    member.email || 
                    'Unknown', // Construct name from available user fields
     recipientSIN: recipientSIN, // Encrypted/protected SIN
-    recipientAddress: 'NOT PROVIDED', // Users table doesn't have address field
+    recipientAddress: 'NOT PROVIDED', // Users table doesn&apos;t have address field
     box028_otherIncome: strikePay, // Box 028: Other Income
     issuedDate: new Date(),
     employerName: process.env.UNION_NAME || 'Your Union Local',
@@ -171,9 +171,9 @@ export async function generateRL1(
 
   const member = memberResult as typeof memberResult;
 
-  // Note: Users table doesn't have province field
+  // Note: Users table doesn&apos;t have province field
   // Province check should be done via strikeFundDisbursements or organization federation
-  // For now, we'll rely on caller to only call this for QC members
+  // For now, we&apos;ll rely on caller to only call this for QC members
   // TODO: Add province validation via federation lookup
 
   const strikePay = await getYearlyStrikePay(memberId, taxYear);
@@ -217,7 +217,7 @@ export async function generateRL1(
                    member.email || 
                    'Unknown', // Construct name from available user fields
     recipientNAS: recipientNAS, // NAS = Number d'assurance sociale
-    recipientAddress: 'NOT PROVIDED', // Users table doesn't have address field
+    recipientAddress: 'NOT PROVIDED', // Users table doesn&apos;t have address field
     caseO_autresRevenus: strikePay, // Case O: Autres revenus (Other income)
     issuedDate: new Date(),
     employerName: process.env.UNION_NAME || 'Your Union Local',
@@ -367,7 +367,7 @@ export async function getTaxFilingStatus(
 }
 
 async function isMemberInQuebec(memberId: string): Promise<boolean> {
-  // Users table doesn't have province field
+  // Users table doesn&apos;t have province field
   // Check from strike fund disbursements table instead
   try {
     const result = await db

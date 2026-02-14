@@ -80,7 +80,7 @@ async function createPolicies() {
     console.log('\n✨ All policies created successfully!');
     process.exit(0);
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('\n❌ Error:');
     console.error('Message:', error.message);
     

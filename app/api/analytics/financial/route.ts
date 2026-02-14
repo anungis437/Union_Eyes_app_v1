@@ -6,19 +6,15 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { db } from '@/db/db';
 import { claims } from '@/db/schema/domains/claims';
-import { sql, gte, and, eq } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = withRoleAuth('steward', async (req: NextRequest, context) => {
   const { userId, organizationId } = context;
 

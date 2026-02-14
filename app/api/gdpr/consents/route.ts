@@ -5,13 +5,9 @@ import { db } from "@/db";
 import { userConsents } from "@/db/schema";
 import { consentPurposes, consentTypeValues, type ConsentType } from "@/lib/gdpr/consent-purposes";
 import { ConsentManager } from "@/lib/gdpr/consent-manager";
-import { and, eq, desc } from "drizzle-orm";
+import { and, desc } from "drizzle-orm";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = withApiAuth(async (request: NextRequest) => {
   try {
     const user = await getCurrentUser();

@@ -88,12 +88,11 @@ export default function DashboardError({
 
         <p className="mt-6 text-center text-sm text-gray-600">
           If this problem persists, please{' '}
-          <a
-            href="/support"
+          <Link href="/support"
             className="font-medium text-blue-600 hover:text-blue-700 underline"
           >
             contact support
-          </a>
+          </Link>
         </p>
       </div>
     </div>

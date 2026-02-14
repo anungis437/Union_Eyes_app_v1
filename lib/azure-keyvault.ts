@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Azure Key Vault Integration for PII Encryption
  * 
  * This module provides secure encryption key management using Azure Key Vault.
@@ -78,7 +78,7 @@ function isCachedKeyValid(): boolean {
   const now = new Date();
   const timeUntilExpiry = cachedKey.expiresAt.getTime() - now.getTime();
 
-  // Key is valid if it hasn't expired and has more than refresh threshold remaining
+  // Key is valid if it hasn&apos;t expired and has more than refresh threshold remaining
   return timeUntilExpiry > KEY_REFRESH_THRESHOLD_MS;
 }
 
@@ -237,7 +237,7 @@ export function getEncryptionKeyMetadata(): Omit<EncryptionKey, 'value'> | null 
  * @param key Encryption key to set (if not provided, retrieved from Key Vault)
  */
 export async function setEncryptionKeyInSession(
-  db: any, // Accept any DB client type
+  db: unknown, // Accept any DB client type
   key?: string
 ): Promise<void> {
   try {

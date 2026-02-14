@@ -7,6 +7,7 @@
  */
 
 'use client';
+import Link from 'next/link';
 
 import dynamic from 'next/dynamic';
 import 'swagger-ui-react/swagger-ui.css';
@@ -68,8 +69,7 @@ export default function ApiDocsPage() {
               View on GitHub
             </a>
             {' • '}
-            <a 
-              href="/docs/API_DOCUMENTATION_SCHEMA_CONSOLIDATION_GUIDE.md"
+            <Link href="/docs/API_DOCUMENTATION_SCHEMA_CONSOLIDATION_GUIDE.md"
               className="text-primary hover:underline"
             >
               Documentation Guide

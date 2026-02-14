@@ -48,9 +48,9 @@ interface ReportConfig {
   description: string;
   dataSourceId: string;
   fields: SelectedField[];
-  filters: any[];
+  filters: Array<Record<string, unknown>>;
   groupBy: string[];
-  sortBy: any[];
+  sortBy: Array<Record<string, unknown>>;
   visualizationType: 'table' | 'bar' | 'line' | 'pie' | 'area' | 'composed';
   chartConfig?: {
     xAxis?: string;
@@ -72,7 +72,7 @@ interface ReportPreviewProps {
 
 export function ReportPreview({ open, onClose, config }: ReportPreviewProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<Array<Record<string, unknown>>>([]);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'data' | 'visualization'>('visualization');
 
@@ -111,7 +111,7 @@ export function ReportPreview({ open, onClose, config }: ReportPreviewProps) {
 
       const result = await response.json();
       setData(result.data || []);
-    } catch (err: any) {
+    } catch (_err) {
       // Fallback to mock data if API fails
       const mockData = generateMockData(config);
       setData(mockData);
@@ -130,13 +130,13 @@ export function ReportPreview({ open, onClose, config }: ReportPreviewProps) {
     }
   }, [open, fetchReportData]);
 
-  const generateMockData = (config: ReportConfig): any[] => {
+  const generateMockData = (config: ReportConfig): Array<Record<string, unknown>> => {
     // Generate mock data based on config
     const rowCount = Math.min(config.limit || 100, 50);
-    const mockData: any[] = [];
+    const mockData: Array<Record<string, unknown>> = [];
 
     for (let i = 0; i < rowCount; i++) {
-      const row: any = {};
+      const row: Record<string, unknown> = {};
       
       config.fields.forEach(field => {
         if (field.aggregation) {
@@ -196,8 +196,8 @@ export function ReportPreview({ open, onClose, config }: ReportPreviewProps) {
       } else {
         alert(`Export as ${format.toUpperCase()} started successfully!`);
       }
-    } catch (error: any) {
-      alert(`Failed to export: ${error.message}`);
+    } catch (error) {
+      alert(`Failed to export: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -276,7 +276,7 @@ export function ReportPreview({ open, onClose, config }: ReportPreviewProps) {
 
     // Transform data for charts
     const chartData = data.map(row => {
-      const point: any = {
+      const point: Record<string, unknown> = {
         name: row[config.chartConfig!.xAxis!] || 'Unknown',
       };
       
@@ -434,7 +434,7 @@ export function ReportPreview({ open, onClose, config }: ReportPreviewProps) {
         {/* Data Display */}
         {!isLoading && !error && data.length > 0 && (
           <div className="flex-1 overflow-hidden">
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'data' | 'visualization')}>
               <TabsList className="mb-4">
                 <TabsTrigger value="visualization">
                   <BarChart3 className="w-4 h-4 mr-2" />

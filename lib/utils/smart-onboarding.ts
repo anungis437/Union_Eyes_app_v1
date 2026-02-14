@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Smart Onboarding & Hierarchy Discovery Utilities
  * 
  * Provides intelligent features for organization onboarding:
@@ -82,7 +82,7 @@ export async function autoDetectParentFederation(
 ): Promise<FederationSuggestion[]> {
   try {
     // Query for federations in the same province/sector
-    const filters: any[] = [
+    const filters: unknown[] = [
       or(
         eq(organizations.organizationType, 'federation'),
         eq(organizations.organizationType, 'congress')
@@ -176,7 +176,7 @@ export async function suggestRelevantClauses(
     }
 
     const hierarchyPath = org.hierarchyPath || [];
-    const filters: any[] = [
+    const filters: unknown[] = [
       // Only public/federation/congress level clauses
       inArray(sharedClauseLibrary.sharingLevel, ['public', 'federation', 'congress']),
     ];
@@ -291,7 +291,7 @@ export async function findPeerOrganizations(
       throw new Error('Organization not found');
     }
 
-    const filters: any[] = [
+    const filters: unknown[] = [
       eq(organizations.status, 'active'),
     ];
 

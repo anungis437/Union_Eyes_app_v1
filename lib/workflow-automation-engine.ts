@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 // WORKFLOW AUTOMATION ENGINE
 // ============================================================================
 // Description: State machine for grievance workflow management with automatic
@@ -181,7 +181,7 @@ async function checkForUnresolvedCriticalSignals(claimId: string): Promise<boole
     }
 
     const latestSignalData = recentSignalUpdates[0];
-    const metadata = latestSignalData.metadata as any;
+    const metadata = latestSignalData.metadata as unknown;
 
     // Check for critical signals in the metadata
     if (metadata?.criticalCount && metadata.criticalCount > 0) {
@@ -192,7 +192,7 @@ async function checkForUnresolvedCriticalSignals(claimId: string): Promise<boole
     return false;
   } catch (error) {
     logger.error(`Error checking for critical signals on claim ${claimId}:`, { error });
-    return false; // Don't block transitions on signal check errors
+    return false; // Don&apos;t block transitions on signal check errors
   }
 }
 
@@ -1049,7 +1049,7 @@ async function sendStageNotification(
 
 async function sendActionNotification(
   claimId: string,
-  config: Record<string, any>,
+  config: Record<string, unknown>,
   tenantId: string
 ): Promise<void> {
   try {
@@ -1089,7 +1089,7 @@ async function sendActionNotification(
 async function autoAssignOfficer(
   claimId: string,
   role: string,
-  criteria: Record<string, any>,
+  criteria: Record<string, unknown>,
   tenantId: string,
   userId: string
 ): Promise<void> {
@@ -1116,7 +1116,7 @@ async function autoAssignOfficer(
       assignmentCriteria,
       userId,
       {
-        role: role as any,
+        role: role as unknown,
         forceAssignment: criteria.forceAssignment || false,
         minScore: criteria.minScore || 0.5,
       }
@@ -1155,7 +1155,7 @@ async function createActionDeadline(
 
 async function sendActionEmail(
   claimId: string,
-  config: Record<string, any>,
+  config: Record<string, unknown>,
   tenantId: string
 ): Promise<void> {
   try {
@@ -1193,7 +1193,7 @@ async function sendActionEmail(
 
 async function generateActionDocument(
   claimId: string,
-  config: Record<string, any>,
+  config: Record<string, unknown>,
   tenantId: string,
   userId: string
 ): Promise<void> {

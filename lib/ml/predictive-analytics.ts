@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Predictive Analytics Engine
  * Q1 2025 - Advanced Analytics
  * 
@@ -15,14 +15,14 @@ import { mean, standardDeviation, linearRegression } from 'simple-statistics';
 export interface TimeSeriesData {
   date: Date;
   value: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface PredictionResult {
   predictedValue: number;
   confidenceInterval: { lower: number; upper: number };
   confidenceScore: number;
-  features: Record<string, any>;
+  features: Record<string, unknown>;
   modelName: string;
   modelVersion: string;
 }

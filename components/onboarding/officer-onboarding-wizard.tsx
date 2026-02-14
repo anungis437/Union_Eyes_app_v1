@@ -125,7 +125,7 @@ export function OfficerOnboardingWizard() {
           Officer Onboarding
         </h1>
         <p className="text-gray-600 dark:text-gray-300 mt-2">
-          Welcome to your leadership role. Let's prepare you for success.
+          Welcome to your leadership role. Let&apos;s prepare you for success.
         </p>
       </div>
 
@@ -458,13 +458,13 @@ function StrategyStep() {
         <h4 className="font-medium text-blue-900 mb-2">Your AI Assistant</h4>
         <p className="text-blue-800 text-sm">
           Your AI assistant can help with research, report generation, and answering 
-          questions about union procedures. It's trained on labor law and best practices!
+          questions about union procedures. It&apos;s trained on labor law and best practices!
         </p>
       </div>
 
       <div className="text-center p-4 bg-green-100 rounded-lg">
         <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-2" />
-        <h4 className="font-medium text-green-900">You're Ready to Lead!</h4>
+        <h4 className="font-medium text-green-900">You&apos;re Ready to Lead!</h4>
         <p className="text-green-800 text-sm">
           Complete your onboarding to access your executive dashboard.
         </p>

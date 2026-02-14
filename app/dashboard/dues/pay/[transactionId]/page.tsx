@@ -194,7 +194,7 @@ function PaymentMethodSelector({
     <Card>
       <CardHeader>
         <CardTitle>Payment Method</CardTitle>
-        <CardDescription>Select how you'd like to pay</CardDescription>
+        <CardDescription>Select how you&apos;d like to pay</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Credit/Debit Card */}

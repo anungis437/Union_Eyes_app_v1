@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Mobile Analytics Library
  * 
  * Provides analytics and usage tracking for mobile PWA
@@ -277,9 +277,9 @@ export class MobileAnalytics {
    * Get device info
    */
   private getDeviceInfo(): DeviceInfo {
-    const connection = (navigator as any).connection || 
-                      (navigator as any).mozConnection || 
-                      (navigator as any).webkitConnection;
+    const connection = (navigator as unknown).connection || 
+                      (navigator as unknown).mozConnection || 
+                      (navigator as unknown).webkitConnection;
 
     return {
       platform: navigator.platform,

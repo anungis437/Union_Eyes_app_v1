@@ -462,7 +462,7 @@ export default function CommunicationPreferencesPage() {
             Quiet Hours
           </CardTitle>
           <CardDescription>
-            Set times when you don't want to receive non-urgent notifications
+            Set times when you don&apos;t want to receive non-urgent notifications
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -526,7 +526,7 @@ export default function CommunicationPreferencesPage() {
               <Alert>
                 <Info className="h-4 w-4" />
                 <AlertDescription>
-                  During quiet hours, you won't receive non-urgent notifications. 
+                  During quiet hours, you won&apos;t receive non-urgent notifications. 
                   Urgent alerts will still be delivered immediately.
                 </AlertDescription>
               </Alert>

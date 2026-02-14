@@ -27,18 +27,14 @@ import {
   createOrganization,
   searchOrganizations,
 } from "@/db/queries/organization-queries";
-import { eq, and, inArray, sql } from "drizzle-orm";
+import { and, inArray } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
 import { withRoleRequired, logApiAuditEvent } from "@/lib/middleware/api-security";
 import { SUPPORTED_ROLES } from "@/lib/middleware/auth-middleware";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * Validation schemas
  */
@@ -164,7 +160,7 @@ try {
       // Filter by type if specified
       let filteredOrgs = orgsData;
       if (type && type !== "all") {
-        filteredOrgs = orgsData.filter((org: any) => org.organizationType === type);
+        filteredOrgs = orgsData.filter((org: Record<string, unknown>) => org.organizationType === type);
       }
 
       // Add statistics if requested - RLS-protected queries
@@ -172,7 +168,7 @@ try {
       if (includeStats) {
         const orgsWithStats = await withRLSContext(async (tx) => {
           return Promise.all(
-            filteredOrgs.map(async (org: any) => {
+            filteredOrgs.map(async (org: Record<string, unknown>) => {
               // Get member count
               const [memberCountResult] = await tx
                 .select({ count: sql<number>`count(*)` })

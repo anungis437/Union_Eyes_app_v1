@@ -6,24 +6,20 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { db, organizations } from "@/db";
+import { organizations } from "@/db";
 import { 
   sharedClauseLibrary,
   clauseComparisonsHistory,
   NewClauseComparison
 } from "@/db/schema";
-import { inArray, eq } from "drizzle-orm";
+import { inArray } from "drizzle-orm";
 import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { validateSharingLevel } from '@/lib/auth/hierarchy-access-control';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // POST /api/clause-library/compare - Compare multiple clauses
 
 const clauseLibraryCompareSchema = z.object({
@@ -223,7 +219,7 @@ export const POST = async (request: NextRequest) => {
 };
 
 // Helper: Extract common keywords from clauses
-function extractCommonKeywords(clauses: any[]): string[] {
+function extractCommonKeywords(clauses: Array<Record<string, unknown>>): string[] {
   const allWords = clauses.flatMap(c => {
     const text = `${c.clauseTitle} ${c.clauseText}`.toLowerCase();
     return text.match(/\b[a-z]{4,}\b/g) || [];
@@ -244,7 +240,7 @@ function extractCommonKeywords(clauses: any[]): string[] {
 }
 
 // Helper: Highlight key differences
-function highlightDifferences(clauses: any[]): any {
+function highlightDifferences(clauses: Array<Record<string, unknown>>): any {
   return {
     clauseTypes: Array.from(new Set(clauses.map(c => c.clauseType))),
     organizationLevels: Array.from(new Set(clauses.map(c => c.sourceOrganization?.organizationLevel))),

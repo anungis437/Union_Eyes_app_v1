@@ -7,33 +7,29 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 
 import { NextRequest, NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
-import { db, organizations } from "@/db";
+import { organizations } from "@/db";
 import { 
   arbitrationPrecedents,
   precedentTags,
   precedentCitations,
 } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { and } from "drizzle-orm";
 import { getOrCreateUserUuid } from "@/lib/utils/user-uuid-helpers";
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { withRLSContext } from "@/lib/db/with-rls-context";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
 // Helper to check if user can access precedent
-async function canAccessPrecedent(
+async function async function canAccessPrecedent(
   userId: string,
   userOrgId: string,
   userOrgHierarchyPath: string[],
-  precedent: any
+  precedent: Record<string, unknown>
 ): Promise<boolean> {
   if (precedent.sourceOrganizationId === userOrgId) {
     return true;
@@ -179,7 +175,7 @@ export const GET = async (request: NextRequest, context: RouteContext) => {
     );
       }
 
-      // Increment view count (don't await to avoid slowing response)
+      // Increment view count (don&apos;t await to avoid slowing response)
       if (precedent.sourceOrganizationId !== userOrgId) {
         withRLSContext({ organizationId: userOrgId }, async (db) => {
           return await db.update(arbitrationPrecedents)
@@ -294,7 +290,7 @@ export const PATCH = async (request: NextRequest, context: RouteContext) => {
     const { caseNumber, caseTitle, decisionDate, isPartiesAnonymized, unionName, employerName, arbitratorName, jurisdiction, grievanceType, issueSummary, unionPosition, employerPosition, outcome, decisionSummary, reasoning, keyFindings, relatedLegislation, precedentLevel, citedCases, decisionDocumentUrl, documentPath, redactedDocumentUrl, redactedDocumentPath, sharingLevel, sharedWithOrgIds, sector, province, tags } = validation.data;
 
       // Build update object (only include provided fields)
-      const updates: any = {};
+      const updates = {};
 
       if (body.caseNumber !== undefined) updates.caseNumber = body.caseNumber;
       if (body.caseTitle !== undefined) updates.caseTitle = body.caseTitle;

@@ -17,11 +17,7 @@ import { logger } from '@/lib/logger';
 import { eventBus, AppEvents } from '@/lib/events';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const onboardingSuggestClausesSchema = z.object({
   organizationId: z.string().uuid('Invalid organizationId'),

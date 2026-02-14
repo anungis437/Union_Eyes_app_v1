@@ -941,7 +941,7 @@ export const NotificationTemplates = {
   STRIKE_STARTED: {
     subject: "Strike Payment Available",
     title: "Receive Strike Benefits",
-    body: "You're now eligible to receive {{amount}} in strike benefits",
+    body: "You&apos;re now eligible to receive {{amount}} in strike benefits",
   },
 
   // Voting notifications
@@ -952,7 +952,7 @@ export const NotificationTemplates = {
   },
 
   VOTING_REMINDER: {
-    subject: "Don't Forget to Vote",
+    subject: "Don&apos;t Forget to Vote",
     title: "Voting Closes Soon",
     body: "Remember to vote for {{electionName}} before {{closingTime}}",
   },

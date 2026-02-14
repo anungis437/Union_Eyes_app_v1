@@ -13,11 +13,7 @@ import {
   getActiveMemberCount,
   createMember
 } from '@/db/queries/organization-members-queries';
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 export const dynamic = 'force-dynamic';
 
@@ -148,7 +144,7 @@ export const POST = withEnhancedRoleAuth(40, async (request, context) => {
       'Member created successfully',
       201
     );
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     logApiAuditEvent({
       timestamp: new Date().toISOString(),
       userId,
@@ -160,7 +156,7 @@ export const POST = withEnhancedRoleAuth(40, async (request, context) => {
       details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
     });
     // Handle unique constraint violations
-    if ((error as any).code === '23505') {
+    if (error && typeof error === 'object' && 'code' in error && error.code === '23505') {
       return standardErrorResponse(
         ErrorCode.RESOURCE_ALREADY_EXISTS,
         'A member with this email or membership number already exists'

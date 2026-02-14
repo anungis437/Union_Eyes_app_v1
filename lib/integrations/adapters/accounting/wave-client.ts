@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Wave API Client
  * 
  * Free accounting software for small businesses with GraphQL API.
@@ -158,7 +158,7 @@ export class WaveClient {
   // GraphQL Helper
   // ==========================================================================
 
-  private async graphql<T>(query: string, variables: any = {}): Promise<T> {
+  private async graphql<T>(query: string, variables: unknown = {}): Promise<T> {
     await this.ensureValidToken();
 
     try {
@@ -252,13 +252,13 @@ export class WaveClient {
       }
     `;
 
-    const result = await this.graphql<any>(query, {
+    const result = await this.graphql<unknown>(query, {
       businessId: this.config.businessId,
       page,
       pageSize,
     });
 
-    const invoices = result.business.invoices.edges.map((edge: any) => edge.node);
+    const invoices = result.business.invoices.edges.map((edge: unknown) => edge.node);
     const hasMore = page < result.business.invoices.pageInfo.totalPages;
 
     return { invoices, hasMore };
@@ -299,13 +299,13 @@ export class WaveClient {
       }
     `;
 
-    const result = await this.graphql<any>(query, {
+    const result = await this.graphql<unknown>(query, {
       businessId: this.config.businessId,
       page,
       pageSize,
     });
 
-    const customers = result.business.customers.edges.map((edge: any) => ({
+    const customers = result.business.customers.edges.map((edge: unknown) => ({
       ...edge.node,
       currency: edge.node.currency?.code || 'USD',
     }));
@@ -354,15 +354,15 @@ export class WaveClient {
       }
     `;
 
-    const result = await this.graphql<any>(query, {
+    const result = await this.graphql<unknown>(query, {
       businessId: this.config.businessId,
       page,
       pageSize,
     });
 
     const payments = result.business.moneyTransactions.edges
-      .map((edge: any) => edge.node)
-      .filter((node: any) => node.invoice); // Only transactions linked to invoices
+      .map((edge: unknown) => edge.node)
+      .filter((node: unknown) => node.invoice); // Only transactions linked to invoices
 
     const hasMore = page < result.business.moneyTransactions.pageInfo.totalPages;
 

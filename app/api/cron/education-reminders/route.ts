@@ -8,13 +8,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { withSystemContext } from '@/lib/db/with-rls-context';
-import { sql } from "drizzle-orm";
 import { logger } from "@/lib/logger";
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 import {
   batchSendSessionReminders,
   batchSendExpiryWarnings,
@@ -97,7 +92,7 @@ export async function GET(request: NextRequest) {
         count: sessionReminders.length,
       });
 
-      const reminderData = sessionReminders.map((row: any) => ({
+      const reminderData = sessionReminders.map((row: Record<string, unknown>) => ({
         toEmail: row.email,
         memberName: `${row.first_name} ${row.last_name}`,
         courseName: row.course_name,
@@ -161,7 +156,7 @@ export async function GET(request: NextRequest) {
         count: expiryWarnings.length,
       });
 
-      const warningData = expiryWarnings.map((row: any) => ({
+      const warningData = expiryWarnings.map((row: Record<string, unknown>) => ({
         toEmail: row.email,
         memberName: `${row.first_name} ${row.last_name}`,
         certificationName: row.certification_name,

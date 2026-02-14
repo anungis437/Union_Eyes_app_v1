@@ -49,7 +49,7 @@ export default function SignUpPage() {
     }
   }, [userLoaded, isSignedIn, router]);
 
-  // Don't render SignUp if already signed in or still loading
+  // Don&apos;t render SignUp if already signed in or still loading
   if (!userLoaded || isSignedIn) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -82,7 +82,7 @@ if (result.success) {
           message: result.error || "Failed to link your purchase to your account."
         });
         
-        // Even if there's an error, redirect to dashboard after a slightly longer delay
+        // Even if there&apos;s an error, redirect to dashboard after a slightly longer delay
         setTimeout(() => {
           router.push("/dashboard");
         }, 3000);

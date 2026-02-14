@@ -2,9 +2,8 @@ import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { db } from '@/db';
-import { sql } from 'drizzle-orm';
 import { withApiAuth } from '@/lib/api-auth-guard';
-import { standardErrorResponse, standardSuccessResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 import { z } from 'zod';
 
 const feedbackSchema = z.object({
@@ -119,7 +118,7 @@ export const GET = withApiAuth(async (request: NextRequest, context) => {
     `);
     });
 
-    const feedback = (feedbackData || []).map((row: any) => ({
+    const feedback = (feedbackData || []).map((row: Record<string, unknown>) => ({
       id: row.id,
       category: row.category,
       message: row.message,

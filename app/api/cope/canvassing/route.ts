@@ -1,4 +1,4 @@
-﻿import { withRLSContext } from '@/lib/db/with-rls-context';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * API Route: Canvassing Activities
@@ -8,16 +8,11 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {

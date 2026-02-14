@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Standardized API Response Utilities
  * 
  * Provides consistent response formats across all API routes
@@ -103,7 +103,7 @@ export interface StandardizedError {
   message: string;
   
   /** Additional context (only in development/debug mode) */
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   
   /** Unique trace ID for correlation with logs */
   traceId?: string;
@@ -128,7 +128,7 @@ export interface StandardizedSuccess<T = any> {
     pageSize?: number;
     total?: number;
     hasMore?: boolean;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   
   /** Timestamp of the response */
@@ -136,17 +136,17 @@ export interface StandardizedSuccess<T = any> {
 }
 
 /**
- * Convert unknown error to a safe Record<string, any> format
+ * Convert unknown error to a safe Record<string, unknown> format
  * Handles Error objects, plain objects, and primitives
  */
-function normalizeErrorDetails(details: unknown): Record<string, any> | undefined {
+function normalizeErrorDetails(details: unknown): Record<string, unknown> | undefined {
   if (details === null || details === undefined) {
     return undefined;
   }
   
   // If already a plain object, return as-is
   if (typeof details === 'object' && !Array.isArray(details) && !(details instanceof Error)) {
-    return details as Record<string, any>;
+    return details as Record<string, unknown>;
   }
   
   // Handle Error objects
@@ -277,11 +277,11 @@ function generateTraceId(): string {
  * Sanitize error details to prevent leaking sensitive information
  * Removes stack traces, removes sensitive keys, truncates long strings
  */
-function sanitizeErrorDetails(details?: Record<string, any>): Record<string, any> | undefined {
+function sanitizeErrorDetails(details?: Record<string, unknown>): Record<string, unknown> | undefined {
   if (!details) return undefined;
   
   const sensitiveKeys = ['password', 'token', 'secret', 'key', 'authorization', 'cookie', 'session'];
-  const sanitized: Record<string, any> = {};
+  const sanitized: Record<string, unknown> = {};
   
   for (const [key, value] of Object.entries(details)) {
     // Skip sensitive keys
@@ -298,7 +298,7 @@ function sanitizeErrorDetails(details?: Record<string, any>): Record<string, any
     if (typeof value === 'string' && value.length > 200) {
       sanitized[key] = value.substring(0, 200) + '...';
     } else if (typeof value === 'object' && value !== null) {
-      // Don't include nested objects in production
+      // Don&apos;t include nested objects in production
       sanitized[key] = '[Object]';
     } else {
       sanitized[key] = value;
@@ -385,10 +385,10 @@ export function fromError(error: unknown): NextResponse<StandardizedError> {
  *   return standardSuccessResponse(data);
  * });
  */
-export function withStandardizedErrors<T extends (...args: any[]) => Promise<NextResponse>>(
+export function withStandardizedErrors<T extends (...args: unknown[]) => Promise<NextResponse>>(
   handler: T
 ): T {
-  return (async (...args: any[]) => {
+  return (async (...args: unknown[]) => {
     try {
       return await handler(...args);
     } catch (error) {
@@ -401,7 +401,7 @@ export function withStandardizedErrors<T extends (...args: any[]) => Promise<Nex
  * Validation helper that throws standardized error
  */
 export function validateRequired(
-  value: any,
+  value: unknown,
   fieldName: string
 ): void {
   if (value === undefined || value === null || value === '') {
@@ -419,7 +419,7 @@ export function validateRequired(
 export class ValidationResponseError extends Error {
   constructor(
     message: string,
-    public details?: Record<string, any>
+    public details?: Record<string, unknown>
   ) {
     super(message);
     this.name = 'ValidationResponseError';

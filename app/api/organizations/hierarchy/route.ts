@@ -6,18 +6,12 @@ import { requireUser } from '@/lib/api-auth-guard';
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { logger } from '@/lib/logger';
 import { db } from '@/db';
-import { sql } from 'drizzle-orm';
-
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = withRoleAuth(10, async (request: NextRequest, context) => {
   const { userId, organizationId } = context;
 

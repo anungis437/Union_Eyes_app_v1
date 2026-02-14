@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
-import { eq, and, desc, like, sql } from 'drizzle-orm';
+import { and, desc, like } from 'drizzle-orm';
 import { pgTable, uuid, text, timestamp, jsonb, boolean } from 'drizzle-orm/pg-core';
 
 // Case templates schema
@@ -64,7 +64,7 @@ export const caseTemplates = pgTable('case_templates', {
   
   // Metadata
   description: text('description'),
-  metadata: jsonb('metadata').$type<Record<string, any>>(),
+  metadata: jsonb('metadata').$type<Record<string, unknown>>(),
   
   // Audit
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -92,7 +92,7 @@ export const generatedDocuments = pgTable('generated_documents', {
   documentUrl: text('document_url'), // Final PDF/DOCX URL
   
   // Merge Data Used
-  mergeData: jsonb('merge_data').$type<Record<string, any>>(),
+  mergeData: jsonb('merge_data').$type<Record<string, unknown>>(),
   
   // Recipient (for letters)
   recipientName: text('recipient_name'),
@@ -108,7 +108,7 @@ export const generatedDocuments = pgTable('generated_documents', {
   status: text('status').notNull().default('draft'), // draft, generated, sent, delivered, failed
   
   // Metadata
-  metadata: jsonb('metadata').$type<Record<string, any>>(),
+  metadata: jsonb('metadata').$type<Record<string, unknown>>(),
   
   // Audit
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -207,7 +207,7 @@ export async function GET(request: NextRequest) {
         totalPages: Math.ceil(Number(count) / limit),
       },
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching templates:', error);
     return NextResponse.json(
       { error: 'Failed to fetch templates', details: error.message },
@@ -245,7 +245,7 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },

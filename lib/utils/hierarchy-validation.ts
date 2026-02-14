@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Hierarchy Validation Utilities
  * 
  * Prevents data corruption in organizational hierarchies:
@@ -76,7 +76,7 @@ export async function detectCircularReference(
     return { valid: false, errors, warnings };
   }
 
-  // If organization is in parent's hierarchy path, it's circular
+  // If organization is in parent's hierarchy path, it&apos;s circular
   if (proposedParent.hierarchyPath?.includes(organizationId)) {
     errors.push(
       `Circular reference detected: ${proposedParent.name} is already a descendant of this organization`
@@ -106,7 +106,7 @@ export async function findOrphanedOrganizations(): Promise<string[]> {
       )
   `);
 
-  return (result as unknown as { rows: any[] }).rows.map((row: any) => row.id);
+  return (result as unknown as { rows: unknown[] }).rows.map((row: unknown) => row.id);
 }
 
 /**
@@ -136,7 +136,7 @@ export async function fixOrphanedOrganizations(orphanIds: string[]): Promise<num
 // =============================================================================
 
 /**
- * Validate hierarchy depth doesn't exceed maximum
+ * Validate hierarchy depth doesn&apos;t exceed maximum
  * 
  * @param hierarchyPath - Path to validate
  * @returns Validation result

@@ -10,14 +10,10 @@ import { db } from '@/db';
 import { arbitrationPrecedents, organizations } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import * as documentService from '@/lib/services/precedent-document-service';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 type RouteContext = {
   params: Promise<{ id: string }>;
 };
@@ -26,7 +22,7 @@ type RouteContext = {
  * Check if user's organization can access a precedent based on sharing level
  */
 async function checkPrecedentAccess(
-  precedent: any,
+  precedent: Record<string, unknown>, Record<string, unknown>,
   userOrgId: string
 ): Promise<boolean> {
   // Owner always has access

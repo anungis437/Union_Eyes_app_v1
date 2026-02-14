@@ -55,7 +55,7 @@ async function testConnection() {
     
     process.exit(0);
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('\n❌ Connection failed:');
     console.error(error.message);
     console.error(error.stack);

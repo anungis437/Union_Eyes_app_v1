@@ -135,7 +135,7 @@ export const OrganizationSettings: React.FC<OrganizationSettingsProps> = ({
       } else {
         setErrors({ submit: 'Failed to save settings. Please try again.' });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       setErrors({ submit: error.message || 'An unexpected error occurred' });
     } finally {
       setIsSaving(false);

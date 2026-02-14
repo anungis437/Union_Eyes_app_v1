@@ -486,7 +486,7 @@ export class SageIntacctAdapter extends BaseIntegration {
   // ==========================================================================
 
   async verifyWebhook(payload: string, signature: string): Promise<boolean> {
-    // Sage Intacct doesn't support webhooks
+    // Sage Intacct doesn&apos;t support webhooks
     return false;
   }
 

@@ -2,14 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { provincialPrivacyConfig, provincialDataHandling } from '@/db/schema/provincial-privacy-schema';
 import { eq } from 'drizzle-orm';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { z } from 'zod';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * Provincial Privacy API
  * Handles province-specific privacy rules (AB PIPA, BC PIPA, QC Law 25, ON PHIPA)

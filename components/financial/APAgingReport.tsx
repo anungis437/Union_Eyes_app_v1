@@ -38,7 +38,7 @@ export default function APAgingReport({ organizationId }: APAgingReportProps) {
 
   useEffect(() => {
     // In a real implementation, this would fetch from an API endpoint
-    // For now, we'll use mock data
+    // For now, we&apos;ll use mock data
     fetchAPAging();
   }, []);
 

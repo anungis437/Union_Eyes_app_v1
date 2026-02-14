@@ -19,7 +19,7 @@ export function PaymentStatusAlert() {
   const pathname = usePathname();
   const { userId } = useAuth();
   
-  // Don't show on pricing page to avoid redundancy
+  // Don&apos;t show on pricing page to avoid redundancy
   const isVisible = pathname !== "/pricing";
   
   // Check payment status on initial load and set up a less frequent check

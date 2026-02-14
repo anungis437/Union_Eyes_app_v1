@@ -26,7 +26,7 @@ const migrationSQL = fs.readFileSync(filePath, 'utf-8');
     
     await sql.unsafe(migrationSQL);
 return true;
-  } catch (error: any) {
+  } catch (error: unknown) {
 return false;
   }
 }

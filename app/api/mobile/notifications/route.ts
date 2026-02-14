@@ -13,7 +13,7 @@ import { APNsProvider } from '@/lib/mobile/providers/apns-provider';
 import { FCMProvider } from '@/lib/mobile/providers/fcm-provider';
 import { logger } from '@/lib/logger';
 import { getAuth } from '@clerk/nextjs/server';
-import { eq, and, inArray } from 'drizzle-orm';
+import { and, inArray } from 'drizzle-orm';
 
 // Initialize providers
 const apnsProvider = new APNsProvider();

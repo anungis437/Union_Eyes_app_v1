@@ -204,7 +204,7 @@ class SyncEngine {
         },
         'completed'
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.notifyListeners(
         {
           issyncing: false,
@@ -252,7 +252,7 @@ class SyncEngine {
         failedOperations: 0,
       });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.updateStatus(entity, {
         issyncing: false,
         lastSyncAt: Date.now(),
@@ -344,7 +344,7 @@ class SyncEngine {
             await localDB.save(entity, updated as any);
           }
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Queue for retry
         await offlineQueue.enqueue({
           type: OperationType.UPDATE,
@@ -433,7 +433,7 @@ class SyncEngine {
 
       // Update last sync timestamp
       localDB.setSimple(lastSyncKey, Date.now());
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw error;
     }
   }

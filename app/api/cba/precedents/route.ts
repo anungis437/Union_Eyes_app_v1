@@ -16,14 +16,10 @@ import {
   claimPrecedentAnalysis
 } from "@/db/schema";
 import { claims } from "@/db/schema/domains/claims";
-import { eq, desc, and, or, like, inArray, sql } from "drizzle-orm";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { desc, and, or, like, inArray } from "drizzle-orm";
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = withEnhancedRoleAuth(10, async (request: NextRequest, context) => {
   const { userId, organizationId } = context;
 
@@ -51,7 +47,7 @@ export const GET = withEnhancedRoleAuth(10, async (request: NextRequest, context
           if (cachedAnalysis.length > 0) {
             // Return cached analysis with full decision details
             const analysis = cachedAnalysis[0];
-            const decisionIds = (analysis.precedentMatches as any[]).map((m: any) => m.decisionId);
+            const decisionIds = (analysis.precedentMatches as Array<Record<string, unknown>>).map((m: Record<string, unknown>) => m.decisionId);
             
             const decisions = await tx
               .select()
@@ -163,7 +159,7 @@ return standardErrorResponse(
  * Find relevant arbitration decisions for a claim
  * In production, this would use vector similarity search on embeddings
  */
-async function findRelevantDecisions(claim: any, limit: number) {
+async function findRelevantDecisions(claim: Record<string, unknown>, Record<string, unknown>, limit: number) {
   // Simplified search based on keywords
   const keywords = extractKeywords(claim.description);
   
@@ -188,8 +184,8 @@ async function findRelevantDecisions(claim: any, limit: number) {
  */
 async function analyzeClaimPrecedents(
   claimId: string,
-  claim: any,
-  decisions: any[],
+  claim: Record<string, unknown>, Record<string, unknown>,
+  decisions: Array<Record<string, unknown>>,
   userId: string
 ) {
   // Build precedent matches
@@ -252,7 +248,7 @@ function extractKeywords(text: string): string[] {
     .slice(0, 10);
 }
 
-function calculateRelevanceScore(claim: any, decision: any): number {
+function calculateRelevanceScore(claim: Record<string, unknown>, decision: Record<string, unknown>) Record<string, unknown>): number {
   // Simplified relevance calculation
   // In production, use embedding cosine similarity
   const claimKeywords = new Set(extractKeywords(claim.description));
@@ -265,15 +261,15 @@ function calculateRelevanceScore(claim: any, decision: any): number {
   return union.size > 0 ? intersection.size / union.size : 0;
 }
 
-function extractMatchingFactors(claim: any, decision: any): string[] {
+function extractMatchingFactors(claim: Record<string, unknown>, decision: Record<string, unknown>) Record<string, unknown>): string[] {
   return ["Similar workplace context", "Comparable issue type"];
 }
 
-function extractDivergingFactors(claim: any, decision: any): string[] {
+function extractDivergingFactors(claim: Record<string, unknown>, decision: Record<string, unknown>) Record<string, unknown>): string[] {
   return ["Different jurisdiction", "Time period variation"];
 }
 
-function generateStrategy(claim: any, decisions: any[]): string {
+function generateStrategy(decisions: Array<Record<string, unknown>>): string {
   const upheldCount = decisions.filter(d => d.outcome === "grievance_upheld").length;
   
   if (upheldCount > decisions.length / 2) {
@@ -283,8 +279,8 @@ function generateStrategy(claim: any, decisions: any[]): string {
   }
 }
 
-function extractRemedies(decisions: any[]): any[] {
-  const remedies: any[] = [];
+function extractRemedies(decisions: Array<Record<string, unknown>>): Array<Record<string, unknown>> {
+  const remedies: Array<Record<string, unknown>> = [];
   
   decisions.forEach(decision => {
     if (decision.remedy) {
@@ -309,7 +305,7 @@ function extractRemedies(decisions: any[]): any[] {
   return remedies;
 }
 
-function analyzeArbitratorTendencies(decisions: any[]): any {
+function analyzeArbitratorTendencies(decisions: Array<Record<string, unknown>>): any {
   if (decisions.length === 0) return null;
   
   const arbitrators = decisions.map(d => d.arbitrator).filter(Boolean);

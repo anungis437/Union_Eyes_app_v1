@@ -9,10 +9,10 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { inAppNotifications } from '@/db/schema';
-import { eq, and, desc, sql } from 'drizzle-orm';
+import { and, desc } from 'drizzle-orm';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
-import { standardErrorResponse, standardSuccessResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {

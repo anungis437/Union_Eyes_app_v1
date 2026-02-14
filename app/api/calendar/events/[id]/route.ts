@@ -14,17 +14,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { calendarEvents, eventAttendees } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { and } from "drizzle-orm";
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { logApiAuditEvent } from "@/lib/middleware/request-validation";
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 const updateEventSchema = z.object({
   title: z.string().min(1).optional(),
   description: z.string().optional(),
@@ -199,7 +195,7 @@ export const PATCH = withEnhancedRoleAuth(40, async (
     }
 
     // Update event
-    const updateData: any = {
+    const updateData = {
       ...data,
       updatedAt: new Date(),
     };

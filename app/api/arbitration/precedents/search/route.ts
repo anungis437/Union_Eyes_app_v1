@@ -1,4 +1,4 @@
-﻿import { logApiAuditEvent } from "@/lib/middleware/api-security";
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * Phase 5B: Arbitration Precedents Advanced Search API
  * Route: /api/arbitration/precedents/search
@@ -7,24 +7,20 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
-import { db, organizations } from "@/db";
+import { organizations } from "@/db";
 import { arbitrationPrecedents } from "@/db/schema";
-import { eq, and, or, ilike, inArray, gte, lte, sql } from "drizzle-orm";
+import { and, or, ilike, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // Helper to check access
-async function canAccessPrecedent(
+async function async function canAccessPrecedent(
   userId: string,
   userOrgId: string,
   userOrgHierarchyPath: string[],
-  precedent: any
+  precedent: Record<string, unknown>
 ): Promise<boolean> {
   if (precedent.sourceOrganizationId === userOrgId) {
     return true;
@@ -168,7 +164,7 @@ export const POST = async (request: NextRequest) => {
       const offset = (page - 1) * limit;
 
       // Build filters array
-      const filters: any[] = [];
+      const filters: Array<Record<string, unknown>> = [];
 
       // Full-text search across multiple fields
       if (query && query.trim()) {
@@ -306,7 +302,7 @@ export const POST = async (request: NextRequest) => {
 
       const finalPrecedents = accessiblePrecedents.filter((p): p is NonNullable<typeof p> => p !== null);
 
-      // Get total count for pagination (approximate since we're doing post-filtering)
+      // Get total count for pagination (approximate since we&apos;re doing post-filtering)
       const [{ count }] = await withRLSContext({ organizationId: userOrgId }, async (db) => {
         return await db
           .select({ count: sql<number>`count(*)::int` })

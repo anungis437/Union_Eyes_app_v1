@@ -7,17 +7,12 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { sendCompletionCertificate } from '@/lib/email/training-notifications';
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
@@ -76,7 +71,7 @@ export const GET = async (request: NextRequest) => {
     `);
 
       // Calculate expiry status for certifications
-      const completions = result.map((row: any) => {
+      const completions = result.map((row: Record<string, unknown>) => {
         const expiryDate = row.certification_valid_years && row.completion_date
           ? new Date(row.completion_date)
           : null;
@@ -102,7 +97,7 @@ export const GET = async (request: NextRequest) => {
       // Filter out expired if requested
       const filteredCompletions = includeExpired === 'true'
         ? completions
-        : completions.filter((c: any) => !c.is_expired);
+        : completions.filter((c: Record<string, unknown>) => !c.is_expired);
 
       return NextResponse.json({
         success: true,
@@ -272,7 +267,7 @@ export const POST = async (request: NextRequest) => {
           logger.error('Error auto-generating certificate', certError as Error, {
             registrationId,
           });
-          // Don't fail the completion if certificate generation fails
+          // Don&apos;t fail the completion if certificate generation fails
         }
       }
 

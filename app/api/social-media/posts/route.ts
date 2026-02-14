@@ -11,13 +11,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSocialMediaService } from '@/lib/social-media/social-media-service';
 import { createClient } from '@supabase/supabase-js';
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // Lazy initialization - env vars not available during build
 let supabaseClient: ReturnType<typeof createClient> | null = null;
 function getSupabaseClient() {
@@ -285,7 +281,7 @@ export const DELETE = withRoleAuth(20, async (request: NextRequest, context) => 
     );
       }
 
-      if (organizationId !== (post.account as any).organization_id) {
+      if (organizationId !== (post.account as Record<string, unknown> | undefined)?.organization_id) {
         return standardErrorResponse(
           ErrorCode.FORBIDDEN,
           'Unauthorized'

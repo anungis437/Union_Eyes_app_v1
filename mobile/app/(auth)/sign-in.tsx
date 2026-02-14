@@ -112,7 +112,7 @@ export default function SignInScreen() {
       }
 
       router.replace('/(tabs)');
-    } catch (err: any) {
+    } catch (err: unknown) {
       Alert.alert(
         'Sign In Failed',
         err.errors?.[0]?.message || 'Invalid email or password. Please try again.'
@@ -142,7 +142,7 @@ export default function SignInScreen() {
           await setActive({ session: completeSignIn.createdSessionId });
         }
         router.replace('/(tabs)');
-      } catch (err: any) {
+      } catch (err: unknown) {
         Alert.alert('Error', 'Failed to sign in. Please use your password.');
       }
     } else {

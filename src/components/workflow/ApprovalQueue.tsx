@@ -43,7 +43,7 @@ interface ApprovalRequest {
   requestedAt: string;
   respondedAt?: string;
   claimId?: string;
-  context?: any;
+  context?: Record<string, unknown>;
 }
 
 interface ApprovalQueueProps {

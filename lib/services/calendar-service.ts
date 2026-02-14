@@ -360,7 +360,7 @@ export async function generateRecurringInstances(
       (event.exceptionDates || []).map(d => d.toISOString().split('T')[0])
     );
 
-    let currentDate = new Date(eventStart);
+    const currentDate = new Date(eventStart);
     let count = 0;
     const maxCount = rruleParts.COUNT || 365; // Safety limit
     const interval = rruleParts.INTERVAL || 1;
@@ -844,7 +844,7 @@ export async function getPendingReminders(
     // In production:
     // 1. Find events starting within lookAheadMinutes
     // 2. Get their reminders
-    // 3. Filter reminders that haven't been sent
+    // 3. Filter reminders that haven&apos;t been sent
 
     return [];
   } catch (error) {

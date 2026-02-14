@@ -55,10 +55,10 @@ async function checkMigrations() {
     console.log('\n✨ Check complete!');
     process.exit(0);
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('\n❌ Error checking migrations:');
-    console.error(error.message);
-    console.error(error.stack);
+    console.error((error as Error).message);
+    console.error((error as Error).stack);
     process.exit(1);
   }
 }

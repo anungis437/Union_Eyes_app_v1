@@ -9,11 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from "zod";
 import { withAdminAuth } from "@/lib/api-auth-guard";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const adminJobsSchema = z.object({
   queue: z.string().min(1, 'queue is required'),

@@ -1,16 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { polls, pollVotes } from '@/db/schema';
-import { and, eq, sql } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { z } from 'zod';
 import { withApiAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // Validation schema
 const VoteSchema = z.object({
   optionId: z.string().min(1, 'Option ID is required'),
@@ -92,7 +88,7 @@ export const POST = withApiAuth(async (
     }
 
     // Verify option exists
-    const options = poll.options as any[];
+    const options = poll.options as Array<Record<string, unknown>>;
     const optionExists = options.some((opt) => opt.id === optionId);
     
     if (!optionExists) {
@@ -165,7 +161,7 @@ export const POST = withApiAuth(async (
       .returning();
 
     // Calculate percentages
-    const optionsWithPercentages = (updatedPoll.options as any[]).map((option: any) => ({
+    const optionsWithPercentages = (updatedPoll.options as Array<Record<string, unknown>>).map((option: Record<string, unknown>) => ({
       ...option,
       percentage: updatedPoll.totalVotes > 0 ? (option.votes / updatedPoll.totalVotes) * 100 : 0,
     }));

@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { nlrbClrbFilings, organizingCampaigns } from '@/db/schema/organizing-tools-schema';
-import { eq, and } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { z } from 'zod';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // Validation schema for NLRB filing submission
 const NLRBFilingSchema = z.object({
   campaignId: z.string().uuid('Campaign ID must be a valid UUID'),

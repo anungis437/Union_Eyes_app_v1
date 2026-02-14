@@ -25,15 +25,11 @@ import {
   deleteOrganization,
   getOrganizationDescendants,
 } from "@/db/queries/organization-queries";
-import { eq, and, sql } from "drizzle-orm";
+import { and } from "drizzle-orm";
 import { z } from "zod";
 import { withEnhancedRoleAuth, withAdminAuth } from "@/lib/api-auth-guard";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // =====================================================
 // GET - Get Organization by ID
 // =====================================================
@@ -180,7 +176,7 @@ export const PUT = async (request: NextRequest, { params }: { params: { id: stri
         if (body.parentId) {
           // Check if new parent is a descendant
           const descendants = await getOrganizationDescendants(id, true, tx);
-          const descendantIds = descendants.map((d: any) => d.id);
+          const descendantIds = descendants.map((d: Record<string, unknown>) => d.id);
           if (descendantIds.includes(body.parentId)) {
             return NextResponse.json(
               { error: "Cannot set a descendant as parent" },

@@ -13,7 +13,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withRoleAuth } from '@/lib/role-middleware';
 import { getSmartDefaults } from '@/lib/utils/smart-onboarding';
 import { logger } from '@/lib/logger';
-import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { ErrorCode } from '@/lib/api/standardized-responses';
 
 export const GET = withRoleAuth('member', async (request, context) => {
   const { userId, organizationId } = context;

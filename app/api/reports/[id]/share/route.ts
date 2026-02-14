@@ -12,22 +12,17 @@
 import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
-import { sql } from 'drizzle-orm';
 import { db } from '@/db/db';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { NotificationService } from '@/lib/services/notification-service';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * GET - Get all shares for a report
  */
 async function getHandler(
   req: NextRequest,
-  context: any,
+  context: any, Record<string, unknown>,
   params?: any
 ) {
   const reportId = params?.id || context?.params?.id;
@@ -73,7 +68,7 @@ async function getHandler(
       count: shares.length,
     });
 
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
 return standardErrorResponse(
       ErrorCode.INTERNAL_ERROR,
       'Failed to fetch report shares',
@@ -87,7 +82,7 @@ return standardErrorResponse(
  */
 async function postHandler(
   req: NextRequest,
-  context: any,
+  context: any, Record<string, unknown>,
   params?: any
 ) {
   const reportId = params?.id || context?.params?.id;
@@ -167,7 +162,7 @@ async function postHandler(
     // Send email notifications to shared users
     try {
       const notificationService = new NotificationService();
-      const reportDetails = report[0] as any;
+      const reportDetails = report[0] as Record<string, unknown>;
       
       for (const sharedWithId of sharedWithList) {
         // Get user email
@@ -176,11 +171,11 @@ async function postHandler(
         `);
         
         if (userResult.length > 0) {
-          const user = userResult[0] as any;
+          const user = userResult[0] as Record<string, unknown>;
           const sharerResult = await db.execute(sql`
             SELECT email, first_name, last_name FROM users WHERE id = ${userId}
           `);
-          const sharer = sharerResult.length > 0 ? (sharerResult[0] as any) : { first_name: 'A user' };
+          const sharer = sharerResult.length > 0 ? (sharerResult[0] as Record<string, unknown>) : { first_name: 'A user' };
           
           await notificationService.send({
             organizationId,
@@ -211,7 +206,7 @@ async function postHandler(
         }
       }
     } catch (error) {
-// Don't fail the share operation if notifications fail
+// Don&apos;t fail the share operation if notifications fail
     }
 
     return NextResponse.json({ 
@@ -219,7 +214,7 @@ async function postHandler(
       message: `Report shared with ${shares.length} user(s)`,
     }, { status: 201 });
 
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
 return standardErrorResponse(
       ErrorCode.INTERNAL_ERROR,
       'Failed to share report',
@@ -233,7 +228,7 @@ return standardErrorResponse(
  */
 async function deleteHandler(
   req: NextRequest,
-  context: any,
+  context: any, Record<string, unknown>,
   params?: any
 ) {
   const reportId = params?.id || context?.params?.id;
@@ -283,7 +278,7 @@ async function deleteHandler(
       message: 'Report share revoked successfully',
     });
 
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
 return standardErrorResponse(
       ErrorCode.INTERNAL_ERROR,
       'Failed to revoke report share',

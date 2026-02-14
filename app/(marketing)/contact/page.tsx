@@ -24,7 +24,7 @@ export default function ContactPage() {
             Get in touch
           </h1>
           <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-            We don't do high-pressure sales. We're here to answer questions and have a real conversation about your needs.
+            We don&apos;t do high-pressure sales. We&apos;re here to answer questions and have a real conversation about your needs.
           </p>
         </div>
       </header>
@@ -127,7 +127,7 @@ export default function ContactPage() {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-600">✓</span>
-                  <span>Honest assessment of whether we're the right fit</span>
+                  <span>Honest assessment of whether we&apos;re the right fit</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-600">✓</span>

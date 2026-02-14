@@ -1,11 +1,11 @@
-﻿/**
+/**
  * Alert Rules API
  *
  * CRUD for alert rules with conditions and actions.
  */
 
 import { z } from "zod";
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, inArray } from "drizzle-orm";
 import { withRLSContext } from "@/lib/db/with-rls-context";
 import { withRoleAuth } from "@/lib/api-auth-guard";
 import {
@@ -18,10 +18,7 @@ import {
   alertActionType,
   alertConditionOperator,
 } from "@/db/schema";
-import {
-  ErrorCode,
-  standardErrorResponse,
-  standardSuccessResponse,
+import { standardSuccessResponse,
 } from "@/lib/api/standardized-responses";
 
 const listRulesSchema = z.object({
@@ -91,7 +88,7 @@ export const GET = withRoleAuth("admin", async (request, context) => {
   }
 
   try {
-    return await withRLSContext(async (tx: any) => {
+    return await withRLSContext(async (tx: Record<string, unknown>) => {
       const filters = [eq(alertRules.organizationId, scopeOrgId), eq(alertRules.isDeleted, false)];
 
       if (query.category) {
@@ -122,7 +119,7 @@ export const GET = withRoleAuth("admin", async (request, context) => {
         return standardSuccessResponse({ rules: [], count: 0 });
       }
 
-      const ruleIds = rules.map((rule: any) => rule.id);
+      const ruleIds = rules.map((rule: Record<string, unknown>) => rule.id);
 
       const conditionCounts = await tx
         .select({
@@ -142,10 +139,10 @@ export const GET = withRoleAuth("admin", async (request, context) => {
         .where(inArray(alertActions.alertRuleId, ruleIds))
         .groupBy(alertActions.alertRuleId);
 
-      const conditionMap = new Map(conditionCounts.map((row: any) => [row.alertRuleId, row.count]));
-      const actionMap = new Map(actionCounts.map((row: any) => [row.alertRuleId, row.count]));
+      const conditionMap = new Map(conditionCounts.map((row: Record<string, unknown>) => [row.alertRuleId, row.count]));
+      const actionMap = new Map(actionCounts.map((row: Record<string, unknown>) => [row.alertRuleId, row.count]));
 
-      const data = rules.map((rule: any) => ({
+      const data = rules.map((rule: Record<string, unknown>) => ({
         ...rule,
         conditionsCount: conditionMap.get(rule.id) ?? 0,
         actionsCount: actionMap.get(rule.id) ?? 0,
@@ -194,7 +191,7 @@ export const POST = withRoleAuth("admin", async (request, context) => {
   const payload = parsed.data;
 
   try {
-    return await withRLSContext(async (tx: any) => {
+    return await withRLSContext(async (tx: Record<string, unknown>) => {
       const [createdRule] = await tx
         .insert(alertRules)
         .values({

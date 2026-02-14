@@ -126,7 +126,7 @@ async function diagnosticTest() {
     console.log('✨ Diagnostic complete!');
     process.exit(0);
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('\n❌ Error:', error.message);
     if (error.stack) {
       console.error(error.stack);

@@ -6,7 +6,7 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { db, organizations } from "@/db";
+import { organizations } from "@/db";
 import { sharedClauseLibrary } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { logger } from '@/lib/logger';
@@ -14,11 +14,7 @@ import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { withRLSContext } from "@/lib/db/with-rls-context";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // PATCH /api/clause-library/[id]/share - Update sharing settings
 
 const clauseLibraryShareSchema = z.object({
@@ -96,7 +92,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
       }
 
       // Build update object
-      const updates: any = {
+      const updates = {
         updatedAt: new Date(),
       };
 

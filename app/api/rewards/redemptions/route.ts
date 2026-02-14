@@ -8,14 +8,10 @@ import {
 } from '@/lib/services/rewards/redemption-service';
 import { initiateRedemptionSchema } from '@/lib/validation/rewards-schemas';
 import { z } from 'zod';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { NextResponse } from "next/server";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(10, async (request, context) => {
   try {
@@ -52,7 +48,7 @@ export const GET = async (request: NextRequest) => {
         db, userId,
         organizationId,
         {
-          status: status as any,
+          status: status,
           limit,
           offset,
         }
@@ -139,7 +135,7 @@ export const POST = async (request: NextRequest) => {
       200
     );
 
-    } catch (error: any) {
+    } catch (error: Record<string, unknown>) {
 // Handle specific business logic errors
       if (error.message?.includes('Cannot cancel')) {
         return NextResponse.json(

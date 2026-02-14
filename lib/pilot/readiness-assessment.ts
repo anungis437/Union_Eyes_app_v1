@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Pilot Readiness Assessment Service
  * 
  * Purpose: Evaluate organization readiness for Union Eyes pilot program
@@ -168,7 +168,7 @@ function evaluateCurrentSystem(
 /**
  * Evaluate leadership buy-in and commitment
  */
-function evaluateLeadership(responses: Record<string, any>): {
+function evaluateLeadership(responses: Record<string, unknown>): {
   points: number;
   strength?: string;
   concern?: string;
@@ -200,7 +200,7 @@ function evaluateLeadership(responses: Record<string, any>): {
 /**
  * Evaluate technical capacity
  */
-function evaluateTechnicalCapacity(responses: Record<string, any>): {
+function evaluateTechnicalCapacity(responses: Record<string, unknown>): {
   points: number;
   strength?: string;
   concern?: string;

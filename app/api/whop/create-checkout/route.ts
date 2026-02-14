@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { DEFAULT_REDIRECT_URL } from "../webhooks/utils/constants";
 import { requireUser } from '@/lib/api-auth-guard';
 import { logger } from '@/lib/logger';
-import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { ErrorCode } from '@/lib/api/standardized-responses';
 
 /**
  * API endpoint to create a Whop checkout session with properly structured metadata
@@ -61,12 +61,12 @@ export async function POST(req: Request) {
     // Use the constant from constants.ts instead of hardcoded URL
     const defaultRedirectUrl = DEFAULT_REDIRECT_URL;
     
-    // Validate redirectUrl - ensure it's a proper URL to prevent ERR_INVALID_URL errors
+    // Validate redirectUrl - ensure it&apos;s a proper URL to prevent ERR_INVALID_URL errors
     let validRedirectUrl = defaultRedirectUrl;
     
     if (redirectUrl) {
       try {
-        // If it's a relative URL, convert to absolute
+        // If it&apos;s a relative URL, convert to absolute
         if (redirectUrl.startsWith('/')) {
           // Use the host from defaultRedirectUrl
           const baseUrl = new URL(defaultRedirectUrl).origin;
@@ -76,7 +76,7 @@ export async function POST(req: Request) {
           new URL(redirectUrl);
           validRedirectUrl = redirectUrl;
         } else {
-          // If it's not a valid URL format, use default
+          // If it&apos;s not a valid URL format, use default
           logger.warn('Invalid redirect URL format, using default', { redirectUrl });
           validRedirectUrl = defaultRedirectUrl;
         }
@@ -86,7 +86,7 @@ export async function POST(req: Request) {
       }
     }
     
-    // Add a clean return parameter that doesn't include any auth parameters
+    // Add a clean return parameter that doesn&apos;t include any auth parameters
     // This helps prevent cookie overloading issues
     if (validRedirectUrl.includes('?')) {
       // Already has query parameters, add payment success and cache buster

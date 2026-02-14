@@ -1,17 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { votingSessions, votingOptions, voterEligibility, votes } from '@/db/schema/domains/governance';
-import { eq, and, count, sql } from 'drizzle-orm';
+import { and, count } from 'drizzle-orm';
 import { z } from 'zod';
 import { logApiAuditEvent, SQLInjectionScanner } from '@/lib/middleware/api-security';
 import { RequestValidator } from '@/lib/middleware/request-validation';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 interface RouteParams {
   params: {
     id: string;

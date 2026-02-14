@@ -4,7 +4,7 @@
  * Real-time alert system for Labour Relations Officers.
  * Detects cases requiring attention and generates actionable signals.
  * 
- * Principle: "Signal what needs attention. Suppress what doesn't."
+ * Principle: "Signal what needs attention. Suppress what doesn&apos;t."
  */
 
 import { differenceInBusinessDays } from 'date-fns';

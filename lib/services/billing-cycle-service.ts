@@ -335,7 +335,7 @@ export class BillingCycleService {
     // Allocate to COPE/PAC/Strike Fund (simplified - can be made configurable)
     const breakdown = this.allocateDuesBreakdown(proRatedAmount);
 
-    // Dry run: don't create transaction
+    // Dry run: don&apos;t create transaction
     if (dryRun) {
       return {
         memberId: member.id,

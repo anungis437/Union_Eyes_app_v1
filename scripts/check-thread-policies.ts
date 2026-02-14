@@ -35,7 +35,7 @@ async function checkThreadPolicies() {
     
     process.exit(0);
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('\n❌ Error:', error.message);
     process.exit(1);
   }

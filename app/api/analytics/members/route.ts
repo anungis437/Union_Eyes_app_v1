@@ -11,11 +11,7 @@ import { getMemberAnalytics } from '@/db/queries/analytics-queries';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = withEnhancedRoleAuth(30, async (req: NextRequest, context) => {
   const { userId, organizationId } = context;
 

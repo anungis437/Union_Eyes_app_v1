@@ -263,7 +263,7 @@ export function PilotRequestForm() {
                 Tell us about your organization
               </h2>
               <p className="text-slate-600 text-sm">
-                We'll use this to personalize your pilot experience
+                We&apos;ll use this to personalize your pilot experience
               </p>
             </div>
 
@@ -607,7 +607,7 @@ export function PilotRequestForm() {
                 <div>
                   <h4 className="font-semibold text-blue-900">What happens next?</h4>
                   <p className="text-sm text-blue-800 mt-1">
-                    We'll review your application and contact you within 2-3 business days 
+                    We&apos;ll review your application and contact you within 2-3 business days 
                     to schedule a discovery call and begin your pilot onboarding.
                   </p>
                 </div>

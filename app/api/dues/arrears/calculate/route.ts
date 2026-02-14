@@ -5,7 +5,7 @@
  */
 
 import { db } from '@/db';
-import { eq, and, sql } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 
 // Import schemas (assuming from dues-finance-schema)
 // import { memberDuesLedger, memberArrears } from '@/db/schema/dues-finance-schema';
@@ -27,7 +27,7 @@ interface ArrearsCalculation {
 export async function calculateMemberArrears(userId: string): Promise<ArrearsCalculation> {
   console.log(`📊 Calculating arrears for member: ${userId}`);
 
-  // Get all unpaid charges (where balance hasn't been paid off)
+  // Get all unpaid charges (where balance hasn&apos;t been paid off)
   // const unpaidCharges = await db
   //   .select({
   //     id: memberDuesLedger.id,
@@ -260,7 +260,7 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error calculating arrears:', error);
     return Response.json(
       { error: 'Failed to calculate arrears', details: error.message },
@@ -290,7 +290,7 @@ export async function GET(request: Request) {
       summary,
       calculatedAt: new Date().toISOString(),
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching arrears summary:', error);
     return Response.json(
       { error: 'Failed to fetch summary', details: error.message },

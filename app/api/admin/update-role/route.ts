@@ -2,16 +2,12 @@ import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { organizationMembers } from '@/db/schema-organizations';
-import { eq, and } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 const DEFAULT_ORG_ID = '458a56cb-251a-4c91-a0b5-81bb8ac39087';
 
 /**

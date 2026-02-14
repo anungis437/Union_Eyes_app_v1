@@ -16,7 +16,7 @@ import { requireApiAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { db } from '@/services/financial-service/src/db';
 import { subscriptionEvents, mrrSnapshots } from '@/services/financial-service/src/db/schema-platform-economics';
-import { eq, and, desc, gte, lte, sql, sum } from 'drizzle-orm';
+import { and, desc, sum } from 'drizzle-orm';
 
 // Helper to safely parse numeric
 const parseNumeric = (val: any, defaultVal = 0): number => {

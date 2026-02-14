@@ -9,14 +9,10 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
 import { generatePredictions } from '@/actions/analytics-actions';
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const analyticsPredictionsSchema = z.object({
   predictionType: z.string().min(1, 'predictionType is required'),
@@ -145,7 +141,7 @@ export const GET = async (request: NextRequest) => {
       // Get recent predictions from database
       const { db } = await import('@/db');
       const { mlPredictions } = await import('@/db/schema');
-      const { eq, desc } = await import('drizzle-orm');
+      const { desc } = await import('drizzle-orm');
       
       // Get user's org ID (simplified for now)
       const predictions = await withRLSContext({ organizationId }, async (db) => {

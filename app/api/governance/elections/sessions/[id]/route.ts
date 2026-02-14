@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { votingSessions, voterEligibility, votes, votingOptions, votingAuditLog } from '@/db/schema/voting-schema';
-import { eq, and, desc, sql } from 'drizzle-orm';
+import { and, desc } from 'drizzle-orm';
 import { z } from 'zod';
 
 // Validation schema for updating session
@@ -122,7 +122,7 @@ export async function GET(
         quorumPercentage: Math.round(turnoutPercentage * 100) / 100,
       },
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching voting session:', error);
     return NextResponse.json(
       { error: 'Failed to fetch voting session', details: error.message },
@@ -181,7 +181,7 @@ export async function PUT(
       }
       
       // Update status with timestamps
-      const updateData: any = {
+      const updateData = {
         status: validatedData.status,
         updatedAt: new Date(),
       };
@@ -229,7 +229,7 @@ export async function PUT(
         session: updatedSession,
       });
     }
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error updating voting session:', error);
     
     if (error instanceof z.ZodError) {
@@ -296,7 +296,7 @@ export async function DELETE(
       message: 'Voting session cancelled',
       session: cancelledSession,
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error cancelling voting session:', error);
     return NextResponse.json(
       { error: 'Failed to cancel voting session', details: error.message },

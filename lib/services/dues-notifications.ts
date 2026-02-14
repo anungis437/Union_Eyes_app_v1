@@ -124,7 +124,7 @@ export async function sendPaymentConfirmation(
       error,
       transactionId,
     });
-    // Don't throw - notification failure shouldn't block payment processing
+    // Don&apos;t throw - notification failure shouldn't block payment processing
   }
 }
 
@@ -222,7 +222,7 @@ export async function sendPaymentFailure(
         priority: 'high',
         title: retryScheduled ? 'Payment Retry Scheduled' : '⚠️ Payment Failed',
         body: retryScheduled
-          ? `We'll retry your payment on ${retryDate}`
+          ? `We&apos;ll retry your payment on ${retryDate}`
           : `Your payment of $${transaction.totalAmount} failed`,
         templateId: template.id,
         metadata: {
@@ -242,7 +242,7 @@ export async function sendPaymentFailure(
       error,
       transactionId,
     });
-    // Don't throw
+    // Don&apos;t throw
   }
 }
 
@@ -327,7 +327,7 @@ export async function sendAdminIntervention(
       error,
       transactionId,
     });
-    // Don't throw
+    // Don&apos;t throw
   }
 }
 

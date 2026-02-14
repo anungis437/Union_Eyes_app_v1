@@ -438,7 +438,7 @@ export function SMSCampaignManager({
                           <div>
                             <FormLabel className="!mt-0">Respect quiet hours</FormLabel>
                             <FormDescription className="text-xs">
-                              Don't send between 9 PM and 8 AM in recipient's timezone
+                              Don&apos;t send between 9 PM and 8 AM in recipient's timezone
                             </FormDescription>
                           </div>
                         </FormItem>

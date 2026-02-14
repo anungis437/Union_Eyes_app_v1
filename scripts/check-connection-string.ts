@@ -44,7 +44,7 @@ try {
     });
   }
   
-} catch (error: any) {
+} catch (error: unknown) {
   console.error('❌ Invalid DATABASE_URL format:', error.message);
   console.log('\nFull URL (first 50 chars):', dbUrl.substring(0, 50) + '...');
   process.exit(1);

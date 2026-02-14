@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db/db';
 import { mobileDevices } from '@/db/schema/mobile-devices-schema';
-import { eq, and } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { getAuth } from '@clerk/nextjs/server';
 
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
       query = query.where(
         and(
           eq(mobileDevices.userId, auth.userId),
-          eq(mobileDevices.organizationId, organizationId as any),
+          eq(mobileDevices.organizationId, organizationId),
           activeOnly ? eq(mobileDevices.isActive, true) : undefined
         )
       );
@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
         deviceId: data.deviceId,
         deviceToken: data.deviceToken,
         userId: auth.userId,
-        organizationId: organizationId as any,
+        organizationId: organizationId,
         platform: data.platform,
         deviceName: data.deviceName,
         deviceModel: data.deviceModel,

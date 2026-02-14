@@ -128,7 +128,7 @@ export function StewardOnboardingWizard() {
           Steward Onboarding
         </h1>
         <p className="text-gray-600 dark:text-gray-300 mt-2">
-          Welcome to your role as a union steward. Let's get you prepared.
+          Welcome to your role as a union steward. Let&apos;s get you prepared.
         </p>
       </div>
 
@@ -236,7 +236,7 @@ function IntroductionStep({
         </div>
 
         <div className="border rounded-lg p-4">
-          <h4 className="font-medium mb-2">What You'll Need</h4>
+          <h4 className="font-medium mb-2">What You&apos;ll Need</h4>
           <ul className="text-sm space-y-2 text-gray-600">
             <li className="flex items-start gap-2">
               <Clock className="w-4 h-4 text-blue-500 mt-0.5" />
@@ -282,7 +282,7 @@ function GrievanceBasicsStep() {
         <h3 className="font-semibold text-yellow-900 mb-2">🔰 Grievance Handling 101</h3>
         <p className="text-yellow-800 text-sm">
           A grievance is any complaint or concern about the interpretation or application 
-          of our collective agreement. As a steward, you'll be the first point of contact.
+          of our collective agreement. As a steward, you&apos;ll be the first point of contact.
         </p>
       </div>
 
@@ -443,7 +443,7 @@ function ResourcesStep() {
   return (
     <div className="space-y-6">
       <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-        <h3 className="font-semibold text-green-900 mb-2">🎯 You're Ready!</h3>
+        <h3 className="font-semibold text-green-900 mb-2">🎯 You&apos;re Ready!</h3>
         <p className="text-green-800 text-sm">
           Here's everything you need to succeed in your role as a steward.
         </p>

@@ -10,15 +10,11 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { meetingRooms, roomBookings, calendarEvents } from '@/db/schema/calendar-schema';
-import { eq, and, or, gte, lte, desc } from 'drizzle-orm';
+import { and, or, desc } from 'drizzle-orm';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const meetingRoomsBookingsSchema = z.object({
   startTime: z.string().datetime().optional(),

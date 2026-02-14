@@ -35,7 +35,7 @@ async function checkDuesTransactionsForeignKeys() {
       console.log('  No foreign keys found on dues_transactions table');
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('\n❌ Error:', error.message || error);
   } finally {
     await client.end();

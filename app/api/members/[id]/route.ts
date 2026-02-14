@@ -3,10 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { getMemberById, updateMember as updateMemberRecord } from '@/db/queries/organization-members-queries';
 import { db } from '@/db';
-import { sql } from 'drizzle-orm';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { z } from 'zod';
-import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { ErrorCode } from '@/lib/api/standardized-responses';
 
 export const dynamic = 'force-dynamic';
 

@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withAuth, logApiAuditEvent } from '@/lib/middleware/api-security';
+import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { requireUser } from '@/lib/api-auth-guard';
 
 import { createClient } from "@/packages/supabase/server";
 import { logger } from '@/lib/logger';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * GET /api/organizations/[id]/access-logs
  * Retrieve cross-organization access logs for audit trail
@@ -42,8 +38,8 @@ export async function GET(
 
     // Verify user has admin/officer access to this organization
     const { data: userOrgs } = await supabase.rpc("get_user_organizations");
-    const hasAccess = (userOrgs as unknown as any[])?.some(
-      (org: any) => org.id === organizationId && ["admin", "officer"].includes(org.user_role)
+    const hasAccess = (userOrgs as unknown as Array<Record<string, unknown>>)?.some(
+      (org: Record<string, unknown>) => org.id === organizationId && ["admin", "officer"].includes(org.user_role)
     );
 
     if (!hasAccess) {
@@ -125,19 +121,19 @@ export async function GET(
       .select("access_type, resource_type")
       .eq("resource_owner_org_id", organizationId);
 
-    const accessTypeStats = stats?.reduce((acc: any, log: any) => {
+    const accessTypeStats = stats?.reduce((acc: Record<string, unknown>, log: Record<string, unknown>) => {
       acc[log.access_type] = (acc[log.access_type] || 0) + 1;
       return acc;
     }, {});
 
-    const resourceTypeStats = stats?.reduce((acc: any, log: any) => {
+    const resourceTypeStats = stats?.reduce((acc: Record<string, unknown>, log: Record<string, unknown>) => {
       acc[log.resource_type] = (acc[log.resource_type] || 0) + 1;
       return acc;
     }, {});
 
     // Get unique accessing organizations
     const uniqueOrgs = new Set(
-      logs?.map((log: any) => log.user_org?.id).filter(Boolean)
+      logs?.map((log: Record<string, unknown>) => log.user_org?.id).filter(Boolean)
     );
 
     return NextResponse.json({

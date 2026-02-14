@@ -1,4 +1,4 @@
-/**
+﻿/**
  * System Status Page
  * 
  * Monitors critical service health and provides public status page
@@ -135,7 +135,7 @@ export async function checkRedisHealth(): Promise<ServiceHealth> {
 
     // Attempt to ping Redis
     // Note: Actual implementation would use your Redis client
-    // For now, we'll simulate a check
+    // For now, we&apos;ll simulate a check
     const responseTime = Date.now() - startTime;
 
     return {
@@ -260,7 +260,7 @@ function determineOverallStatus(services: ServiceHealth[]): ServiceStatus {
 /**
  * Create failed service health object
  */
-function getFailedService(name: string, error: any): ServiceHealth {
+function getFailedService(name: string, error: unknown): ServiceHealth {
   return {
     name,
     status: 'down',

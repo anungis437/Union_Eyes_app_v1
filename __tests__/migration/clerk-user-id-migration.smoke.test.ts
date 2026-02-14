@@ -216,7 +216,7 @@ describe('Clerk User ID Migration - Smoke Tests', () => {
         
         // Should not throw error, even if no data
         expect(result).toBeDefined();
-      } catch (error: any) {
+      } catch (error: unknown) {
         const message = String(error?.cause?.message ?? error?.message ?? error);
         if (message.includes('does not exist')) {
           expect(true).toBe(true);
@@ -233,7 +233,7 @@ describe('Clerk User ID Migration - Smoke Tests', () => {
         `);
         
         expect(result).toBeDefined();
-      } catch (error: any) {
+      } catch (error: unknown) {
         const message = String(error?.cause?.message ?? error?.message ?? error);
         if (message.includes('does not exist')) {
           expect(true).toBe(true);
@@ -476,7 +476,7 @@ describe('Clerk User ID Migration - Smoke Tests', () => {
         }).returning();
 
         expect(result[0].memberId).toBe(testUserId);
-      } catch (error: any) {
+      } catch (error: unknown) {
         // FK constraint error is expected if course/session don't exist
         // We're validating the member_id accepts varchar
         const message = String(error?.cause?.message ?? error?.message ?? error);

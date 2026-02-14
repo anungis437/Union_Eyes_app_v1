@@ -32,8 +32,8 @@ async function checkAllPolicies() {
     
     await sql.end();
     
-  } catch (error: any) {
-    console.error('Error:', error.message);
+  } catch (error: unknown) {
+    console.error('Error:', (error as Error).message);
     await sql.end();
     process.exit(1);
   }

@@ -12,12 +12,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 import {
   getClaimDeadlines,
   getCriticalDeadlines,
@@ -37,12 +33,12 @@ import {
  * GET /api/deadlines
  * List deadlines with filters
  */
-export const GET = withApiAuth(async (request: NextRequest, context: any) => {
+export const GET = withApiAuth(async (request: NextRequest, context: Record<string, unknown>) => {
   const { organizationId, userId } = context;
   const { searchParams } = new URL(request.url);
   
   const claimId = searchParams.get('claimId');
-  const status = searchParams.get('status') as any;
+  const status = searchParams.get('status') as Record<string, unknown>;
   const daysAhead = searchParams.get('daysAhead');
   
   try {

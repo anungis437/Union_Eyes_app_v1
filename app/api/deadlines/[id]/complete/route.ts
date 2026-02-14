@@ -3,11 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { completeDeadline } from '@/db/queries/deadline-queries';
 import { getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const completeDeadlineSchema = z.object({
   notes: z.string().max(1000, 'Notes cannot exceed 1000 characters').optional(),

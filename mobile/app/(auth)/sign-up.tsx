@@ -123,7 +123,7 @@ export default function SignUpScreen() {
 
       await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
       setStep('verification');
-    } catch (err: any) {
+    } catch (err: unknown) {
       Alert.alert('Sign Up Failed', err.errors?.[0]?.message || 'Failed to create account');
     } finally {
       setLoading(false);
@@ -142,7 +142,7 @@ export default function SignUpScreen() {
       await setActive({ session: completeSignUp.createdSessionId });
       Alert.alert('Welcome!', 'Your account has been created successfully');
       router.replace('/(tabs)');
-    } catch (err: any) {
+    } catch (err: unknown) {
       Alert.alert(
         'Verification Failed',
         err.errors?.[0]?.message || 'Invalid code. Please try again.'

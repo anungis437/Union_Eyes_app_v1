@@ -203,7 +203,7 @@ async function processGoogleVisionOCR(
       const vertices = detection.boundingPoly?.vertices || [];
       return {
         text: detection.description || "",
-        confidence: 95, // Google Vision doesn't provide per-word confidence
+        confidence: 95, // Google Vision doesn&apos;t provide per-word confidence
         bbox: {
           x0: vertices[0]?.x || 0,
           y0: vertices[0]?.y || 0,

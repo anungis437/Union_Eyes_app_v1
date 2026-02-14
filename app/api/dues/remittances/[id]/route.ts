@@ -54,7 +54,7 @@ export async function GET(
       lineItems,
       exceptions,
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching remittance:', error);
     return NextResponse.json(
       { error: 'Failed to fetch remittance', details: error.message },
@@ -75,7 +75,7 @@ export async function PUT(
     const { id } = params;
     const body = await request.json();
 
-    const updateData: any = {
+    const updateData = {
       updatedAt: new Date(),
       lastModifiedBy: 'system', // TODO: Get from auth
     };
@@ -117,7 +117,7 @@ export async function PUT(
       message: 'Remittance updated successfully',
       remittance: updatedRemittance,
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error updating remittance:', error);
     return NextResponse.json(
       { error: 'Failed to update remittance', details: error.message },

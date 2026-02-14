@@ -20,7 +20,7 @@ async function getOrganizationId() {
   const { userId } = await auth();
   if (!userId) redirect('/sign-in');
 
-  // Get user's organization (simplified - you'd query the database)
+  // Get user's organization (simplified - you&apos;d query the database)
   return 'org-id'; // Placeholder
 }
 

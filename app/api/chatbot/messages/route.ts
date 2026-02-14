@@ -10,7 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { chatSessions, chatMessages } from '@/db/schema/ai-chatbot-schema';
-import { eq, and, asc } from 'drizzle-orm';
+import { and, asc } from 'drizzle-orm';
 import { withRoleAuth } from '@/lib/role-middleware';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { v4 as uuidv4 } from 'uuid';
@@ -289,7 +289,7 @@ export const POST = withRoleAuth('member', async (request: NextRequest, context)
     console.error('Chat message error:', error);
     
     // Fallback response
-    const fallbackContent = "I apologize, but I'm having trouble processing your request right now. Please try again in a few moments.";
+    const fallbackContent = "I apologize, but I&apos;m having trouble processing your request right now. Please try again in a few moments.";
     
     return NextResponse.json({
       error: 'AI service temporarily unavailable',

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Integration Factory
  * Creates and manages integration adapter instances
  */
@@ -285,8 +285,8 @@ export class IntegrationFactory {
       organizationId: config.organizationId,
       type: metadata.type,
       provider,
-      credentials: config.credentials as any,
-      settings: config.settings as any,
+      credentials: config.credentials as unknown,
+      settings: config.settings as unknown,
       webhookUrl: config.webhookUrl || undefined,
       enabled: config.enabled,
     };
@@ -316,8 +316,8 @@ export class IntegrationFactory {
         organizationId: config.organizationId,
         type: config.type as IntegrationType,
         provider: config.provider as IntegrationProvider,
-        credentials: config.credentials as any,
-        settings: config.settings as any,
+        credentials: config.credentials as unknown,
+        settings: config.settings as unknown,
         webhookUrl: config.webhookUrl || undefined,
         enabled: config.enabled,
       };

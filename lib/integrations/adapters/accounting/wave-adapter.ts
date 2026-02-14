@@ -6,7 +6,7 @@
  * Features:
  * - OAuth2 authentication
  * - GraphQL API
- * - Full sync (no incremental - Wave doesn't provide modification dates easily)
+ * - Full sync (no incremental - Wave doesn&apos;t provide modification dates easily)
  * - Invoice, customer, payment entities
  * 
  * @see https://developer.waveapps.com/hc/en-us
@@ -37,7 +37,7 @@ export class WaveAdapter extends BaseIntegration {
   constructor() {
     super(IntegrationType.ACCOUNTING, IntegrationProvider.WAVE, {
       supportsFullSync: true,
-      supportsIncrementalSync: false, // Wave GraphQL doesn't easily support incremental
+      supportsIncrementalSync: false, // Wave GraphQL doesn&apos;t easily support incremental
       supportsWebhooks: false,
       supportsRealTime: false,
       supportedEntities: ['invoices', 'payments', 'customers'],
@@ -355,7 +355,7 @@ export class WaveAdapter extends BaseIntegration {
             companyName: customer.name,
             email: customer.email,
             phone: customer.phone,
-            balance: '0.00', // Wave doesn't provide balance easily
+            balance: '0.00', // Wave doesn&apos;t provide balance easily
             lastSyncedAt: new Date(),
             updatedAt: new Date(),
           };

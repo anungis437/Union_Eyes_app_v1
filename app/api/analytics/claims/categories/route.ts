@@ -8,14 +8,10 @@
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
-import { sql, db } from '@/db';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { db } from '@/db';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 interface CategoryBreakdown {
   category: string;
   count: number;
@@ -52,7 +48,7 @@ async function handler(req: NextRequest, context) {
         AND created_at BETWEEN ${startDate} AND ${endDate}
       GROUP BY claim_type
       ORDER BY COUNT(*) DESC
-    `) as any[];
+    `) as Array<Record<string, unknown>>;
     });
 
     const totalCurrent = currentCategories.reduce((sum, cat) => sum + parseInt(cat.count), 0);
@@ -71,7 +67,7 @@ async function handler(req: NextRequest, context) {
       WHERE organization_id = ${organizationId}
         AND created_at BETWEEN ${prevStartDate} AND ${prevEndDate}
       GROUP BY claim_type
-    `) as any[];
+    `) as Array<Record<string, unknown>>;
     });
 
     const prevCategoryMap = new Map(

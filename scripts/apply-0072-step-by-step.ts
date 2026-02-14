@@ -109,7 +109,7 @@ async function applyMigration() {
     console.log('\n✨ Migration complete!');
     process.exit(0);
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('\n❌ Migration failed:');
     console.error('Error:', error.message);
     

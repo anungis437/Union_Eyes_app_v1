@@ -211,7 +211,7 @@ function getPriorityContext(priority: ClaimPriority, daysInState: number): strin
     low: 'This case is in the queue and will be processed in order.',
   };
 
-  let context = priorityMessages[priority];
+  const context = priorityMessages[priority];
 
   // Add time-based context
   const thresholds: Record<ClaimStatus, number> = {
@@ -225,7 +225,7 @@ function getPriorityContext(priority: ClaimPriority, daysInState: number): strin
     closed: 0,
   };
 
-  // Note: We'd need the current status to check against thresholds
+  // Note: We&apos;d need the current status to check against thresholds
   // This is simplified for the example
 
   return context;

@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
-import { eq, and, lte, sql } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { pgTable, uuid, text, timestamp, decimal, integer, jsonb } from 'drizzle-orm/pg-core';
 
 // Payment plan installments schema
@@ -36,7 +36,7 @@ export const paymentPlanInstallments = pgTable('payment_plan_installments', {
   ledgerTransactionId: uuid('ledger_transaction_id'),
   
   // Metadata
-  metadata: jsonb('metadata').$type<Record<string, any>>(),
+  metadata: jsonb('metadata').$type<Record<string, unknown>>(),
   
   // Audit
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
       plans: [],
       note: 'Payment plans endpoint ready. Requires paymentPlans table query.',
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching payment plans:', error);
     return NextResponse.json(
       { error: 'Failed to fetch payment plans', details: error.message },
@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },
@@ -165,10 +165,10 @@ export async function POST(request: NextRequest) {
  * POST /api/dues/payment-plans/[id]/pay
  * Record payment for an installment
  */
-export async function recordInstallmentPayment(
+export async function async function recordInstallmentPayment(
   planId: string,
   installmentId: string,
-  paymentData: any
+  paymentData: any Record<string, unknown>
 ) {
   try {
     const { amount, paymentMethod, paymentDate } = recordPaymentSchema.parse(paymentData);
@@ -229,7 +229,7 @@ export async function recordInstallmentPayment(
       success: true,
       message: 'Payment recorded',
     };
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error recording payment:', error);
     throw error;
   }

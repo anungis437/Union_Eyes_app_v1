@@ -7,16 +7,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db/db';
-import { sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 // Validation schema for GET query

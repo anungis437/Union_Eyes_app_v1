@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Chaos Engineering Framework
  * 
  * Controlled fault injection for testing system resilience:
@@ -234,7 +234,7 @@ export class ChaosMonkey {
  */
 export const chaos = new ChaosMonkey({
   enabled: process.env.CHAOS_ENABLED === 'true',
-  environment: (process.env.NODE_ENV as any) || 'development',
+  environment: (process.env.NODE_ENV as unknown) || 'development',
   seed: process.env.CHAOS_SEED ? parseInt(process.env.CHAOS_SEED) : undefined,
 });
 

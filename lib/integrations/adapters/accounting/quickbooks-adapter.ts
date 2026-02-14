@@ -1,4 +1,4 @@
-/**
+﻿/**
  * QuickBooks Online Integration Adapter
  * 
  * Implements integration with QuickBooks Online for accounting data.
@@ -510,7 +510,7 @@ export class QuickBooksAdapter extends BaseIntegration {
 
     // QuickBooks sends change data notifications
     // Event types: Create, Update, Delete, Merge for various entities
-    const payload = event.data as any;
+    const payload = event.data as unknown;
     
     if (payload.eventNotifications) {
       for (const notification of payload.eventNotifications) {

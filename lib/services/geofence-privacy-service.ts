@@ -88,7 +88,7 @@ export async function trackLocation(
     };
   }
 
-  // Verify consent hasn't expired
+  // Verify consent hasn&apos;t expired
   if (consent.expiresAt && consent.expiresAt < new Date()) {
     await revokeLocationConsent(userId);
     return {
@@ -134,7 +134,7 @@ export async function purgeExpiredLocations(): Promise<{
       .where(lte(locationTracking.expiresAt, new Date()));
 
     return {
-      purgedCount: 0, // Drizzle doesn't return count, but deletion happened
+      purgedCount: 0, // Drizzle doesn&apos;t return count, but deletion happened
       message: 'Expired location data purged (24-hour TTL enforced)'
     };
   } catch (error) {

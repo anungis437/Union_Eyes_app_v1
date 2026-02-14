@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { organizerImpacts, OrganizerImpact } from '@/db/schema/domains/marketing';
-import { eq, and, gte, lte } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { calculateOrganizerImpact, ImpactCalculationInput, generateRecognitionEvents } from '@/lib/marketing/organizer-impact';
 
 export async function GET(request: NextRequest) {
@@ -26,8 +26,8 @@ export async function GET(request: NextRequest) {
 
     // Calculate date ranges
     const now = new Date();
-    const currentPeriodStart = getPeriodStart(now, period as any);
-    const previousPeriodStart = getPeriodStart(currentPeriodStart, period as any);
+    const currentPeriodStart = getPeriodStart(now, period);
+    const previousPeriodStart = getPeriodStart(currentPeriodStart, period);
     const previousPeriodEnd = new Date(currentPeriodStart.getTime() - 1);
 
     // Fetch or calculate current period impact

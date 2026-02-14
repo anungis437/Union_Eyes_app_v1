@@ -116,7 +116,7 @@ async function checkRLS() {
     console.log('\n✨ Check complete!');
     process.exit(0);
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('\n❌ Error during check:');
     console.error(error);
     process.exit(1);

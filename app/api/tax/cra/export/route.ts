@@ -7,17 +7,12 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
@@ -69,7 +64,7 @@ export const GET = async (request: NextRequest) => {
       ) as xml_content`
       );
 
-      const xmlContent = (result[0] as any).xml_content;
+      const xmlContent = (result[0] as Record<string, unknown> | undefined)?.xml_content;
 
       if (!xmlContent) {
         return NextResponse.json(
@@ -174,7 +169,7 @@ export const POST = async (request: NextRequest) => {
           );
           return {
             organizationId: orgId,
-            xmlContent: (result[0] as any).xml_content,
+            xmlContent: (result[0] as Record<string, unknown> | undefined)?.xml_content,
           };
         })
       );

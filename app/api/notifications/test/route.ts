@@ -11,11 +11,7 @@ import { sendClaimStatusNotification } from '@/lib/claim-notifications';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const notificationsTestSchema = z.object({
   claimId: z.string().uuid('Invalid claimId'),

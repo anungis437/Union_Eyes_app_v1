@@ -10,13 +10,9 @@
  * @module app/api/admin/segments/route
  */
 
-import { NextRequest } from "next/server";
 import { withApiAuth, getCurrentUser } from "@/lib/api-auth-guard";
 import { logger } from "@/lib/logger";
-import {
-  standardErrorResponse,
-  standardSuccessResponse,
-  ErrorCode,
+import { standardSuccessResponse,
 } from "@/lib/api/standardized-responses";
 import {
   createSegment,

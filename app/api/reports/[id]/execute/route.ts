@@ -9,20 +9,16 @@
 
 import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { getReportById, logReportExecution } from '@/db/queries/analytics-queries';
 import { ReportExecutor } from '@/lib/report-executor';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 async function postHandler(
   req: NextRequest,
-  context: any,
+  context: any, Record<string, unknown>,
   params?: any
 ) {
   // Extract params from context or params argument
@@ -128,7 +124,7 @@ async function postHandler(
       executionTimeMs: result.executionTimeMs,
     });
 
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
 return NextResponse.json(
       { error: error.message || 'Failed to execute report' },
       { status: 500 }

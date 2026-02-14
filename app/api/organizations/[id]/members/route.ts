@@ -6,7 +6,7 @@ import { requireUser } from '@/lib/api-auth-guard';
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { z } from 'zod';
@@ -17,11 +17,7 @@ import {
 import { logger } from '@/lib/logger';
 import { clerkClient } from '@clerk/nextjs/server';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * GET /api/organizations/[id]/members
  * Get all members of an organization
@@ -296,7 +292,7 @@ export const POST = async (
         success: true,
         data: result,
       });
-    } catch (error: any) {
+    } catch (error: Record<string, unknown>) {
       logger.error('Error adding member to organization', error as Error, {
         organizationId: id,
         userId,

@@ -10,15 +10,11 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { organizationUsers } from "@/db/schema/domains/member";
-import { eq, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
     const { userId } = context;

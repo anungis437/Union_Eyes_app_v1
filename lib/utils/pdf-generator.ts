@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PDF Generator Utility
  * 
  * Generates PDF documents from structured data
@@ -14,7 +14,7 @@ import { Readable } from 'stream';
 
 export interface PDFOptions {
   title: string;
-  data: any[] | Record<string, any>;
+  data: unknown[] | Record<string, unknown>;
   template?: string;
   orientation?: 'portrait' | 'landscape';
   size?: 'letter' | 'legal' | 'A4';
@@ -193,7 +193,7 @@ function renderGrievancesReport(doc: typeof PDFDocument, options: PDFOptions) {
  * Render usage report
  */
 function renderUsageReport(doc: typeof PDFDocument, options: PDFOptions) {
-  const data = options.data as any;
+  const data = options.data as unknown;
 
   doc.fontSize(20).text(options.title, { align: 'center' });
   doc.moveDown();
@@ -231,7 +231,7 @@ function renderUsageReport(doc: typeof PDFDocument, options: PDFOptions) {
  * Render financial report
  */
 function renderFinancialReport(doc: typeof PDFDocument, options: PDFOptions) {
-  const data = options.data as any;
+  const data = options.data as unknown;
 
   doc.fontSize(20).text(options.title, { align: 'center' });
   doc.moveDown();
@@ -268,7 +268,7 @@ function renderGenericReport(doc: typeof PDFDocument, options: PDFOptions) {
 function renderTable(
   doc: typeof PDFDocument,
   columns: TableColumn[],
-  data: any[]
+  data: unknown[]
 ) {
   const startY = doc.y;
   const rowHeight = 20;
@@ -351,7 +351,7 @@ function renderTable(
 export function addHeader(
   doc: typeof PDFDocument,
   text: string,
-  options?: { fontSize?: number; align?: any }
+  options?: { fontSize?: number; align?: unknown }
 ) {
   doc
     .fontSize(options?.fontSize || 12)
@@ -378,7 +378,7 @@ export function addFooter(
   });
 
   if (showPageNumbers) {
-    const pageNumber = (doc as any).bufferedPageRange().start + 1;
+    const pageNumber = (doc as unknown).bufferedPageRange().start + 1;
     doc.text(`Page ${pageNumber}`, doc.page.margins.left, footerY + 15, {
       align: 'center',
       width: doc.page.width - doc.page.margins.left - doc.page.margins.right,

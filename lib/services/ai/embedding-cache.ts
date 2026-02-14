@@ -47,7 +47,7 @@ const AVG_TOKENS_PER_REQUEST = 250; // Conservative estimate
 // Initialize Redis client (reuse existing Upstash configuration)
 const redis = (() => {
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-    // Only warn if we're not in test/build environment
+    // Only warn if we&apos;re not in test/build environment
     if (process.env.NODE_ENV !== 'test' && !process.env.BUILDING) {
       logger.warn('Redis not configured - embedding cache will be disabled', {
         component: 'embedding-cache',
@@ -160,7 +160,7 @@ class EmbeddingCacheService {
       cached.hits++;
       this.stats.hits++;
       
-      // Update hit count in cache (don't await to avoid blocking)
+      // Update hit count in cache (don&apos;t await to avoid blocking)
       redis.set(key, cached, { ex: this.DEFAULT_TTL }).catch(err => {
         logger.warn('Failed to update embedding cache hit count', { error: err.message });
       });
@@ -223,7 +223,7 @@ class EmbeddingCacheService {
         embeddingSize: embedding.length
       });
     } catch (error) {
-      // Fail-open: log error but don't throw (cache write failure is not critical)
+      // Fail-open: log error but don&apos;t throw (cache write failure is not critical)
       logger.error('Failed to cache embedding - proceeding without cache', error as Error, { 
         key,
         model,

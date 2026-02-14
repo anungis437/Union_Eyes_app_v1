@@ -274,7 +274,7 @@ export async function cacheGetOrSetStale<T>(
       if (ttl > 0 && ttl < options.staleWhileRevalidate) {
         logger.debug(`[Cache] Background revalidation triggered for ${cacheKey}`);
         
-        // Revalidate in background (don't await)
+        // Revalidate in background (don&apos;t await)
         fetchFn()
           .then(value => cacheSet(key, value, options))
           .catch(error => {

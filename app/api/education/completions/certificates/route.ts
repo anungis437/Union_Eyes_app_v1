@@ -7,15 +7,10 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
@@ -52,7 +47,7 @@ export const GET = async (request: NextRequest) => {
     `);
 
       // Calculate expiry dates
-      const certificates = result.map((cert: any) => {
+      const certificates = result.map((cert: Record<string, unknown>) => {
         const expiryDate = cert.certification_valid_years && cert.certificate_issue_date
           ? new Date(cert.certificate_issue_date)
           : null;

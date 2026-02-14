@@ -9,13 +9,9 @@ import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 import { db } from "@/db/db";
 import { documents } from "@/db/schema";
-import { eq, sql, and, isNull } from "drizzle-orm";
+import { sql, and, isNull } from "drizzle-orm";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * GET /api/storage/usage
  * Get storage usage statistics for an organization
@@ -116,7 +112,7 @@ export const GET = withEnhancedRoleAuth(90, async (request, context) => {
     const totalSizeMB = totalSizeBytes / (1024 * 1024);
     const totalSizeGB = totalSizeMB / 1024;
 
-    const response: any = {
+    const response = {
       organizationId: organizationIdParam,
       usage: {
         totalSize: totalSizeBytes,

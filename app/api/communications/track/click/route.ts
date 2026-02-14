@@ -17,11 +17,7 @@ import { db } from '@/db';
 import { newsletterEngagement } from '@/db/schema';
 import { resolveIpGeolocation } from '@/lib/geo/ip-geolocation';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

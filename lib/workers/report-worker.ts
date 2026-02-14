@@ -5,13 +5,16 @@
  */
 
 // Only import bullmq in runtime, not during build
-let Worker: any, Job: any, IORedis: any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let Worker: any, Job: any,IORedis: any;
 
 if (typeof window === 'undefined' && !process.env.__NEXT_BUILDING) {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const bullmq = require('bullmq');
     Worker = bullmq.Worker;
     Job = bullmq.Job;
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     IORedis = require('ioredis');
   } catch (e) {
     // Fail silently during build
@@ -472,7 +475,7 @@ await job.updateProgress(90);
 });
 }
     } catch (notificationError) {
-// Don't fail the job if notification fails
+// Don&apos;t fail the job if notification fails
     }
 
     await job.updateProgress(100);

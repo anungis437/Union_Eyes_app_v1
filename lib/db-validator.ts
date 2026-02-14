@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Database Health Check & Validation
  * 
  * Provides utilities to validate database connection and health at startup.
@@ -49,7 +49,7 @@ export async function checkDatabaseHealth(timeout = 5000): Promise<DatabaseHealt
     return {
       healthy: true,
       responseTime: Date.now() - startTime,
-      details: result as any,
+      details: result as unknown,
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -71,7 +71,7 @@ export async function checkDatabaseHealth(timeout = 5000): Promise<DatabaseHealt
 async function performHealthCheck() {
   try {
     // Simple query to test connection
-    const result: any = await db.execute(sql`
+    const result: unknown = await db.execute(sql`
       SELECT 
         version() as version,
         current_database() as database,
@@ -144,7 +144,7 @@ export async function validateDatabaseConnection(
 export async function testDatabaseQuery(): Promise<boolean> {
   try {
     // Test basic query (assumes users table exists)
-    const result: any = await db.execute(sql`
+    const result: unknown = await db.execute(sql`
       SELECT COUNT(*) as count 
       FROM information_schema.tables 
       WHERE table_schema = 'public'
@@ -172,7 +172,7 @@ export async function validateDatabaseSchema(): Promise<{
 }> {
   try {
     // Get list of tables in public schema
-    const result: any = await db.execute(sql`
+    const result: unknown = await db.execute(sql`
       SELECT table_name 
       FROM information_schema.tables 
       WHERE table_schema = 'public' 
@@ -181,7 +181,7 @@ export async function validateDatabaseSchema(): Promise<{
     
     // Handle both array and rows format
     const rows = Array.isArray(result) ? result : result.rows || [];
-    const tables = rows.map((row: any) => row.table_name);
+    const tables = rows.map((row: unknown) => row.table_name);
     const tableCount = tables.length;
     
     // Check for critical tables
@@ -248,7 +248,7 @@ export async function runDatabaseStartupChecks(throwOnError = false): Promise<bo
   const schemaResult = await validateDatabaseSchema();
   if (!schemaResult.valid) {
     logger.warn('Database schema validation warnings detected');
-    // Don't fail on schema warnings, just log them
+    // Don&apos;t fail on schema warnings, just log them
   }
   
   logger.info('All database startup checks passed');

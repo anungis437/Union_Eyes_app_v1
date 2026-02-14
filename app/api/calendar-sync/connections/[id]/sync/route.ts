@@ -11,7 +11,7 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { externalCalendarConnections } from '@/db/schema/calendar-schema';
-import { eq, and } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import {
   importGoogleEvents,
   getSyncToken,
@@ -23,11 +23,7 @@ import {
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const calendarSyncConnectionsSyncSchema = z.object({
   localCalendarId: z.string().uuid('Invalid localCalendarId'),

@@ -312,13 +312,13 @@ export default async function DataSharingPage({ params }: DataSharingPageProps) 
           By enabling data sharing, you authorize Union Eyes to aggregate anonymized data from your
           organization with data from other consenting unions. You can revoke consent at any time.
           All aggregation occurs in Canada. Data is never sold or shared with employers. See our{' '}
-          <a href="/privacy" className="underline">
+          <Link href="/privacy" className="underline">
             Privacy Policy
-          </a>{' '}
+          </Link>{' '}
           and{' '}
-          <a href="/terms" className="underline">
+          <Link href="/terms" className="underline">
             Terms of Service
-          </a>{' '}
+          </Link>{' '}
           for details.
         </AlertDescription>
       </Alert>

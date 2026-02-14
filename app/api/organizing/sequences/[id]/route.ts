@@ -13,7 +13,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { outreachSequences, outreachEnrollments } from '@/db/schema';
-import { eq, and, sql } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 
 interface RouteParams {
   params: {
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       cancelled: 0,
     };
 
-    enrollmentStats.forEach((stat: any) => {
+    enrollmentStats.forEach((stat: Record<string, unknown>) => {
       const count = Number(stat.count);
       if (stat.status === 'active') stats.active = count;
       if (stat.status === 'completed') stats.completed = count;
@@ -131,7 +131,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     // Build update object
-    const updateData: any = {
+    const updateData = {
       updatedBy: userId,
       updatedAt: new Date(),
     };

@@ -6,16 +6,12 @@
 
 import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
-import { withOrganizationAuth, OrganizationContext } from '@/lib/organization-middleware';
+import { OrganizationContext } from '@/lib/organization-middleware';
 import { db } from '@/db';
 import { sql } from '@/db';
 import { updateReportRunStats } from '@/db/queries/analytics-queries';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 async function postHandler(
   req: NextRequest,
   context: OrganizationContext,
@@ -43,13 +39,13 @@ async function postHandler(
     }
 
     const report = reportResult[0];
-    const reportConfig = report.config as any;
+    const reportConfig = report.config as Record<string, unknown>;
     const body = await req.json();
     const { parameters } = body || {};
 
     // SECURITY: Only execute pre-built queries from allowlisted data sources
     // Custom SQL execution has been removed to prevent SQL injection
-    let queryResult: any;
+    let queryresult: Record<string, unknown>;
     
     if (reportConfig.dataSource === 'claims') {
       // Pre-built queries for claims

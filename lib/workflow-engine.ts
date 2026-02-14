@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Workflow Engine for Claims Management
  * 
  * MIGRATION STATUS: Ã¢Å“â€¦ Refactored to support RLS
@@ -77,7 +77,7 @@ export const PRIORITY_MULTIPLIERS = {
  */
 async function getMemberName(
   memberId: string,
-  tx: NodePgDatabase<any>
+  tx: NodePgDatabase<unknown>
 ): Promise<string> {
   try {
     const result = await tx
@@ -186,11 +186,11 @@ export async function updateClaimStatus(
   newStatus: ClaimStatus,
   userId: string,
   notes?: string,
-  tx?: NodePgDatabase<any>
-): Promise<{ success: boolean; error?: string; claim?: any }> {
+  tx?: NodePgDatabase<unknown>
+): Promise<{ success: boolean; error?: string; claim?: unknown }> {
   // If no transaction provided, wrap in withRLSContext
   if (!tx) {
-    return withRLSContext(async (transaction: NodePgDatabase<any>) => {
+    return withRLSContext(async (transaction: NodePgDatabase<unknown>) => {
       return updateClaimStatus(claimNumber, newStatus, userId, notes, transaction);
     });
   }
@@ -251,7 +251,7 @@ export async function updateClaimStatus(
       currentStatus,
       targetStatus: newStatus,
       userId,
-      userRole: userRole as any,
+      userRole: userRole as unknown,
       priority,
       statusChangedAt: claim.updatedAt ?? claim.createdAt ?? new Date(),
       hasUnresolvedCriticalSignals,
@@ -267,7 +267,7 @@ export async function updateClaimStatus(
     }
 
     // Update claim status and timestamps
-    const updateData: any = {
+    const updateData: unknown = {
       status: newStatus,
       updatedAt: new Date(),
     };
@@ -440,13 +440,13 @@ export async function updateClaimStatus(
           fileSizeBytes: JSON.stringify(pack).length,
         });
 } catch (error) {
-// Don't fail the status update if pack generation fails
+// Don&apos;t fail the status update if pack generation fails
       }
     }
 
-    // Send email notification (async, don't block on email sending)
+    // Send email notification (async, don&apos;t block on email sending)
     sendClaimStatusNotification(claim.claimId, currentStatus, newStatus, notes).catch((error) => {
-// Don't fail the status update if email fails
+// Don&apos;t fail the status update if email fails
     });
     // SPRINT 7: Auto-create timeline entry (FSM → Timeline integration)
     // Every status change automatically appears in member's case timeline
@@ -459,7 +459,7 @@ export async function updateClaimStatus(
       notes,
       validation.metadata
     ).catch((error) => {
-      // Don't fail the status update if timeline integration fails
+      // Don&apos;t fail the status update if timeline integration fails
       // This is OK - timeline is supplementary to the main workflow
       console.error('Timeline integration failed:', error);
     });
@@ -528,12 +528,12 @@ return {
 /**
  * Get overdue claims
  */
-export async function getOverdueClaims(): Promise<any[]> {
+export async function getOverdueClaims(): Promise<unknown[]> {
   try {
     const allClaims = await db.select().from(claims);
     
     const overdueClaims = allClaims.filter((claim) => {
-      // Don't check closed claims
+      // Don&apos;t check closed claims
       if (claim.status === "closed") return false;
       
       // Use last activity date or created date
@@ -558,7 +558,7 @@ return [];
 /**
  * Get claims approaching deadline (within 1 day)
  */
-export async function getClaimsApproachingDeadline(): Promise<any[]> {
+export async function getClaimsApproachingDeadline(): Promise<unknown[]> {
   try {
     const allClaims = await db.select().from(claims);
     
@@ -599,11 +599,11 @@ export async function addClaimNote(
   message: string,
   userId: string,
   isInternal: boolean = true,
-  tx?: NodePgDatabase<any>
+  tx?: NodePgDatabase<unknown>
 ): Promise<{ success: boolean; error?: string }> {
   // If no transaction provided, wrap in withRLSContext
   if (!tx) {
-    return withRLSContext(async (transaction: NodePgDatabase<any>) => {
+    return withRLSContext(async (transaction: NodePgDatabase<unknown>) => {
       return addClaimNote(claimNumber, message, userId, isInternal, transaction);
     });
   }
@@ -650,7 +650,7 @@ return {
 /**
  * Get workflow status for a claim (deadline info, transitions, etc.)
  */
-export function getClaimWorkflowStatus(claim: any) {
+export function getClaimWorkflowStatus(claim: unknown) {
   const status = claim.status as ClaimStatus;
   const priority = claim.priority as ClaimPriority;
   const statusDate = claim.updatedAt || claim.createdAt;

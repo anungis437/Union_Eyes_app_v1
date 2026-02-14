@@ -62,7 +62,7 @@ export default function PilotApplicationActions({
 
       setApproveDialogOpen(false);
       router.refresh();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message);
     } finally {
       setLoading(false);
@@ -92,7 +92,7 @@ export default function PilotApplicationActions({
 
       setRejectDialogOpen(false);
       router.refresh();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message);
     } finally {
       setLoading(false);

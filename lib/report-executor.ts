@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Report Executor Module
  * 
  * Executes report configurations by generating and running SQL queries dynamically.
@@ -54,8 +54,8 @@ export interface FilterCondition {
   fieldId: string;
   fieldName?: string;
   operator: 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'like' | 'ilike' | 'in' | 'not_in' | 'is_null' | 'is_not_null' | 'between';
-  value?: any;
-  values?: any[];
+  value?: unknown;
+  values?: unknown[];
   logicalOperator?: 'AND' | 'OR';
 }
 
@@ -72,7 +72,7 @@ export interface SortRule {
 
 export interface ExecutionResult {
   success: boolean;
-  data?: any[];
+  data?: unknown[];
   rowCount?: number;
   executionTimeMs: number;
   error?: string;
@@ -206,12 +206,12 @@ export class ReportExecutor {
 
       return {
         success: true,
-        data: results as any[],
+        data: results as unknown[],
         rowCount: results.length,
         executionTimeMs,
         sql: query.queryChunks.join(' '), // For debugging
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const executionTimeMs = Date.now() - startTime;
 return {
         success: false,
@@ -271,7 +271,7 @@ return {
     }
 
     // Build WHERE clause (filters)
-    let whereConditions: SQL[] = [];
+    const whereConditions: SQL[] = [];
     
     // Add tenant/organization filter
     whereConditions.push(sql`${safeTableName(baseTable)}.organization_id = ${this.organizationId}`);
@@ -487,10 +487,10 @@ return {
           condition = sql`${safeColumnName(fieldName)} ILIKE ${`%${filter.value}%`}`;
           break;
         case 'in':
-          condition = sql`${safeColumnName(fieldName)} IN (${sql.join(filter.values!.map((v: any) => sql`${v}`), sql`, `)})`;
+          condition = sql`${safeColumnName(fieldName)} IN (${sql.join(filter.values!.map((v: unknown) => sql`${v}`), sql`, `)})`;
           break;
         case 'not_in':
-          condition = sql`${safeColumnName(fieldName)} NOT IN (${sql.join(filter.values!.map((v: any) => sql`${v}`), sql`, `)})`;
+          condition = sql`${safeColumnName(fieldName)} NOT IN (${sql.join(filter.values!.map((v: unknown) => sql`${v}`), sql`, `)})`;
           break;
         case 'is_null':
           condition = sql`${safeColumnName(fieldName)} IS NULL`;

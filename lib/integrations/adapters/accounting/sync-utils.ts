@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Accounting Integration Utilities
  * 
  * Utilities for accounting data synchronization, mapping, validation, and reconciliation.
@@ -77,8 +77,8 @@ export interface ReconciliationResult {
 export interface InvoiceConflict {
   externalId: string;
   field: string;
-  externalValue: any;
-  internalValue: any;
+  externalValue: unknown;
+  internalValue: unknown;
   lastSyncedAt: Date;
 }
 

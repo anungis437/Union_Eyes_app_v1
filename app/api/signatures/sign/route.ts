@@ -10,11 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireApiAuth } from '@/lib/api-auth-guard';
 import { SignatureService } from "@/lib/signature/signature-service";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const signatureSchema = z.object({
   signerId: z.string().uuid('Invalid signerId'),

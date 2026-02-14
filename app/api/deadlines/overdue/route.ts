@@ -2,14 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getOverdueDeadlines } from '@/db/queries/deadline-queries';
 import { getCurrentUser } from '@/lib/api-auth-guard';
 import { cookies } from 'next/headers';
-import { db, organizations } from '@/db';
+import { organizations } from '@/db';
 import { eq } from 'drizzle-orm';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * GET /api/deadlines/overdue
  * Get all overdue deadlines for the organization

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Signature Service
  * 
  * High-level service for managing e-signatures with full audit trail
@@ -66,7 +66,7 @@ export class SignatureService {
     expirationDays?: number;
     requireAuthentication?: boolean;
     sequentialSigning?: boolean;
-    metadata?: any;
+    metadata?: unknown;
   }): Promise<typeof signatureDocuments.$inferSelect> {
     // Calculate file hash for integrity
     const fileHash = createHash("sha256").update(data.file).digest("hex");
@@ -123,7 +123,7 @@ export class SignatureService {
         fileName: data.fileName,
         fileSizeBytes: data.file.length,
         fileHash,
-        provider: provider.name as any,
+        provider: provider.name as unknown,
         providerDocumentId: envelope.envelopeId,
         providerEnvelopeId: envelope.envelopeId,
         status: "sent",
@@ -276,7 +276,7 @@ return false;
 
     try {
       const provider = SignatureProviderFactory.getProvider(
-        document.provider as any
+        document.provider as unknown
       );
       const status = await provider.getEnvelopeStatus(
         document.providerEnvelopeId
@@ -287,7 +287,7 @@ return false;
         await db
           .update(signatureDocuments)
           .set({
-            status: status.status as any,
+            status: status.status as unknown,
             updatedAt: new Date(),
             completedAt:
               status.status === "completed" ? new Date() : undefined,
@@ -380,7 +380,7 @@ return false;
     signatureType: "electronic" | "digital" | "wet";
     ipAddress?: string;
     userAgent?: string;
-    geolocation?: any;
+    geolocation?: unknown;
   }) {
     const [updated] = await db
       .update(documentSigners)
@@ -469,7 +469,7 @@ return false;
     if (document.providerEnvelopeId) {
       try {
         const provider = SignatureProviderFactory.getProvider(
-          document.provider as any
+          document.provider as unknown
         );
         await provider.voidEnvelope(document.providerEnvelopeId, reason);
       } catch (error) {
@@ -609,8 +609,8 @@ export class AuditTrailService {
     actorRole?: string;
     ipAddress?: string;
     userAgent?: string;
-    geolocation?: any;
-    metadata?: any;
+    geolocation?: unknown;
+    metadata?: unknown;
   }) {
     await db.insert(signatureAuditTrail).values({
       ...data,

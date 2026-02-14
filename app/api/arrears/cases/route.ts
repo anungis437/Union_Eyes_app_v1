@@ -2,15 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
 import { arrearsCases, members, duesTransactions } from '@/services/financial-service/src/db/schema';
-import { eq, and, gte, lte, desc, sql, inArray } from 'drizzle-orm';
+import { and, desc, inArray } from 'drizzle-orm';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // Validation schema for GET query parameters
 const listArrearsSchema = z.object({
   status: z.string().optional(),
@@ -67,7 +63,7 @@ try {
       }
 
       // Build base query with validated parameters
-      let whereConditions = [eq(arrearsCases.organizationId, member.organizationId)];
+      const whereConditions = [eq(arrearsCases.organizationId, member.organizationId)];
 
       if (query.status) {
         whereConditions.push(eq(arrearsCases.status, query.status));

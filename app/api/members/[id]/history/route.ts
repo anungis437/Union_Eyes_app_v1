@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
-import { eq, and, desc, asc } from 'drizzle-orm';
+import { and, desc, asc } from 'drizzle-orm';
 import { memberHistoryEvents } from '@/db/schema/member-profile-v2-schema';
 
 // Validation schema
@@ -75,7 +75,7 @@ export async function GET(
         },
       },
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching history:', error);
     return NextResponse.json(
       { error: 'Failed to fetch history', details: error.message },
@@ -116,7 +116,7 @@ export async function POST(
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },
@@ -139,7 +139,7 @@ export async function logProfileChange(
   organizationId: string,
   field: string,
   previousValue: any,
-  newValue: any,
+  newValue: any, Record<string, unknown>,
   actorId?: string
 ) {
   await db.insert(memberHistoryEvents).values({

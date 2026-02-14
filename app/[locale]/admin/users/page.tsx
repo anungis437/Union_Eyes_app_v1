@@ -46,7 +46,7 @@ async function UsersTable({
 }) {
   // This will need RLS context - for now using a mock approach
   // In production, this would be called from an API route with proper RLS
-  const tx = null as any; // TODO: Get transaction from RLS-protected API route
+  const tx = null as unknown; // TODO: Get transaction from RLS-protected API route
   
   // Mock data for demonstration - replace with actual API call
   const users = await Promise.resolve([

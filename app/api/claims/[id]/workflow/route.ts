@@ -14,11 +14,7 @@ import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * GET /api/claims/[id]/workflow
  * Get workflow status and allowed transitions for a claim

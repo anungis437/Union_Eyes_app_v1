@@ -8,13 +8,9 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { db } from "@/db/db";
 import { documents } from "@/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * Predefined document categories
  */

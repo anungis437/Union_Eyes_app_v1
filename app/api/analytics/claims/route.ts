@@ -7,17 +7,13 @@
 
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from 'next/server';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
-import { sql, db } from '@/db';
+import { db } from '@/db';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = withEnhancedRoleAuth(30, async (req: NextRequest, context) => {
   const { userId, organizationId } = context;
 
@@ -50,7 +46,7 @@ export const GET = withEnhancedRoleAuth(30, async (req: NextRequest, context) =>
     const includeDetails = url.searchParams.get('details') === 'true';
     
     // Parse optional filters
-    const filters: any = {};
+    const filters = {};
     if (url.searchParams.get('status')) {
       filters.status = url.searchParams.get('status')!.split(',');
     }
@@ -126,15 +122,15 @@ export const GET = withEnhancedRoleAuth(30, async (req: NextRequest, context) =>
     const analytics = {
       totalClaims: Number((totalResult as any)[0]?.total_claims || 0),
       period: { startDate, endDate },
-      byStatus: (statusBreakdown as any[]).reduce((acc: any, row: any) => {
+      byStatus: (statusBreakdown as Array<Record<string, unknown>>).reduce((acc: Record<string, unknown>, row: Record<string, unknown>) => {
         acc[row.status] = Number(row.count);
         return acc;
       }, {}),
-      byType: (typeBreakdown as any[]).map((row: any) => ({
+      byType: (typeBreakdown as Array<Record<string, unknown>>).map((row: Record<string, unknown>) => ({
         type: row.claim_type,
         count: Number(row.count)
       })),
-      byPriority: (priorityBreakdown as any[]).reduce((acc: any, row: any) => {
+      byPriority: (priorityBreakdown as Array<Record<string, unknown>>).reduce((acc: Record<string, unknown>, row: Record<string, unknown>) => {
         acc[row.priority] = Number(row.count);
         return acc;
       }, {}),
@@ -174,10 +170,10 @@ return standardErrorResponse(
 });
 
 // Helper function to get claims by date range
-async function getClaimsByDateRange(
+async function async function getClaimsByDateRange(
   organizationId: string,
   dateRange: { startDate: Date; endDate: Date },
-  filters: any
+  filters: any Record<string, unknown>
 ) {
   const { startDate, endDate } = dateRange;
   
@@ -219,6 +215,6 @@ async function getClaimsByDateRange(
   const result = await withRLSContext(async (tx) => {
       return await tx.execute(query);
     });
-  return result as any[];
+  return result as Array<Record<string, unknown>>;
 }
 

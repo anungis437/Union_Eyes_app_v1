@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Job Queue Infrastructure using BullMQ
  * 
  * Provides reliable background job processing with Redis backend
@@ -10,10 +10,10 @@
 // Avoid importing bullmq types at module level to prevent bundling
 // Types are documented in JSDoc only
 
-// Don't lazy-load at module level - only on first function call
+// Don&apos;t lazy-load at module level - only on first function call
 let _initialized = false;
-let QueueImpl: any, WorkerImpl: any, QueueEventsImpl: any, JobImpl: any;
-let IORedisImpl: any;
+let QueueImpl: unknown, WorkerImpl: unknown, QueueEventsImpl: unknown, JobImpl: unknown;
+let IORedisImpl: unknown;
 
 const ensureInitialized = () => {
   // Only initialize once, and only in valid Node.js environments
@@ -25,23 +25,25 @@ const ensureInitialized = () => {
   
   try {
     // Use require with string variable to prevent bundler from recognizing bullmq import
-    // eslint-disable-next-line global-require
+     
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const bullmq = require('bull' + 'mq');
     QueueImpl = bullmq.Queue;
     WorkerImpl = bullmq.Worker;
     QueueEventsImpl = bullmq.QueueEvents;
     JobImpl = bullmq.Job;
-    // eslint-disable-next-line global-require
+     
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     IORedisImpl = require('io' + 'redis');
-  } catch (e: any) {
-    // Silently fail if bullmq not available or if we're in a build/bundling context
+  } catch (e: unknown) {
+    // Silently fail if bullmq not available or if we&apos;re in a build/bundling context
     // This handles "self is not defined" and other bundler-related errors
     // The require() calls above may fail during Next.js build phase or in restricted environments
   }
 };
 
 // Redis connection configuration (lazy loaded)
-let connection: any;
+let connection: unknown;
 
 const getConnection = () => {
   if (!connection && IORedisImpl) {
@@ -60,7 +62,7 @@ export interface EmailJobData {
   to: string | string[];
   subject: string;
   template: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   priority?: number;
 }
 
@@ -76,7 +78,7 @@ export interface NotificationJobData {
   userId: string;
   title: string;
   message: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   channels: ('email' | 'sms' | 'push' | 'in-app')[];
 }
 
@@ -85,7 +87,7 @@ export interface ReportJobData {
   reportType: string;
   tenantId: string;
   userId: string;
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
 }
 
 export interface CleanupJobData {
@@ -105,17 +107,17 @@ export type JobData =
 // Queue Definitions (Lazy-loaded)
 // ============================================
 
-let emailQueue: any = null;
-let smsQueue: any = null;
-let notificationQueue: any = null;
-let reportQueue: any = null;
-let cleanupQueue: any = null;
+let emailQueue: unknown = null;
+let smsQueue: unknown = null;
+let notificationQueue: unknown = null;
+let reportQueue: unknown = null;
+let cleanupQueue: unknown = null;
 
-let emailQueueEvents: any = null;
-let smsQueueEvents: any = null;
-let notificationQueueEvents: any = null;
-let reportQueueEvents: any = null;
-let cleanupQueueEvents: any = null;
+let emailQueueEvents: unknown = null;
+let smsQueueEvents: unknown = null;
+let notificationQueueEvents: unknown = null;
+let reportQueueEvents: unknown = null;
+let cleanupQueueEvents: unknown = null;
 
 export const getEmailQueue = () => {
   ensureInitialized();
@@ -430,7 +432,7 @@ export async function getAllQueueStats(): Promise<QueueStats[]> {
     getNotificationQueue(),
     getReportQueue(),
     getCleanupQueue(),
-  ].filter(q => q !== null) as any[];
+  ].filter(q => q !== null) as unknown[];
 
   const stats = await Promise.all(
     queues.map(async (queue) => {
@@ -456,7 +458,7 @@ export async function getAllQueueStats(): Promise<QueueStats[]> {
  * Get failed jobs for a queue
  */
 export async function getFailedJobs(queueName: string, limit: number = 10) {
-  let queue: any | null;
+  let queue: unknown | null;
   
   switch (queueName) {
     case 'email':
@@ -487,7 +489,7 @@ export async function getFailedJobs(queueName: string, limit: number = 10) {
  */
 export async function retryJob(queueName: string, jobId: string) {
   const jobs = await getFailedJobs(queueName, 100);
-  const job = jobs.find((j: any) => j.id === jobId);
+  const job = jobs.find((j: unknown) => j.id === jobId);
   
   if (!job) {
     throw new Error(`Job ${jobId} not found in ${queueName} queue`);
@@ -503,7 +505,7 @@ export async function cleanCompletedJobs(
   queueName: string,
   olderThanMs: number = 24 * 60 * 60 * 1000 // 24 hours
 ) {
-  let queue: any | null;
+  let queue: unknown | null;
   
   switch (queueName) {
     case 'email':
@@ -534,7 +536,7 @@ export async function cleanCompletedJobs(
  * Pause queue
  */
 export async function pauseQueue(queueName: string) {
-  let queue: any | null;
+  let queue: unknown | null;
   
   switch (queueName) {
     case 'email':
@@ -564,7 +566,7 @@ export async function pauseQueue(queueName: string) {
  * Resume queue
  */
 export async function resumeQueue(queueName: string) {
-  let queue: any | null;
+  let queue: unknown | null;
   
   switch (queueName) {
     case 'email':

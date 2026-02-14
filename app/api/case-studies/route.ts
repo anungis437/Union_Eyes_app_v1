@@ -21,9 +21,9 @@ export async function GET(request: NextRequest) {
     const organizationType = searchParams.get('organizationType');
     const published = searchParams.get('published'); // 'true' or 'false'
 
-    let query = db.select().from(caseStudies);
+    const query = db.select().from(caseStudies);
 
-    // Execute query (filter in memory since schema doesn't match original API)
+    // Execute query (filter in memory since schema doesn&apos;t match original API)
     let results = await query;
 
     // Apply filters

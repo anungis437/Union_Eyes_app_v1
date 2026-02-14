@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { surveys, surveyQuestions, surveyResponses, surveyAnswers } from '@/db/schema';
-import { and, eq, gte, sql } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { withApiAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 interface QuestionResult {
   questionId: string;
   questionText: string;
@@ -98,7 +94,7 @@ export const GET = withApiAuth(async (
     // Fetch all answers for this survey (filtered by date range)
     const responseIds = responses.map((r) => r.id);
     
-    let answers: any[] = [];
+    let answers: Array<Record<string, unknown>> = [];
     if (responseIds.length > 0) {
       // SECURITY FIX: Use Drizzle's inArray() instead of manual IN clause building
       const { inArray } = await import('drizzle-orm');
@@ -113,7 +109,7 @@ export const GET = withApiAuth(async (
       const questionAnswers = answers.filter((a) => a.questionId === question.id);
       const responseCount = questionAnswers.length;
 
-      let answerBreakdown: any = {};
+      let answerBreakdown = {};
 
       if (question.questionType === 'text' || question.questionType === 'textarea') {
         // For text questions, get unique answers with counts

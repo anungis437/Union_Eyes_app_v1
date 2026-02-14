@@ -1,17 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { desc, eq } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import { db } from "@/db/db";
 import { reservedMatterVotes } from "@/db/schema/domains/governance";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { governanceService } from "@/services/governance-service";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 const listReservedMattersSchema = z.object({
   status: z.string().optional(),
   limit: z.string().optional().transform(value => (value ? parseInt(value, 10) : 50)),
@@ -28,7 +24,7 @@ const createReservedMatterSchema = z.object({
 });
 
 export const GET = async (request: NextRequest) =>
-  withEnhancedRoleAuth<any>(10, async (_request, context) => {
+  withEnhancedRoleAuth(10, async (_request, context) => {
     const { userId } = context;
     const parsed = listReservedMattersSchema.safeParse(
       Object.fromEntries(request.nextUrl.searchParams)
@@ -81,7 +77,7 @@ export const GET = async (request: NextRequest) =>
   })(request, {});
 
 export const POST = async (request: NextRequest) =>
-  withEnhancedRoleAuth<any>(20, async (_request, context) => {
+  withEnhancedRoleAuth(20, async (_request, context) => {
     const { userId } = context;
 
     let rawBody: unknown;

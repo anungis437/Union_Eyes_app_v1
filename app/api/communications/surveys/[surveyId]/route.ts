@@ -1,16 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { surveys, surveyQuestions, surveyResponses, surveyAnswers } from '@/db/schema';
-import { and, eq } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { z } from 'zod';
 import { withApiAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // Validation schema for update
 const UpdateSurveySchema = z.object({
   title: z.string().min(1).max(200).optional(),
@@ -108,7 +104,7 @@ export const PUT = withApiAuth(async (
     }
 
     // Prepare update data
-    const updateData: any = {
+    const updateData = {
       updatedBy: userId,
       updatedAt: new Date(),
     };
@@ -142,7 +138,7 @@ export const PUT = withApiAuth(async (
         .where(eq(surveyQuestions.surveyId, surveyId));
 
       // Insert new questions
-      const questionValues = data.questions.map((q: any) => ({
+      const questionValues = data.questions.map((q: Record<string, unknown>) => ({
         organizationId,
         surveyId: surveyId,
         questionText: q.questionText,
@@ -213,7 +209,7 @@ export const DELETE = withApiAuth(async (
     );
     }
 
-    // Don't allow deleting published surveys with responses
+    // Don&apos;t allow deleting published surveys with responses
     if (existingSurvey.status === 'published' && existingSurvey.responseCount > 0) {
       return NextResponse.json(
         { error: 'Cannot delete survey that has responses. Please close it instead.' },
@@ -230,7 +226,7 @@ export const DELETE = withApiAuth(async (
             surveyAnswers.responseId,
             db.select({ id: surveyResponses.id })
               .from(surveyResponses)
-              .where(eq(surveyResponses.surveyId, surveyId)) as any
+              .where(eq(surveyResponses.surveyId, surveyId)) as Record<string, unknown>
           )
         );
     });

@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { z } from 'zod';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 const QuerySchema = z.object({
   question: z.string().min(1).max(500),
   context: z.any().optional(),
@@ -37,7 +33,7 @@ const QuerySchema = z.object({
  * Examples:
  * - "Show me top 5 stewards by resolution rate this month"
  * - "How many claims are overdue?"
- * - "What's our win rate this quarter?"
+ * - "What&apos;s our win rate this quarter?"
  * - "Which employer has the most claims?"
  */
 export const POST = withRoleAuth(20, async (request: NextRequest, context) => {
@@ -130,7 +126,7 @@ if (error instanceof z.ZodError) {
  */
 function generateFollowUpSuggestions(
   question: string, 
-  result: any
+  result: Record<string, unknown>
 ): string[] {
   const suggestions: string[] = [];
   const lowerQuestion = question.toLowerCase();

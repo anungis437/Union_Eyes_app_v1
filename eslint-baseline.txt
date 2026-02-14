@@ -1,0 +1,1578 @@
+﻿
+C:\APPS\Union_Eyes_app_v1\lib\ab-testing\ab-test-engine.ts
+  22:10  warning  'db' is defined but never used            @typescript-eslint/no-unused-vars
+  23:10  warning  'sql' is defined but never used           @typescript-eslint/no-unused-vars
+  35:27  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  55:36  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  56:28  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  81:29  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  85:36  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\accessibility\accessibility-service.ts
+   13:3   warning  'wcagSuccessCriteria' is defined but never used      @typescript-eslint/no-unused-vars
+   14:3   warning  'accessibilityTestSuites' is defined but never used  @typescript-eslint/no-unused-vars
+   15:8   warning  'NewAccessibilityAudit' is defined but never used    @typescript-eslint/no-unused-vars
+   20:14  warning  'and' is defined but never used                      @typescript-eslint/no-unused-vars
+   20:25  warning  'sql' is defined but never used                      @typescript-eslint/no-unused-vars
+   37:65  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+   46:53  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+   81:21  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+   91:63  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  143:28  warning  'url' is defined but never used                      @typescript-eslint/no-unused-vars
+  143:50  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  218:49  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  230:42  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  269:35  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  551:5   warning  'options' is assigned a value but never used         @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\address\address-service.ts
+   15:8   warning  'NewInternationalAddress' is defined but never used  @typescript-eslint/no-unused-vars
+   52:29  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  352:16  warning  'error' is defined but never used                    @typescript-eslint/no-unused-vars
+  368:16  warning  'error' is defined but never used                    @typescript-eslint/no-unused-vars
+  392:42  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  518:35  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  591:46  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  593:42  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\ai\chatbot-service.ts
+   14:3   warning  'chatbotSuggestions' is defined but never used  @typescript-eslint/no-unused-vars
+   15:3   warning  'chatbotAnalytics' is defined but never used    @typescript-eslint/no-unused-vars
+   17:8   warning  'NewChatSession' is defined but never used      @typescript-eslint/no-unused-vars
+   18:8   warning  'NewChatMessage' is defined but never used      @typescript-eslint/no-unused-vars
+   19:8   warning  'NewKnowledgeBase' is defined but never used    @typescript-eslint/no-unused-vars
+   23:30  warning  'gt' is defined but never used                  @typescript-eslint/no-unused-vars
+   24:10  warning  'createHash' is defined but never used          @typescript-eslint/no-unused-vars
+  303:41  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  344:69  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  420:42  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  551:24  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  665:21  warning  '_' is defined but never used                   @typescript-eslint/no-unused-vars
+  681:14  warning  'error' is defined but never used               @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\ai\data-ingestion.ts
+   15:15  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  215:23  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  331:16  warning  'fallbackError' is defined but never used        @typescript-eslint/no-unused-vars
+  629:11  warning  'validation' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\ai\entity-extraction.ts
+  239:11  warning  'lowerText' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\ai\experiments.ts
+  156:11  warning  'winner' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\ai\insights-generator.ts
+   34:15   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   74:12   warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  237:49   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  258:49   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  279:49   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  328:52   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  538:53   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  539:108  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  541:59   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\ai\mamba-service.ts
+  41:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\ai\performance-monitor.ts
+  305:30  warning  'limit' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\ai\pipeline.ts
+   18:10  warning  'aiResilience' is defined but never used  @typescript-eslint/no-unused-vars
+  231:42  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\ai\rag-pipeline.ts
+  288:17  warning  'id' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\ai\resilience.ts
+  189:11  warning  'RateLimitEntry' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\ai\safety.ts
+  8:10  warning  'logger' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\ai\services\cost-tracking-wrapper.ts
+   30:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   33:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   55:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  229:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  278:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\ai\services\rate-limiter.ts
+  20:24  warning  'lte' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\ai\template-engine.ts
+    47:3   warning  'chatSessions' is defined but never used                @typescript-eslint/no-unused-vars
+    50:8   warning  'ChatSession' is defined but never used                 @typescript-eslint/no-unused-vars
+    51:8   warning  'ChatMessage' is defined but never used                 @typescript-eslint/no-unused-vars
+    53:30  warning  'gt' is defined but never used                          @typescript-eslint/no-unused-vars
+    55:10  warning  'embeddingCache' is defined but never used              @typescript-eslint/no-unused-vars
+    67:8   warning  'ClaimTransitionContext' is defined but never used      @typescript-eslint/no-unused-vars
+    72:3   warning  'calculateAcknowledgmentSla' is defined but never used  @typescript-eslint/no-unused-vars
+    73:3   warning  'calculateFirstResponseSla' is defined but never used   @typescript-eslint/no-unused-vars
+    74:3   warning  'calculateInvestigationSla' is defined but never used   @typescript-eslint/no-unused-vars
+    76:8   warning  'SlaStatus' is defined but never used                   @typescript-eslint/no-unused-vars
+   109:11  warning  'InheritanceConfig' is defined but never used           @typescript-eslint/no-unused-vars
+  1113:14  warning  'error' is defined but never used                       @typescript-eslint/no-unused-vars
+  1125:34  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  1141:42  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  1147:14  warning  'error' is defined but never used                       @typescript-eslint/no-unused-vars
+  1168:33  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  1169:37  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  1177:14  warning  'error' is defined but never used                       @typescript-eslint/no-unused-vars
+  1268:5   warning  'cbaId' is defined but never used                       @typescript-eslint/no-unused-vars
+  1269:5   warning  'query' is defined but never used                       @typescript-eslint/no-unused-vars
+  1438:37  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  1461:34  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  1479:13  warning  'fsmState' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  1485:42  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  1774:23  warning  'preferredProvider' is defined but never used           @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\alerts\alert-rules.ts
+  393:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  395:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  491:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\analytics-aggregation.ts
+   16:18  warning  'users' is defined but never used  @typescript-eslint/no-unused-vars
+  264:10  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\analytics-cache.ts
+  103:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  119:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  161:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  306:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\analytics-middleware.ts
+   19:63  error    Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   23:36  error    Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   46:14  warning  'error' is defined but never used                      @typescript-eslint/no-unused-vars
+   99:7   warning  'commonTimeRanges' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  106:10  warning  'error' is defined but never used                      @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\analytics\advanced-metrics.ts
+   21:3   warning  'dataAggregationConsent' is defined but never used  @typescript-eslint/no-unused-vars
+   23:24  warning  'sql' is defined but never used                     @typescript-eslint/no-unused-vars
+  169:17  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  234:65  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  422:46  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  430:50  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  436:57  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\api-auth-guard.ts
+    49:10  warning  'organizationMembers' is defined but never used    @typescript-eslint/no-unused-vars
+   250:11  warning  'PermissionCheckResult' is defined but never used  @typescript-eslint/no-unused-vars
+   261:27  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   270:54  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   393:19  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   394:19  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   402:42  warning  'request' is defined but never used                @typescript-eslint/no-unused-vars
+   764:62  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   772:14  warning  'error' is defined but never used                  @typescript-eslint/no-unused-vars
+   803:61  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   831:63  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   840:69  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   886:42  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   897:51  warning  'baseContext' is defined but never used            @typescript-eslint/no-unused-vars
+   897:64  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  1034:36  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  1045:51  warning  'baseContext' is defined but never used            @typescript-eslint/no-unused-vars
+  1045:64  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  1155:40  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  1166:51  warning  'baseContext' is defined but never used            @typescript-eslint/no-unused-vars
+  1166:64  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  1287:61  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  1389:12  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\api-versioning\version-middleware.ts
+  140:32  warning  'T' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\api\index.ts
+    8:11  warning  'RequestOptions' is defined but never used  @typescript-eslint/no-unused-vars
+   58:15  warning  '_' is defined but never used               @typescript-eslint/no-unused-vars
+   76:29  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+   78:33  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+   80:18  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+   81:14  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+   86:30  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+   87:14  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+   98:25  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  116:24  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  118:18  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  119:14  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  124:22  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  141:29  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  145:16  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  147:42  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  161:27  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  182:26  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  185:16  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  197:26  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  199:35  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  201:20  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  202:16  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  207:32  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  208:16  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  226:14  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  228:33  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  230:18  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  231:14  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  236:30  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  237:14  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  247:38  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  251:16  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  271:40  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  274:16  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  286:29  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  290:16  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  293:16  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  295:20  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  296:16  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  320:14  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  322:33  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  324:18  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  325:14  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  330:30  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  331:14  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  343:14  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  351:25  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  354:14  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  363:26  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  377:30  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  379:26  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  380:16  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  388:16  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\api\standardized-responses.ts
+  106:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  118:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  131:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  142:66  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  149:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  250:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  280:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  280:78  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  284:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  388:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  391:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  404:10  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  422:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\audit-logger.ts
+  106:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  111:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  180:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  200:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  201:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  202:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  266:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  285:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  325:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\auth\hierarchy-access-control.ts
+  28:23  warning  'inArray' is defined but never used       @typescript-eslint/no-unused-vars
+  42:6   warning  'Organization' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\auth\permissions.ts
+   80:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  120:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\auth\rbac-hooks.ts
+  75:16  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\auth\rbac-server.ts
+  68:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\auth\roles.ts
+  250:3  error  Duplicate enum member value manage_affiliates        @typescript-eslint/no-duplicate-enum-values
+  251:3  error  Duplicate enum member value view_all_organizations   @typescript-eslint/no-duplicate-enum-values
+  252:3  error  Duplicate enum member value manage_organizations     @typescript-eslint/no-duplicate-enum-values
+  253:3  error  Duplicate enum member value view_compliance_reports  @typescript-eslint/no-duplicate-enum-values
+  254:3  error  Duplicate enum member value manage_sector_analytics  @typescript-eslint/no-duplicate-enum-values
+
+C:\APPS\Union_Eyes_app_v1\lib\automation\story-automation.ts
+  153:47  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  220:45  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  230:34  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  230:39  warning  'score' is defined but never used           @typescript-eslint/no-unused-vars
+  267:46  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  417:49  warning  'organizationId' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\azure-keyvault.ts
+  240:7  error    Unexpected any. Specify a different type                        @typescript-eslint/no-explicit-any
+  294:9  warning  'newKey' is assigned a value but never used                     @typescript-eslint/no-unused-vars
+  374:1  warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+C:\APPS\Union_Eyes_app_v1\lib\azure-speech.ts
+   71:34  warning  's' is defined but never used  @typescript-eslint/no-unused-vars
+   71:37  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+  146:34  warning  's' is defined but never used  @typescript-eslint/no-unused-vars
+  146:37  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\calendar-reminder-scheduler.ts
+   20:22  warning  'subHours' is defined but never used                                                                                 @typescript-eslint/no-unused-vars
+   21:1   error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  133:10  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  134:13  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  206:45  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  215:14  warning  'error' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+  332:13  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  364:11  warning  'maxRetries' is assigned a value but never used                                                                      @typescript-eslint/no-unused-vars
+  470:11  warning  'result' is assigned a value but never used                                                                          @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\case-assignment-engine.ts
+   10:25  warning  'asc' is defined but never used                        @typescript-eslint/no-unused-vars
+   10:30  warning  'isNull' is defined but never used                     @typescript-eslint/no-unused-vars
+   10:38  warning  'count' is defined but never used                      @typescript-eslint/no-unused-vars
+   10:45  warning  'sql' is defined but never used                        @typescript-eslint/no-unused-vars
+   10:50  warning  'gte' is defined but never used                        @typescript-eslint/no-unused-vars
+   10:55  warning  'lt' is defined but never used                         @typescript-eslint/no-unused-vars
+   15:8   warning  'InsertGrievanceAssignment' is defined but never used  @typescript-eslint/no-unused-vars
+  366:12  warning  'error' is defined but never used                      @typescript-eslint/no-unused-vars
+  380:3   warning  'criteria' is defined but never used                   @typescript-eslint/no-unused-vars
+  406:38  error    Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  425:12  warning  'error' is defined but never used                      @typescript-eslint/no-unused-vars
+  435:10  error    Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  437:3   warning  'tenantId' is defined but never used                   @typescript-eslint/no-unused-vars
+  603:36  error    Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  618:12  warning  'error' is defined but never used                      @typescript-eslint/no-unused-vars
+  656:12  warning  'error' is defined but never used                      @typescript-eslint/no-unused-vars
+  721:12  warning  'error' is defined but never used                      @typescript-eslint/no-unused-vars
+  834:12  warning  'error' is defined but never used                      @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\chaos-engineering\chaos-monkey.ts
+  204:7   warning  'sum' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  237:41  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\chaos-engineering\experiments.ts
+    7:23  warning  'LatencyConfig' is defined but never used   @typescript-eslint/no-unused-vars
+    7:38  warning  'ErrorConfig' is defined but never used     @typescript-eslint/no-unused-vars
+    7:51  warning  'ResourceConfig' is defined but never used  @typescript-eslint/no-unused-vars
+  118:10  warning  'error' is defined but never used           @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\chart-utils.ts
+   18:9   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   22:4   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   23:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   28:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   43:9   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   47:4   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   56:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   85:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   85:75  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   86:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  236:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\claim-notifications.ts
+   20:10  warning  'getDaysUntilDeadline' is defined but never used  @typescript-eslint/no-unused-vars
+   88:16  warning  'error' is defined but never used                 @typescript-eslint/no-unused-vars
+  298:16  warning  'error' is defined but never used                 @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\config\env-validation.ts
+  17:15  warning  'ZodError' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\console-wrapper.ts
+  40:21  warning  'args' is defined but never used          @typescript-eslint/no-unused-vars
+  40:27  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  46:22  warning  'args' is defined but never used          @typescript-eslint/no-unused-vars
+  46:28  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  51:28  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  60:29  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  78:23  warning  'args' is defined but never used          @typescript-eslint/no-unused-vars
+  78:29  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\csrf-client.ts
+   99:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  101:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  116:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  268:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  270:9   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  289:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\csrf-protection.ts
+  157:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  159:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\data-export-import.ts
+    9:10  warning  'db' is defined but never used                  @typescript-eslint/no-unused-vars
+   63:13  warning  'formatted' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   88:47  warning  'filters' is defined but never used             @typescript-eslint/no-unused-vars
+  150:25  warning  'jobId' is defined but never used               @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\database\multi-db-client.ts
+   35:10  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   36:11  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   37:11  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   38:11  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   39:11  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   40:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   41:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  112:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  190:11  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  270:11  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  287:11  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\db-validator.ts
+   52:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   74:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  147:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  175:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  184:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\db\with-rls-context.ts
+   56:34  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   59:35  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  200:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  234:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  315:39  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\deadline-service.ts
+   14:3   warning  'getDeadlineRuleByCode' is defined but never used       @typescript-eslint/no-unused-vars
+   15:3   warning  'getApplicableDeadlineRules' is defined but never used  @typescript-eslint/no-unused-vars
+   27:3   warning  'createDeadlineAlert' is defined but never used         @typescript-eslint/no-unused-vars
+   85:3   warning  'priority' is defined but never used                    @typescript-eslint/no-unused-vars
+   86:3   warning  'createdBy' is defined but never used                   @typescript-eslint/no-unused-vars
+  133:3   warning  'days' is assigned a value but never used               @typescript-eslint/no-unused-vars
+  144:3   warning  'daysAhead' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  145:12  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  239:9   warning  'deadlines' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  379:12  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  386:70  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  396:12  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  519:41  warning  'tenantId' is defined but never used                    @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\deadline-tracking-system.ts
+   10:19  warning  'desc' is defined but never used                     @typescript-eslint/no-unused-vars
+   10:35  warning  'gte' is defined but never used                      @typescript-eslint/no-unused-vars
+   10:40  warning  'isNull' is defined but never used                   @typescript-eslint/no-unused-vars
+   10:48  warning  'sql' is defined but never used                      @typescript-eslint/no-unused-vars
+   15:3   warning  'organizationMembers' is defined but never used      @typescript-eslint/no-unused-vars
+   16:8   warning  'InsertGrievanceDeadline' is defined but never used  @typescript-eslint/no-unused-vars
+   19:54  warning  'isPast' is defined but never used                   @typescript-eslint/no-unused-vars
+   19:62  warning  'isBefore' is defined but never used                 @typescript-eslint/no-unused-vars
+  229:3   warning  'incidentDate' is defined but never used             @typescript-eslint/no-unused-vars
+  424:12  warning  'error' is defined but never used                    @typescript-eslint/no-unused-vars
+  432:43  warning  'tenantId' is defined but never used                 @typescript-eslint/no-unused-vars
+  445:12  warning  'error' is defined but never used                    @typescript-eslint/no-unused-vars
+  455:3   warning  'tenantId' is defined but never used                 @typescript-eslint/no-unused-vars
+  464:12  warning  'error' is defined but never used                    @typescript-eslint/no-unused-vars
+  493:12  warning  'error' is defined but never used                    @typescript-eslint/no-unused-vars
+  537:3   warning  'dueDate' is defined but never used                  @typescript-eslint/no-unused-vars
+  538:3   warning  'reminderSchedule' is defined but never used         @typescript-eslint/no-unused-vars
+  553:12  warning  'error' is defined but never used                    @typescript-eslint/no-unused-vars
+  572:12  warning  'error' is defined but never used                    @typescript-eslint/no-unused-vars
+  593:12  warning  'error' is defined but never used                    @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\document-management-system.ts
+   10:25  warning  'asc' is defined but never used                      @typescript-eslint/no-unused-vars
+   10:47  warning  'ilike' is defined but never used                    @typescript-eslint/no-unused-vars
+   13:3   warning  'claims' is defined but never used                   @typescript-eslint/no-unused-vars
+   14:8   warning  'InsertGrievanceDocument' is defined but never used  @typescript-eslint/no-unused-vars
+  280:12  warning  'error' is defined but never used                    @typescript-eslint/no-unused-vars
+  291:3   warning  'restoredBy' is defined but never used               @typescript-eslint/no-unused-vars
+  442:12  warning  'error' is defined but never used                    @typescript-eslint/no-unused-vars
+  518:52  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  619:44  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  625:12  warning  'error' is defined but never used                    @typescript-eslint/no-unused-vars
+  676:12  warning  'error' is defined but never used                    @typescript-eslint/no-unused-vars
+  747:12  warning  'error' is defined but never used                    @typescript-eslint/no-unused-vars
+  779:12  warning  'error' is defined but never used                    @typescript-eslint/no-unused-vars
+  844:10  warning  'error' is defined but never used                    @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\documents\batch-operations-service.ts
+    8:68  warning  'sql' is defined but never used                @typescript-eslint/no-unused-vars
+    9:49  warning  'profiles' is defined but never used           @typescript-eslint/no-unused-vars
+   96:14  warning  'error' is defined but never used              @typescript-eslint/no-unused-vars
+  141:9   warning  'dbConfig' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  537:35  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\dues-calculation-engine.ts
+    7:8   warning  'DuesRule' is defined but never used              @typescript-eslint/no-unused-vars
+    8:8   warning  'MemberDuesAssignment' is defined but never used  @typescript-eslint/no-unused-vars
+   99:20  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  191:35  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  244:14  warning  'error' is defined but never used                 @typescript-eslint/no-unused-vars
+  383:14  warning  'error' is defined but never used                 @typescript-eslint/no-unused-vars
+  391:52  warning  'frequency' is defined but never used             @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\email\report-email-templates.ts
+   29:11  warning  'schedule' is assigned a value but never used    @typescript-eslint/no-unused-vars
+   29:21  warning  'fileUrl' is assigned a value but never used     @typescript-eslint/no-unused-vars
+   29:30  warning  'fileBuffer' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   57:37  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+   88:17  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+   91:14  warning  'importError' is defined but never used          @typescript-eslint/no-unused-vars
+  101:37  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  119:12  warning  'error' is defined but never used                @typescript-eslint/no-unused-vars
+  132:35  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  133:42  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\encryption.ts
+  70:7  warning  'AUTH_TAG_LENGTH' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\engagement-scoring.ts
+    9:29  warning  'desc' is defined but never used                @typescript-eslint/no-unused-vars
+  373:9   warning  'startDate' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\enterprise-role-middleware.ts
+   54:3   warning  'memberHasRoleLevel' is defined but never used            @typescript-eslint/no-unused-vars
+   55:3   warning  'memberHasPermissionException' is defined but never used  @typescript-eslint/no-unused-vars
+   58:3   warning  'getRoleDefinitionByCode' is defined but never used       @typescript-eslint/no-unused-vars
+  110:42  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  121:72  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  127:39  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  221:14  warning  'error' is defined but never used                         @typescript-eslint/no-unused-vars
+  237:36  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  248:72  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  253:39  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  334:14  warning  'error' is defined but never used                         @typescript-eslint/no-unused-vars
+  350:40  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  361:72  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  366:39  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  442:14  warning  'error' is defined but never used                         @typescript-eslint/no-unused-vars
+  531:12  warning  'error' is defined but never used                         @typescript-eslint/no-unused-vars
+  571:16  warning  'error' is defined but never used                         @typescript-eslint/no-unused-vars
+  592:12  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\entitlement-sat-validator.ts
+  11:42  warning  'TIER_FEATURES' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\events\event-bus.ts
+   29:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   30:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   32:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   66:10  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   92:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  118:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  177:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\examples\static-generation-patterns.ts
+    1:1   error    Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+   24:10  warning  'organizations' is defined but never used                      @typescript-eslint/no-unused-vars
+  186:12  warning  'err' is defined but never used                                @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\external-calendar-sync\google-calendar-service.ts
+  203:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  279:16  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  384:45  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  417:44  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  418:22  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  478:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  499:54  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  516:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  523:42  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\external-calendar-sync\microsoft-calendar-service.ts
+  107:68  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  284:16  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  382:44  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  414:47  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  415:18  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  454:52  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  485:56  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  487:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  567:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  588:54  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  605:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  612:42  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\feature-flags.ts
+  16:14  warning  'and' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\gdpr\consent-manager.ts
+   29:8   warning  'NewUserConsent' is defined but never used                      @typescript-eslint/no-unused-vars
+   30:8   warning  'NewCookieConsent' is defined but never used                    @typescript-eslint/no-unused-vars
+   31:8   warning  'NewGdprDataRequest' is defined but never used                  @typescript-eslint/no-unused-vars
+   32:8   warning  'NewDataAnonymizationLog' is defined but never used             @typescript-eslint/no-unused-vars
+   57:16  error    Unexpected any. Specify a different type                        @typescript-eslint/no-explicit-any
+  128:55  error    Unexpected any. Specify a different type                        @typescript-eslint/no-explicit-any
+  228:22  error    Unexpected any. Specify a different type                        @typescript-eslint/no-explicit-any
+  284:22  error    Unexpected any. Specify a different type                        @typescript-eslint/no-explicit-any
+  310:22  error    Unexpected any. Specify a different type                        @typescript-eslint/no-explicit-any
+  373:22  error    Unexpected any. Specify a different type                        @typescript-eslint/no-explicit-any
+  377:23  error    Unexpected any. Specify a different type                        @typescript-eslint/no-explicit-any
+  412:14  error    Unexpected any. Specify a different type                        @typescript-eslint/no-explicit-any
+  435:25  error    Unexpected any. Specify a different type                        @typescript-eslint/no-explicit-any
+  435:38  error    Unexpected any. Specify a different type                        @typescript-eslint/no-explicit-any
+  536:23  error    Unexpected any. Specify a different type                        @typescript-eslint/no-explicit-any
+  570:36  error    Unexpected any. Specify a different type                        @typescript-eslint/no-explicit-any
+  859:11  warning  'result' is assigned a value but never used                     @typescript-eslint/no-unused-vars
+  880:5   warning  'userId' is defined but never used                              @typescript-eslint/no-unused-vars
+  881:5   warning  'tenantId' is defined but never used                            @typescript-eslint/no-unused-vars
+  946:1   warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+C:\APPS\Union_Eyes_app_v1\lib\geo\ip-geolocation.ts
+  67:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\graphql\resolvers.ts
+   19:3   warning  'ContributionPeriod' is defined but never used  @typescript-eslint/no-unused-vars
+   21:3   warning  'IPensionProcessor' is defined but never used   @typescript-eslint/no-unused-vars
+   29:28  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+   29:57  warning  '_context' is defined but never used            @typescript-eslint/no-unused-vars
+   35:16  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+   36:32  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+   37:7   warning  '_context' is defined but never used            @typescript-eslint/no-unused-vars
+   66:29  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+   66:58  warning  '_context' is defined but never used            @typescript-eslint/no-unused-vars
+   72:16  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+   73:31  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+   74:7   warning  '_context' is defined but never used            @typescript-eslint/no-unused-vars
+  123:39  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  141:16  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  159:33  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  178:16  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  202:16  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  203:61  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  248:16  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  249:29  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  303:16  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  304:27  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  305:7   warning  '_context' is defined but never used            @typescript-eslint/no-unused-vars
+  326:16  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  327:43  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  328:7   warning  '_context' is defined but never used            @typescript-eslint/no-unused-vars
+  343:16  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  345:7   warning  '_context' is defined but never used            @typescript-eslint/no-unused-vars
+  353:7   warning  '_parent' is defined but never used             @typescript-eslint/no-unused-vars
+  353:16  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  354:9   warning  'voteId' is defined but never used              @typescript-eslint/no-unused-vars
+  354:17  warning  'optionId' is defined but never used            @typescript-eslint/no-unused-vars
+  355:7   warning  '_context' is defined but never used            @typescript-eslint/no-unused-vars
+  363:16  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  364:27  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  376:42  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  406:16  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  407:27  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  416:42  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  457:16  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  484:16  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  518:16  warning  'error' is defined but never used               @typescript-eslint/no-unused-vars
+  532:30  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  532:35  warning  '_args' is defined but never used               @typescript-eslint/no-unused-vars
+  532:42  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  532:47  warning  '_context' is defined but never used            @typescript-eslint/no-unused-vars
+  542:30  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  542:35  warning  '_args' is defined but never used               @typescript-eslint/no-unused-vars
+  542:42  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  542:47  warning  '_context' is defined but never used            @typescript-eslint/no-unused-vars
+  554:28  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  554:33  warning  '_args' is defined but never used               @typescript-eslint/no-unused-vars
+  554:40  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  554:45  warning  '_context' is defined but never used            @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\i18n-utils.ts
+  1:10  warning  'getRequestConfig' is defined but never used  @typescript-eslint/no-unused-vars
+  2:10  warning  'notFound' is defined but never used          @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\accounting\freshbooks-adapter.ts
+  124:11  warning  'startTime' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  492:23  warning  'payload' is defined but never used             @typescript-eslint/no-unused-vars
+  492:40  warning  'signature' is defined but never used           @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\accounting\freshbooks-client.ts
+   51:18  error  Unsafe declaration merging between classes and interfaces  @typescript-eslint/no-unsafe-declaration-merging
+  100:14  error  Unsafe declaration merging between classes and interfaces  @typescript-eslint/no-unsafe-declaration-merging
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\accounting\quickbooks-adapter.ts
+  127:11  warning  'startTime' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  502:23  warning  'payload' is defined but never used             @typescript-eslint/no-unused-vars
+  502:40  warning  'signature' is defined but never used           @typescript-eslint/no-unused-vars
+  513:35  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\accounting\quickbooks-client.ts
+  10:10  warning  'z' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\accounting\sage-intacct-adapter.ts
+  121:11  warning  'startTime' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  488:23  warning  'payload' is defined but never used             @typescript-eslint/no-unused-vars
+  488:40  warning  'signature' is defined but never used           @typescript-eslint/no-unused-vars
+  493:24  warning  'event' is defined but never used               @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\accounting\sage-intacct-client.ts
+   17:49  warning  'RateLimitError' is defined but never used       @typescript-eslint/no-unused-vars
+   74:11  warning  'SageIntacctResponse' is defined but never used  @typescript-eslint/no-unused-vars
+   86:16  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  219:55  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  272:42  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\accounting\sync-utils.ts
+   24:19  warning  'or' is defined but never used            @typescript-eslint/no-unused-vars
+   80:18  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   81:18  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  441:42  warning  'subType' is defined but never used       @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\accounting\wave-adapter.ts
+  123:11  warning  'startTime' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  397:23  warning  'payload' is defined but never used             @typescript-eslint/no-unused-vars
+  397:40  warning  'signature' is defined but never used           @typescript-eslint/no-unused-vars
+  401:24  warning  'event' is defined but never used               @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\accounting\wave-client.ts
+  161:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  255:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  261:64  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  302:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  308:66  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  357:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  364:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  365:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\accounting\xero-adapter.ts
+  127:11  warning  'startTime' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  504:23  warning  'payload' is defined but never used             @typescript-eslint/no-unused-vars
+  504:40  warning  'signature' is defined but never used           @typescript-eslint/no-unused-vars
+  514:35  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\accounting\xero-client.ts
+  321:13  warning  'modifiedHeader' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\communication\slack-client.ts
+  133:13  warning  'rateLimitRemaining' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\communication\teams-adapter.ts
+  132:17  warning  'teamChannel' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\hris\adp-adapter.ts
+   24:3   warning  'SyncType' is defined but never used      @typescript-eslint/no-unused-vars
+  316:35  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  374:49  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  391:23  warning  'payload' is defined but never used       @typescript-eslint/no-unused-vars
+  391:40  warning  'signature' is defined but never used     @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\hris\adp-client.ts
+  10:10  warning  'z' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\hris\bamboohr-adapter.ts
+  222:22  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  376:49  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  392:23  warning  'payload' is defined but never used       @typescript-eslint/no-unused-vars
+  392:40  warning  'signature' is defined but never used     @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\hris\bamboohr-client.ts
+   10:10  warning  'z' is defined but never used             @typescript-eslint/no-unused-vars
+  198:62  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  201:42  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  248:15  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  258:31  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  271:26  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\hris\sync-utils.ts
+    8:29  warning  'externalDepartments' is defined but never used  @typescript-eslint/no-unused-vars
+   26:18  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+   27:18  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+   88:40  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  105:39  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  178:37  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  180:35  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\hris\workday-adapter.ts
+  249:71  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  273:69  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  306:31  warning  'syncType' is defined but never used      @typescript-eslint/no-unused-vars
+  379:33  warning  'syncType' is defined but never used      @typescript-eslint/no-unused-vars
+  453:23  warning  'payload' is defined but never used       @typescript-eslint/no-unused-vars
+  453:40  warning  'signature' is defined but never used     @typescript-eslint/no-unused-vars
+  458:24  warning  'event' is defined but never used         @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\hris\workday-client.ts
+    9:10  warning  'z' is defined but never used             @typescript-eslint/no-unused-vars
+  224:41  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  229:40  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  239:41  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  246:39  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  282:41  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  287:41  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  292:44  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  317:41  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  322:37  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  327:35  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  351:26  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\insurance\canadalife-adapter.ts
+  116:11  warning  'startTime' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  360:23  warning  'payload' is defined but never used             @typescript-eslint/no-unused-vars
+  360:40  warning  'signature' is defined but never used           @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\insurance\greenshield-adapter.ts
+  131:11  warning  'startTime' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  492:23  warning  'payload' is defined but never used             @typescript-eslint/no-unused-vars
+  492:40  warning  'signature' is defined but never used           @typescript-eslint/no-unused-vars
+  496:24  warning  'event' is defined but never used               @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\insurance\ia-adapter.ts
+  115:11  warning  'startTime' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  407:23  warning  'payload' is defined but never used             @typescript-eslint/no-unused-vars
+  407:40  warning  'signature' is defined but never used           @typescript-eslint/no-unused-vars
+  411:24  warning  'event' is defined but never used               @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\insurance\manulife-adapter.ts
+  131:11  warning  'startTime' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  497:23  warning  'payload' is defined but never used             @typescript-eslint/no-unused-vars
+  497:40  warning  'signature' is defined but never used           @typescript-eslint/no-unused-vars
+  501:24  warning  'event' is defined but never used               @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\insurance\sunlife-adapter.ts
+  131:11  warning  'startTime' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  492:23  warning  'payload' is defined but never used             @typescript-eslint/no-unused-vars
+  492:40  warning  'signature' is defined but never used           @typescript-eslint/no-unused-vars
+  496:24  warning  'event' is defined but never used               @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\lms\linkedin-learning-adapter.ts
+  25:10  warning  'eq' is defined but never used   @typescript-eslint/no-unused-vars
+  25:14  warning  'and' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\base-integration.ts
+  188:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\factory.ts
+  288:42  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  289:36  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  314:13  warning  'metadata' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  319:44  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  320:38  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\index.ts
+  64:9  warning  'registry' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  67:9  warning  'factory' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  70:9  warning  'webhookRouter' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  73:9  warning  'syncEngine' is assigned a value but never used     @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\marketing-notifications.ts
+  480:1  warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\sync-engine.ts
+   11:3   warning  'IntegrationType' is defined but never used  @typescript-eslint/no-unused-vars
+  215:14  error    Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  236:14  error    Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  362:12  error    Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\types.ts
+    8:10  warning  'Decimal' is defined but never used                        @typescript-eslint/no-unused-vars
+  194:18  error    Unsafe declaration merging between classes and interfaces  @typescript-eslint/no-unsafe-declaration-merging
+  305:14  error    Unsafe declaration merging between classes and interfaces  @typescript-eslint/no-unsafe-declaration-merging
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\webhook-router.ts
+   66:5   warning  'headers' is defined but never used       @typescript-eslint/no-unused-vars
+  155:18  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  190:34  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\job-queue.ts
+   15:16  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+   15:21  warning  'WorkerImpl' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   15:33  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+   15:55  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+   15:60  warning  'JobImpl' is assigned a value but never used     @typescript-eslint/no-unused-vars
+   15:69  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+   16:18  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+   29:20  error    A `require()` style import is forbidden          @typescript-eslint/no-require-imports
+   35:19  error    A `require()` style import is forbidden          @typescript-eslint/no-require-imports
+   36:12  warning  'e' is defined but never used                    @typescript-eslint/no-unused-vars
+   36:15  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+   44:17  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+   63:24  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+   79:25  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+   88:30  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  108:17  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  109:15  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  110:24  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  111:18  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  112:19  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  114:23  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  115:21  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  116:30  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  117:24  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  118:25  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  433:32  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  459:14  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  490:29  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  506:14  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  537:14  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  567:14  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\jobs\billing-scheduler.ts
+  197:5   warning  'frequency' is defined but never used     @typescript-eslint/no-unused-vars
+  232:13  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\jobs\dues-reminder-scheduler.ts
+   18:19  warning  'lte' is defined but never used           @typescript-eslint/no-unused-vars
+   18:24  warning  'gte' is defined but never used           @typescript-eslint/no-unused-vars
+  171:70  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  218:68  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  264:58  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  316:58  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  397:56  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  489:55  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  600:47  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\jobs\failed-payment-retry.ts
+   17:10  warning  'organizationMembers' is defined but never used  @typescript-eslint/no-unused-vars
+   18:19  warning  'lte' is defined but never used                  @typescript-eslint/no-unused-vars
+   78:49  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  160:63  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  189:47  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\jurisdiction-helpers.ts
+   44:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+   67:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  100:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  128:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\logger.ts
+   22:14  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+  319:49  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\member-experience\human-explainers.ts
+  205:54  warning  'daysInState' is defined but never used          @typescript-eslint/no-unused-vars
+  217:9   warning  'thresholds' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\member-experience\timeline-builder.ts
+   21:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   30:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   65:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  244:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\middleware\admin-auth.ts
+  170:56  error    Unexpected any. Specify a different type                        @typescript-eslint/no-explicit-any
+  174:23  error    Unexpected any. Specify a different type                        @typescript-eslint/no-explicit-any
+  206:1   warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+C:\APPS\Union_Eyes_app_v1\lib\middleware\api-security.ts
+   13:10  warning  'RequestValidator' is defined but never used  @typescript-eslint/no-unused-vars
+  140:52  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  140:82  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  245:11  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  294:12  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  337:20  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  337:33  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  343:28  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  343:41  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  500:28  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\middleware\auth-middleware.ts
+   22:10  warning  'NextRequest' is defined but never used   @typescript-eslint/no-unused-vars
+   29:21  error    A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  150:34  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  156:38  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  171:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\middleware\request-validation.ts
+   36:11  warning  'ValidationErrorDetail' is defined but never used  @typescript-eslint/no-unused-vars
+  275:18  warning  'error' is defined but never used                  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\middleware\sql-injection-prevention.ts
+  96:17  warning  'patternName' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\migrations\batch-migration.ts
+   21:3   warning  'getOrganizationIdFromTenant' is defined but never used  @typescript-eslint/no-unused-vars
+   35:20  error    Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+   45:24  error    Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+  183:25  error    Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\migrations\data-integrity.ts
+  159:14  warning  'error' is defined but never used           @typescript-eslint/no-unused-vars
+  199:12  warning  'error' is defined but never used           @typescript-eslint/no-unused-vars
+  233:12  warning  'error' is defined but never used           @typescript-eslint/no-unused-vars
+  271:14  warning  'error' is defined but never used           @typescript-eslint/no-unused-vars
+  327:14  warning  'error' is defined but never used           @typescript-eslint/no-unused-vars
+  355:12  warning  'error' is defined but never used           @typescript-eslint/no-unused-vars
+  463:14  warning  'error' is defined but never used           @typescript-eslint/no-unused-vars
+  506:14  warning  'error' is defined but never used           @typescript-eslint/no-unused-vars
+  548:14  warning  'error' is defined but never used           @typescript-eslint/no-unused-vars
+  595:14  warning  'error' is defined but never used           @typescript-eslint/no-unused-vars
+  635:12  warning  'error' is defined but never used           @typescript-eslint/no-unused-vars
+  649:13  warning  'emoji' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  656:33  warning  'rec' is defined but never used             @typescript-eslint/no-unused-vars
+  660:10  warning  'getStatusEmoji' is defined but never used  @typescript-eslint/no-unused-vars
+  694:16  error    A `require()` style import is forbidden     @typescript-eslint/no-require-imports
+  697:12  warning  'error' is defined but never used           @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\migrations\rollback.ts
+   24:24  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+   68:12  warning  'error' is defined but never used                   @typescript-eslint/no-unused-vars
+  116:10  warning  'error' is defined but never used                   @typescript-eslint/no-unused-vars
+  163:12  warning  'error' is defined but never used                   @typescript-eslint/no-unused-vars
+  190:12  warning  'error' is defined but never used                   @typescript-eslint/no-unused-vars
+  283:9   warning  'totalDuration' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  284:9   warning  'totalRestored' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  310:13  warning  'result' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  326:7   warning  'totalRestored' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  335:12  warning  'error' is defined but never used                   @typescript-eslint/no-unused-vars
+  426:11  warning  'status' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  428:30  warning  'issue' is defined but never used                   @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\migrations\tenant-to-org-mapper.ts
+  121:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  166:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  230:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  275:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  320:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  360:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  378:29  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  389:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  429:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  460:10  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\ml\predictive-analytics.ts
+   18:29  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   25:28  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  115:65  warning  'i' is defined but never used             @typescript-eslint/no-unused-vars
+  269:27  warning  'i' is defined but never used             @typescript-eslint/no-unused-vars
+  396:35  warning  '_' is defined but never used             @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\ml\predictive-scoring.ts
+  36:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\mobile\analytics.ts
+  280:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  281:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  282:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\mobile\background-sync.ts
+   9:21  warning  'offlineStorage' is defined but never used  @typescript-eslint/no-unused-vars
+   9:37  warning  'STORES' is defined but never used          @typescript-eslint/no-unused-vars
+  52:32  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  65:82  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  79:34  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\mobile\biometric-auth.ts
+   98:13  warning  'authenticators' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  126:20  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  131:20  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  142:14  warning  'e' is defined but never used                        @typescript-eslint/no-unused-vars
+  283:13  warning  'response' is assigned a value but never used        @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\mobile\deep-linker.ts
+  230:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  231:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  246:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  248:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\mobile\mobile-engine.ts
+   21:10  warning  'db' is defined but never used              @typescript-eslint/no-unused-vars
+   22:10  warning  'eq' is defined but never used              @typescript-eslint/no-unused-vars
+   22:14  warning  'and' is defined but never used             @typescript-eslint/no-unused-vars
+   22:19  warning  'desc' is defined but never used            @typescript-eslint/no-unused-vars
+  196:5   warning  'organizationId' is defined but never used  @typescript-eslint/no-unused-vars
+  197:5   warning  'payload' is defined but never used         @typescript-eslint/no-unused-vars
+  198:5   warning  'options' is defined but never used         @typescript-eslint/no-unused-vars
+  210:5   warning  'deviceToken' is defined but never used     @typescript-eslint/no-unused-vars
+  211:5   warning  'payload' is defined but never used         @typescript-eslint/no-unused-vars
+  221:5   warning  'deviceToken' is defined but never used     @typescript-eslint/no-unused-vars
+  222:5   warning  'payload' is defined but never used         @typescript-eslint/no-unused-vars
+  232:27  warning  'deviceId' is defined but never used        @typescript-eslint/no-unused-vars
+  237:35  warning  'userId' is defined but never used          @typescript-eslint/no-unused-vars
+  331:16  warning  'error' is defined but never used           @typescript-eslint/no-unused-vars
+  343:31  warning  'record' is defined but never used          @typescript-eslint/no-unused-vars
+  393:5   warning  'recordId' is defined but never used        @typescript-eslint/no-unused-vars
+  394:5   warning  'strategy' is defined but never used        @typescript-eslint/no-unused-vars
+  403:31  warning  'deviceId' is defined but never used        @typescript-eslint/no-unused-vars
+  473:5   warning  'deviceId' is defined but never used        @typescript-eslint/no-unused-vars
+  474:5   warning  'updates' is defined but never used         @typescript-eslint/no-unused-vars
+  482:26  warning  'deviceId' is defined but never used        @typescript-eslint/no-unused-vars
+  482:44  warning  'reason' is defined but never used          @typescript-eslint/no-unused-vars
+  491:5   warning  'organizationId' is defined but never used  @typescript-eslint/no-unused-vars
+  492:5   warning  'options' is defined but never used         @typescript-eslint/no-unused-vars
+  501:31  warning  'deviceId' is defined but never used        @typescript-eslint/no-unused-vars
+  520:20  warning  'deviceId' is defined but never used        @typescript-eslint/no-unused-vars
+  556:22  warning  'params' is defined but never used          @typescript-eslint/no-unused-vars
+  594:41  warning  'encoding' is defined but never used        @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\mobile\service-worker-registration.ts
+   62:15  warning  'readyRegistration' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   96:11  warning  'isStandalone' is assigned a value but never used       @typescript-eslint/no-unused-vars
+   97:46  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  116:24  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  117:50  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  129:29  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  155:40  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  156:38  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  157:38  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  172:38  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\mobile\social-media.ts
+  136:48  warning  'postId' is defined but never used  @typescript-eslint/no-unused-vars
+  192:55  warning  'post' is defined but never used    @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\monitoring\status-page.ts
+   46:9   warning  'startTime' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  263:48  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\movement-insights\aggregation-service.ts
+  25:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\movement-insights\consent-manager.ts
+   84:35  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  127:3   warning  'updatedBy' is defined but never used     @typescript-eslint/no-unused-vars
+  150:42  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\notification-templates\dues-notifications.ts
+   51:13  warning  'data' is defined but never used  @typescript-eslint/no-unused-vars
+  123:15  warning  'data' is defined but never used  @typescript-eslint/no-unused-vars
+  126:13  warning  'data' is defined but never used  @typescript-eslint/no-unused-vars
+  161:15  warning  'data' is defined but never used  @typescript-eslint/no-unused-vars
+  164:13  warning  'data' is defined but never used  @typescript-eslint/no-unused-vars
+  205:15  warning  'data' is defined but never used  @typescript-eslint/no-unused-vars
+  208:13  warning  'data' is defined but never used  @typescript-eslint/no-unused-vars
+  260:15  warning  'data' is defined but never used  @typescript-eslint/no-unused-vars
+  263:13  warning  'data' is defined but never used  @typescript-eslint/no-unused-vars
+  310:15  warning  'data' is defined but never used  @typescript-eslint/no-unused-vars
+  313:13  warning  'data' is defined but never used  @typescript-eslint/no-unused-vars
+  351:13  warning  'data' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\observability\distributed-tracing.ts
+  270:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  276:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\observability\telemetry.ts
+  107:17  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  112:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\organization-middleware.ts
+   32:42  error    Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+   97:11  warning  'userOrganizationId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  111:12  warning  'error' is defined but never used                        @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\pension-processor\processors\cpp-qpp-processor.ts
+  21:3  warning  'EmploymentStatus' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\pension-processor\processors\otpp-processor.ts
+   21:3   warning  'EmploymentStatus' is defined but never used                     @typescript-eslint/no-unused-vars
+  139:11  warning  'newYTDEmployerContribution' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\pilot\health-scoring.ts
+  189:9  warning  'healthScore' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\pilot\readiness-assessment.ts
+  171:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  203:62  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\recurring-events-service.ts
+   17:10  warning  'RRule' is defined but never used         @typescript-eslint/no-unused-vars
+   17:17  warning  'RRuleSet' is defined but never used      @typescript-eslint/no-unused-vars
+   38:22  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  102:38  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  135:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  148:14  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  182:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  261:16  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  448:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\report-executor.ts
+   57:11  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   58:12  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   75:10  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  209:26  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  214:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  338:5   warning  'groupBy' is defined but never used       @typescript-eslint/no-unused-vars
+  450:5   warning  'dataSource' is defined but never used    @typescript-eslint/no-unused-vars
+  490:94  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  493:98  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\resilience\circuit-breaker.ts
+  338:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  348:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\resilience\retry.ts
+  225:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  235:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\role-middleware.ts
+   56:34  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  118:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  130:33  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  197:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\scheduled-jobs.ts
+  186:18  error    A `require()` style import is forbidden    @typescript-eslint/no-require-imports
+  189:13  warning  'task' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\scheduled-report-executor.ts
+   37:9   error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  125:68  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  145:26  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  190:38  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  199:15  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  225:53  warning  'config' is defined but never used               @typescript-eslint/no-unused-vars
+  225:61  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  225:75  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  245:20  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  251:64  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  251:78  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  275:20  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  281:54  warning  'config' is defined but never used               @typescript-eslint/no-unused-vars
+  281:62  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  281:76  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  296:20  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  306:61  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  306:75  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  337:15  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  366:20  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  487:29  warning  'rowNumber' is defined but never used            @typescript-eslint/no-unused-vars
+  513:11  warning  'summaryRow' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  520:12  warning  'error' is defined but never used                @typescript-eslint/no-unused-vars
+  664:12  warning  'error' is defined but never used                @typescript-eslint/no-unused-vars
+  786:50  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  826:26  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\security\rls-gap-remediation.ts
+    9:13  warning  'fs' is defined but never used                                  @typescript-eslint/no-unused-vars
+   10:13  warning  'path' is defined but never used                                @typescript-eslint/no-unused-vars
+  479:1   warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+C:\APPS\Union_Eyes_app_v1\lib\settlement-recommendation-engine.ts
+   10:25  warning  'asc' is defined but never used                @typescript-eslint/no-unused-vars
+   10:30  warning  'or' is defined but never used                 @typescript-eslint/no-unused-vars
+   10:39  warning  'ilike' is defined but never used              @typescript-eslint/no-unused-vars
+   11:44  warning  'Claim' is defined but never used              @typescript-eslint/no-unused-vars
+  109:11  warning  'features' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  148:12  warning  'error' is defined but never used              @typescript-eslint/no-unused-vars
+  156:43  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  182:10  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  214:71  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  230:12  warning  'error' is defined but never used              @typescript-eslint/no-unused-vars
+  238:43  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  238:56  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  286:35  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  314:10  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  349:12  warning  'error' is defined but never used              @typescript-eslint/no-unused-vars
+  357:43  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  389:44  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  389:57  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  397:10  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  469:10  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  538:10  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  601:10  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  602:15  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  654:46  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\signature\providers.ts
+  212:64  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  298:42  warning  'signerId' is defined but never used      @typescript-eslint/no-unused-vars
+  395:56  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  451:56  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  604:26  warning  'envelopeId' is defined but never used    @typescript-eslint/no-unused-vars
+  609:22  warning  'envelopeId' is defined but never used    @typescript-eslint/no-unused-vars
+  609:42  warning  'reason' is defined but never used        @typescript-eslint/no-unused-vars
+  613:22  warning  'envelopeId' is defined but never used    @typescript-eslint/no-unused-vars
+  613:42  warning  'signerId' is defined but never used      @typescript-eslint/no-unused-vars
+  672:58  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\signature\signature-service.ts
+   13:8   warning  'NewSignatureDocument' is defined but never used    @typescript-eslint/no-unused-vars
+   14:8   warning  'NewDocumentSigner' is defined but never used       @typescript-eslint/no-unused-vars
+   15:8   warning  'NewSignatureAuditTrail' is defined but never used  @typescript-eslint/no-unused-vars
+   18:8   warning  'CreateEnvelopeRequest' is defined but never used   @typescript-eslint/no-unused-vars
+   69:16  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  126:36  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  140:11  warning  'signerRecords' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  237:14  warning  'error' is defined but never used                   @typescript-eslint/no-unused-vars
+  279:30  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  290:38  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  342:14  warning  'error' is defined but never used                   @typescript-eslint/no-unused-vars
+  383:19  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  472:32  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  475:16  warning  'error' is defined but never used                   @typescript-eslint/no-unused-vars
+  546:14  warning  'error' is defined but never used                   @typescript-eslint/no-unused-vars
+  612:19  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  613:16  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\social-media\linkedin-api-client.ts
+  240:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  432:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  540:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  541:82  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  581:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\social-media\meta-api-client.ts
+   11:10  warning  'createClient' is defined but never used  @typescript-eslint/no-unused-vars
+  100:38  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  240:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  353:28  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  452:14  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  453:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  489:14  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  517:14  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  522:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  555:14  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  597:52  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  638:28  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  724:46  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\social-media\social-media-service.ts
+   17:3   warning  'SocialPost' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+   18:3   warning  'NewSocialPost' is defined but never used                                                                            @typescript-eslint/no-unused-vars
+   20:3   warning  'SocialPostStatus' is defined but never used                                                                         @typescript-eslint/no-unused-vars
+  202:7   error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  206:7   error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  296:80  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  367:9   error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  402:31  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  410:89  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  431:7   error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  464:17  warning  'insights' is assigned a value but never used                                                                        @typescript-eslint/no-unused-vars
+  485:17  warning  'insights' is assigned a value but never used                                                                        @typescript-eslint/no-unused-vars
+  505:17  warning  'stats' is assigned a value but never used                                                                           @typescript-eslint/no-unused-vars
+  518:9   error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  609:16  warning  'error' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\social-media\twitter-api-client.ts
+  119:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  299:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  488:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  547:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  575:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  691:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\tenant-middleware.ts
+  31:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\trust\system-metrics.ts
+   23:3   warning  'SystemStatus' is defined but never used  @typescript-eslint/no-unused-vars
+  286:45  warning  'metrics' is defined but never used       @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\utils\autopay-utils.ts
+  56:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  72:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\utils\excel-generator.ts
+   16:9   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   16:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   44:11  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  218:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  219:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  220:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  262:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  282:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  303:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  304:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  305:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  340:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  341:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  342:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  394:10  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\utils\hierarchy-validation.ts
+   13:14  warning  'and' is defined but never used           @typescript-eslint/no-unused-vars
+  109:40  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  109:64  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\utils\member-data-utils.ts
+   46:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+   76:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  116:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\utils\pdf-generator.ts
+    9:10  warning  'Readable' is defined but never used             @typescript-eslint/no-unused-vars
+   17:9   error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+   17:32  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  196:32  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  234:32  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  271:9   error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  278:9   warning  'totalWidth' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  301:22  warning  'index' is defined but never used                @typescript-eslint/no-unused-vars
+  354:42  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  381:32  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\utils\rewards-stats-utils.ts
+   74:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  103:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  127:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\utils\smart-onboarding.ts
+   24:6   warning  'Organization' is defined but never used  @typescript-eslint/no-unused-vars
+   85:20  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  179:20  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  294:20  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\websocket.ts
+  220:62  warning  'excludeUserId' is defined but never used     @typescript-eslint/no-unused-vars
+  262:11  warning  'message' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\APPS\Union_Eyes_app_v1\lib\workers\cleanup-worker.ts
+    8:13  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+    8:23  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+    8:37  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+   12:20  error    A `require()` style import is forbidden                 @typescript-eslint/no-require-imports
+   14:5   warning  'Job' is assigned a value but never used                @typescript-eslint/no-unused-vars
+   15:15  error    A `require()` style import is forbidden                 @typescript-eslint/no-require-imports
+   16:12  warning  'e' is defined but never used                           @typescript-eslint/no-unused-vars
+   21:10  warning  'CleanupJobData' is defined but never used              @typescript-eslint/no-unused-vars
+   59:16  warning  'cleanupNotificationHistory' is defined but never used  @typescript-eslint/no-unused-vars
+   94:12  warning  'error' is defined but never used                       @typescript-eslint/no-unused-vars
+  120:12  warning  'error' is defined but never used                       @typescript-eslint/no-unused-vars
+  146:12  warning  'error' is defined but never used                       @typescript-eslint/no-unused-vars
+  154:39  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  192:15  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  202:32  warning  'job' is defined but never used                         @typescript-eslint/no-unused-vars
+  202:37  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  205:29  warning  'job' is defined but never used                         @typescript-eslint/no-unused-vars
+  205:34  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  205:39  warning  'err' is defined but never used                         @typescript-eslint/no-unused-vars
+  205:44  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  208:28  warning  'err' is defined but never used                         @typescript-eslint/no-unused-vars
+  208:33  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\workers\email-worker.ts
+    9:13  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+    9:23  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+    9:37  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   13:20  error    A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+   15:5   warning  'Job' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   16:15  error    A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+   17:12  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+   22:10  warning  'EmailJobData' is defined but never used  @typescript-eslint/no-unused-vars
+   45:48  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  123:37  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  172:36  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  173:33  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  217:39  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  226:30  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  234:38  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  309:15  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  328:35  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  332:32  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  332:42  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  336:31  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\workers\message-queue-processor.ts
+   28:24  warning  'inArray' is defined but never used           @typescript-eslint/no-unused-vars
+  133:39  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  165:97  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  179:97  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  186:9   warning  'success' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  232:43  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  321:18  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  524:74  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\workers\notification-worker.ts
+    9:13  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+    9:23  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+    9:37  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+   13:20  error    A `require()` style import is forbidden          @typescript-eslint/no-require-imports
+   15:5   warning  'Job' is assigned a value but never used         @typescript-eslint/no-unused-vars
+   16:15  error    A `require()` style import is forbidden          @typescript-eslint/no-require-imports
+   17:12  warning  'e' is defined but never used                    @typescript-eslint/no-unused-vars
+   22:10  warning  'NotificationJobData' is defined but never used  @typescript-eslint/no-unused-vars
+   33:66  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  123:25  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  162:41  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  179:53  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  205:41  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  298:17  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  299:14  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  299:51  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  302:17  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  316:52  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  321:46  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  350:60  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  375:15  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  385:42  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  389:39  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  389:49  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  393:38  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\workers\report-worker.ts
+    8:13  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+    8:23  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+    8:37  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+   12:20  error    A `require()` style import is forbidden           @typescript-eslint/no-require-imports
+   14:5   warning  'Job' is assigned a value but never used          @typescript-eslint/no-unused-vars
+   15:15  error    A `require()` style import is forbidden           @typescript-eslint/no-require-imports
+   16:12  warning  'e' is defined but never used                     @typescript-eslint/no-unused-vars
+   21:10  warning  'ReportJobData' is defined but never used         @typescript-eslint/no-unused-vars
+   26:3   warning  'grievanceWorkflows' is defined but never used    @typescript-eslint/no-unused-vars
+   27:3   warning  'grievanceStages' is defined but never used       @typescript-eslint/no-unused-vars
+   29:3   warning  'grievanceAssignments' is defined but never used  @typescript-eslint/no-unused-vars
+   30:3   warning  'grievanceSettlements' is defined but never used  @typescript-eslint/no-unused-vars
+   33:28  warning  'gte' is defined but never used                   @typescript-eslint/no-unused-vars
+   33:33  warning  'lte' is defined but never used                   @typescript-eslint/no-unused-vars
+   55:12  warning  'error' is defined but never used                 @typescript-eslint/no-unused-vars
+   58:34  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+   98:16  warning  'generateGdprExport' is defined but never used    @typescript-eslint/no-unused-vars
+  138:21  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  147:60  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  191:21  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  194:61  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  240:21  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  249:60  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  342:41  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  346:43  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  389:38  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  402:69  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  407:70  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  412:73  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  417:68  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  422:75  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  471:19  warning  'err' is defined but never used                   @typescript-eslint/no-unused-vars
+  474:14  warning  'notificationError' is defined but never used     @typescript-eslint/no-unused-vars
+  494:15  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  504:31  warning  'job' is defined but never used                   @typescript-eslint/no-unused-vars
+  504:36  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  507:28  warning  'job' is defined but never used                   @typescript-eslint/no-unused-vars
+  507:33  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  507:38  warning  'err' is defined but never used                   @typescript-eslint/no-unused-vars
+  507:43  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  510:27  warning  'err' is defined but never used                   @typescript-eslint/no-unused-vars
+  510:32  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\workers\sms-worker.ts
+    8:13  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+    8:23  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+    8:37  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+   12:20  error    A `require()` style import is forbidden           @typescript-eslint/no-require-imports
+   14:5   warning  'Job' is assigned a value but never used          @typescript-eslint/no-unused-vars
+   15:15  error    A `require()` style import is forbidden           @typescript-eslint/no-require-imports
+   16:12  warning  'e' is defined but never used                     @typescript-eslint/no-unused-vars
+   21:10  warning  'SmsJobData' is defined but never used            @typescript-eslint/no-unused-vars
+   72:12  warning  'error' is defined but never used                 @typescript-eslint/no-unused-vars
+  100:12  warning  'err' is defined but never used                   @typescript-eslint/no-unused-vars
+  125:35  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  162:11  warning  'maskedPhone' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  181:15  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  195:28  warning  'job' is defined but never used                   @typescript-eslint/no-unused-vars
+  195:33  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  198:25  warning  'job' is defined but never used                   @typescript-eslint/no-unused-vars
+  198:30  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  198:35  warning  'err' is defined but never used                   @typescript-eslint/no-unused-vars
+  198:40  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  201:24  warning  'err' is defined but never used                   @typescript-eslint/no-unused-vars
+  201:29  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\workflow-automation-engine.ts
+    28:8   warning  'InsertGrievanceTransition' is defined but never used             @typescript-eslint/no-unused-vars
+    29:8   warning  'GrievanceTransition' is defined but never used                   @typescript-eslint/no-unused-vars
+    30:8   warning  'WorkflowStageConfig' is defined but never used                   @typescript-eslint/no-unused-vars
+    42:3   warning  'sendGrievanceStageChangeNotification' is defined but never used  @typescript-eslint/no-unused-vars
+    43:3   warning  'sendGrievanceAssignedNotification' is defined but never used     @typescript-eslint/no-unused-vars
+    44:3   warning  'sendGrievanceResolvedNotification' is defined but never used     @typescript-eslint/no-unused-vars
+    45:3   warning  'sendGrievanceEscalationNotification' is defined but never used   @typescript-eslint/no-unused-vars
+    46:3   warning  'sendGrievanceDeadlineReminder' is defined but never used         @typescript-eslint/no-unused-vars
+   184:51  error    Unexpected any. Specify a different type                          @typescript-eslint/no-explicit-any
+   310:12  warning  'transition' is assigned a value but never used                   @typescript-eslint/no-unused-vars
+  1052:26  error    Unexpected any. Specify a different type                          @typescript-eslint/no-explicit-any
+  1092:28  error    Unexpected any. Specify a different type                          @typescript-eslint/no-explicit-any
+  1119:23  error    Unexpected any. Specify a different type                          @typescript-eslint/no-explicit-any
+  1158:26  error    Unexpected any. Specify a different type                          @typescript-eslint/no-explicit-any
+  1196:26  error    Unexpected any. Specify a different type                          @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\workflow-engine.ts
+   80:22  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  101:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  189:23  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  190:56  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  193:62  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  254:29  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  270:23  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  442:10  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  448:88  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  531:51  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  553:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  561:63  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  583:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  602:23  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  606:62  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  653:47  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+Γ£û 1233 problems (691 errors, 542 warnings)
+

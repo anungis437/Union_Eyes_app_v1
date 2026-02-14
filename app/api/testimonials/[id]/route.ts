@@ -80,7 +80,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     }
 
     // Build update payload
-    const updateData: any = {
+    const updateData = {
       updatedAt: new Date(),
     };
 

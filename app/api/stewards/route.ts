@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
 import { stewardAssignments } from '@/db/schema/union-structure-schema';
-import { eq, and, desc, or, sql } from 'drizzle-orm';
+import { and, desc, or } from 'drizzle-orm';
 
 // Validation schema for creating steward assignment
 const createStewardSchema = z.object({
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
         totalPages: Math.ceil(Number(count) / limit),
       },
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching steward assignments:', error);
     return NextResponse.json(
       { error: 'Failed to fetch steward assignments', details: error.message },
@@ -165,7 +165,7 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },

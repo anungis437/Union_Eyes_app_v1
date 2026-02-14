@@ -57,7 +57,7 @@ async function applyMigration() {
         } else {
           console.log(`✅ Executed statement (${statement.substring(0, 50)}...)`);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Ignore "already exists" errors
         if (error.message.includes('already exists')) {
           console.log(`⚠️  Skipping (already exists): ${statement.substring(0, 50)}...`);

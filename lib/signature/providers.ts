@@ -1,4 +1,4 @@
-/**
+﻿/**
  * E-Signature Provider Integration Service
  * 
  * Unified interface for multiple e-signature providers:
@@ -209,7 +209,7 @@ export class DocuSignProvider implements SignatureProvider {
       return {
         envelopeId: data.envelopeId,
         status: data.status?.toLowerCase() || "sent",
-        signers: (data.recipients?.signers || []).map((signer: any) => ({
+        signers: (data.recipients?.signers || []).map((signer: unknown) => ({
           signerId: signer.recipientId,
           email: signer.email,
           status: signer.status?.toLowerCase() || "sent",
@@ -392,7 +392,7 @@ export class HelloSignProvider implements SignatureProvider {
       return {
         envelopeId: signatureRequest.signature_request_id,
         status: this.mapHelloSignStatus(signatureRequest.is_complete, signatureRequest.is_declined),
-        signers: signatureRequest.signatures.map((sig: any) => ({
+        signers: signatureRequest.signatures.map((sig: unknown) => ({
           email: sig.signer_email_address,
           signerId: sig.signature_id,
           status: this.mapSignerStatus(sig.status_code),
@@ -448,7 +448,7 @@ export class HelloSignProvider implements SignatureProvider {
       return {
         envelopeId,
         status: this.mapHelloSignStatus(signatureRequest.is_complete, signatureRequest.is_declined),
-        signers: signatureRequest.signatures.map((sig: any) => ({
+        signers: signatureRequest.signatures.map((sig: unknown) => ({
           email: sig.signer_email_address,
           signerId: sig.signature_id,
           status: this.mapSignerStatus(sig.status_code),
@@ -669,7 +669,7 @@ SignatureProviderFactory.initialize({
     ? {
         apiKey: process.env.DOCUSIGN_API_KEY,
         accountId: (process.env.DOCUSIGN_API_ACCOUNT_ID || process.env.DOCUSIGN_ACCOUNT_ID)!,
-        environment: process.env.DOCUSIGN_ENVIRONMENT as any,
+        environment: process.env.DOCUSIGN_ENVIRONMENT as unknown,
       }
     : undefined,
   hellosign: process.env.HELLOSIGN_API_KEY

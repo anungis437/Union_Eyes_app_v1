@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Canonical Authentication Module
  * 
  * Single source of truth for all authentication patterns in the application.
@@ -258,7 +258,7 @@ interface PermissionCheckResult {
  * Base context type with common authentication fields
  */
 export interface BaseAuthContext {
-  params?: Record<string, any>;
+  params?: Record<string, unknown>;
   organizationId?: string;
   userId?: string;
   memberId?: string;
@@ -267,7 +267,7 @@ export interface BaseAuthContext {
 /**
  * API route handler type
  */
-type ApiRouteHandler<TContext extends Record<string, any> = BaseAuthContext> = (
+type ApiRouteHandler<TContext extends Record<string, unknown> = BaseAuthContext> = (
   request: NextRequest,
   context: TContext
 ) => Promise<NextResponse> | NextResponse;
@@ -388,10 +388,10 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     // Log the error for monitoring but throw to reject the request with standardized error
     logger.error('CRITICAL: Authentication system error', error instanceof Error ? error : new Error(String(error)), { context: 'Auth' });
     
-    // Throw standardized error (doesn't leak system details)
+    // Throw standardized error (doesn&apos;t leak system details)
     const authError = new Error('Service temporarily unavailable');
-    (authError as any).statusCode = 503;
-    (authError as any).code = 'AUTH_SERVICE_ERROR';
+    (authError as unknown).statusCode = 503;
+    (authError as unknown).code = 'AUTH_SERVICE_ERROR';
     throw authError;
   }
 }
@@ -531,7 +531,7 @@ export async function requireUserForOrganization(
 }
 
 /**
- * Require specific role - throws if user doesn't have role
+ * Require specific role - throws if user doesn&apos;t have role
  */
 export async function requireRole(role: string): Promise<UnifiedUserContext> {
   const user = await requireUser();
@@ -761,7 +761,7 @@ export async function hasMinRole(minRole: string): Promise<boolean> {
  * });
  * ```
  */
-export function withRoleAuth<TContext extends Record<string, any> = BaseAuthContext>(
+export function withRoleAuth<TContext extends Record<string, unknown> = BaseAuthContext>(
   requiredRole: string,
   handler: ApiRouteHandler<TContext>
 ): ApiRouteHandler<TContext> {
@@ -800,7 +800,7 @@ export function withRoleAuth<TContext extends Record<string, any> = BaseAuthCont
  * Hierarchy: admin > officer > steward > member
  * A user with 'officer' role can access routes requiring 'steward' or 'member'
  */
-export function withMinRole<TContext extends Record<string, any> = BaseAuthContext>(
+export function withMinRole<TContext extends Record<string, unknown> = BaseAuthContext>(
   minRole: string,
   handler: ApiRouteHandler<TContext>
 ): ApiRouteHandler<TContext> {
@@ -828,7 +828,7 @@ export function withMinRole<TContext extends Record<string, any> = BaseAuthConte
 /**
  * API Guard Wrapper for admin-only routes
  */
-export function withAdminAuth<TContext extends Record<string, any> = BaseAuthContext>(
+export function withAdminAuth<TContext extends Record<string, unknown> = BaseAuthContext>(
   handler: ApiRouteHandler<TContext>
 ): ApiRouteHandler<TContext> {
   return withRoleAuth('admin', handler);
@@ -837,7 +837,7 @@ export function withAdminAuth<TContext extends Record<string, any> = BaseAuthCon
 /**
  * API Guard Wrapper for system admin routes
  */
-export function withSystemAdminAuth<TContext extends Record<string, any> = BaseAuthContext>(
+export function withSystemAdminAuth<TContext extends Record<string, unknown> = BaseAuthContext>(
   handler: ApiRouteHandler<TContext>
 ): ApiRouteHandler<TContext> {
   return withApiAuth(async (request: NextRequest, context: TContext) => {
@@ -894,7 +894,7 @@ export function withEnhancedRoleAuth<T = any>(
     isSensitive?: boolean;
   } = {}
 ) {
-  return withApiAuth(async (request: NextRequest, baseContext: any) => {
+  return withApiAuth(async (request: NextRequest, baseContext: unknown) => {
     const startTime = Date.now();
     const authResult = await auth();
     const userId = authResult?.userId;
@@ -1042,7 +1042,7 @@ export function withPermission<T = any>(
     allowExceptions?: boolean;
   } = {}
 ) {
-  return withApiAuth(async (request: NextRequest, baseContext: any) => {
+  return withApiAuth(async (request: NextRequest, baseContext: unknown) => {
     const startTime = Date.now();
     const authResult = await auth();
     const userId = authResult?.userId;
@@ -1163,7 +1163,7 @@ export function withScopedRoleAuth<T = any>(
     isSensitive?: boolean;
   } = {}
 ) {
-  return withApiAuth(async (request: NextRequest, baseContext: any) => {
+  return withApiAuth(async (request: NextRequest, baseContext: unknown) => {
     const startTime = Date.now();
     const authResult = await auth();
     const userId = authResult?.userId;
@@ -1284,7 +1284,7 @@ export function withScopedRoleAuth<T = any>(
  * }, { requireAuth: false });
  * ```
  */
-export function withApiAuth<TContext extends Record<string, any> = BaseAuthContext>(
+export function withApiAuth<TContext extends Record<string, unknown> = BaseAuthContext>(
   handler: ApiRouteHandler<TContext>,
   options: ApiGuardOptions = {}
 ): ApiRouteHandler<TContext> {
@@ -1386,7 +1386,7 @@ function checkMemberScope(
  * @consolidated from enterprise-role-middleware.ts
  */
 async function logAuditDenial(
-  context: any,
+  context: unknown,
   action: string,
   resourceType: string,
   reason: string,

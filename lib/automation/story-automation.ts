@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Story Submission Automation
  * 
  * SPRINT 8: Advanced Features
@@ -12,7 +12,7 @@
  * - Send respectful invitation to members/organizers
  * - Track acceptance/rejection for continuous improvement
  * 
- * Philosophy: "Invite, don't pressure; celebrate, don't exploit"
+ * Philosophy: "Invite, don&apos;t pressure; celebrate, don&apos;t exploit"
  * - Always ask permission (opt-in, never automatic)
  * - Respect "no" without penalty
  * - Draft content for review (never publish without approval)
@@ -150,7 +150,7 @@ export async function identifyTestimonialCandidates(
 /**
  * Calculate testimonial worthiness score (0-100)
  */
-function calculateTestimonialScore(grievance: any): number {
+function calculateTestimonialScore(grievance: unknown): number {
   let score = 0;
 
   // Factor 1: Resolution time (faster = better story)
@@ -217,7 +217,7 @@ function calculateTestimonialScore(grievance: any): number {
 /**
  * Calculate resolution time in days
  */
-function calculateResolutionTime(grievance: any): number {
+function calculateResolutionTime(grievance: unknown): number {
   if (!grievance.resolvedAt) return 999; // Not resolved
   const filed = new Date(grievance.filedAt).getTime();
   const resolved = new Date(grievance.resolvedAt).getTime();
@@ -227,7 +227,7 @@ function calculateResolutionTime(grievance: any): number {
 /**
  * Explain why case is testimonial-worthy
  */
-function explainScore(grievance: any, score: number): string {
+function explainScore(grievance: unknown, score: number): string {
   const reasons: string[] = [];
 
   const resolutionTime = calculateResolutionTime(grievance);
@@ -264,7 +264,7 @@ function explainScore(grievance: any, score: number): string {
  * 
  * Note: This is a starting point - member MUST review and edit
  */
-function generateDraftTestimonial(grievance: any): TestimonialCandidate['draftContent'] {
+function generateDraftTestimonial(grievance: unknown): TestimonialCandidate['draftContent'] {
   // Generate quote (placeholder - would use NLP in production)
   const quoteTemplates = {
     harassment: 'Union Eyes helped us handle a sensitive harassment case with dignity and speed.',
@@ -298,7 +298,7 @@ function generateDraftTestimonial(grievance: any): TestimonialCandidate['draftCo
  * Send testimonial invitation to member or organizer
  * 
  * Respectful approach:
- * - Explain why they're invited
+ * - Explain why they&apos;re invited
  * - Show draft content for review
  * - Make it easy to accept or decline
  * - No pressure or consequences for declining
@@ -328,9 +328,9 @@ export async function sendTestimonialInvitation(
 
   const body = `Dear ${recipientName},
 
-Your recent case (${candidate.caseNumber}) was resolved with great success! We're reaching out to see if you'd be willing to share your experience as a testimonial.
+Your recent case (${candidate.caseNumber}) was resolved with great success! We&apos;re reaching out to see if you&apos;d be willing to share your experience as a testimonial.
 
-**Why We're Asking:**
+**Why We&apos;re Asking:**
 ${candidate.reason}
 
 **Draft Testimonial (for your review):**
@@ -348,7 +348,7 @@ ${candidate.reason}
 - You can decline without any consequences
 - You can revoke permission anytime
 
-This is completely optional and there's no pressure to participate. We respect your decision either way.
+This is completely optional and there&apos;s no pressure to participate. We respect your decision either way.
 
 Interested? Click here to review and submit: [Link to testimonial form]
 Not interested? No problem - just ignore this email.

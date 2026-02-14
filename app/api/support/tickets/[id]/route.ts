@@ -11,10 +11,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import {
-  standardErrorResponse,
-  standardSuccessResponse,
-  ErrorCode,
+import { standardSuccessResponse,
 } from '@/lib/api/standardized-responses';
 import { getTicketById, updateTicket, closeTicket } from '@/lib/services/support-service';
 import { logger } from '@/lib/logger';

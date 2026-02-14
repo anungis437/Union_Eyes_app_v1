@@ -6,13 +6,9 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { claims, users, deadlines } from '@/db/schema';
-import { eq, and, isNull, lte, gte, sql, desc, ne, or } from 'drizzle-orm';
+import { and, isNull, desc, ne, or } from 'drizzle-orm';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * GET /api/ml/recommendations?type=steward|deadline|strategy|priority
  * Smart recommendations engine
@@ -61,7 +57,7 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
     const type = searchParams.get('type') || 'all';
     const claimId = searchParams.get('claimId');
 
-    const recommendations: any[] = [];
+    const recommendations: Array<Record<string, unknown>> = [];
 
     // Steward assignment recommendations
     if (type === 'steward' || type === 'all') {
@@ -112,8 +108,8 @@ return standardErrorResponse(
 async function generateStewardRecommendations(
   organizationId: string,
   claimId?: string | null
-): Promise<any[]> {
-  const recommendations: any[] = [];
+): Promise<Array<Record<string, unknown>>> {
+  const recommendations: Array<Record<string, unknown>> = [];
 
   try {
     // Find unassigned claims
@@ -213,8 +209,8 @@ async function generateStewardRecommendations(
 async function generateDeadlineRecommendations(
   organizationId: string,
   claimId?: string | null
-): Promise<any[]> {
-  const recommendations: any[] = [];
+): Promise<Array<Record<string, unknown>>> {
+  const recommendations: Array<Record<string, unknown>> = [];
 
   try {
     const now = new Date();
@@ -294,8 +290,8 @@ async function generateDeadlineRecommendations(
 async function generateStrategyRecommendations(
   organizationId: string,
   claimId?: string | null
-): Promise<any[]> {
-  const recommendations: any[] = [];
+): Promise<Array<Record<string, unknown>>> {
+  const recommendations: Array<Record<string, unknown>> = [];
 
   try {
     // Analyze claim patterns
@@ -347,8 +343,8 @@ async function generateStrategyRecommendations(
  */
 async function generatePriorityRecommendations(
   organizationId: string
-): Promise<any[]> {
-  const recommendations: any[] = [];
+): Promise<Array<Record<string, unknown>>> {
+  const recommendations: Array<Record<string, unknown>> = [];
 
   try {
     // Find old open claims

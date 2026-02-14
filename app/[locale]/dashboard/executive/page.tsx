@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { requireUser, hasMinRole } from "@/lib/api-auth-guard";
 import { redirect } from "next/navigation";
+import Link from 'next/link';
 import ExecutiveDashboard from "@/components/executive/ExecutiveDashboard";
 import KeyMetricsWidget from "@/components/executive/KeyMetricsWidget";
 import StrategicPlanningBoard from "@/components/executive/StrategicPlanningBoard";
@@ -45,18 +46,18 @@ export default async function ExecutiveDashboardPage() {
           <div className="p-6 border rounded-lg">
             <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
             <div className="space-y-2">
-              <a href="/dashboard/admin/governance" className="block p-3 hover:bg-accent rounded-lg transition-colors">
+              <Link href="/dashboard/admin/governance" className="block p-3 hover:bg-accent rounded-lg transition-colors">
                 <div className="font-medium">Governance</div>
                 <div className="text-sm text-muted-foreground">Bylaws, policies, signatories</div>
-              </a>
-              <a href="/dashboard/financial" className="block p-3 hover:bg-accent rounded-lg transition-colors">
+              </Link>
+              <Link href="/dashboard/financial" className="block p-3 hover:bg-accent rounded-lg transition-colors">
                 <div className="font-medium">Financial Reports</div>
                 <div className="text-sm text-muted-foreground">Budget, expenses, revenue</div>
-              </a>
-              <a href="/dashboard/members" className="block p-3 hover:bg-accent rounded-lg transition-colors">
+              </Link>
+              <Link href="/dashboard/members" className="block p-3 hover:bg-accent rounded-lg transition-colors">
                 <div className="font-medium">Member Directory</div>
                 <div className="text-sm text-muted-foreground">View and manage members</div>
-              </a>
+              </Link>
             </div>
           </div>
         </div>

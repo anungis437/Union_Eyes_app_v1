@@ -3,11 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { GeofencePrivacyService } from "@/services/geofence-privacy-service";
 import { withApiAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * Geofence Management API
  * POST: Create geofence
@@ -79,7 +75,7 @@ export const POST = withApiAuth(async (req: NextRequest) => {
       undefined,
       201
     );
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     return NextResponse.json(
       { error: error.message || "Failed to create geofence" },
       { status: 500 }
@@ -122,7 +118,7 @@ export const GET = withApiAuth(async (req: NextRequest) => {
       distance: result.distance,
       message: result.inside ? "User is inside geofence" : "User is outside geofence",
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     return NextResponse.json(
       { error: error.message || "Failed to check geofence" },
       { status: 500 }

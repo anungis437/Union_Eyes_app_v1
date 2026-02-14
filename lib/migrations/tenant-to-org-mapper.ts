@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Tenant to Organization ID Mapper
  * 
  * Maps legacy tenant_id fields to new organization_id structure.
@@ -375,7 +375,7 @@ export async function getAllMappings(
 
     const result = await db.execute(query);
 
-    return result.map((row: any) => ({
+    return result.map((row: unknown) => ({
       tenantId: row.tenant_id,
       organizationId: row.organization_id,
       migrationStatus: row.migration_status,

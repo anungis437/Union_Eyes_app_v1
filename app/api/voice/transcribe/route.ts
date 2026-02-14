@@ -1,8 +1,8 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
 import { transcribeAudioWithLanguage, type SupportedLanguage } from "@/lib/azure-speech";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
-import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { ErrorCode } from '@/lib/api/standardized-responses';
 
 export const runtime = "nodejs";
 export const maxDuration = 60; // Maximum duration in seconds

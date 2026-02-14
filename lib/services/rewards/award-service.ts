@@ -45,7 +45,7 @@ export interface RevokeAwardOptions {
 
 /**
  * Create a new award request
- * Auto-approves if award type doesn't require approval
+ * Auto-approves if award type doesn&apos;t require approval
  */
 export async function createAwardRequest(
   options: CreateAwardOptions

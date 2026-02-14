@@ -85,7 +85,7 @@ router.post('/queue', async (req: Request, res: Response) => {
       notificationId,
       message: 'Notification queued successfully',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Queue notification error', { error });
     res.status(400).json({
       success: false,
@@ -116,7 +116,7 @@ router.get('/preferences', async (req: Request, res: Response) => {
       success: true,
       preferences,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Get preferences error', { error });
     res.status(500).json({
       success: false,
@@ -149,7 +149,7 @@ router.put('/preferences', async (req: Request, res: Response) => {
       success: true,
       message: 'Preferences updated successfully',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Update preferences error', { error });
     res.status(400).json({
       success: false,
@@ -182,7 +182,7 @@ router.get('/history', async (req: Request, res: Response) => {
       history,
       count: history.length,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Get history error', { error });
     res.status(500).json({
       success: false,
@@ -206,7 +206,7 @@ router.post('/process', async (req: Request, res: Response) => {
       processed,
       message: `Processed ${processed} notifications`,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Process notifications error', { error });
     res.status(500).json({
       success: false,
@@ -230,7 +230,7 @@ router.post('/retry-failed', async (req: Request, res: Response) => {
       retried,
       message: `Retried ${retried} failed notifications`,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Retry failed notifications error', { error });
     res.status(500).json({
       success: false,
@@ -277,7 +277,7 @@ router.post('/test', async (req: Request, res: Response) => {
       notificationId,
       message: 'Test notification sent',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Test notification error', { error });
     res.status(500).json({
       success: false,

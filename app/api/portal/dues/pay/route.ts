@@ -8,20 +8,15 @@ import { db } from '@/db/db';
 import { duesTransactions } from '@/db/schema/domains/finance';
 import { profilesTable } from '@/db/schema/domains/member';
 import { organizations } from '@/db/schema-organizations';
-import { eq, and } from 'drizzle-orm';
-import { sql } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { generateReceipt } from '@/lib/receipt-generator';
 import Stripe from 'stripe';
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
 });

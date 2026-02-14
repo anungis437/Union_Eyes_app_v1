@@ -2,16 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { users } from '@/db/schema/domains/member';
 import { claims } from '@/db/schema/domains/claims';
-import { eq, desc, and, count, sql } from 'drizzle-orm';
+import { desc, and, count } from 'drizzle-orm';
 import { z } from 'zod';
 import { withSecureAPI, logApiAuditEvent } from '@/lib/middleware/api-security';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * Validation schema
  */
@@ -129,7 +125,7 @@ export const PATCH = withEnhancedRoleAuth(20, async (request, context) => {
 try {
       const { timezone, locale, phone, displayName } = body;
 
-      const updates: any = {};
+      const updates = {};
       
       if (timezone) updates.timezone = timezone;
       if (locale) updates.locale = locale;

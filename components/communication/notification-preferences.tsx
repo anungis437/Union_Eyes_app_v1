@@ -434,7 +434,7 @@ export function NotificationPreferences({
                 <Alert>
                   <Moon className="h-4 w-4" />
                   <AlertDescription>
-                    Do Not Disturb is enabled. You won't receive any notifications until you turn
+                    Do Not Disturb is enabled. You won&apos;t receive any notifications until you turn
                     this off.
                   </AlertDescription>
                 </Alert>

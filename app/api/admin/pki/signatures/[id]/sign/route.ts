@@ -11,13 +11,9 @@ import { signDocument } from '@/services/pki/signature-service';
 import { recordSignature } from '@/services/pki/workflow-engine';
 import type { SignDocumentParams } from '@/services/pki/signature-service';
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const adminPkiSignaturesSignSchema = z.object({
   documentType: z.unknown().optional(),

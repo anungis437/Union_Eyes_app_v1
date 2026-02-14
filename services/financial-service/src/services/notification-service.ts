@@ -25,7 +25,7 @@ import twilio from 'twilio';
 // TODO: Fix FCM and email service imports
 // import { FCMService } from '@/services/fcm-service';
 // import { FinancialEmailService } from '@/lib/services/financial-email-service';
-// TODO: Fix logger import path
+import { logger } from '@/lib/logger';
 // import { logger } from '@/lib/logger';
 const logger = console;
 
@@ -208,7 +208,7 @@ export async function sendNotification(notificationId: string): Promise<SendNoti
         'delivered',
         undefined
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       channelResults.push({
         channel: channel as any,
         success: false,

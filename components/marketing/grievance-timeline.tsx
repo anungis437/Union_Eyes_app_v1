@@ -213,7 +213,7 @@ export function GrievanceTimeline({
                       {stage.explanation.nextSteps.length > 0 && (
                         <div className="mb-4">
                           <h4 className="font-semibold text-gray-900 mb-2 text-sm">
-                            What's Happening Now:
+                            What&apos;s Happening Now:
                           </h4>
                           <ul className="space-y-1">
                             {(stage.explanation.nextSteps as string[]).map((step: string, idx: number) => (
@@ -300,7 +300,7 @@ export function GrievanceTimeline({
                                 This stage is taking longer than usual
                               </p>
                               <p className="text-sm text-yellow-800">
-                                Your steward is aware and will reach out if there's anything you need to do.
+                                Your steward is aware and will reach out if there&apos;s anything you need to do.
                               </p>
                             </div>
                           </div>

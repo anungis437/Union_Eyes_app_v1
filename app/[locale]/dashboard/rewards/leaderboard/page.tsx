@@ -73,7 +73,7 @@ async function getLeaderboardData(orgId: string, period: 'all-time' | 'monthly' 
   const topGivers = await db.execute(topGiversQuery);
 
   return {
-    topReceivers: (topReceivers as any[]).map((row: any) => ({
+    topReceivers: (topReceivers as Array<Record<string, unknown>>).map((row) => ({
       userId: row.user_id,
       name: row.name || 'Unknown User',
       avatar: row.avatar,
@@ -81,7 +81,7 @@ async function getLeaderboardData(orgId: string, period: 'all-time' | 'monthly' 
       awardsReceived: Number(row.awards_received),
       rank: Number(row.rank),
     })),
-    topGivers: (topGivers as any[]).map((row: any) => ({
+    topGivers: (topGivers as Array<Record<string, unknown>>).map((row) => ({
       userId: row.user_id,
       name: row.name || 'Unknown User',
       avatar: row.avatar,

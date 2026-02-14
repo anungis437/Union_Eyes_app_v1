@@ -2,15 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { updateClaimStatus, addClaimNote } from "@/lib/workflow-engine";
 import { requireUser } from '@/lib/api-auth-guard';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const updateClaimStatusSchema = z.object({
   status: z.string().min(1, 'Status is required'),

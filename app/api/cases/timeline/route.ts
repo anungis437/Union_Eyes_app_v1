@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
-import { eq, and, desc, asc, sql } from 'drizzle-orm';
+import { and, desc, asc } from 'drizzle-orm';
 import { pgTable, uuid, text, timestamp, jsonb } from 'drizzle-orm/pg-core';
 
 // Timeline events schema
@@ -50,7 +50,7 @@ export const caseTimelineEvents = pgTable('case_timeline_events', {
   visibleToMember: jsonb('visible_to_member').$type<boolean>().default(true),
   
   // Metadata
-  metadata: jsonb('metadata').$type<Record<string, any>>(),
+  metadata: jsonb('metadata').$type<Record<string, unknown>>(),
   
   // Audit
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -133,7 +133,7 @@ export async function GET(request: NextRequest) {
       events: enhancedEvents,
       groupedByDate,
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching timeline:', error);
     return NextResponse.json(
       { error: 'Failed to fetch timeline', details: error.message },
@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
     const { caseId } = generateTimelineSchema.parse(body);
 
     // This would typically query various tables to build timeline
-    // For now, we'll create a basic structure that other services can populate
+    // For now, we&apos;ll create a basic structure that other services can populate
     
     // TODO: Query FSM state transitions from grievances/claims tables
     // TODO: Query assignments from case_assignments
@@ -166,7 +166,7 @@ export async function POST(request: NextRequest) {
       caseId,
       note: 'Timeline events are populated by other services. Use GET to retrieve.',
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },
@@ -184,7 +184,7 @@ export async function POST(request: NextRequest) {
 /**
  * Helper function to add timeline event (to be called by other services)
  */
-export async function addTimelineEvent(data: {
+export async function async function addTimelineEvent(data: {
   caseId: string;
   caseType: string;
   organizationId: string;
@@ -192,7 +192,7 @@ export async function addTimelineEvent(data: {
   eventCategory: string;
   eventTitle: string;
   eventDescription?: string;
-  eventData?: any;
+  eventData?: any Record<string, unknown>;
   actorId?: string;
   actorName?: string;
   actorRole?: string;

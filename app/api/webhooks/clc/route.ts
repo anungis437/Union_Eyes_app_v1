@@ -19,17 +19,13 @@ import { organizationMembers } from "@/db/schema/organization-members-schema";
 import { createAuditLog } from "@/lib/services/audit-service";
 import { postGLTransaction } from "@/lib/services/general-ledger-service";
 import { getNotificationService } from "@/lib/services/notification-service";
-import { eq, and } from "drizzle-orm";
+import { and } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { createHmac, timingSafeEqual } from "crypto";
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 import { cacheGet, cacheSet } from "@/lib/services/cache-service";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // ============================================================================
 // TYPES
 // ============================================================================
@@ -253,7 +249,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         signatureValid: false,
         status: "failed",
         failureReason: "Invalid signature",
-        payload: payload as any,
+        payload: payload as Record<string, unknown>,
         timestamp: new Date(payload.timestamp * 1000),
       });
 
@@ -275,7 +271,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         eventId: payload.event_id,
         signatureValid: true,
         status: "pending",
-        payload: payload as any,
+        payload: payload as Record<string, unknown>,
         timestamp: new Date(payload.timestamp * 1000),
       })
       .returning();

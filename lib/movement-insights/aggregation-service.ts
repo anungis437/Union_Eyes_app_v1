@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Movement Insights Aggregation Service
  * 
  * Creates privacy-preserving cross-union insights.
@@ -22,7 +22,7 @@ export interface AggregationInput {
     organizationId: string;
     value: number;
     weight?: number; // For weighted averages
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   }[];
 }
 

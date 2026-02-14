@@ -65,7 +65,7 @@ interface SettlementEstimate {
 
 interface PredictionDashboardProps {
   claimId?: string;
-  claimData?: any;
+  claimData?: Record<string, unknown>;
   organizationId: string;
   className?: string;
 }
@@ -83,28 +83,7 @@ export function PredictionDashboard({
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('outcome');
 
-  const loadPredictions = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      await Promise.all([
-        fetchOutcomePrediction(),
-        fetchTimelinePrediction(),
-        fetchResourcePrediction(),
-        fetchSettlementEstimate(),
-      ]);
-    } catch (error) {
-    } finally {
-      setIsLoading(false);
-    }
-  }, [claimId, claimData, organizationId]);
-
-  useEffect(() => {
-    if (claimId || claimData) {
-      loadPredictions();
-    }
-  }, [claimId, claimData, loadPredictions]);
-
-  const fetchOutcomePrediction = async () => {
+  const fetchOutcomePrediction = useCallback(async () => {
     if (!claimData) return;
 
     const response = await fetch('/api/ai/predict/outcome', {
@@ -121,9 +100,9 @@ export function PredictionDashboard({
       const { prediction } = await response.json();
       setOutcomePrediction(prediction);
     }
-  };
+  }, [claimData, organizationId]);
 
-  const fetchTimelinePrediction = async () => {
+  const fetchTimelinePrediction = useCallback(async () => {
     if (!claimId) return;
 
     const response = await fetch('/api/ai/predict/timeline', {
@@ -140,9 +119,9 @@ export function PredictionDashboard({
       const { prediction } = await response.json();
       setTimelinePrediction(prediction);
     }
-  };
+  }, [claimId, organizationId]);
 
-  const fetchResourcePrediction = async () => {
+  const fetchResourcePrediction = useCallback(async () => {
     if (!claimData) return;
 
     const response = await fetch('/api/ai/predict/resources', {
@@ -159,9 +138,9 @@ export function PredictionDashboard({
       const { prediction } = await response.json();
       setResourcePrediction(prediction);
     }
-  };
+  }, [claimData, organizationId]);
 
-  const fetchSettlementEstimate = async () => {
+  const fetchSettlementEstimate = useCallback(async () => {
     if (!claimData) return;
 
     const response = await fetch('/api/ai/predict/settlement', {
@@ -178,7 +157,28 @@ export function PredictionDashboard({
       const { prediction } = await response.json();
       setSettlementEstimate(prediction);
     }
-  };
+  }, [claimData, organizationId]);
+
+  const loadPredictions = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      await Promise.all([
+        fetchOutcomePrediction(),
+        fetchTimelinePrediction(),
+        fetchResourcePrediction(),
+        fetchSettlementEstimate(),
+      ]);
+    } catch (_error) {
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchOutcomePrediction, fetchTimelinePrediction, fetchResourcePrediction, fetchSettlementEstimate]);
+
+  useEffect(() => {
+    if (claimId || claimData) {
+      loadPredictions();
+    }
+  }, [claimId, claimData, loadPredictions]);
 
   const getOutcomeColor = (outcome: string) => {
     switch (outcome) {

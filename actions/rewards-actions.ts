@@ -83,7 +83,7 @@ export async function createRecognitionProgram(input: unknown) {
 
     revalidatePath('/[locale]/dashboard/admin/rewards');
     return { success: true, data: program };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return { success: false, error: error.message };
   }
 }
@@ -97,7 +97,7 @@ export async function updateRecognitionProgram(programId: string, input: unknown
 
     revalidatePath('/[locale]/dashboard/admin/rewards');
     return { success: true, data: program };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return { success: false, error: error.message };
   }
 }
@@ -108,7 +108,7 @@ export async function listRecognitionPrograms() {
     const programs = await rewardsService.listPrograms(orgId);
 
     return { success: true, data: programs };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return { success: false, error: error.message };
   }
 }
@@ -129,7 +129,7 @@ export async function createRecognitionAwardType(input: unknown) {
 
     revalidatePath('/[locale]/dashboard/admin/rewards');
     return { success: true, data: awardType };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return { success: false, error: error.message };
   }
 }
@@ -140,7 +140,7 @@ export async function listAwardTypes(programId: string) {
     const awardTypes = await rewardsService.listAwardTypes(programId, orgId);
 
     return { success: true, data: awardTypes };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return { success: false, error: error.message };
   }
 }
@@ -162,7 +162,7 @@ export async function createAward(input: unknown) {
 
     revalidatePath('/[locale]/dashboard/admin/rewards');
     return { success: true, data: award };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return { success: false, error: error.message };
   }
 }
@@ -180,7 +180,7 @@ export async function approveAward(input: unknown) {
 
     revalidatePath('/[locale]/dashboard/admin/rewards');
     return { success: true, data: award };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return { success: false, error: error.message };
   }
 }
@@ -198,7 +198,7 @@ export async function issueAward(input: unknown) {
     revalidatePath('/[locale]/dashboard/admin/rewards');
     revalidatePath('/[locale]/dashboard/rewards'); // Member wallet view
     return { success: true, data: result };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return { success: false, error: error.message };
   }
 }
@@ -217,7 +217,7 @@ export async function revokeAward(input: unknown) {
     revalidatePath('/[locale]/dashboard/admin/rewards');
     revalidatePath('/[locale]/dashboard/rewards');
     return { success: true, data: result };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return { success: false, error: error.message };
   }
 }
@@ -235,7 +235,7 @@ export async function listAwardsByStatus(input: unknown) {
     );
 
     return { success: true, data: awards };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return { success: false, error: error.message };
   }
 }
@@ -256,7 +256,7 @@ export async function listMyAwards(input?: unknown) {
     );
 
     return { success: true, data: awards };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return { success: false, error: error.message };
   }
 }
@@ -279,7 +279,7 @@ export async function createBudgetEnvelope(input: unknown) {
 
     revalidatePath('/[locale]/dashboard/admin/rewards');
     return { success: true, data: envelope };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return { success: false, error: error.message };
   }
 }
@@ -290,7 +290,7 @@ export async function listBudgetEnvelopes(programId: string, activeOnly = false)
     const envelopes = await rewardsService.listBudgetEnvelopes(programId, orgId, activeOnly);
 
     return { success: true, data: envelopes };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return { success: false, error: error.message };
   }
 }
@@ -301,7 +301,7 @@ export async function getBudgetUsageSummary(programId?: string) {
     const summary = await rewardsService.getBudgetUsageSummary(orgId, programId);
 
     return { success: true, data: summary };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return { success: false, error: error.message };
   }
 }
@@ -319,7 +319,7 @@ export async function getMyWalletBalance() {
     const balance = await rewardsService.getBalance(orgId, userId);
 
     return { success: true, data: { balance } };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return { success: false, error: error.message };
   }
 }
@@ -340,7 +340,7 @@ export async function getMyWalletLedger(input?: unknown) {
     );
 
     return { success: true, data: result };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return { success: false, error: error.message };
   }
 }
@@ -412,7 +412,7 @@ export async function initiateRedemption(input: unknown) {
         checkout_url: checkoutUrl 
       } 
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return { success: false, error: error.message };
   }
 }
@@ -430,7 +430,7 @@ export async function cancelRedemption(input: unknown) {
 
     revalidatePath('/[locale]/dashboard/rewards');
     return { success: true, data: result };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return { success: false, error: error.message };
   }
 }
@@ -451,7 +451,7 @@ export async function listMyRedemptions(input?: unknown) {
     );
 
     return { success: true, data: result };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return { success: false, error: error.message };
   }
 }
@@ -478,7 +478,7 @@ export async function getRewardsSummary(input?: unknown) {
         budgetUsage: budgetSummary,
       },
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return { success: false, error: error.message };
   }
 }

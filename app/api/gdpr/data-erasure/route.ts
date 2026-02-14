@@ -6,18 +6,14 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth, withRoleAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { db } from "@/db";
 import { GdprRequestManager, DataErasureService } from "@/lib/gdpr/consent-manager";
 import { logger } from "@/lib/logger";
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { z } from 'zod';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const erasureRequestSchema = z.object({
   organizationId: z.string().uuid().optional(),

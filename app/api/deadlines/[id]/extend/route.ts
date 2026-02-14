@@ -3,14 +3,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requestDeadlineExtension } from '@/db/queries/deadline-queries';
 import { getCurrentUser } from '@/lib/api-auth-guard';
 import { cookies } from 'next/headers';
-import { db, organizations } from '@/db';
+import { organizations } from '@/db';
 import { eq } from 'drizzle-orm';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const extendDeadlineSchema = z.object({
   daysRequested: z.number().int().min(1, 'Days requested must be at least 1').max(365, 'Cannot request more than 365 days'),

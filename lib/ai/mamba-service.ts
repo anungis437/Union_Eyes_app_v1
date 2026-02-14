@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Mamba State Space Model Service
  * 
  * Provides integration with Mamba-based models for long-context sequence processing
@@ -38,7 +38,7 @@ const DEFAULT_CONFIG: MambaConfig = {
 export class MambaModel {
   private config: MambaConfig;
   private isInitialized: boolean = false;
-  private model: any = null;
+  private model: unknown = null;
 
   constructor(config: Partial<MambaConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };

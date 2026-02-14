@@ -18,10 +18,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
-import { standardErrorResponse, standardSuccessResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 import { db } from '@/db';
 import { organizations } from '@/db/schema-organizations';
-import { eq, and, desc, sql, gte, lte } from 'drizzle-orm';
+import { and, desc, sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from 'zod';
 

@@ -11,17 +11,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { claims, claimUpdates } from "@/db/schema/domains/claims";
-import { eq, desc, sql } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { updateClaimStatus, type ClaimStatus } from '@/lib/workflow-engine';
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 /**
  * Validation schema for updating claims

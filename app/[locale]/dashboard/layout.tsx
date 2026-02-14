@@ -47,7 +47,7 @@ async function checkExpiredSubscriptionCredits(profile: SelectProfile | null): P
         status: "canceled" // Update status to reflect canceled subscription
       };
       
-      // If they don't have a nextCreditRenewal date, set one
+      // If they don&apos;t have a nextCreditRenewal date, set one
       if (!profile.nextCreditRenewal) {
         const nextRenewal = new Date();
         nextRenewal.setDate(nextRenewal.getDate() + 28); // 4 weeks from now
@@ -55,7 +55,7 @@ async function checkExpiredSubscriptionCredits(profile: SelectProfile | null): P
       }
       
       // We keep the billingCycleEnd to remember when they canceled
-      // but we'll no longer check it after this point
+      // but we&apos;ll no longer check it after this point
       
       // Update profile with free tier credit limit
       const updatedProfile = await updateProfile(profile.userId, updateData);
@@ -81,7 +81,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
   let profile = await getProfileByUserId(userId);
 
-  // Auto-create profile if it doesn't exist (prevents redirect loop)
+  // Auto-create profile if it doesn&apos;t exist (prevents redirect loop)
   if (!profile) {
     const user = await currentUser();
     const userEmail = user?.emailAddresses?.[0]?.emailAddress || "";

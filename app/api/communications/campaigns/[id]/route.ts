@@ -14,16 +14,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
 import { newsletterCampaigns } from '@/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 const updateCampaignSchema = z.object({
   name: z.string().min(1).optional(),
   subject: z.string().min(1).optional(),
@@ -164,7 +160,7 @@ export async function PUT(
       );
     }
 
-    const updateData: any = { ...validatedData };
+    const updateData = { ...validatedData };
     if (validatedData.scheduledAt) {
       updateData.scheduledAt = new Date(validatedData.scheduledAt);
     }

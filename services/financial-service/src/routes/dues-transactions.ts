@@ -133,7 +133,7 @@ router.post('/calculate', async (req: Request, res: Response) => {
         },
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         success: false,
@@ -309,7 +309,7 @@ router.post('/batch', async (req: Request, res: Response) => {
         errors: batchResult.results.filter((r: any) => r.errors && r.errors.length > 0),
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         success: false,
@@ -362,7 +362,7 @@ router.get('/', async (req: Request, res: Response) => {
       success: true,
       data: transactions,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
       error: error.message,
@@ -401,7 +401,7 @@ router.get('/:id', async (req: Request, res: Response) => {
       success: true,
       data: transaction,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
       error: error.message,

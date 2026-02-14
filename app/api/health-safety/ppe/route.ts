@@ -11,16 +11,12 @@
 
 import { z } from "zod";
 import { ppeEquipment } from "@/db/schema/domains/health-safety/health-safety-schema";
-import { eq, desc, and, or, like, sql, lte } from "drizzle-orm";
+import { desc, and, or, like, sql } from "drizzle-orm";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { checkRateLimit, createRateLimitHeaders } from "@/lib/rate-limiter";
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 /**
  * Validation schema for recording PPE distribution

@@ -228,7 +228,7 @@ export default function FinancialAnalytics() {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Financial Trends</CardTitle>
-                  <Select value={viewMode} onValueChange={(v) => setViewMode(v as any)}>
+                  <Select value={viewMode} onValueChange={(v) => setViewMode(v)}>
                     <SelectTrigger className="w-[120px]">
                       <SelectValue />
                     </SelectTrigger>

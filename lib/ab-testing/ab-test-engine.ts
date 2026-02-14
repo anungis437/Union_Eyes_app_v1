@@ -1,4 +1,4 @@
-/**
+﻿/**
  * A/B Testing Framework
  * 
  * SPRINT 8: Advanced Features
@@ -32,7 +32,7 @@ export type TestStatus = 'draft' | 'active' | 'paused' | 'completed' | 'archived
 export interface ABTestVariant {
   id: string;
   name: string;
-  content: Record<string, any>; // Test-specific content (subject line, button text, etc.)
+  content: Record<string, unknown>; // Test-specific content (subject line, button text, etc.)
   weight: number; // Allocation percentage (0-100)
   impressions: number;
   conversions: number;
@@ -52,8 +52,8 @@ export interface ABTest {
   currentSampleSize: number;
   confidence: number; // 0-100, e.g., 95% confidence
   winner?: string; // variant ID
-  segmentCriteria?: Record<string, any>; // Optional audience targeting
-  metadata: Record<string, any>;
+  segmentCriteria?: Record<string, unknown>; // Optional audience targeting
+  metadata: Record<string, unknown>;
 }
 
 export interface ABTestResult {
@@ -78,11 +78,11 @@ export interface ABTestCreationParams {
   type: TestType;
   variants: Array<{
     name: string;
-    content: Record<string, any>;
+    content: Record<string, unknown>;
   }>;
   targetSampleSize: number;
   confidence?: number;
-  segmentCriteria?: Record<string, any>;
+  segmentCriteria?: Record<string, unknown>;
 }
 
 // ============================================================================

@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { votingSessions, voterEligibility, votes, votingOptions, votingAuditLog } from '@/db/schema/voting-schema';
-import { eq, and, sql } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { z } from 'zod';
 import crypto from 'crypto';
 
@@ -191,7 +191,7 @@ export async function POST(
         canVerify: true,
       },
     }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error casting vote:', error);
     
     if (error instanceof z.ZodError) {
@@ -228,7 +228,7 @@ export async function GET(
       );
     }
     
-    // Check if vote exists (don't reveal vote choice)
+    // Check if vote exists (don&apos;t reveal vote choice)
     const [existingVote] = await db
       .select({
         id: votes.id,
@@ -256,7 +256,7 @@ export async function GET(
         verificationCode: existingVote.verificationCode,
       },
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error checking vote status:', error);
     return NextResponse.json(
       { error: 'Failed to check vote status', details: error.message },

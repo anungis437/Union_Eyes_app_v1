@@ -54,7 +54,7 @@ export function withOrganizationAuth<T = any>(
         memberId: user.memberId || '',
       };
 
-      // Resolve params if they're a Promise
+      // Resolve params if they&apos;re a Promise
       const params = routeContext?.params 
         ? await Promise.resolve(routeContext.params)
         : undefined;

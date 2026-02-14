@@ -4,11 +4,7 @@ import { NextResponse } from "next/server";
 import { unstable_cache } from "next/cache";
 import { requireApiAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * GET /api/user/status
  * Get current user's status

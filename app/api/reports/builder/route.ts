@@ -14,14 +14,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { reports } from '@/db/schema';
 import { eq } from 'drizzle-orm';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const reportsBuilderSchema = z.object({
   name: z.string().min(1, 'name is required'),
@@ -119,7 +115,7 @@ export const POST = async (req: NextRequest) => {
           createdAt: report.createdAt,
         },
       });
-    } catch (error: any) {
+    } catch (error: Record<string, unknown>) {
 return NextResponse.json(
         { error: 'Failed to create report', details: error.message },
         { status: 500 }
@@ -162,7 +158,7 @@ export const GET = async (req: NextRequest) => {
           runCount: report.runCount,
         })),
       });
-    } catch (error: any) {
+    } catch (error: Record<string, unknown>) {
 return NextResponse.json(
         { error: 'Failed to fetch reports', details: error.message },
         { status: 500 }

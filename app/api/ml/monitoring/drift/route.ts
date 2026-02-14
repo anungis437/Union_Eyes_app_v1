@@ -3,13 +3,7 @@ import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { db } from '@/db';
-import { sql } from 'drizzle-orm';
-
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * GET /api/ml/monitoring/drift
  * 
@@ -145,7 +139,7 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
       ORDER BY psi_score DESC
     `);
 
-    const metrics = (driftMetrics || []).map((row: any) => ({
+    const metrics = (driftMetrics || []).map((row: Record<string, unknown>) => ({
       metric: row.metric,
       currentValue: parseFloat(row.current_value || 0),
       baselineValue: parseFloat(row.baseline_value || 0),

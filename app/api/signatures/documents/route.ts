@@ -8,11 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { SignatureService } from "@/lib/signature/signature-service";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * Create signature request
  */
@@ -34,7 +30,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
     const documentType = formData.get("documentType") as string;
     const organizationId = formData.get("organizationId") as string;
     const signersJson = formData.get("signers") as string;
-    const provider = formData.get("provider") as any;
+    const provider = formData.get("provider") as Record<string, unknown>;
     const expirationDays = formData.get("expirationDays") as string;
     const requireAuthentication = formData.get("requireAuthentication") as string;
     const sequentialSigning = formData.get("sequentialSigning") as string;

@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       result,
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error evaluating policy:', error);
     
     if (error instanceof z.ZodError) {

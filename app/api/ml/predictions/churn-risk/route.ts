@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { withRoleAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { logger } from '@/lib/logger';
 /**
@@ -17,15 +17,10 @@ import { logger } from '@/lib/logger';
 
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
-import { sql } from 'drizzle-orm';
 import { predictChurnRisk } from '@/lib/ml/models/churn-prediction-model';
 
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 interface ChurnPrediction {
   memberId: string;
   memberName: string;

@@ -2,18 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
 import { duesTransactions, memberDuesAssignments, duesRules, members } from '@/services/financial-service/src/db/schema';
-import { eq, and, desc, sql } from 'drizzle-orm';
+import { and, desc } from 'drizzle-orm';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { getAutoPaySettings } from '@/lib/utils/autopay-utils';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // Validation schema for query parameters
 const balanceQuerySchema = z.object({
   userId: z.string().min(1, 'userId parameter is required'),

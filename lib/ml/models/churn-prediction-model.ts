@@ -125,7 +125,7 @@ export async function loadChurnModel(): Promise<tf.LayersModel> {
     console.log('✅ Loaded trained churn prediction model from disk');
     return modelInstance;
   } catch {
-    // Model doesn't exist yet - create new one with synthetic pre-training
+    // Model doesn&apos;t exist yet - create new one with synthetic pre-training
     console.log('⚠️  No trained model found. Creating new model with synthetic initialization...');
     modelInstance = createChurnModel();
 

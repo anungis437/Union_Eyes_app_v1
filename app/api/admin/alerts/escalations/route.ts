@@ -1,16 +1,13 @@
-﻿/**
+/**
  * Alert Escalations API
  */
 
 import { z } from "zod";
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, inArray } from "drizzle-orm";
 import { withRLSContext } from "@/lib/db/with-rls-context";
 import { withRoleAuth } from "@/lib/api-auth-guard";
 import { alertEscalations, alertRules, escalationStatus } from "@/db/schema";
-import {
-  ErrorCode,
-  standardErrorResponse,
-  standardSuccessResponse,
+import { standardSuccessResponse,
 } from "@/lib/api/standardized-responses";
 
 const listEscalationsSchema = z.object({
@@ -57,11 +54,11 @@ export const GET = withRoleAuth("admin", async (request, context) => {
   const ruleIds = query.ruleIds ? query.ruleIds.split(",").filter(Boolean) : [];
 
   try {
-    return await withRLSContext(async (tx: any) => {
+    return await withRLSContext(async (tx: Record<string, unknown>) => {
       const conditions = [eq(alertEscalations.organizationId, organizationId)];
 
       if (query.status) {
-        conditions.push(eq(alertEscalations.status, query.status as any));
+        conditions.push(eq(alertEscalations.status, query.status));
       }
 
       if (ruleIds.length > 0) {
@@ -130,7 +127,7 @@ export const POST = withRoleAuth("admin", async (request, context) => {
   const payload = parsed.data;
 
   try {
-    return await withRLSContext(async (tx: any) => {
+    return await withRLSContext(async (tx: Record<string, unknown>) => {
       const [escalation] = await tx
         .insert(alertEscalations)
         .values({

@@ -13,11 +13,7 @@ import { eq } from "drizzle-orm";
 import { AuditTrailService } from "@/lib/signature/signature-service";
 import { createHmac } from "crypto";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * DocuSign Webhook Handler
  */
@@ -82,7 +78,7 @@ function verifyDocuSignSignature(body: string, signature: string | null): boolea
   return computed === signature;
 }
 
-async function processDocuSignEvent(payload: any) {
+async function processDocuSignEvent(payload: Record<string, unknown>) Record<string, unknown>) {
   const event = payload.event;
   const envelopeId = payload.data?.envelopeId;
 

@@ -95,7 +95,7 @@ async function resetDatabase() {
       // Note: Drizzle doesn't support dynamic table deletion, so we use sql template
       // but with validated input only
       await db.execute(sql`DELETE FROM ${sql.raw(tableName)}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error.code === '42P01') {
         console.log(`⚠️  Table ${tableName} doesn't exist, skipping...`);
       } else {

@@ -16,7 +16,7 @@ interface LayoutWrapperProps {
 export default function LayoutWrapper({ children }: LayoutWrapperProps) {
   const pathname = usePathname();
   
-  // Don't show header on dashboard or portal routes
+  // Don&apos;t show header on dashboard or portal routes
   const isDashboardRoute = pathname.includes("/dashboard");
   const isPortalRoute = pathname.includes("/portal");
   

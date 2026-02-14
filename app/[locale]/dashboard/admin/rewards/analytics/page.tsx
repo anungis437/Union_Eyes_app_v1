@@ -135,12 +135,12 @@ async function getAnalyticsData(orgId: string, startDate: Date, endDate: Date) {
   ]);
 
   return {
-    overview: (overview as any[])[0] as any,
-    redemption: (redemption as any[])[0] as any,
-    budgets: budgets as any[],
-    topAwardTypes: topTypes as any[],
-    awardTrend: trend as any[],
-    topReceivers: topReceivers as any[],
+    overview: (overview as Array<Record<string, unknown>>)[0] as Record<string, unknown>,
+    redemption: (redemption as Array<Record<string, unknown>>)[0] as Record<string, unknown>,
+    budgets: budgets as Array<Record<string, unknown>>,
+    topAwardTypes: topTypes as Array<Record<string, unknown>>,
+    awardTrend: trend as Array<Record<string, unknown>>,
+    topReceivers: topReceivers as Array<Record<string, unknown>>,
   };
 }
 
@@ -170,7 +170,7 @@ export default async function RewardsAnalyticsPage({
   // Date range calculation
   const period = searchParams.period || '30d';
   const endDate = new Date();
-  let startDate = new Date();
+  const startDate = new Date();
 
   switch (period) {
     case '7d':

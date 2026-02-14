@@ -20,18 +20,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { defensibilityPacks, packDownloadLog, packVerificationLog } from '@/db/schema/defensibility-packs-schema';
 import { claims } from '@/db/schema/domains/claims';
-import { eq, desc, and } from 'drizzle-orm';
+import { desc, and } from 'drizzle-orm';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { verifyPackIntegrity } from '@/lib/services/defensibility-pack';
 import { createHash } from 'crypto';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * GET /api/claims/[id]/defensibility-pack
  * Download the latest defensibility pack for a claim

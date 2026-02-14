@@ -12,13 +12,9 @@ import { logger } from '@/lib/logger';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2024-06-20' as any,
+  apiVersion: '2024-06-20' as const,
 });
 
 // Validation schema for POST body

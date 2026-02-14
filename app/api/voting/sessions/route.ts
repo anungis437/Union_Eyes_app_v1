@@ -2,17 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { votingSessions, votingOptions, voterEligibility, votes } from '@/db/schema/domains/governance';
 import { organizationMembers } from '@/db/schema/organization-members-schema';
-import { eq, desc, and, count } from 'drizzle-orm';
+import { desc, and, count } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { withApiAuth, withEnhancedRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode,
+import { standardSuccessResponse,
   StandardizedError,
   StandardizedSuccess
 } from '@/lib/api/standardized-responses';
@@ -90,7 +87,7 @@ try {
       const sessionsWithStats = await Promise.all(
         sessions.map(async (session) => {
           // Get vote count
-          const [voteCount] = await withRLSContext(async (tx: NodePgDatabase<any>) => {
+          const [voteCount] = await withRLSContext(async (tx) => {
             return await tx
               .select({ count: count() })
               .from(votes)
@@ -98,7 +95,7 @@ try {
           });
 
           // Get options count
-          const [optionsCount] = await withRLSContext(async (tx: NodePgDatabase<any>) => {
+          const [optionsCount] = await withRLSContext(async (tx) => {
             return await tx
               .select({ count: count() })
               .from(votingOptions)
@@ -108,7 +105,7 @@ try {
             // Check if user has voted
             if (!userId) return { ...session, stats: { totalVotes: 0, totalOptions: 0, hasVoted: false, isEligible: false, turnoutPercentage: 0 } };
             
-            const [userVote] = await withRLSContext(async (tx: NodePgDatabase<any>) => {
+            const [userVote] = await withRLSContext(async (tx) => {
               return await tx
                 .select()
                 .from(votes)
@@ -122,7 +119,7 @@ try {
             });
 
             // Check if user is eligible
-            const [eligibility] = await withRLSContext(async (tx: NodePgDatabase<any>) => {
+            const [eligibility] = await withRLSContext(async (tx) => {
               return await tx
                 .select()
                 .from(voterEligibility)
@@ -251,14 +248,14 @@ try {
         .limit(1);
 
       // Allow admin and officer roles to create voting sessions
-      if (!member || !['admin', 'officer', 'super_admin'].includes((member as any).role || '')) {
+      if (!member || !['admin', 'officer', 'super_admin'].includes((member as Record<string, unknown>)?.role as string || '')) {
         logApiAuditEvent({
           timestamp: new Date().toISOString(), userId,
           endpoint: '/api/voting/sessions',
           method: 'POST',
           eventType: 'unauthorized_access',
           severity: 'high',
-          details: { reason: 'Non-admin attempted voting session creation', userRole: (member as any)?.role },
+          details: { reason: 'Non-admin attempted voting session creation', userRole: (member as Record<string, unknown>)?.role },
         });
 
         return standardErrorResponse(
@@ -268,7 +265,7 @@ try {
       }
 
       // Create session
-      const [newSession] = await withRLSContext(async (tx: NodePgDatabase<any>) => {
+      const [newSession] = await withRLSContext(async (tx) => {
         return await tx
           .insert(votingSessions)
           .values({
@@ -297,7 +294,7 @@ try {
           orderIndex: index,
         }));
 
-        await withRLSContext(async (tx: NodePgDatabase<any>) => {
+        await withRLSContext(async (tx) => {
           return await tx.insert(votingOptions).values(optionValues);
         });
       }

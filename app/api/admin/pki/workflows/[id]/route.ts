@@ -18,11 +18,7 @@ import {
 import { z } from "zod";
 import { withAdminAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withAdminAuth(async (request, context) => {
   try {

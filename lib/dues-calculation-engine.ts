@@ -1,4 +1,4 @@
-import { db } from '@/db';
+﻿import { db } from '@/db';
 import {
   duesRules,
   memberDuesAssignments,
@@ -96,7 +96,7 @@ return null;
 
     // Calculate based on rule type
     let amount: number;
-    let breakdown: any = {};
+    let breakdown: unknown = {};
 
     switch (rule.calculationType) {
       case 'flat_rate':
@@ -188,7 +188,7 @@ return null;
   private static calculateTieredDues(
     rule: typeof duesRules.$inferSelect,
     memberData?: DuesCalculationParams['memberData']
-  ): { amount: number; breakdown: any } {
+  ): { amount: number; breakdown: unknown } {
     if (!rule.tierStructure || !Array.isArray(rule.tierStructure)) {
       return { amount: 0, breakdown: {} };
     }

@@ -154,7 +154,7 @@ export class CircuitBreaker {
   private onFailure(error: Error): void {
     // Check if this error should count as a failure
     if (this.config.isFailure && !this.config.isFailure(error)) {
-      return; // Don't count this as a circuit breaker failure
+      return; // Don&apos;t count this as a circuit breaker failure
     }
 
     this.totalFailures++;

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Database Abstraction Layer - Multi-Database Support
  * 
  * Provides unified interface for Drizzle ORM supporting:
@@ -32,13 +32,13 @@ interface DatabaseConfig {
 
 // Unified database client interface
 export interface UnifiedDatabaseClient {
-  query: any;
-  insert: any;
-  update: any;
-  delete: any;
-  select: any;
-  transaction: any;
-  execute: any;
+  query: unknown;
+  insert: unknown;
+  update: unknown;
+  delete: unknown;
+  select: unknown;
+  transaction: unknown;
+  execute: unknown;
 }
 
 /**
@@ -175,7 +175,7 @@ export function arrayAppend(
   const safeCol = safeColumnName(column);
   
   if (dbType === 'azure-sql' || dbType === 'mssql') {
-    // Azure SQL doesn't have native array type, use JSON
+    // Azure SQL doesn&apos;t have native array type, use JSON
     return sql`JSON_MODIFY(${safeCol}, 'append $', ${value})`;
   } else {
     // PostgreSQL array_append
@@ -187,7 +187,7 @@ export function arrayAppend(
  * Handle ILIKE vs LIKE differences
  */
 export function createLikeQuery(
-  column: any,
+  column: unknown,
   pattern: string,
   dbType: DatabaseType = 'postgresql'
 ) {
@@ -267,7 +267,7 @@ export function createPaginationQuery(
  * Handle boolean type differences
  */
 export function createBooleanQuery(
-  column: any,
+  column: unknown,
   value: boolean,
   dbType: DatabaseType = 'postgresql'
 ) {
@@ -284,7 +284,7 @@ export function createBooleanQuery(
  * Handle NULL checks differences
  */
 export function createNullCheck(
-  column: any,
+  column: unknown,
   checkNull: boolean = true,
   dbType: DatabaseType = 'postgresql'
 ) {

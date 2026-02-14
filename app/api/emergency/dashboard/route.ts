@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPrivacyRules, generateComplianceReport } from '@/lib/services/provincial-privacy-service';
 import { withApiAuth } from '@/lib/api-auth-guard';
-import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { ErrorCode } from '@/lib/api/standardized-responses';
 
 /**
  * Emergency Dashboard API

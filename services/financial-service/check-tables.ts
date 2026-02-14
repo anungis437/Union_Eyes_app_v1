@@ -51,7 +51,7 @@ if (exists) {
           ORDER BY ordinal_position
         `;
 }
-    } catch (error: any) {
+    } catch (error: unknown) {
 }
   }
 

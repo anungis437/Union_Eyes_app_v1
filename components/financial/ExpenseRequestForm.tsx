@@ -83,7 +83,7 @@ export default function ExpenseRequestForm({ budgetId, onSuccess }: ExpenseReque
 
       if (onSuccess) onSuccess();
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Error',
         description: error.message,

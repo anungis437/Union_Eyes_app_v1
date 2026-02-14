@@ -123,11 +123,11 @@ async function applyMigration() {
         WHERE id = (SELECT id FROM grievance_transitions LIMIT 1);
       `;
       console.log("⚠️  WARNING: Update succeeded when it should have been blocked!");
-    } catch (error: any) {
-      if (error.message?.includes("immutable")) {
+    } catch (error: unknown) {
+      if ((error as Error).message?.includes("immutable")) {
         console.log("   ✅ Immutability constraint working correctly (update blocked)");
       } else {
-        console.log(`   ℹ️  No records to test or different error: ${error.message}`);
+        console.log(`   ℹ️  No records to test or different error: ${(error as Error).message}`);
       }
     }
 
@@ -142,7 +142,7 @@ async function applyMigration() {
     console.log("  - audit_security.audit_logs (UPDATE⚠️  archive only, DELETE ❌)");
     console.log("\n✅ Audit trail integrity guaranteed by database layer");
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("\n❌ Migration failed:", error.message);
     console.error("\nFull error:", error);
     process.exit(1);

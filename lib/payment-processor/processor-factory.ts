@@ -101,7 +101,7 @@ export class PaymentProcessorFactory {
       const errorMessage = error instanceof Error ? error.message : String(error);
       logger.error(`Failed to initialize ${type} processor`, error instanceof Error ? error : new Error(errorMessage));
       
-      // Don't throw for optional processors, but do throw for the default processor
+      // Don&apos;t throw for optional processors, but do throw for the default processor
       if (type === this.defaultProcessorType) {
         throw error;
       }

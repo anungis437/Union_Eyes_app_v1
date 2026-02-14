@@ -4,7 +4,6 @@ import {
   DollarSign,
   TrendingUp,
   TrendingDown,
-  PieChart,
   BarChart3,
   Clock,
   AlertTriangle,
@@ -60,7 +59,6 @@ export function AIUsageMetrics({ organizationId, className = '' }: AIUsageMetric
     totalRequests: 0,
     averageResponseTime: 0,
   });
-  const [isLoading, setIsLoading] = useState(false);
 
   const fetchMetrics = useCallback(async () => {
     setIsLoading(true);
@@ -84,7 +82,7 @@ export function AIUsageMetrics({ organizationId, className = '' }: AIUsageMetric
       setProviderStats(data.providerStats || []);
       setTrendData(data.trendData || []);
       setTotalStats(data.totalStats || totalStats);
-    } catch (error) {
+    } catch (_error) {
     } finally {
       setIsLoading(false);
     }
@@ -141,7 +139,7 @@ export function AIUsageMetrics({ organizationId, className = '' }: AIUsageMetric
               <Activity className="h-5 w-5 text-primary" />
               AI Usage Metrics
             </CardTitle>
-            <Select value={timeRange} onValueChange={(value: any) => setTimeRange(value)}>
+            <Select value={timeRange} onValueChange={(value: 'day' | 'week' | 'month') => setTimeRange(value)}>
               <SelectTrigger className="w-[150px]">
                 <SelectValue />
               </SelectTrigger>

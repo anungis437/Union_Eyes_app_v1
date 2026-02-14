@@ -9,15 +9,11 @@
 import { z } from 'zod';
 import { NextRequest, NextResponse } from "next/server";
 import { claimUpdates } from "@/db/schema/domains/claims";
-import { desc, eq } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * GET /api/claims/[id]/updates
  * Fetch all updates for a specific claim

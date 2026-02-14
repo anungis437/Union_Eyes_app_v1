@@ -1,15 +1,10 @@
-import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/services/financial-service/src/db';
 import { expenseRequests, expenseApprovals, budgetLineItems } from '@/services/financial-service/src/db/schema';
-import { eq, and, desc, sql, inArray } from 'drizzle-orm';
+import { and, desc, inArray } from 'drizzle-orm';
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 interface AuthUser {
   id: string;

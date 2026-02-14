@@ -394,7 +394,7 @@ export async function sendToDevice(
       success: true,
       messageId: response,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Error sending to device', { error, deviceId, notificationId });
 
     // Handle specific FCM errors
@@ -568,7 +568,7 @@ export async function sendToUser(payload: {
           success: true,
           messageId: response,
         } as DirectSendResult;
-      } catch (error: any) {
+      } catch (error: unknown) {
         const errorCode = error?.code || 'unknown';
         const errorMessage = error?.message || 'Unknown error';
 
@@ -650,7 +650,7 @@ export async function sendToTopic(
       success: true,
       messageId: response,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Error sending to topic', { error, topic });
 
     return {
@@ -691,7 +691,7 @@ export async function subscribeToTopic(
       failureCount: response.failureCount,
       errors: response.errors,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Error subscribing to topic', { error, topic });
 
     return {
@@ -726,7 +726,7 @@ export async function unsubscribeFromTopic(
       failureCount: response.failureCount,
       errors: response.errors,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Error unsubscribing from topic', { error, topic });
 
     return {

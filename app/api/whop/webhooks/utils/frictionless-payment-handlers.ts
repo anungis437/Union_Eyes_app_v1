@@ -28,8 +28,8 @@ import { v4 as uuidv4 } from "uuid";
  * @param data The webhook event data from Whop
  * @returns Boolean indicating if this is a frictionless payment
  */
-export function isFrictionlessPayment(data: any): boolean {
-  // Debug log the structure to make sure we know what we're working with
+export function isFrictionlessPayment(data: Record<string, unknown>) Record<string, unknown>): boolean {
+  // Debug log the structure to make sure we know what we&apos;re working with
 // For payment.succeeded events, we need to check membership_metadata
   if (data.membership_metadata) {
     const hasEmail = !!data.membership_metadata.email;
@@ -61,7 +61,7 @@ return false;
  * @param eventId The event ID for logging
  * @returns Boolean indicating success
  */
-export async function handleFrictionlessPayment(data: any, eventId: string): Promise<boolean> {
+export async function handleFrictionlessPayment(data: any, Record<string, unknown>, eventId: string): Promise<boolean> {
   try {
 // Extract email and token, checking both metadata and membership_metadata
     // Prioritize membership_metadata as it seems to be where Whop puts this info in the payment.succeeded event
@@ -117,7 +117,7 @@ return false;
  * @param token Optional token for purchase verification
  * @param eventId Event ID for logging
  */
-export async function createOrUpdatePendingProfile(data: any, email: string, token?: string, eventId?: string) {
+export async function createOrUpdatePendingProfile(data: any, Record<string, unknown>, email: string, token?: string, eventId?: string) {
   const logPrefix = eventId ? `[Event ${eventId}]` : '[Profile Creation]';
   
   try {
@@ -185,7 +185,7 @@ export async function createOrUpdatePendingProfile(data: any, email: string, tok
       claimedByUserId: null,
       claimedAt: null,
     };
-// If there's an existing pending profile, update it, otherwise create a new one
+// If there&apos;s an existing pending profile, update it, otherwise create a new one
     if (existingPendingProfile) {
       // Update existing pending profile using system context
       await withSystemContext(async (tx) => {
@@ -211,7 +211,7 @@ return false;
  * @param userId The Clerk user ID
  * @param data The webhook data
  */
-async function updateProfile(userId: string, data: any) {
+async function updateProfile(userId: string, data: Record<string, unknown>) Record<string, unknown>) {
   await withSystemContext(async (tx) => {
     await tx.update(profilesTable).set(data).where(eq(profilesTable.userId, userId)).returning();
   });
@@ -221,7 +221,7 @@ async function updateProfile(userId: string, data: any) {
  * Helper function to prepare profile update data from webhook data
  * Extracts common fields needed for both authenticated and unauthenticated payments
  */
-function prepareProfileUpdateData(data: any) {
+function prepareProfileUpdateData(data: Record<string, unknown>) Record<string, unknown>) {
   // Calculate billing cycle details
   let billingCycleStart = new Date();
   let billingCycleEnd = null;

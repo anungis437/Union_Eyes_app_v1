@@ -9,14 +9,10 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
 import { detectMetricTrends, getAnalyticsMetrics } from '@/actions/analytics-actions';
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const analyticsTrendsSchema = z.object({
   metricType: z.string().min(1, 'metricType is required'),
@@ -92,7 +88,7 @@ export const GET = async (request: NextRequest) => {
       // Get recent trend analyses from database
       const { db } = await import('@/db');
       const { trendAnalyses } = await import('@/db/schema');
-      const { eq, desc, and } = await import('drizzle-orm');
+      const { desc, and } = await import('drizzle-orm');
       
       const conditions = [];
       

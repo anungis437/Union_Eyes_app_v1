@@ -9,9 +9,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import { pushDevices } from "@/db/schema";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
-import { 
-  standardErrorResponse, 
-  ErrorCode 
+import { ErrorCode 
 } from '@/lib/api/standardized-responses';
 
 const deviceRegistrationSchema = z.object({

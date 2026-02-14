@@ -13,11 +13,7 @@ import { db } from '@/db';
 import { processAnniversaryAwards, processScheduledAwards } from '@/lib/services/rewards/automation-service';
 import { sendBatchExpirationWarnings } from '@/lib/services/rewards/notification-service';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * POST /api/rewards/cron
  * 
@@ -46,7 +42,7 @@ export async function POST(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const task = searchParams.get('task') || 'all';
 
-    const results: any = {
+    const results = {
       timestamp: new Date().toISOString(),
       task,
       executed: [],
@@ -104,7 +100,7 @@ return NextResponse.json({
       success: true,
       data: results,
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
 return NextResponse.json(
       { error: error.message || 'Failed to execute scheduled tasks' },
       { status: 500 }

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Data Ingestion Pipeline
  * 
  * Unified data ingestion for stakeholder documents:
@@ -12,7 +12,7 @@ import { logger } from '@/lib/logger';
 import { createHash } from 'crypto';
 
 // PDF.js will be loaded dynamically for browser/server compatibility
-let pdfjsLib: any = null;
+let pdfjsLib: unknown = null;
 
 async function getPdfJs() {
   if (!pdfjsLib) {
@@ -212,7 +212,7 @@ class PDFParser implements FileParser {
         const content = await page.getTextContent();
         
         const pageText = content.items
-          .map((item: any) => item.str)
+          .map((item: unknown) => item.str)
           .join(' ');
         
         textContent.push(pageText);

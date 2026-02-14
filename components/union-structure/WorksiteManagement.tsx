@@ -230,7 +230,7 @@ export function WorksiteManagement({ organizationId, onUpdate }: WorksiteManagem
       setIsDialogOpen(false);
       fetchWorksites();
       onUpdate?.();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
         description: error.message || "Failed to save worksite",

@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
-import { eq, and, desc, sql } from 'drizzle-orm';
+import { and, desc } from 'drizzle-orm';
 import { pgTable, uuid, text, timestamp, integer, jsonb, boolean } from 'drizzle-orm/pg-core';
 
 // Evidence schema (if not exists, this defines it)
@@ -51,7 +51,7 @@ export const caseEvidence = pgTable('case_evidence', {
   status: text('status').notNull().default('active'), // active, redacted, archived, deleted
   
   // Metadata
-  metadata: jsonb('metadata').$type<Record<string, any>>(),
+  metadata: jsonb('metadata').$type<Record<string, unknown>>(),
   
   // Audit
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -140,7 +140,7 @@ export async function GET(request: NextRequest) {
         totalPages: Math.ceil(Number(count) / limit),
       },
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching evidence:', error);
     return NextResponse.json(
       { error: 'Failed to fetch evidence', details: error.message },
@@ -181,7 +181,7 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },

@@ -127,7 +127,7 @@ toast({
         title: 'Success',
         description: 'Your vote has been recorded',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
 toast({
         title: 'Error',
         description: error.message || 'Failed to submit vote',

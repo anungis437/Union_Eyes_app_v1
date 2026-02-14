@@ -367,7 +367,7 @@ export async function approveDeadlineExtension(
       return { success: false, error: "Deadline not found" };
     }
 
-    // Check if there's a pending extension in notes
+    // Check if there&apos;s a pending extension in notes
     if (!deadline.notes || !deadline.notes.includes("Extension requested")) {
       return { success: false, error: "No pending extension request found" };
     }

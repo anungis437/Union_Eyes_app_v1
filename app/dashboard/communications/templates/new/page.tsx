@@ -410,7 +410,7 @@ export default function NewTemplatePage() {
                   id="plainTextContent"
                   value={formData.plainTextContent}
                   onChange={(e) => updateFormData({ plainTextContent: e.target.value })}
-                  placeholder="Plain text version for email clients that don't support HTML"
+                  placeholder="Plain text version for email clients that don&apos;t support HTML"
                   rows={6}
                 />
               </div>

@@ -43,7 +43,7 @@ async function applyMigration() {
         } else if (trimmed.includes('INSERT INTO')) {
           console.log('✅ Inserted default feature flags');
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Skip if already exists
         if (error.message?.includes('already exists') || error.code === '42P07') {
           skipCount++;

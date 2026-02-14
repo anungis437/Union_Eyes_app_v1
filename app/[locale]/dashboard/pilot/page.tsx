@@ -6,6 +6,7 @@
  */
 
 'use client';
+import Link from 'next/link';
 
 import { useState, useEffect } from 'react';
 import { PilotMetrics } from '@/types/marketing';
@@ -54,14 +55,13 @@ export default function PilotDashboardPage() {
             No Active Pilot
           </h1>
           <p className="text-gray-600 mb-6">
-            You don't currently have an active pilot program.
+            You don&apos;t currently have an active pilot program.
           </p>
-          <a
-            href="/pilot-request"
+          <Link href="/pilot-request"
             className="inline-block bg-blue-600 text-white px-6 py-3 rounded-md font-medium hover:bg-blue-700 transition-colors"
           >
             Apply for Pilot Program
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -329,13 +329,12 @@ export default function PilotDashboardPage() {
               className="bg-white text-blue-600 px-6 py-3 rounded-md font-medium hover:bg-blue-50 transition-colors"
             >
               Email Support
-            </a>
-            <a
-              href="/trust"
+            </Link>
+            <Link href="/trust"
               className="bg-blue-700 text-white px-6 py-3 rounded-md font-medium hover:bg-blue-800 transition-colors"
             >
               System Trust Dashboard
-            </a>
+            </Link>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ADP Workforce Now HRIS Integration Adapter
  * 
  * Implements integration with ADP Workforce Now for employee and department data.
@@ -313,7 +313,7 @@ export class ADPAdapter extends BaseIntegration {
 
       const units = response.workers || []; // ADP API structure
 
-      for (const unit of units as any[]) {
+      for (const unit of units as unknown[]) {
         try {
           const existing = await db.query.externalDepartments.findFirst({
             where: and(
@@ -371,7 +371,7 @@ export class ADPAdapter extends BaseIntegration {
   /**
    * Map ADP worker status to our employment status
    */
-  private mapEmploymentStatus(status?: string): any {
+  private mapEmploymentStatus(status?: string): unknown {
     if (!status) return 'active';
 
     const normalized = status.toLowerCase();

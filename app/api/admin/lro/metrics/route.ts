@@ -8,7 +8,7 @@ import { NextResponse } from 'next/server';
 import { getAuth } from '@clerk/nextjs/server';
 import { db } from '@/db/db';
 import { cases } from '@/db/schema';
-import { eq, and, gte, lte, sql } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import {
   getAggregatedMetrics,
   calculateSLAComplianceRate,
@@ -18,11 +18,7 @@ import {
 } from '@/lib/services/lro-metrics';
 import { detectAllSignals, getDashboardStats } from '@/lib/services/lro-signals';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * GET /api/admin/lro/metrics
  * 

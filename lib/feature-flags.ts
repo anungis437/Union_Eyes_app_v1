@@ -129,7 +129,7 @@ export class TenantFlag {
 }
 
 // In-memory cache for feature flags
-let flagsCache: Map<string, FeatureFlag> = new Map();
+const flagsCache: Map<string, FeatureFlag> = new Map();
 let lastFetchTime = 0;
 const CACHE_TTL = 60000; // 1 minute
 
@@ -217,7 +217,7 @@ async function updateFeatureFlag(
 
 /**
  * Feature flags registry
- * Add new features here as they're developed
+ * Add new features here as they&apos;re developed
  */
 export const features = {
   // Claims Management

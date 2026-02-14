@@ -112,7 +112,7 @@ router.post('/detect', async (req: Request, res: Response) => {
       success: true,
       data: result,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         success: false,
@@ -156,7 +156,7 @@ router.get('/', async (req: Request, res: Response) => {
       success: true,
       data: cases,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
       error: error.message,
@@ -214,7 +214,7 @@ router.get('/:id', async (req: Request, res: Response) => {
         transactions,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
       error: error.message,
@@ -279,7 +279,7 @@ router.post('/', async (req: Request, res: Response) => {
       success: true,
       data: arrearsCase,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         success: false,
@@ -377,7 +377,7 @@ router.post('/:id/payment-plan', async (req: Request, res: Response) => {
         paymentSchedule,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         success: false,
@@ -447,7 +447,7 @@ router.put('/:id/status', async (req: Request, res: Response) => {
       success: true,
       data: updatedCase,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         success: false,
@@ -516,7 +516,7 @@ router.post('/:id/contact', async (req: Request, res: Response) => {
       success: true,
       data: updatedCase,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         success: false,
@@ -601,7 +601,7 @@ router.post('/:id/payment', async (req: Request, res: Response) => {
         },
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         success: false,

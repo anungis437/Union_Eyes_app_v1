@@ -15,7 +15,7 @@ import {
   outreachEnrollments,
   outreachStepsLog 
 } from '@/db/schema';
-import { eq, and, sql } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 
 interface RouteParams {
   params: {
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     const seq = sequence[0];
-    const steps = seq.steps as any[];
+    const steps = seq.steps as Array<Record<string, unknown>>;
     const totalSteps = steps.length;
 
     // Check for existing enrollments
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         )
       );
 
-    const existingMemberIds = new Set(existingEnrollments.map((e: any) => e.memberId));
+    const existingMemberIds = new Set(existingEnrollments.map((e: Record<string, unknown>) => e.memberId));
     const newMemberIds = body.memberIds.filter((id: string) => !existingMemberIds.has(id));
 
     if (newMemberIds.length === 0) {
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       .returning();
 
     // Create initial step log entries for each enrollment
-    const stepLogEntries = enrollments.map((enrollment: any) => ({
+    const stepLogEntries = enrollments.map((enrollment: Record<string, unknown>) => ({
       organizationId,
       enrollmentId: enrollment.id,
       stepNumber: 1,

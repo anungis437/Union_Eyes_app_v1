@@ -38,21 +38,13 @@ import {
   X, 
   Play, 
   Save, 
-  Copy, 
-  Eye, 
-  Download,
   Settings,
-  Table as TableIcon,
-  BarChart3,
-  LineChart as LineChartIcon,
-  PieChart as PieChartIcon,
-  TrendingUp,
+  Eye, 
   Filter,
   Columns,
   AlertCircle,
 } from 'lucide-react';
 import { FilterBuilder } from './FilterBuilder';
-import { ChartSelector } from './ChartSelector';
 import { ReportPreview } from './ReportPreview';
 import { DataSourceExplorer } from '@/components/analytics/DataSourceExplorer';
 import { FormulaBuilder } from '@/components/analytics/FormulaBuilder';
@@ -126,7 +118,7 @@ interface ReportFilter {
   id: string;
   fieldId: string;
   operator: 'equals' | 'not_equals' | 'contains' | 'greater_than' | 'less_than' | 'between' | 'in';
-  value: any;
+  value: string | number | boolean | { from: string | number; to: string | number } | Array<string | number>;
   logicalOperator?: 'AND' | 'OR';
 }
 
@@ -222,7 +214,6 @@ export function ReportBuilder({
 }: ReportBuilderProps) {
   // Fetch data sources from API
   const [dataSources, setDataSources] = useState<DataSource[]>(DATA_SOURCES);
-  const [isLoadingDataSources, setIsLoadingDataSources] = useState(true);
 
   useEffect(() => {
     async function fetchDataSources() {
@@ -230,12 +221,12 @@ export function ReportBuilder({
         const response = await fetch('/api/reports/datasources');
         if (response.ok) {
           const result = await response.json();
-          const apiDataSources = result.dataSources.map((ds: any) => ({
+          const apiDataSources = result.dataSources.map((ds: { id: string; name: string; description: string; fields: Array<{ fieldId: string; fieldName: string; type: 'string' | 'number' | 'date' | 'boolean'; aggregatable: boolean; filterable: boolean; sortable: boolean }> }) => ({
             id: ds.id,
             name: ds.name,
             table: ds.id, // Use id as table name
             description: ds.description,
-            fields: ds.fields.map((f: any) => ({
+            fields: ds.fields.map((f) => ({
               id: f.fieldId,
               name: f.fieldName,
               type: f.type,
@@ -246,10 +237,8 @@ export function ReportBuilder({
           }));
           setDataSources(apiDataSources);
         }
-      } catch (error) {
+      } catch (_error) {
         // Keep using mock data if API fails
-      } finally {
-        setIsLoadingDataSources(false);
       }
     }
 
@@ -285,7 +274,7 @@ export function ReportBuilder({
     legend: { show: true, position: 'bottom' },
     tooltip: { enabled: true },
   });
-  const [previewData, setPreviewData] = useState<any[] | null>(null);
+  const [previewData, setPreviewData] = useState<Record<string, unknown>[] | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
 
   // Load data source when selected
@@ -312,7 +301,7 @@ export function ReportBuilder({
     const newField: SelectedField = {
       fieldId: field.id,
       fieldName: field.name,
-      aggregation: aggregation as any,
+      aggregation: aggregation as 'count' | 'sum' | 'avg' | 'min' | 'max' | 'distinct' | undefined,
       alias: aggregation ? `${aggregation}_${field.id}` : undefined,
     };
 
@@ -398,8 +387,8 @@ export function ReportBuilder({
       
       // Also update live preview
       await fetchPreviewData();
-    } catch (err: any) {
-      setError(err.message || 'Failed to execute report');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to execute report');
     } finally {
       setIsExecuting(false);
     }
@@ -426,7 +415,7 @@ export function ReportBuilder({
       } else {
         setPreviewData(null);
       }
-    } catch (error) {
+    } catch (_error) {
       setPreviewData(null);
     } finally {
       setPreviewLoading(false);
@@ -460,7 +449,7 @@ export function ReportBuilder({
   };
 
   // Handle field selection from explorer
-  const handleFieldSelectFromExplorer = (field: any) => {
+  const handleFieldSelectFromExplorer = (field: Record<string, unknown>) => {
     handleAddField({
       id: field.fieldId || field.id,
       name: field.fieldName || field.name,
@@ -476,7 +465,7 @@ export function ReportBuilder({
     setChartConfig(newChartConfig);
     setConfig({
       ...config,
-      visualizationType: newChartConfig.type as any,
+      visualizationType: newChartConfig.type as 'table' | 'bar' | 'line' | 'pie' | 'area' | 'composed',
       chartConfig: {
         xAxis: newChartConfig.xAxis?.field,
         yAxis: newChartConfig.yAxis?.fields,
@@ -493,8 +482,8 @@ export function ReportBuilder({
         await onSave(config);
       }
       setShowSaveDialog(false);
-    } catch (err: any) {
-      setError(err.message || 'Failed to save report');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save report');
     }
   };
 
@@ -635,7 +624,7 @@ export function ReportBuilder({
       case 'scatter':
         const xField = chartConfig.xAxis?.field || config.fields[0]?.fieldId;
         const yField = chartConfig.yAxis?.fields?.[0] || config.fields[1]?.fieldId;
-        const scatterData = chartData.map((d: any) => ({
+        const scatterData = chartData.map((d: Record<string, unknown>) => ({
           x: Number(d[xField]) || 0,
           y: Number(d[yField]) || 0,
           name: String(d[xField] || ''),
@@ -656,7 +645,7 @@ export function ReportBuilder({
         const bubbleXField = chartConfig.xAxis?.field || config.fields[0]?.fieldId;
         const bubbleYField = chartConfig.yAxis?.fields?.[0] || config.fields[1]?.fieldId;
         const bubbleZField = config.fields[2]?.fieldId;
-        const bubbleData = chartData.map((d: any) => ({
+        const bubbleData = chartData.map((d: Record<string, unknown>) => ({
           x: Number(d[bubbleXField]) || 0,
           y: Number(d[bubbleYField]) || 0,
           z: bubbleZField ? Number(d[bubbleZField]) || 1 : 1,
@@ -677,7 +666,7 @@ export function ReportBuilder({
       case 'treemap':
         const treemapNameField = chartConfig.xAxis?.field || config.fields[0]?.fieldId;
         const treemapValueField = chartConfig.yAxis?.fields?.[0] || config.fields[1]?.fieldId;
-        const treemapData = chartData.map((d: any) => ({
+        const treemapData = chartData.map((d: Record<string, unknown>) => ({
           name: String(d[treemapNameField] || 'Item'),
           size: Number(d[treemapValueField]) || 0,
         }));
@@ -693,7 +682,7 @@ export function ReportBuilder({
       case 'funnel':
         const funnelStageField = chartConfig.xAxis?.field || config.fields[0]?.fieldId;
         const funnelValueField = chartConfig.yAxis?.fields?.[0] || config.fields[1]?.fieldId;
-        const funnelData = chartData.map((d: any) => ({
+        const funnelData = chartData.map((d: Record<string, unknown>) => ({
           stage: String(d[funnelStageField] || 'Stage'),
           value: Number(d[funnelValueField]) || 0,
         }));
@@ -723,7 +712,7 @@ export function ReportBuilder({
       case 'waterfall':
         const waterfallNameField = chartConfig.xAxis?.field || config.fields[0]?.fieldId;
         const waterfallValueField = chartConfig.yAxis?.fields?.[0] || config.fields[1]?.fieldId;
-        const waterfallData = chartData.map((d: any) => ({
+        const waterfallData = chartData.map((d: Record<string, unknown>) => ({
           name: String(d[waterfallNameField] || 'Item'),
           value: Number(d[waterfallValueField]) || 0,
         }));
@@ -738,7 +727,7 @@ export function ReportBuilder({
 
       case 'sankey':
         // Sankey requires nodes and links - basic implementation with mock data
-        const sankeyNodes = chartData.slice(0, 10).map((d: any, i: number) => ({
+        const sankeyNodes = chartData.slice(0, 10).map((d: Record<string, unknown>, i: number) => ({
           name: String(d[config.fields[0]?.fieldId] || `Node ${i}`),
         }));
         return (
@@ -753,7 +742,7 @@ export function ReportBuilder({
         // BoxPlot requires statistical data - use mock data for now
         const boxPlotCategoryField = chartConfig.xAxis?.field || config.fields[0]?.fieldId;
         const boxPlotData = chartData
-          .reduce((acc: any[], d: any) => {
+          .reduce((acc: Array<{ category: string; min: number; q1: number; median: number; q3: number; max: number }>, d: Record<string, unknown>) => {
             const category = String(d[boxPlotCategoryField] || 'Category');
             if (!acc.find(item => item.category === category)) {
               acc.push({
@@ -778,7 +767,7 @@ export function ReportBuilder({
 
       case 'candlestick':
         // Candlestick requires OHLC data
-        const candlestickData = chartData.map((d: any) => ({
+        const candlestickData = chartData.map((d: Record<string, unknown>) => ({
           date: String(d[config.fields[0]?.fieldId] || new Date()),
           open: Number(d.open) || 0,
           high: Number(d.high) || 0,
@@ -802,7 +791,7 @@ export function ReportBuilder({
         const sunburstValueField = chartConfig.yAxis?.fields?.[0] || config.fields[1]?.fieldId;
         const sunburstData = {
           name: chartConfig.title || 'Root',
-          children: chartData.map((d: any) => ({
+          children: chartData.map((d: Record<string, unknown>) => ({
             name: String(d[sunburstNameField] || 'Item'),
             value: Number(d[sunburstValueField]) || 1,
           })),
@@ -987,7 +976,7 @@ export function ReportBuilder({
                     try {
                       const fieldData = JSON.parse(e.dataTransfer.getData('application/json'));
                       handleFieldSelectFromExplorer(fieldData);
-                    } catch (error) {
+                    } catch (_error) {
                     }
                   }}
                 >

@@ -8,14 +8,10 @@
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
-import { sql, db } from '@/db';
+import { db } from '@/db';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 interface StewardPerformance {
   id: string;
   name: string;
@@ -62,7 +58,7 @@ async function handler(req: NextRequest, context) {
       GROUP BY om.id, om.first_name, om.last_name
       HAVING COUNT(c.id) > 0
       ORDER BY COUNT(c.id) DESC
-    `) as any[];
+    `) as Array<Record<string, unknown>>;
     });
 
     // Calculate performance scores (0-100)

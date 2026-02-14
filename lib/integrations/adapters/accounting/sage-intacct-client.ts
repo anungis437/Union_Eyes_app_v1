@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Sage Intacct API Client
  * 
  * Low-level client for Sage Intacct Web Services API.
@@ -83,7 +83,7 @@ interface SageIntacctResponse {
       };
       result?: Array<{
         status: string;
-        data?: any;
+        data?: unknown;
         errormessage?: Array<{
           error?: Array<{
             description2?: string;
@@ -216,7 +216,7 @@ export class SageIntacctClient {
   /**
    * Make API request to Sage Intacct
    */
-  private async request(functionXml: string): Promise<any> {
+  private async request(functionXml: string): Promise<unknown> {
     await this.ensureValidSession();
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -269,7 +269,7 @@ export class SageIntacctClient {
   /**
    * Parse XML response and extract data
    */
-  private parseXmlResponse(xml: string): any {
+  private parseXmlResponse(xml: string): unknown {
     // Check for errors
     const errorMatch = xml.match(/<description2>([^<]+)<\/description2>/);
     if (errorMatch) {

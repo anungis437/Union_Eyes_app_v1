@@ -8,17 +8,12 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { sendRegistrationConfirmation } from '@/lib/email/training-notifications';
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
@@ -37,7 +32,7 @@ export const GET = async (request: NextRequest) => {
       }
 
       // Build query with joins to get course and session details
-      const conditions: any[] = [];
+      const conditions: Array<Record<string, unknown>> = [];
 
       if (memberId) {
         conditions.push(sql`cr.member_id = ${memberId}`);
@@ -336,7 +331,7 @@ export const PATCH = async (request: NextRequest) => {
     // } = body;
 
       // Build update query
-      const updates: any[] = [];
+      const updates: Array<Record<string, unknown>> = [];
 
       if (registrationStatus !== undefined) {
         updates.push(sql`registration_status = ${registrationStatus}`);

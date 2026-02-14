@@ -5,11 +5,7 @@ import { logger } from '@/lib/logger';
 import { withApiAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const profileRolesSchema = z.object({
   userId: z.string().uuid('Invalid userId'),

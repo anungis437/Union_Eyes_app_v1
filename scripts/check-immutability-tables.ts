@@ -55,12 +55,12 @@ async function checkTables() {
         } else {
           console.log(`❌ ${table} - DOES NOT EXIST`);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.log(`❌ ${table} - ERROR: ${error.message}`);
       }
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error:", error.message);
   } finally {
     await sql.end();

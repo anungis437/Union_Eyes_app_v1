@@ -10,16 +10,12 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { calendars, calendarEvents, eventAttendees, calendarSharing } from '@/db/schema/calendar-schema';
-import { eq, and, gte, lte, or, desc } from 'drizzle-orm';
+import { and, or, desc } from 'drizzle-orm';
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * Check if user has access to calendar
  */
@@ -93,7 +89,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
       const includeRecurring = searchParams.get('includeRecurring') !== 'false';
 
       // Build query
-      let query = db
+      const query = db
         .select()
         .from(calendarEvents)
         .where(eq(calendarEvents.calendarId, calendarId));
@@ -297,7 +293,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
 
       // Add attendees
       if (attendees && attendees.length > 0) {
-        const attendeeValues = attendees.map((attendee: any) => {
+        const attendeeValues = attendees.map((attendee: Record<string, unknown>) => {
           const attendeeUserId = attendee.userId ?? attendee.user?.id ?? null;
 
           return {
@@ -322,7 +318,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         const { scheduleEventReminders } = await import('@/lib/calendar-reminder-scheduler');
         await scheduleEventReminders(newEvent.id);
       } catch (reminderError) {
-// Don't fail event creation if reminders fail
+// Don&apos;t fail event creation if reminders fail
       }
 
       // Send invitations to attendees via email
@@ -337,7 +333,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
             attendees.map(async (attendee) => {
               const emailContent = `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                  <h2 style="color: #2563eb;">You're Invited to an Event</h2>
+                  <h2 style="color: #2563eb;">You&apos;re Invited to an Event</h2>
                   
                   <p>You have been invited to the following event:</p>
                   
@@ -365,7 +361,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
             })
           );
         } catch (emailError) {
-// Don't fail event creation if email fails
+// Don&apos;t fail event creation if email fails
         }
       }
 

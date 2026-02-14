@@ -13,11 +13,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/db/db";
 import { claims } from "@/db/schema/domains/claims";
-import { eq, inArray, and } from "drizzle-orm";
+import { inArray, and } from "drizzle-orm";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
-import { standardErrorResponse, standardSuccessResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 /**
  * Validation schemas for bulk claim operations
@@ -58,7 +58,7 @@ const bulkOperationSchema = z.discriminatedUnion('operation', [
  * POST /api/claims/bulk
  * Perform bulk operations on claims
  */
-export const POST = withEnhancedRoleAuth<any>(30, async (request: NextRequest, context): Promise<NextResponse<any>> => {
+export const POST = withEnhancedRoleAuth(30, async (request: NextRequest, context): Promise<NextResponse<Record<string, unknown>>> => {
   const { userId, organizationId } = context;
 
   // Check rate limit
@@ -217,7 +217,7 @@ async function handleBulkStatusUpdate(
 
   if (existingIds.length > 0) {
     const updateData: Record<string, unknown> = {
-      status: status as any,
+      status: status,
       updatedAt: new Date(),
     };
 
@@ -270,7 +270,7 @@ async function handleBulkPriorityUpdate(
     await db
       .update(claims)
       .set({
-        priority: priority as any,
+        priority: priority,
         updatedAt: new Date(),
       })
       .where(inArray(claims.claimId, existingIds));
@@ -320,7 +320,7 @@ async function handleBulkClose(
       .update(claims)
       .set({
         status: 'closed',
-        resolutionOutcome: resolutionOutcome as any,
+        resolutionOutcome: resolutionOutcome,
         resolvedAt: new Date(),
         closedAt: new Date(),
         updatedAt: new Date(),

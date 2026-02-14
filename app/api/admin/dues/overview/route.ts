@@ -12,17 +12,13 @@
  * @module app/api/admin/dues/overview
  */
 
-import { NextRequest } from 'next/server';
 import { db } from '@/db';
 import { duesTransactions } from '@/db/schema/domains/finance/dues';
 import { organizationMembers } from '@/db/schema-organizations';
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
-import {
-  standardErrorResponse,
-  standardSuccessResponse,
-  ErrorCode,
+import { standardSuccessResponse,
 } from '@/lib/api/standardized-responses';
-import { eq, and, gte, lte, sql, desc, inArray } from 'drizzle-orm';
+import { and, desc, inArray } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -98,7 +94,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
       organizationId,
     });
 
-    const overview = await withRLSContext(async (dbClient: NodePgDatabase<any>) => {
+    const overview = await withRLSContext(async (dbClient) => {
       // Get current date ranges
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -143,10 +139,10 @@ export const GET = withApiAuth(async (request: NextRequest) => {
       // =======================================================================
 
       const paymentStats = {
-        pending: kpiResults.find((r: any) => r.status === 'pending')?.count || 0,
-        paid: kpiResults.find((r: any) => r.status === 'paid')?.count || 0,
-        overdue: kpiResults.find((r: any) => r.status === 'overdue')?.count || 0,
-        total: kpiResults.reduce((sum: number, r: any) => sum + (Number(r.count) || 0), 0),
+        pending: kpiResults.find((r: Record<string, unknown>) => r.status === 'pending')?.count || 0,
+        paid: kpiResults.find((r: Record<string, unknown>) => r.status === 'paid')?.count || 0,
+        overdue: kpiResults.find((r: Record<string, unknown>) => r.status === 'overdue')?.count || 0,
+        total: kpiResults.reduce((sum: number, r: Record<string, unknown>) => sum + (Number(r.count) || 0), 0),
       };
 
       // =======================================================================
@@ -169,7 +165,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
         .limit(10);
 
       // Get member names
-      const memberIds = [...new Set(recentPaymentsData.map((p: any) => p.memberId))];
+      const memberIds = [...new Set(recentPaymentsData.map((p: Record<string, unknown>) => p.memberId))];
       const members = await dbClient
         .select({
           id: organizationMembers.id,
@@ -184,9 +180,9 @@ export const GET = withApiAuth(async (request: NextRequest) => {
         );
 
       // Map member IDs to names (for now, use member ID; in production, fetch from users table)
-      const memberMap = new Map(members.map((m: any) => [m.userId, m.userId]));
+      const memberMap = new Map(members.map((m: Record<string, unknown>) => [m.userId, m.userId]));
 
-      const recentPayments = recentPaymentsData.map((payment: any) => ({
+      const recentPayments = recentPaymentsData.map((payment: Record<string, unknown>) => ({
         id: payment.id,
         memberName: memberMap.get(payment.memberId) || 'Unknown Member',
         amount: Number(payment.totalAmount) || 0,
@@ -217,11 +213,11 @@ export const GET = withApiAuth(async (request: NextRequest) => {
         .groupBy(duesTransactions.status);
 
       const thisMonthCollected =
-        Number(thisMonthResults.find((r: any) => r.status === 'paid')?.totalAmount) || 0;
+        Number(thisMonthResults.find((r: Record<string, unknown>) => r.status === 'paid')?.totalAmount) || 0;
       const thisMonthOutstanding =
-        Number(thisMonthResults.find((r: any) => r.status === 'pending')?.totalAmount) || 0;
+        Number(thisMonthResults.find((r: Record<string, unknown>) => r.status === 'pending')?.totalAmount) || 0;
       const thisMonthCount = thisMonthResults.reduce(
-        (sum: number, r: any) => sum + (Number(r.count) || 0),
+        (sum: number, r: Record<string, unknown>) => sum + (Number(r.count) || 0),
         0
       );
 
@@ -243,11 +239,11 @@ export const GET = withApiAuth(async (request: NextRequest) => {
         .groupBy(duesTransactions.status);
 
       const lastMonthCollected =
-        Number(lastMonthResults.find((r: any) => r.status === 'paid')?.totalAmount) || 0;
+        Number(lastMonthResults.find((r: Record<string, unknown>) => r.status === 'paid')?.totalAmount) || 0;
       const lastMonthOutstanding =
-        Number(lastMonthResults.find((r: any) => r.status === 'pending')?.totalAmount) || 0;
+        Number(lastMonthResults.find((r: Record<string, unknown>) => r.status === 'pending')?.totalAmount) || 0;
       const lastMonthCount = lastMonthResults.reduce(
-        (sum: number, r: any) => sum + (Number(r.count) || 0),
+        (sum: number, r: Record<string, unknown>) => sum + (Number(r.count) || 0),
         0
       );
 

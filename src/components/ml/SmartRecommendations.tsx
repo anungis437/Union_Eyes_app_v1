@@ -28,7 +28,7 @@ interface Recommendation {
     label: string;
     url: string;
   };
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 interface SmartRecommendationsProps {
@@ -79,7 +79,7 @@ export function SmartRecommendations({
 
       const data = await response.json();
       setRecommendations(data.recommendations || []);
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to load recommendations');
     } finally {
       setIsLoading(false);

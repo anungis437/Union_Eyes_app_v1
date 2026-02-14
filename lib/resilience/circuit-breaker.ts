@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Circuit Breaker Pattern
  * 
  * Prevents cascading failures by detecting failures and temporarily
@@ -335,7 +335,7 @@ export class CircuitBreakerRegistry {
  */
 export function withCircuitBreaker(options: CircuitBreakerOptions & { name: string }) {
   return function (
-    target: any,
+    target: unknown,
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
@@ -345,7 +345,7 @@ export function withCircuitBreaker(options: CircuitBreakerOptions & { name: stri
       options
     );
 
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (...args: unknown[]) {
       return breaker.execute(() => originalMethod.apply(this, args));
     };
 

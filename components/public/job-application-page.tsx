@@ -216,11 +216,11 @@ alert('Failed to submit application. Please try again.');
           </div>
 
           <div className="border rounded-lg p-6 mb-6">
-            <h2 className="font-semibold text-lg mb-4">What's Next?</h2>
+            <h2 className="font-semibold text-lg mb-4">What&apos;s Next?</h2>
             <ul className="space-y-3 text-sm">
               <li className="flex gap-3">
                 <span className="text-primary">1.</span>
-                <span>You'll receive a confirmation email at {applicantEmail}</span>
+                <span>You&apos;ll receive a confirmation email at {applicantEmail}</span>
               </li>
               <li className="flex gap-3">
                 <span className="text-primary">2.</span>
@@ -228,7 +228,7 @@ alert('Failed to submit application. Please try again.');
               </li>
               <li className="flex gap-3">
                 <span className="text-primary">3.</span>
-                <span>We'll contact you within 2 weeks if you're selected for an interview</span>
+                <span>We&apos;ll contact you within 2 weeks if you&apos;re selected for an interview</span>
               </li>
             </ul>
           </div>
@@ -453,7 +453,7 @@ alert('Failed to submit application. Please try again.');
                   <Textarea
                     value={coverLetter}
                     onChange={(e) => setCoverLetter(e.target.value)}
-                    placeholder="Tell us why you're interested in this position..."
+                    placeholder="Tell us why you&apos;re interested in this position..."
                     rows={8}
                     required={job.requireCoverLetter}
                   />

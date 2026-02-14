@@ -9,11 +9,7 @@ import * as XLSX from 'xlsx';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // Upload and parse employer remittance file
 export const POST = async (req: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
@@ -74,7 +70,7 @@ export const POST = async (req: NextRequest) => {
       const fileContent = Buffer.from(buffer);
 
       // Parse based on file type
-      let rows: any[] = [];
+      let rows: Array<Record<string, unknown>> = [];
       let headers: string[] = [];
 
       if (isCSV) {

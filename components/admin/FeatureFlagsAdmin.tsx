@@ -14,7 +14,7 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { RefreshCw, Search, Filter } from 'lucide-react';
+import { RefreshCw, Search } from 'lucide-react';
 import type { FeatureFlag } from '@/lib/feature-flags';
 
 export function FeatureFlagsAdmin() {
@@ -29,8 +29,9 @@ export function FeatureFlagsAdmin() {
       const response = await fetch('/api/admin/feature-flags');
       const data = await response.json();
       setFlags(data);
-    } catch (error) {
-} finally {
+    } catch {
+      // Error handled silently
+    } finally {
       setLoading(false);
     }
   };
@@ -51,8 +52,9 @@ export function FeatureFlagsAdmin() {
       setFlags(flags.map(f => 
         f.name === name ? { ...f, enabled } : f
       ));
-    } catch (error) {
-}
+    } catch {
+      // Error handled silently
+    }
   };
 
   const filteredFlags = flags.filter(flag => {

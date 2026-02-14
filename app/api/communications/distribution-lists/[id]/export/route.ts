@@ -15,14 +15,10 @@ import {
   newsletterListSubscribers,
   profiles 
 } from '@/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -61,7 +57,7 @@ export async function GET(
     }
 
     // Get subscribers with profile details
-    // Note: profiles table doesn't have firstName/lastName - using email only
+    // Note: profiles table doesn&apos;t have firstName/lastName - using email only
     const subscribers = await db
       .select({
         email: newsletterListSubscribers.email,

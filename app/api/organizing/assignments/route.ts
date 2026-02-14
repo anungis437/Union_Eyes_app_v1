@@ -12,7 +12,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { stewardAssignments } from '@/db/schema';
-import { and, eq, gte, lte, or, isNull, desc, sql } from 'drizzle-orm';
+import { and, or, isNull, desc } from 'drizzle-orm';
 
 /**
  * GET /api/organizing/assignments
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (assignmentType) {
-      conditions.push(eq(stewardAssignments.assignmentType, assignmentType as any));
+      conditions.push(eq(stewardAssignments.assignmentType, assignmentType));
     }
 
     if (isActive !== null && isActive !== undefined) {
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
             isNull(stewardAssignments.endDate),
             gte(stewardAssignments.endDate, targetDate.toISOString())
           )
-        ) as any
+        ) as Record<string, unknown>
       );
     }
 

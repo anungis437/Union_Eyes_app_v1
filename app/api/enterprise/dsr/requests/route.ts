@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { dsrRequests, dsrActivityLog } from '@/db/schema/data-governance-schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { and, desc } from 'drizzle-orm';
 import { z } from 'zod';
 
 // Validation schema for DSR request
@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
     const requests = await requestsQuery;
     
     return NextResponse.json({ requests });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching DSR requests:', error);
     return NextResponse.json(
       { error: 'Failed to fetch DSR requests', details: error.message },
@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
       message: 'DSR request submitted successfully',
       request,
     }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error creating DSR request:', error);
     
     if (error instanceof z.ZodError) {

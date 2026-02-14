@@ -3,14 +3,10 @@ import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { db } from '@/db';
 import { arrearsCases, members, duesTransactions } from '@/services/financial-service/src/db/schema';
-import { eq, and } from 'drizzle-orm';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { and } from 'drizzle-orm';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * Validation schema for resolving arrears case
  */
@@ -145,7 +141,7 @@ export const POST = async (
           }
 
           // Prepare update data
-          const updateData: any = {
+          const updateData = {
             status: 'resolved',
             resolutionDate: new Date(),
             resolutionType,

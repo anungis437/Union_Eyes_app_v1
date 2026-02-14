@@ -7,13 +7,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { searchMembers, getMemberStatistics } from "@/lib/services/member-service";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * Validation schemas
  */

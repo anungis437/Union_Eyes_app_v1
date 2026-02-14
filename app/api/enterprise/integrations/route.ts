@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { apiIntegrations, integrationSyncLogs } from '@/db/schema/integration-schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { and, desc } from 'drizzle-orm';
 import { z } from 'zod';
 
 // Validation schema for creating integration
@@ -64,7 +64,7 @@ export async function GET(req: NextRequest) {
     }));
     
     return NextResponse.json({ integrations: sanitizedIntegrations });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching integrations:', error);
     return NextResponse.json(
       { error: 'Failed to fetch integrations', details: error.message },
@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
         credentials: integration.credentials ? '***REDACTED***' : null,
       },
     }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error creating integration:', error);
     
     if (error instanceof z.ZodError) {

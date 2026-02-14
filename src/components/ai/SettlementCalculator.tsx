@@ -138,7 +138,7 @@ export function SettlementCalculator({
     }).format(amount);
   };
 
-  const updateClaimData = (field: keyof ClaimData, value: any) => {
+  const updateClaimData = (field: keyof ClaimData, value: string | number) => {
     setClaimData((prev) => ({ ...prev, [field]: value }));
   };
 

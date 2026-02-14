@@ -9,7 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withApiAuth } from '@/lib/api-auth-guard';
 import { evaluateFeatures, LRO_FEATURES } from '@/lib/services/feature-flags';
-import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { ErrorCode } from '@/lib/api/standardized-responses';
 
 export const GET = withApiAuth(async (request: NextRequest, context) => {
   try {

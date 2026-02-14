@@ -351,7 +351,7 @@ class PerformanceMonitor {
       }
 
       if (triggered) {
-        // Check if alert already exists (don't spam)
+        // Check if alert already exists (don&apos;t spam)
         const existingAlert = this.alerts.find(a => 
           a.config.metric === config.metric && 
           !a.acknowledged &&

@@ -9,17 +9,13 @@ import {
   duesTransactions,
   organizations,
 } from "@/services/financial-service/src/db/schema";
-import { eq, and } from "drizzle-orm";
+import { and } from "drizzle-orm";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { ReceiptDocument, ReceiptData } from "@/components/pdf/receipt-template";
 import { addEmailJob } from "@/lib/job-queue";
 import { notificationLog } from "@/db/schema";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const sendInvoiceSchema = z.object({
   templateId: z.string().uuid('Invalid template ID'),

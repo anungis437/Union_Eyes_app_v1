@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Sync Engine
  * Orchestrates data synchronization between external systems and UnionEyes
  */
@@ -212,7 +212,7 @@ export class SyncEngine {
     organizationId: string,
     provider?: IntegrationProvider,
     limit: number = 50
-  ): Promise<any[]> {
+  ): Promise<unknown[]> {
     const conditions = [eq(integrationSyncLog.organizationId, organizationId)];
 
     if (provider) {
@@ -233,7 +233,7 @@ export class SyncEngine {
   private async getLastSync(
     organizationId: string,
     provider: IntegrationProvider
-  ): Promise<any> {
+  ): Promise<unknown> {
     const [lastSync] = await db
       .select()
       .from(integrationSyncLog)
@@ -359,7 +359,7 @@ export async function getSyncHistory(
   organizationId: string,
   provider?: IntegrationProvider,
   limit?: number
-): Promise<any[]> {
+): Promise<unknown[]> {
   const engine = SyncEngine.getInstance();
   return engine.getSyncHistory(organizationId, provider, limit);
 }

@@ -184,7 +184,7 @@ export default function EditOrganizationPage() {
       }
 
       router.push(`/dashboard/admin/organizations/${organizationId}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError(error.message);
       setIsSubmitting(false);
     }

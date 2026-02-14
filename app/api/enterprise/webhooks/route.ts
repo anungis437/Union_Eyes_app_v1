@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { webhookSubscriptions, webhookDeliveries } from '@/db/schema/integration-schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { and, desc } from 'drizzle-orm';
 import { z } from 'zod';
 import crypto from 'crypto';
 
@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
     }));
     
     return NextResponse.json({ subscriptions: sanitizedSubscriptions });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching webhooks:', error);
     return NextResponse.json(
       { error: 'Failed to fetch webhooks', details: error.message },
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
         authSecret: subscription.authSecret ? '***REDACTED***' : null,
       },
     }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error creating webhook:', error);
     
     if (error instanceof z.ZodError) {

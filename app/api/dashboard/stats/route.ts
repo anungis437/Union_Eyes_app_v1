@@ -8,18 +8,13 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getClaimStatistics } from "@/db/queries/claims-queries";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
-import { sql } from "drizzle-orm";
 import { unstable_cache } from 'next/cache';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // Cache dashboard stats for 60 seconds per organization
 const getCachedDashboardStats = unstable_cache(
   async (organizationId: string) => {

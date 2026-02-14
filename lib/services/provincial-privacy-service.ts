@@ -147,7 +147,7 @@ export async function assessBreachNotification(
   }
   const rules = getPrivacyRules(province);
 
-  // Check if there's a "real risk of harm"
+  // Check if there&apos;s a "real risk of harm"
   const realRiskOfHarm = assessRealRiskOfHarm(dataTypes);
 
   // Calculate notification deadline

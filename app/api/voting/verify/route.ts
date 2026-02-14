@@ -20,15 +20,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db/db';
 import { votes, votingAuditLog, votingOptions, votingSessions } from '@/db/schema/voting-schema';
-import { eq, and } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { verifyVoteReceipt } from '@/lib/services/voting-crypto-service';
 import { logger } from '@/lib/logger';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const verifyVoteSchema = z.object({
   receiptId: z.string().min(1, 'Receipt ID is required'),

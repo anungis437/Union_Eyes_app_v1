@@ -3,14 +3,10 @@ import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { db } from '@/db';
 import { arrearsCases, members, duesTransactions } from '@/services/financial-service/src/db/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { and, desc } from 'drizzle-orm';
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * Get detailed arrears case information
  */
@@ -125,7 +121,7 @@ export const GET = async (
         // Calculate payment plan progress if active
         let paymentPlanProgress = null;
         if (result.case.paymentPlanActive && paymentSchedule.length > 0) {
-          const paidInstallments = paymentSchedule.filter((s: any) => s.status === 'paid').length;
+          const paidInstallments = paymentSchedule.filter((s: Record<string, unknown>) => s.status === 'paid').length;
           const totalInstallments = paymentSchedule.length;
           const remainingInstallments = totalInstallments - paidInstallments;
           
@@ -133,7 +129,7 @@ export const GET = async (
             paidInstallments,
             totalInstallments,
             remainingInstallments,
-            nextPaymentDue: paymentSchedule.find((s: any) => s.status === 'pending')?.dueDate || null,
+            nextPaymentDue: paymentSchedule.find((s: Record<string, unknown>) => s.status === 'pending')?.dueDate || null,
           };
         }
 

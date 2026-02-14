@@ -5,6 +5,7 @@
  */
 
 'use client';
+import Link from 'next/link';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -299,7 +300,7 @@ _name, email
       </div>
 
       <div className="text-xs text-muted-foreground">
-        <p>Download template: <a href="/templates/members.csv" className="text-blue-500 underline">members.csv</a></p>
+        <p>Download template: <Link href="/templates/members.csv" className="text-blue-500 underline">members.csv</Link></p>
       </div>
     </div>
   );
@@ -394,7 +395,7 @@ function BillingStep({ formData, setFormData }: any) {
           htmlFor="terms"
           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
         >
-          I accept the <a href="/terms" className="text-blue-500 underline">Terms of Service</a> and <a href="/privacy" className="text-blue-500 underline">Privacy Policy</a>
+          I accept the <Link href="/terms" className="text-blue-500 underline">Terms of Service</Link> and <Link href="/privacy" className="text-blue-500 underline">Privacy Policy</Link>
         </label>
       </div>
     </div>

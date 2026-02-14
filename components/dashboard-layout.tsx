@@ -8,7 +8,7 @@ import Sidebar from "@/components/sidebar";
 import { SelectProfile } from "@/db/schema/domains/member";
 import dynamic from "next/dynamic";
 
-// We no longer need to dynamically import the upgrade popup as it's handled by the sidebar component
+// We no longer need to dynamically import the upgrade popup as it&apos;s handled by the sidebar component
 
 interface DashboardLayoutProps {
   profile: SelectProfile | null;
@@ -17,8 +17,8 @@ interface DashboardLayoutProps {
 }
 
 export default function DashboardLayout({ profile, children, title }: DashboardLayoutProps) {
-  // Get the Whop plan IDs - this is a client component, so we can't use server-side env vars directly
-  // We'll use empty strings and let the sidebar component handle the fallback
+  // Get the Whop plan IDs - this is a client component, so we can&apos;t use server-side env vars directly
+  // We&apos;ll use empty strings and let the sidebar component handle the fallback
   const whopMonthlyPlanId = '';
   const whopYearlyPlanId = '';
 

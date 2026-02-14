@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Standardized Authentication Middleware
  * 
  * Provides:
@@ -26,6 +26,7 @@ import type { Session } from '@clerk/nextjs/server';
 let getAuthSession: (() => Promise<Session | null>) | null = null;
 
 try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const clerkAuth = require('@clerk/nextjs/server');
   getAuthSession = clerkAuth.auth;
 } catch {
@@ -147,13 +148,13 @@ return null;
       }
 
       // Extract user information from session
-      const userId = (session as any).userId;
+      const userId = (session as unknown).userId;
       if (!userId) {
         return null;
       }
 
       // Get user details from session
-      const sessionData = session as any;
+      const sessionData = session as unknown;
       
       // Extract user roles from Clerk metadata
       const roles = (sessionData?.publicMetadata?.roles as string[]) || ['member'];

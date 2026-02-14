@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { votingSessions, votes, votingOptions, votingAuditLog } from '@/db/schema/voting-schema';
-import { eq, and, desc, sql } from 'drizzle-orm';
+import { and, desc } from 'drizzle-orm';
 import crypto from 'crypto';
 
 /**
@@ -172,7 +172,7 @@ export async function GET(
         verificationType: session.allowAnonymous ? 'anonymous' : 'identifiable',
       },
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching election results:', error);
     return NextResponse.json(
       { error: 'Failed to fetch election results', details: error.message },

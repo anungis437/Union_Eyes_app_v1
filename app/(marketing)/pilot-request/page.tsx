@@ -86,7 +86,7 @@ export default function PilotRequestPage() {
                 ))}
               </div>
               <p className="text-slate-300 mb-4">
-                "We've already cut case resolution time by 40%. The AI suggestions are incredibly helpful for our stewards."
+                &ldquo;We&apos;ve already cut case resolution time by 40%. The AI suggestions are incredibly helpful for our stewards.&rdquo;
               </p>
               <p className="text-white font-medium">— Business Rep, Healthcare Union</p>
             </div>
@@ -99,7 +99,7 @@ export default function PilotRequestPage() {
                 ))}
               </div>
               <p className="text-slate-300 mb-4">
-                "Finally, a system that understands Canadian labour law. The compliance checks have saved us countless hours."
+                &ldquo;Finally, a system that understands Canadian labour law. The compliance checks have saved us countless hours.&rdquo;
               </p>
               <p className="text-white font-medium">— Executive Director, Provincial Local</p>
             </div>
@@ -117,8 +117,8 @@ export default function PilotRequestPage() {
           <div className="space-y-6">
             {[
               {
-                q: "What's included in the pilot program?",
-                a: "Full access to Union Eyes platform, dedicated onboarding support, staff training, and ongoing feedback sessions. You'll be among the first to access new features."
+                q: "What&apos;s included in the pilot program?",
+                a: "Full access to Union Eyes platform, dedicated onboarding support, staff training, and ongoing feedback sessions. You&apos;ll be among the first to access new features."
               },
               {
                 q: "Is there any cost to participate?",
@@ -130,7 +130,7 @@ export default function PilotRequestPage() {
               },
               {
                 q: "What happens after the pilot ends?",
-                a: "You can choose to continue with a paid subscription or transition to our free tier. There's no obligation."
+                a: "You can choose to continue with a paid subscription or transition to our free tier. There&apos;s no obligation."
               },
               {
                 q: "Can we import our existing data?",
@@ -155,12 +155,12 @@ export default function PilotRequestPage() {
           <p className="text-blue-100 mb-8">
             Our team is happy to discuss how Union Eyes can help your union.
           </p>
-          <a 
+          <Link 
             href="/contact"
             className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white hover:bg-blue-50 transition-colors"
           >
             Contact us
-          </a>
+          </Link>
         </div>
       </section>
     </div>

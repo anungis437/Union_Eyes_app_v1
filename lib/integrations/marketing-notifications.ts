@@ -35,13 +35,13 @@ export async function sendPilotApprovalNotification(
 
 Great news! Your pilot application for ${organizationName} has been approved.
 
-We're excited to have you join the Union Eyes pilot program. Here's what happens next:
+We&apos;re excited to have you join the Union Eyes pilot program. Here's what happens next:
 
 **Next Steps:**
 1. Our implementation team will contact you within 3-5 business days
-2. We'll schedule an onboarding call to discuss your organization's specific needs
-3. You'll receive access credentials and setup documentation
-4. We'll assign a dedicated support contact for your pilot
+2. We&apos;ll schedule an onboarding call to discuss your organization's specific needs
+3. You&apos;ll receive access credentials and setup documentation
+4. We&apos;ll assign a dedicated support contact for your pilot
 
 ${approverNotes ? `\n**Additional Notes:**\n${approverNotes}\n` : ''}
 
@@ -51,7 +51,7 @@ ${approverNotes ? `\n**Additional Notes:**\n${approverNotes}\n` : ''}
 - Regular check-ins to ensure success
 - Opportunity to provide feedback that shapes the platform
 
-We're committed to making Union Eyes work for your members. If you have any questions in the meantime, please don't hesitate to reach out.
+We&apos;re committed to making Union Eyes work for your members. If you have any questions in the meantime, please don&apos;t hesitate to reach out.
 
 In solidarity,
 The Union Eyes Team`;
@@ -113,12 +113,12 @@ export async function sendPilotRejectionNotification(
 
 Thank you for your interest in the Union Eyes pilot program for ${organizationName}.
 
-After careful review, we're unable to move forward with your pilot application at this time${
+After careful review, we&apos;re unable to move forward with your pilot application at this time${
       rejectionReason ? `. ${rejectionReason}` : ''
     }
 
 **What This Means:**
-This decision doesn't reflect on your organization's needs or mission. We have limited pilot capacity and must prioritize applications that align with current program goals.
+This decision doesn&apos;t reflect on your organization's needs or mission. We have limited pilot capacity and must prioritize applications that align with current program goals.
 
 **Alternative Options:**
 - Join our waitlist for the next pilot cohort
@@ -199,7 +199,7 @@ export async function sendConsentGrantedNotification(
 
 Thank you for choosing to share data with the broader labor movement. Your contribution helps unions nationwide learn from each other and build collective power.
 
-**What You're Sharing:**
+**What You&apos;re Sharing:**
 ${sharedDataList}
 
 **How Your Data is Protected:**
@@ -281,7 +281,7 @@ We've received your request to revoke data sharing consent. Your data sharing ha
 
 **What Happens Now:**
 - Your organization's data will no longer be included in future aggregations
-- Previously aggregated data cannot be "unshared" (it's already anonymized and combined)
+- Previously aggregated data cannot be "unshared" (it&apos;s already anonymized and combined)
 - Your organization's individual data remains private and accessible only to you
 - You can re-enable data sharing anytime through your settings
 
@@ -355,7 +355,7 @@ export async function sendTestimonialApprovedNotification(
 
     const body = `Dear ${submitterName},
 
-Thank you for sharing your testimonial with the Union Eyes community. We're pleased to let you know it has been approved and is now live!
+Thank you for sharing your testimonial with the Union Eyes community. We&apos;re pleased to let you know it has been approved and is now live!
 
 **Your Testimonial:**
 "${truncatedQuote}"

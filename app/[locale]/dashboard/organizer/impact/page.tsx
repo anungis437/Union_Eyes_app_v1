@@ -76,7 +76,7 @@ export default function OrganizerImpactPage() {
             Your Impact
           </h1>
           <p className="text-lg text-gray-600">
-            See the difference you're making in members' lives
+            See the difference you&apos;re making in members' lives
           </p>
         </div>
 

@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
-import { eq, and, desc } from 'drizzle-orm';
+import { and, desc } from 'drizzle-orm';
 import { memberDocuments } from '@/db/schema/member-profile-v2-schema';
 
 // Validation schema
@@ -66,7 +66,7 @@ export async function GET(
         verified: documents.filter(d => d.verified).length,
       },
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching documents:', error);
     return NextResponse.json(
       { error: 'Failed to fetch documents', details: error.message },
@@ -113,7 +113,7 @@ export async function POST(
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },

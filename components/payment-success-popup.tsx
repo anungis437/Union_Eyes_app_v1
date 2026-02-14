@@ -115,7 +115,7 @@ return false;
     if (paymentStatus === 'success' && !confettiShown.current) {
 // Check if another popup is already active
       try {
-        // Payment success popup takes highest priority, so we'll force-close any other popup
+        // Payment success popup takes highest priority, so we&apos;ll force-close any other popup
         localStorage.setItem('active_popup', 'payment_success');
       } catch (error) {
 }
@@ -276,7 +276,7 @@ const timer = setTimeout(checkProfileUpdate, backoffMs);
               </div>
             </div>
             
-            {/* What's included list */}
+            {/* What&apos;s included list */}
             <div className="mb-5">
               <h5 className="text-sm font-medium text-gray-700 mb-2">Your Pro Plan Includes:</h5>
               <ul className="space-y-2.5">

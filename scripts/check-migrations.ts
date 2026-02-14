@@ -60,7 +60,7 @@ async function checkMigrations() {
     console.log('\n✨ Migration check complete!');
     process.exit(0);
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('\n❌ Error checking migrations:');
     console.error(error.message);
     

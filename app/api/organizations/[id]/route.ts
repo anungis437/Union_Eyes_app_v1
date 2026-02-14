@@ -14,11 +14,7 @@ import {
 import { logger } from '@/lib/logger';
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * GET /api/organizations/[id]
  * Get a specific organization by ID
@@ -222,7 +218,7 @@ export const PATCH = async (
           data: updatedOrganization,
           message: 'Organization updated successfully',
         });
-      } catch (error: any) {
+      } catch (error: Record<string, unknown>) {
         logger.error('Error updating organization', error as Error, {
           organizationId: id,
           userId,

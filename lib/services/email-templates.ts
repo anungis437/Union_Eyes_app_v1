@@ -336,7 +336,7 @@ ${"{organizationName}"}`,
     subject: "Reminder: Voting Closes Soon - ${electionName}",
     plainText: `Dear ${"{recipientName}"},
 
-Don't forget! Voting for ${"{electionName}"} closes soon.
+Don&apos;t forget! Voting for ${"{electionName}"} closes soon.
 
 Voting Details:
 - Election: ${"{electionName}"}
@@ -371,7 +371,7 @@ ${"{organizationName}"}`,
       </div>
       <div class="content">
         <p>Dear ${"{recipientName}"},</p>
-        <p>Don't forget! Voting for <strong>${"{electionName}"}</strong> closes soon.</p>
+        <p>Don&apos;t forget! Voting for <strong>${"{electionName}"}</strong> closes soon.</p>
         <div class="alert">
           <p><strong>Closes:</strong> ${"{votingEnd}"}<br>
           <strong>Time Remaining:</strong> ${"{timeRemaining}"}</p>

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Failed Payment Retry Job
  * Automatically retries failed dues payments
  * 
@@ -75,7 +75,7 @@ export class FailedPaymentRetryService {
           const metadata = (txn.metadata as Record<string, unknown>) || {};
           const failureCount = (metadata.failureCount as number) || 0;
           const lastFailureDate = metadata.lastFailure
-            ? new Date((metadata.lastFailure as any).date)
+            ? new Date((metadata.lastFailure as unknown).date)
             : null;
 
           // Determine if retry is needed based on failure count and time elapsed
@@ -157,7 +157,7 @@ export class FailedPaymentRetryService {
   /**
    * Get transactions that need retry
    */
-  private static async getTransactionsNeedingRetry(): Promise<any[]> {
+  private static async getTransactionsNeedingRetry(): Promise<unknown[]> {
     try {
       // Get pending transactions with failures
       const transactions = await db
@@ -186,7 +186,7 @@ export class FailedPaymentRetryService {
         const metadata = (txn.metadata as Record<string, unknown>) || {};
         const failureCount = (metadata.failureCount as number) || 0;
         const lastFailureDate = metadata.lastFailure
-          ? new Date((metadata.lastFailure as any).date)
+          ? new Date((metadata.lastFailure as unknown).date)
           : null;
 
         if (failureCount >= 4) {

@@ -5,7 +5,7 @@
 
 import { NextResponse } from "next/server";
 import { withSecureAPI, logApiAuditEvent } from "@/lib/middleware/api-security";
-import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { ErrorCode } from '@/lib/api/standardized-responses';
 
 /**
  * GET /api/auth/role

@@ -24,11 +24,7 @@ import { createOrganization } from "@/db/queries/organization-queries";
 import { eq } from "drizzle-orm";
 import { withAdminAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // Type definitions for import
 type Jurisdiction = "federal" | "AB" | "BC" | "MB" | "NB" | "NL" | "NS" | "NT" | "NU" | "ON" | "PE" | "QC" | "SK" | "YT";
 type LabourSector = "healthcare" | "education" | "public_service" | "trades" | "manufacturing" | "transportation" | "retail" | "hospitality" | "technology" | "construction" | "utilities" | "telecommunications" | "financial_services" | "agriculture" | "arts_culture" | "other";
@@ -244,7 +240,7 @@ export const POST = async (request: NextRequest) => {
 
       // Process rows in order (parents before children)
       const sortedRows = topologicalSort(validRows);
-      const createdOrgs: any[] = [];
+      const createdOrgs: Array<Record<string, unknown>> = [];
 
       for (const row of sortedRows) {
         try {
@@ -375,7 +371,7 @@ function parseCSV(text: string): ImportRow[] {
 
   for (let i = 1; i < lines.length; i++) {
     const values = lines[i].split(",").map((v) => v.trim().replace(/"/g, ""));
-    const row: any = {};
+    const row: Record<string, unknown> = {};
 
     headers.forEach((header, index) => {
       const value = values[index];

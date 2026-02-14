@@ -7,16 +7,11 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { sql } from 'drizzle-orm';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 interface FormField {
   id: string;
   label: string;
@@ -133,10 +128,10 @@ return standardErrorResponse(
     })(request);
 };
 
-async function generateFormPDF(
+async function async function generateFormPDF(
   templateId: string,
   formData: Record<string, string>,
-  campaignData: any
+  campaignData: any Record<string, unknown>
 ): Promise<Uint8Array> {
   // Create a new PDF document
   const pdfDoc = await PDFDocument.create();

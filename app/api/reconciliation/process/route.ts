@@ -3,17 +3,13 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { members, duesTransactions, employerRemittances } from '@/services/financial-service/src/db/schema';
-import { eq, and, sql } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const reconciliationProcessSchema = z.object({
   fileUrl: z.string().url('Invalid file URL'),
@@ -96,7 +92,7 @@ export const POST = async (req: NextRequest) => {
 
       // Detect file type from URL
       const isCSV = fileUrl.toLowerCase().includes('.csv');
-      let rows: any[] = [];
+      let rows: Array<Record<string, unknown>> = [];
 
       if (isCSV) {
         const text = fileContent.toString('utf-8');

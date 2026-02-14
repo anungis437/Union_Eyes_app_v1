@@ -139,7 +139,7 @@ export function ReportGenerator({
 
       // Poll for job status
       pollJobStatus(serverJobId);
-    } catch (error) {
+    } catch (_error) {
       const failedReport = { ...newReport, status: 'failed' as const };
       setCurrentReport(failedReport);
       updateReportInHistory(failedReport);
@@ -294,7 +294,7 @@ export function ReportGenerator({
                   key={fmt}
                   variant={format === fmt ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => setFormat(fmt as any)}
+                  onClick={() => setFormat(fmt as 'pdf' | 'docx' | 'xlsx' | 'csv')}
                   className="flex items-center gap-2"
                 >
                   {getFormatIcon(fmt)}

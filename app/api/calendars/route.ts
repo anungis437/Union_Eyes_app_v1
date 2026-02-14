@@ -10,15 +10,11 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { calendars, calendarSharing } from '@/db/schema/calendar-schema';
-import { eq, and, or, desc } from 'drizzle-orm';
+import { and, or, desc } from 'drizzle-orm';
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
@@ -39,7 +35,7 @@ export const GET = async (request: NextRequest) => {
         )
         .orderBy(desc(calendars.createdAt));
 
-      let sharedCalendars: any[] = [];
+      let sharedCalendars: Array<Record<string, unknown>> = [];
 
       if (includeShared) {
         // Get calendars shared with user

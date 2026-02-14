@@ -19,8 +19,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
 } from '@/components/ui/table';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -34,8 +32,8 @@ interface NodeExecution {
   status: 'pending' | 'running' | 'completed' | 'failed' | 'skipped';
   startedAt: string;
   completedAt?: string;
-  input?: any;
-  output?: any;
+  input?: Record<string, unknown>;
+  output?: Record<string, unknown>;
   error?: string;
   retryCount: number;
   assignedTo?: string;
@@ -50,7 +48,7 @@ interface WorkflowInstance {
   startedAt: string;
   completedAt?: string;
   currentNodeId?: string;
-  context: any;
+  context: Record<string, unknown>;
   executionPath: string[];
   error?: string;
   claimId?: string;
@@ -98,7 +96,7 @@ export function WorkflowInstanceDetail({
 
       const data = await response.json();
       setInstance(data);
-    } catch (error) {
+    } catch (_error) {
     } finally {
       setLoading(false);
     }

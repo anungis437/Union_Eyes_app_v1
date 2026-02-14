@@ -281,7 +281,7 @@ export class TeamsAdapter extends BaseIntegration implements IIntegration {
                   messageType: message.messageType,
                   timestamp: new Date(message.createdDateTime),
                   threadId: message.replyToId,
-                  replyCount: 0, // Teams doesn't provide this directly
+                  replyCount: 0, // Teams doesn&apos;t provide this directly
                   reactionCount: message.reactions?.length || 0,
                   lastSyncedAt: new Date(),
                 })

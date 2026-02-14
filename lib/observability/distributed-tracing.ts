@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Distributed Tracing Service
  * 
  * Provides OpenTelemetry-compatible distributed tracing
@@ -267,13 +267,13 @@ class DistributedTracing {
 // Decorator for automatic tracing
 export function trace(spanName?: string) {
   return function (
-    target: any,
+    target: unknown,
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
     const originalMethod = descriptor.value;
     
-    descriptor.value = function (...args: any[]) {
+    descriptor.value = function (...args: unknown[]) {
       const name = spanName || `${target.constructor.name}.${propertyKey}`;
       const tracing = tracingService;
       

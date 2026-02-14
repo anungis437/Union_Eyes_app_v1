@@ -465,7 +465,7 @@ export async function submitQuiz(
 ): Promise<QuizResult> {
   try {
     // Fetch quiz questions (in production, query from quiz_questions table)
-    // For now, we'll simulate fetching the quiz structure
+    // For now, we&apos;ll simulate fetching the quiz structure
     const quizData = await getQuizById(quizId);
     if (!quizData) {
       throw new Error("Quiz not found");

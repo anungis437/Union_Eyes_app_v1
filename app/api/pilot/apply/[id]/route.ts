@@ -87,7 +87,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     }
 
     // Build update payload
-    const updateData: any = {
+    const updateData = {
       updatedAt: new Date(),
     };
 
@@ -132,7 +132,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
         reviewNotes
       ).catch((error) => {
         console.error('Failed to send approval notification:', error);
-        // Don't fail the request if notification fails
+        // Don&apos;t fail the request if notification fails
       });
     } else if (status === 'rejected' && application.contactEmail) {
       sendPilotRejectionNotification(
@@ -144,7 +144,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
         reviewNotes
       ).catch((error) => {
         console.error('Failed to send rejection notification:', error);
-        // Don't fail the request if notification fails
+        // Don&apos;t fail the request if notification fails
       });
     }
 

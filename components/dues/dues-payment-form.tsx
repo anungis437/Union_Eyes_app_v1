@@ -210,7 +210,7 @@ export default function DuesPaymentForm(props: DuesPaymentFormProps) {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Don't initialize if balance is 0 or negative, or if we already have an error
+    // Don&apos;t initialize if balance is 0 or negative, or if we already have an error
     if (props.currentBalance <= 0 || initError) {
       setLoading(false);
       return;

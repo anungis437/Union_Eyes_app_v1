@@ -69,7 +69,7 @@ export default function ReportBuilderPage() {
       setTimeout(() => {
         router.push('/reports');
       }, 2000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       setSaveError(error.message || 'Failed to save report');
     } finally {
       setIsSaving(false);

@@ -12,11 +12,7 @@ import { withOrganizationAuth } from "@/lib/organization-middleware";
 import { logger } from '@/lib/logger';
 import { getMemberDetailsById } from '@/lib/utils/member-data-utils';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = withOrganizationAuth(async (request: NextRequest, context) => {
   try {
     const { organizationId: organizationId, userId: clerkUserId } = context;

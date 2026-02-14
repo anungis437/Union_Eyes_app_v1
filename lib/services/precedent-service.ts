@@ -545,7 +545,7 @@ export async function updateArbitratorStats(arbitratorName: string): Promise<voi
     }
   } catch (error) {
     logger.error("Error updating arbitrator stats", { error, arbitratorName });
-    // Don't throw - this is a background operation
+    // Don&apos;t throw - this is a background operation
   }
 }
 

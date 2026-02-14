@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
     let query = db.select().from(pilotApplications);
 
     if (status) {
-      query = query.where(eq(pilotApplications.status, status as any));
+      query = query.where(eq(pilotApplications.status, status));
     }
 
     const applications = await query;

@@ -118,7 +118,7 @@ export class RemittanceParser {
         try {
           const record = this.parseRow(row, lineNumber);
           records.push(record);
-        } catch (error: any) {
+        } catch (error: unknown) {
           errors.push({
             line: lineNumber,
             message: error.message,
@@ -126,7 +126,7 @@ export class RemittanceParser {
           });
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       errors.push({
         line: 0,
         message: `CSV parsing failed: ${error.message}`,
@@ -162,7 +162,7 @@ export class RemittanceParser {
         try {
           const record = this.parseRow(row, lineNumber);
           records.push(record);
-        } catch (error: any) {
+        } catch (error: unknown) {
           errors.push({
             line: lineNumber,
             message: error.message,
@@ -170,7 +170,7 @@ export class RemittanceParser {
           });
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       errors.push({
         line: 0,
         message: `Excel parsing failed: ${error.message}`,
@@ -216,7 +216,7 @@ export class RemittanceParser {
         try {
           const record = this.parseXMLRecord(xmlRecord, lineNumber);
           records.push(record);
-        } catch (error: any) {
+        } catch (error: unknown) {
           errors.push({
             line: lineNumber,
             message: error.message,
@@ -224,7 +224,7 @@ export class RemittanceParser {
           });
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       errors.push({
         line: 0,
         message: `XML parsing failed: ${error.message}`,

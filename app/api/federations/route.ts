@@ -14,15 +14,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { organizations, organizationRelationships } from '@/db/schema-organizations';
-import { eq, desc, and, like, or, inArray, sql, count } from 'drizzle-orm';
+import { desc, and, like, or, inArray, count } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { checkRateLimit, createRateLimitHeaders } from '@/lib/rate-limiter';
-import {
-  standardErrorResponse,
-  ErrorCode,
+import { ErrorCode,
 } from '@/lib/api/standardized-responses';
 
 /**
@@ -216,7 +214,7 @@ export const GET = withEnhancedRoleAuth(160, async (request, context) => {
         .offset(offset);
 
       // Fetch affiliate counts for each federation
-      const federationIds = federations.map((f: any) => f.id);
+      const federationIds = federations.map((f: Record<string, unknown>) => f.id);
       const affiliateCounts =
         federationIds.length > 0
           ? await tx
@@ -235,11 +233,11 @@ export const GET = withEnhancedRoleAuth(160, async (request, context) => {
           : [];
 
       const affiliateCountMap = new Map(
-        affiliateCounts.map((ac: any) => [ac.federationId, ac.affiliateCount])
+        affiliateCounts.map((ac: Record<string, unknown>) => [ac.federationId, ac.affiliateCount])
       );
 
       // Enrich federations with affiliate counts
-      const enrichedFederations = federations.map((federation: any) => ({
+      const enrichedFederations = federations.map((federation: Record<string, unknown>) => ({
         ...federation,
         affiliateCount: affiliateCountMap.get(federation.id) || 0,
       }));

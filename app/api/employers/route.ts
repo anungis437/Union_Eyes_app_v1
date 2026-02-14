@@ -25,10 +25,7 @@ import {
   employerQuerySchema,
 } from "@/lib/validation/union-structure-schemas";
 import { logApiAuditEvent, SQLInjectionScanner } from "@/lib/middleware/api-security";
-import {
-  standardErrorResponse,
-  standardSuccessResponse,
-  ErrorCode,
+import { standardSuccessResponse,
 } from "@/lib/api/standardized-responses";
 import { logger } from "@/lib/logger";
 

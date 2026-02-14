@@ -11,7 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { organizationMembers } from '@/db/schema';
-import { eq, and, sql } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { withApiAuth } from '@/lib/api-auth-guard';
 import { logger } from '@/lib/logger';
 import { z } from 'zod';

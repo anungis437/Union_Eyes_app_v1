@@ -51,7 +51,7 @@ async function forceRLS() {
     console.log('\n✨ RLS policies will now be enforced for ALL users!');
     process.exit(0);
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('\n❌ Error:', error.message);
     if (error.detail) console.error('Detail:', error.detail);
     process.exit(1);

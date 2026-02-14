@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
-import { eq, and, desc } from 'drizzle-orm';
+import { and, desc } from 'drizzle-orm';
 import { pgTable, uuid, text, timestamp, jsonb, decimal, boolean } from 'drizzle-orm/pg-core';
 
 // Case outcomes schema
@@ -72,7 +72,7 @@ export const caseOutcomes = pgTable('case_outcomes', {
   improvementActions: text('improvement_actions'),
   
   // Metadata
-  metadata: jsonb('metadata').$type<Record<string, any>>(),
+  metadata: jsonb('metadata').$type<Record<string, unknown>>(),
   
   // Audit
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -145,7 +145,7 @@ export async function GET(request: NextRequest) {
       .orderBy(desc(caseOutcomes.resolutionDate));
 
     return NextResponse.json({ outcomes });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching outcomes:', error);
     return NextResponse.json(
       { error: 'Failed to fetch outcomes', details: error.message },
@@ -182,7 +182,7 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },

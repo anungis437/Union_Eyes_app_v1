@@ -9,17 +9,13 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { insightRecommendations } from '@/db/schema';
-import { eq, and, desc, inArray } from 'drizzle-orm';
+import { and, desc, inArray } from 'drizzle-orm';
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(30, async (request, context) => {
     const { userId, organizationId } = context;
@@ -166,7 +162,7 @@ export const PATCH = async (request: NextRequest) => {
       }
       
       // Update insight status
-      const updateData: any = {
+      const updateData = {
         status,
         updatedAt: new Date()
       };
@@ -241,7 +237,7 @@ export const POST = async (request: NextRequest) => {
 
   try {
       // This endpoint would be used by the AI system to create new insights
-      // For now, it's a placeholder for future implementation
+      // For now, it&apos;s a placeholder for future implementation
       
       const body = await request.json();
       const {

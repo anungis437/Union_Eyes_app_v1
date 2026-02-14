@@ -91,7 +91,6 @@ export function InternationalAddressInput({
   value,
   onChange,
   onValidate,
-  autoValidate = true,
   showMap = false,
 }: InternationalAddressInputProps) {
   const [formData, setFormData] = useState<Partial<AddressFormData>>(
@@ -145,7 +144,7 @@ export function InternationalAddressInput({
     
     // Check required fields based on country format
     return countryFormat.requiredFields.every((field) => {
-      const value = (data as any)[field];
+      const value = (data as Record<string, unknown>)[field];
       return value !== undefined && value !== "";
     });
   };
@@ -418,7 +417,7 @@ export function InternationalAddressInput({
                   Suggested Corrections Applied
                 </p>
                 <p className="text-xs text-blue-700">
-                  We've standardized this address based on postal service data
+                  We&apos;ve standardized this address based on postal service data
                 </p>
               </div>
             </div>

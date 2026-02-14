@@ -18,10 +18,7 @@ import {
   worksiteQuerySchema,
 } from "@/lib/validation/union-structure-schemas";
 import { logApiAuditEvent, SQLInjectionScanner } from "@/lib/middleware/api-security";
-import {
-  standardErrorResponse,
-  standardSuccessResponse,
-  ErrorCode,
+import { standardSuccessResponse,
 } from "@/lib/api/standardized-responses";
 import { logger } from "@/lib/logger";
 
@@ -168,7 +165,7 @@ export const POST = async (request: NextRequest) => {
         ...data,
         createdBy: userId,
         updatedBy: userId,
-      } as any);
+      });
 
       logApiAuditEvent({
         timestamp: new Date().toISOString(),

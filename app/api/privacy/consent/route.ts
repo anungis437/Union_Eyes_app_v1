@@ -3,11 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ProvincialPrivacyService, type Province } from "@/services/provincial-privacy-service";
 import { requireApiAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const consentSchema = z.object({
   province: z.enum(['AB', 'BC', 'MB', 'NB', 'NL', 'NS', 'NT', 'NU', 'ON', 'PE', 'QC', 'SK', 'YT'], {
@@ -65,7 +61,7 @@ export async function POST(request: NextRequest) {
       consent,
       message: "Consent recorded successfully" 
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
 return NextResponse.json(
       { error: error.message || "Failed to record consent" },
       { status: 500 }
@@ -102,7 +98,7 @@ export async function GET(request: NextRequest) {
     );
 
     return NextResponse.json({ hasConsent });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
 return NextResponse.json(
       { error: error.message || "Failed to check consent" },
       { status: 500 }
@@ -151,7 +147,7 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: "Consent revoked successfully" 
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
 return NextResponse.json(
       { error: error.message || "Failed to revoke consent" },
       { status: 500 }

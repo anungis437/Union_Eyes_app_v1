@@ -1,17 +1,14 @@
-﻿/**
+/**
  * Alert Execution Test API
  */
 
 import { z } from "zod";
-import { eq, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { withRLSContext } from "@/lib/db/with-rls-context";
 import { withRoleAuth } from "@/lib/api-auth-guard";
 import { alertExecutions, alertRecipients, alertRules } from "@/db/schema";
 import { NotificationService } from "@/lib/services/notification-service";
-import {
-  ErrorCode,
-  standardErrorResponse,
-  standardSuccessResponse,
+import { standardSuccessResponse,
 } from "@/lib/api/standardized-responses";
 
 const testExecutionSchema = z.object({
@@ -48,7 +45,7 @@ export const POST = withRoleAuth("admin", async (request, context) => {
   const completedAt = new Date(startedAt.getTime() + 1200);
 
   try {
-    return await withRLSContext(async (tx: any) => {
+    return await withRLSContext(async (tx: Record<string, unknown>) => {
       const [execution] = await tx
         .insert(alertExecutions)
         .values({
@@ -93,8 +90,8 @@ export const POST = withRoleAuth("admin", async (request, context) => {
         const body = "Alert test execution completed successfully.";
 
         await Promise.all(
-          recipients.flatMap((recipient: any) =>
-            (recipient.deliveryMethods || []).map(async (method: any) => {
+          recipients.flatMap((recipient: Record<string, unknown>) =>
+            (recipient.deliveryMethods || []).map(async (method: Record<string, unknown>) => {
               if (method === "email" && recipient.recipientValue) {
                 return notifier.send({
                   organizationId,

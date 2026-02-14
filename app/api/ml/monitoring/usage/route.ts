@@ -3,13 +3,7 @@ import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { db } from '@/db';
-import { sql } from 'drizzle-orm';
-
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * GET /api/ml/monitoring/usage
  * 
@@ -80,7 +74,7 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
       ORDER BY date DESC
     `);
 
-    const dailyMetrics = (dailyMetricsData || []).map((row: any) => ({
+    const dailyMetrics = (dailyMetricsData || []).map((row: Record<string, unknown>) => ({
       date: row.date,
       activeUsers: parseInt(row.active_users || 0),
       predictions: parseInt(row.predictions || 0),
@@ -108,7 +102,7 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
       ORDER BY uses DESC
     `);
 
-    const featureBreakdown = (featureBreakdownData || []).map((row: any) => ({
+    const featureBreakdown = (featureBreakdownData || []).map((row: Record<string, unknown>) => ({
       feature: row.feature,
       uses: parseInt(row.uses || 0),
       uniqueUsers: parseInt(row.unique_users || 0)
@@ -139,11 +133,11 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
       FROM active_stewards, ai_users
     `);
 
-    const adoptionRow = adoptionData?.[0] as any;
-    const adoptionRate = parseFloat(adoptionRow?.adoption_rate || '0');
+    const adoptionRow = adoptionData?.[0] as Record<string, unknown> | undefined;
+    const adoptionRate = parseFloat((adoptionRow?.adoption_rate as string) || '0');
 
     // Total predictions count
-    const totalPredictions = dailyMetrics.reduce((sum: number, day: any) => sum + day.predictions, 0);
+    const totalPredictions = dailyMetrics.reduce((sum: number, day: Record<string, unknown>) => sum + day.predictions, 0);
 
     return NextResponse.json({
       dailyMetrics,

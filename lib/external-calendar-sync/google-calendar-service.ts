@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Google Calendar Sync Service
  * 
  * Handles OAuth authentication and bidirectional sync with Google Calendar.
@@ -200,7 +200,7 @@ export async function importGoogleEvents(
   try {
     const oauth2Client = await getAuthenticatedClient(connectionId);
     
-    const params: any = {
+    const params: unknown = {
       auth: oauth2Client,
       calendarId: googleCalendarId,
       singleEvents: true,
@@ -381,7 +381,7 @@ throw error;
 /**
  * Map Google Calendar event to local event format
  */
-function mapGoogleEventToLocal(googleEvent: any, calendarId: string, tenantId: string) {
+function mapGoogleEventToLocal(googleEvent: unknown, calendarId: string, tenantId: string) {
   const startTime = googleEvent.start?.dateTime || googleEvent.start?.date;
   const endTime = googleEvent.end?.dateTime || googleEvent.end?.date;
   
@@ -414,8 +414,8 @@ function mapGoogleEventToLocal(googleEvent: any, calendarId: string, tenantId: s
 /**
  * Map local event to Google Calendar event format
  */
-function mapLocalEventToGoogle(localEvent: any) {
-  const googleEvent: any = {
+function mapLocalEventToGoogle(localEvent: unknown) {
+  const googleEvent: unknown = {
     summary: localEvent.title,
     description: localEvent.description,
     location: localEvent.location,
@@ -496,7 +496,7 @@ async function updateSyncToken(
 
     if (!connection) return;
 
-    const mappings = (connection.calendarMappings as any) || {};
+    const mappings = (connection.calendarMappings as unknown) || {};
     
     if (!mappings[googleCalendarId]) {
       mappings[googleCalendarId] = {};
@@ -520,7 +520,7 @@ async function updateSyncToken(
 /**
  * Get sync token for a calendar
  */
-export function getSyncToken(connection: any, googleCalendarId: string): string | null {
+export function getSyncToken(connection: unknown, googleCalendarId: string): string | null {
   const mappings = connection.calendarMappings || {};
   return mappings[googleCalendarId]?.syncToken || null;
 }

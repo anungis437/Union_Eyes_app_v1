@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sql } from 'drizzle-orm';
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { db } from '@/db/db';
 import { getDataSource, getFieldMetadata } from '@/lib/report-executor';
 import { safeTableName, safeColumnName } from '@/lib/safe-sql-identifiers';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 async function handler(request: NextRequest) {
   try {
     const user = await getCurrentUser();

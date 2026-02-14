@@ -14,10 +14,9 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { Loader2, Plus } from "lucide-react";
 import {
   Dialog,
@@ -101,11 +100,7 @@ export default function JobClassificationManagement({
   const [editingClassification, setEditingClassification] = useState<JobClassification | null>(null);
   const [activeOnly, setActiveOnly] = useState(true);
 
-  useEffect(() => {
-    loadClassifications();
-  }, [organizationId, activeOnly]);
-
-  const loadClassifications = async () => {
+  const loadClassifications = useCallback(async () => {
     setLoading(true);
     try {
       const result = await getJobClassificationsByOrganizationAction(organizationId, activeOnly);
@@ -113,9 +108,9 @@ export default function JobClassificationManagement({
         const filtered = bargainingUnitId 
           ? result.data.filter((c: JobClassification) => c.bargainingUnitId === bargainingUnitId)
           : result.data;
-        setClassifications(filtered as any);
+        setClassifications(filtered);
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to load classifications",
@@ -124,7 +119,11 @@ export default function JobClassificationManagement({
     } finally {
       setLoading(false);
     }
-  };
+  }, [organizationId, activeOnly, bargainingUnitId, toast]);
+
+  useEffect(() => {
+    loadClassifications();
+  }, [loadClassifications]);
 
   const handleCreate = () => {
     setEditingClassification(null);
@@ -273,8 +272,8 @@ function ClassificationFormDialog({
   const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
 
-  const form = useForm<any>({
-    resolver: zodResolver(createJobClassificationSchema) as any,
+  const form = useForm<Record<string, unknown>>({
+    resolver: zodResolver(createJobClassificationSchema),
     defaultValues: editingClassification
       ? {
           organizationId: editingClassification.organizationId,

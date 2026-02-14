@@ -10,14 +10,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { organizations, organizationRelationships } from '@/db/schema-organizations';
-import { eq, and, count } from 'drizzle-orm';
+import { and, count } from 'drizzle-orm';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
-import {
-  standardErrorResponse,
-  standardSuccessResponse,
-  ErrorCode,
+import { standardSuccessResponse,
 } from '@/lib/api/standardized-responses';
 
 /**

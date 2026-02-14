@@ -2,16 +2,12 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { claims, claimUpdates } from '@/db/schema/domains/claims';
-import { eq, desc, and, count, sql, gte, lte, between } from 'drizzle-orm';
+import { desc, and, count, between } from 'drizzle-orm';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(30, async (request, context) => {
     const { userId, organizationId } = context;

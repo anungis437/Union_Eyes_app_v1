@@ -215,7 +215,7 @@ export class UserProfileService {
       if (!data) return { data: null, error: null };
 
       return { data: this.mapToUserProfile(data), error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('[UserProfileService] Error getting profile:', error);
       return { data: null, error: error };
     }
@@ -232,7 +232,7 @@ export class UserProfileService {
       if (!user) throw new Error('User not authenticated');
 
       return await this.getProfile(user.id);
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('[UserProfileService] Error getting current profile:', error);
       return { data: null, error: error };
     }
@@ -259,7 +259,7 @@ export class UserProfileService {
       if (error) throw error;
 
       return { data: this.mapToUserProfile(data), error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('[UserProfileService] Error updating profile:', error);
       return { data: null, error: error };
     }
@@ -294,7 +294,7 @@ export class UserProfileService {
         data: (data || []).map(d => this.mapToUserProfile(d)),
         error: null
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('[UserProfileService] Error searching profiles:', error);
       return { data: [], error: error };
     }
@@ -352,7 +352,7 @@ export class UserProfileService {
         },
         error: null
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('[UserProfileService] Error uploading avatar:', error);
       return { data: null, error: error };
     }
@@ -392,7 +392,7 @@ export class UserProfileService {
         .eq('user_id', userId);
 
       return { error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('[UserProfileService] Error deleting avatar:', error);
       return { error: error };
     }
@@ -433,7 +433,7 @@ export class UserProfileService {
       if (updateError) throw updateError;
 
       return { data: updatedPreferences, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('[UserProfileService] Error updating notification preferences:', error);
       return { data: null, error: error };
     }
@@ -467,7 +467,7 @@ export class UserProfileService {
       if (updateError) throw updateError;
 
       return { data: updatedPreferences, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('[UserProfileService] Error updating UI preferences:', error);
       return { data: null, error: error };
     }
@@ -501,7 +501,7 @@ export class UserProfileService {
       if (updateError) throw updateError;
 
       return { data: updatedSettings, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('[UserProfileService] Error updating privacy settings:', error);
       return { data: null, error: error };
     }
@@ -535,7 +535,7 @@ export class UserProfileService {
       if (updateError) throw updateError;
 
       return { data: updatedSettings, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('[UserProfileService] Error updating security settings:', error);
       return { data: null, error: error };
     }
@@ -576,7 +576,7 @@ export class UserProfileService {
       if (updateError) throw updateError;
 
       return { data: updatedProgress, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('[UserProfileService] Error updating onboarding progress:', error);
       return { data: null, error: error };
     }
@@ -610,7 +610,7 @@ export class UserProfileService {
       });
 
       return { error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('[UserProfileService] Error completing onboarding step:', error);
       return { error: error };
     }
@@ -634,7 +634,7 @@ export class UserProfileService {
       });
 
       return { error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('[UserProfileService] Error recording login activity:', error);
       return { error: error };
     }
@@ -653,7 +653,7 @@ export class UserProfileService {
         .eq('user_id', userId);
 
       return { error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('[UserProfileService] Error updating last activity:', error);
       return { error: error };
     }
@@ -675,7 +675,7 @@ export class UserProfileService {
       if (error) throw error;
 
       return { data: data as number, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('[UserProfileService] Error calculating completeness:', error);
       return { data: null, error: error };
     }
@@ -693,7 +693,7 @@ export class UserProfileService {
       if (error) throw error;
 
       return { data: data as string, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('[UserProfileService] Error getting full name:', error);
       return { data: null, error: error };
     }
@@ -714,7 +714,7 @@ export class UserProfileService {
         .eq('user_id', userId);
 
       return { error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('[UserProfileService] Error soft deleting profile:', error);
       return { error: error };
     }

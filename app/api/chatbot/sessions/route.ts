@@ -9,7 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { chatSessions } from '@/db/schema/ai-chatbot-schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { and, desc } from 'drizzle-orm';
 import { withRoleAuth } from '@/lib/api-auth-guard';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -34,7 +34,7 @@ export const GET = withRoleAuth('member', async (request: NextRequest, context) 
       .where(
         and(
           eq(chatSessions.userId, userId as string),
-          eq(chatSessions.status, status as any)
+          eq(chatSessions.status, status)
         )
       )
       .orderBy(desc(chatSessions.updatedAt))

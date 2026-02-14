@@ -50,7 +50,7 @@ export class WhopProcessor extends BasePaymentProcessor {
   async initialize(config: ProcessorConfig): Promise<void> {
     await super.initialize(config);
     
-    // Whop doesn't require SDK initialization
+    // Whop doesn&apos;t require SDK initialization
     // Webhooks are handled via @whop-apps/sdk
   }
 

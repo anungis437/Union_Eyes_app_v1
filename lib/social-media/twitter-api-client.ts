@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Twitter API v2 Client - Phase 10
  * 
  * Handles Twitter integration using OAuth 2.0 and API v2.
@@ -296,7 +296,7 @@ export class TwitterAPIClient {
       duration_minutes: number;
     };
   }): Promise<TwitterTweet> {
-    const body: any = {
+    const body: unknown = {
       text: content.text,
     };
 
@@ -485,7 +485,7 @@ export class TwitterAPIClient {
         },
       });
 
-      const status = await this.handleResponse<any>(response);
+      const status = await this.handleResponse<unknown>(response);
 
       if (status.processing_info?.state === 'succeeded') {
         return;
@@ -544,7 +544,7 @@ export class TwitterAPIClient {
     tweetId: string,
     includeMetrics: boolean = true
   ): Promise<TwitterTweet> {
-    const params: any = {
+    const params: unknown = {
       'tweet.fields': 'created_at,public_metrics,author_id,conversation_id',
     };
 
@@ -572,7 +572,7 @@ export class TwitterAPIClient {
     maxResults: number = 10,
     paginationToken?: string
   ): Promise<{ tweets: TwitterTweet[]; nextToken?: string }> {
-    const params: any = {
+    const params: unknown = {
       max_results: Math.min(maxResults, 100).toString(),
       'tweet.fields': 'created_at,public_metrics,attachments',
       'media.fields': 'url,preview_image_url,type',
@@ -688,7 +688,7 @@ export class TwitterAPIClient {
    */
   private async makeRequest<T>(
     endpoint: string,
-    params: Record<string, any> = {},
+    params: Record<string, unknown> = {},
     options: RequestInit = {}
   ): Promise<T> {
     if (!this.accessToken) {

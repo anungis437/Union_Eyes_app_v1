@@ -34,7 +34,7 @@ async function testQuery() {
       console.log('\nNo records found in database (table is empty)');
     }
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ Query failed:', error.message);
     if (error.message.includes('cited_cases')) {
       console.error('\n⚠️  The cited_cases column is still causing issues!');

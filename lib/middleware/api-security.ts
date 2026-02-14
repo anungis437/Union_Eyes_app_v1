@@ -1,4 +1,4 @@
-/**
+﻿/**
  * API Security Utilities
  * 
  * High-level utilities for applying security checks to API route handlers.
@@ -137,7 +137,7 @@ export function withSecureAPI(handler: ApiHandlerWithAuth): ApiHandler {
         );
       }
 
-      const sessionOrganizationId = (authResult as any)?.orgId || (authResult as any)?.organizationId;
+      const sessionOrganizationId = (authResult as unknown)?.orgId || (authResult as unknown)?.organizationId;
 
       // Check for SQL injection patterns in request
       const bodyText = await request.clone().text();
@@ -242,7 +242,7 @@ export function withValidatedBody(
   handler: (
     request: NextRequest,
     user: { id: string; organizationId?: string; role?: string },
-    body: any,
+    body: unknown,
     context?: { params?: Record<string, string> }
   ) => Promise<NextResponse>
 ): ApiHandler {
@@ -291,7 +291,7 @@ export function withValidatedQuery(
   handler: (
     request: NextRequest,
     user: { id: string; organizationId?: string; role?: string },
-    query: any,
+    query: unknown,
     context?: { params?: Record<string, string> }
   ) => Promise<NextResponse>
 ): ApiHandler {
@@ -334,13 +334,13 @@ export function withValidatedRequest(
   handler: (
     request: NextRequest,
     user: { id: string; organizationId?: string; role?: string },
-    data: { body?: any; query?: any },
+    data: { body?: unknown; query?: unknown },
     context?: { params?: Record<string, string> }
   ) => Promise<NextResponse>
 ): ApiHandler {
   return withSecureAPI(async (request, user, context) => {
     try {
-      const data: { body?: any; query?: any } = {};
+      const data: { body?: unknown; query?: unknown } = {};
 
       // Validate body if schema provided
       if (bodySchema) {
@@ -497,7 +497,7 @@ export interface ApiAuditEvent {
     | 'sql_injection_attempt'
     | 'unauthorized_access'
     | 'success';
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   severity: 'low' | 'medium' | 'high' | 'critical';
 }
 

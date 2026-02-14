@@ -289,7 +289,7 @@ export function DocumentVersionControl({
               <Label htmlFor="restoreComment">Restore Comment (Optional)</Label>
               <Textarea
                 id="restoreComment"
-                placeholder="Explain why you're restoring this version..."
+                placeholder="Explain why you&apos;re restoring this version..."
                 value={restoreComment}
                 onChange={(e) => setRestoreComment(e.target.value)}
                 rows={3}

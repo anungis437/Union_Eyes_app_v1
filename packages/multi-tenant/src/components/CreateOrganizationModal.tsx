@@ -157,7 +157,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
       } else {
         setErrors({ submit: 'Failed to create organization. Please try again.' });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       setErrors({ submit: error.message || 'An unexpected error occurred' });
     } finally {
       setIsSubmitting(false);

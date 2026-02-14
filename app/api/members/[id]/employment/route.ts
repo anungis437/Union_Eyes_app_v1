@@ -66,7 +66,7 @@ export async function GET(
     }
 
     return NextResponse.json({ employment });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching employment details:', error);
     return NextResponse.json(
       { error: 'Failed to fetch employment details', details: error.message },
@@ -140,7 +140,7 @@ export async function PUT(
         { status: 201 }
       );
     }
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },

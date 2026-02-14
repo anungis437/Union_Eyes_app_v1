@@ -16,17 +16,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { organizations } from '@/db/schema';
-import { eq, sql } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 import { remittanceExporter, RemittanceExportFormat } from '@/services/clc/remittance-export';
 import { remittanceValidator } from '@/services/clc/remittance-validation';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * GET /api/admin/clc/remittances/[id]/export
  * 

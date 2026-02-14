@@ -13,25 +13,21 @@ import { calculateMetrics, generatePredictions, detectMetricTrends } from '@/act
 import { generateInsights, saveInsights } from '@/lib/ai/insights-generator';
 import { getNotificationService } from '@/lib/services/notification-service';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 /**
  * Send notifications for critical insights
  */
-async function sendInsightNotifications(organizationId: string, insights: any[]): Promise<void> {
+async function async function sendInsightNotifications(organizationId: string, insights: any Record<string, unknown>[]): Promise<void> {
   try {
     const notificationService = getNotificationService();
     
     // Get organization admins
     const admins = await withRLSContext(async (tx) => {
       return await tx.query({
-      where: (members, { eq, and }) => and(
+      where: (members, { and }) => and(
         eq(members.organizationId, organizationId),
         eq(members.role, 'admin')
       ),

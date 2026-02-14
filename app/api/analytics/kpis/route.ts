@@ -12,11 +12,7 @@ import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const analyticsKpisSchema = z.object({
   name: z.string().min(1, 'name is required'),
@@ -154,7 +150,7 @@ export const GET = async (request: NextRequest) => {
       // Get KPI configurations from database
       const { db } = await import('@/db');
       const { kpiConfigurations } = await import('@/db/schema');
-      const { eq, desc } = await import('drizzle-orm');
+      const { desc } = await import('drizzle-orm');
       
       const conditions = [];
       

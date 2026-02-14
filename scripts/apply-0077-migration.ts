@@ -28,7 +28,7 @@ async function applyMigration() {
 
     console.log('✅ Migration 0077 applied successfully!');
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('\n❌ Migration failed:', error.message || error);
     throw error;
   }

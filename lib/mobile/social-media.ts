@@ -164,7 +164,7 @@ class SocialMediaService {
       case 'linkedin':
         return `https://www.linkedin.com/shareArticle?mini=true&url=${encodedUrl}&title=${encodedTitle}`;
       case 'instagram':
-        // Instagram doesn't have web share URL - would need native app
+        // Instagram doesn&apos;t have web share URL - would need native app
         return '';
       case 'youtube':
         return `https://www.youtube.com/share?url=${encodedUrl}`;

@@ -6,6 +6,7 @@
  */
 
 'use client';
+import Link from 'next/link';
 
 import { useState, useEffect } from 'react';
 import { CaseStudy } from '@/types/marketing';
@@ -231,16 +232,15 @@ export default function CaseStudiesPage() {
         <div className="mt-16 bg-blue-600 text-white rounded-lg p-8 text-center">
           <h2 className="text-3xl font-bold mb-4">Want to share your story?</h2>
           <p className="text-lg mb-6 text-blue-100">
-            If you're a Union Eyes pilot partner and have a success story to share,
-            we'd love to feature it here (with your approval, of course).
+            If you&apos;re a Union Eyes pilot partner and have a success story to share,
+            we&apos;d love to feature it here (with your approval, of course).
           </p>
           <div className="flex gap-4 justify-center">
-            <a
-              href="/pilot-request"
+            <Link href="/pilot-request"
               className="bg-white text-blue-600 px-6 py-3 rounded-md font-medium hover:bg-blue-50 transition-colors"
             >
               Join Pilot Program
-            </a>
+            </Link>
             <a
               href="mailto:stories@unioneyes.org"
               className="bg-blue-700 text-white px-6 py-3 rounded-md font-medium hover:bg-blue-800 transition-colors"
@@ -257,9 +257,9 @@ export default function CaseStudiesPage() {
           </p>
           <p className="mt-2">
             See our{' '}
-            <a href="/trust" className="text-blue-600 hover:underline">
+            <Link href="/trust" className="text-blue-600 hover:underline">
               Trust Dashboard
-            </a>{' '}
+            </Link>{' '}
             for system integrity metrics.
           </p>
         </div>

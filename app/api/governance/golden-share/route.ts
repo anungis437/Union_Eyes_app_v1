@@ -4,11 +4,7 @@ import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { governanceService } from "@/services/governance-service";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 const councilMemberSchema = z.object({
   name: z.string().min(1),
   union: z.string().min(1),
@@ -24,7 +20,7 @@ const issueGoldenShareSchema = z.object({
 });
 
 export const GET = async (request: NextRequest) =>
-  withEnhancedRoleAuth<any>(10, async (_request, context) => {
+  withEnhancedRoleAuth(10, async (_request, context) => {
     const { userId } = context;
 
     try {
@@ -61,7 +57,7 @@ export const GET = async (request: NextRequest) =>
   })(request, {});
 
 export const POST = async (request: NextRequest) =>
-  withEnhancedRoleAuth<any>(20, async (_request, context) => {
+  withEnhancedRoleAuth(20, async (_request, context) => {
     const { userId } = context;
 
     let rawBody: unknown;

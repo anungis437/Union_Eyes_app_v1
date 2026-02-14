@@ -10,14 +10,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { organizations, organizationMembers } from '@/db/schema-organizations';
 import { eq } from 'drizzle-orm';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logger } from '@/lib/logger';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (req: NextRequest) => {

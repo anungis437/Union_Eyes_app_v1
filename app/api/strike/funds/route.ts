@@ -7,18 +7,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { strikeFunds } from '@/db/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { and, desc } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 /**
@@ -98,7 +94,7 @@ export const GET = withRoleAuth('steward', async (request, context) => {
       const conditions = [eq(strikeFunds.organizationId, organizationId)];
 
       if (status) {
-        conditions.push(eq(strikeFunds.strikeStatus, status as any));
+        conditions.push(eq(strikeFunds.strikeStatus, status));
       }
 
       // Fetch strike funds

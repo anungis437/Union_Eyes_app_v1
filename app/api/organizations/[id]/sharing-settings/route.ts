@@ -1,16 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withAuth, withValidatedBody, logApiAuditEvent } from '@/lib/middleware/api-security';
+import { withValidatedBody, logApiAuditEvent } from '@/lib/middleware/api-security';
 import { requireUser } from '@/lib/api-auth-guard';
 import { validateSharingLevel } from '@/lib/auth/hierarchy-access-control';
 
 import { createClient } from "@/packages/supabase/server";
 import { logger } from '@/lib/logger';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * GET /api/organizations/[id]/sharing-settings
  * Retrieve sharing settings for an organization
@@ -42,8 +38,8 @@ export async function GET(
 
     // Verify user has admin access to this organization
     const { data: userOrgs } = await supabase.rpc("get_user_organizations");
-    const hasAccess = (userOrgs as unknown as any[])?.some(
-      (org: any) => org.id === organizationId && ["admin", "officer"].includes(org.user_role)
+    const hasAccess = (userOrgs as unknown as Array<Record<string, unknown>>)?.some(
+      (org: Record<string, unknown>) => org.id === organizationId && ["admin", "officer"].includes(org.user_role)
     );
 
     if (!hasAccess) {
@@ -122,8 +118,8 @@ export async function PUT(
 
     // Verify user has admin access
     const { data: userOrgs } = await supabase.rpc("get_user_organizations");
-    const hasAccess = (userOrgs as unknown as any[])?.some(
-      (org: any) => org.id === organizationId && ["admin", "officer"].includes(org.user_role)
+    const hasAccess = (userOrgs as unknown as Array<Record<string, unknown>>)?.some(
+      (org: Record<string, unknown>) => org.id === organizationId && ["admin", "officer"].includes(org.user_role)
     );
 
     if (!hasAccess) {

@@ -11,7 +11,7 @@
  */
 
 /**
- * Public API routes that don't require authentication
+ * Public API routes that don&apos;t require authentication
  * 
  * SECURITY DOCUMENTATION:
  * Each route listed here is documented with its justification for being public.

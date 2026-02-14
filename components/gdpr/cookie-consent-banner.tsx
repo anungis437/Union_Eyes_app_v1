@@ -6,6 +6,7 @@
  */
 
 "use client";
+import Link from 'next/link';
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -359,21 +360,19 @@ export function CookieConsentBanner({ organizationId, userId }: CookieConsentBan
                 <div className="pt-4 border-t">
                   <p className="text-xs text-muted-foreground">
                     For more information, please read our{" "}
-                    <a
-                      href="/privacy-policy"
+                    <Link href="/privacy-policy"
                       className="text-primary underline"
                       target="_blank"
                     >
                       Privacy Policy
-                    </a>{" "}
+                    </Link>{" "}
                     and{" "}
-                    <a
-                      href="/cookie-policy"
+                    <Link href="/cookie-policy"
                       className="text-primary underline"
                       target="_blank"
                     >
                       Cookie Policy
-                    </a>
+                    </Link>
                     .
                   </p>
                 </div>

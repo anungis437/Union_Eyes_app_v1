@@ -92,7 +92,7 @@ function CheckoutForm({ campaignId, amount, isRecurring }: { campaignId: string;
 
         window.location.href = `/campaigns/thank-you?amount=${amount}`;
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setMessage(err.message);
     } finally {
       setIsProcessing(false);
@@ -196,7 +196,7 @@ export function PublicDonationPage({ campaignSlug }: DonationPageProps) {
       <div className="container mx-auto px-4 py-16 text-center">
         <h1 className="text-3xl font-bold mb-4">Campaign Not Found</h1>
         <p className="text-muted-foreground mb-8">
-          The campaign you're looking for doesn't exist or has been removed.
+          The campaign you&apos;re looking for doesn&apos;t exist or has been removed.
         </p>
         <Button onClick={() => window.location.href = '/campaigns'}>
           View All Campaigns

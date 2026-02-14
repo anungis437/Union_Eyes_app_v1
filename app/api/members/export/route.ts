@@ -6,14 +6,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { listMembers } from "@/lib/services/member-service";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * GET /api/members/export
  * Export members data as CSV or JSON
@@ -78,7 +74,7 @@ export const GET = withRoleAuth(20, async (request, context) => {
         const format = searchParams.get("format") || "csv";
         
         // Build filters
-        const filters: any = { organizationId };
+        const filters = { organizationId };
         
         const status = searchParams.get("status");
         if (status) {

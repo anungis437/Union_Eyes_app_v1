@@ -9,13 +9,9 @@
  * @module app/api/admin/members/export/route
  */
 
-import { NextRequest } from "next/server";
 import { withApiAuth, getCurrentUser } from "@/lib/api-auth-guard";
 import { logger } from "@/lib/logger";
-import {
-  standardErrorResponse,
-  standardSuccessResponse,
-  ErrorCode,
+import { standardSuccessResponse,
 } from "@/lib/api/standardized-responses";
 import {
   searchMembersAdvanced,
@@ -64,7 +60,7 @@ export async function POST(request: NextRequest) {
       } = validationResult.data;
 
       // Get members data
-      let members: any[];
+      let members: Array<Record<string, unknown>>;
       let totalCount: number;
 
       if (segmentId) {
@@ -113,7 +109,7 @@ export async function POST(request: NextRequest) {
 
       // Filter members to only include requested fields
       const filteredMembers = members.map((member) => {
-        const filtered: any = {};
+        const filtered = {};
         includeFields.forEach((field) => {
           if (member[field] !== undefined) {
             filtered[field] = member[field];

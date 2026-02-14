@@ -13,11 +13,7 @@ import { logger } from "@/lib/logger";
 import fs from "fs";
 import path from "path";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * Request data export
  */
@@ -173,9 +169,9 @@ export const GET = withApiAuth(async (request: NextRequest) => {
     );
     }
 
-    const responseData = request.responseData as any;
-    const fileName = responseData?.fileName;
-    const expiresAt = responseData?.expiresAt ? new Date(responseData.expiresAt) : null;
+    const responseData = request.responseData as Record<string, unknown>;
+    const fileName = responseData?.fileName as string | undefined;
+    const expiresAt = responseData?.expiresAt ? new Date(responseData.expiresAt as string | number) : null;
 
     if (expiresAt && expiresAt.getTime() < Date.now()) {
       return NextResponse.json(
@@ -212,7 +208,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
 
     const stream = fs.createReadStream(filePath);
 
-    return new NextResponse(stream as any, {
+    return new NextResponse(stream as unknown as ReadableStream, {
       status: 200,
       headers: {
         "Content-Type": contentType,

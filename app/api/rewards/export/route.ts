@@ -13,15 +13,11 @@ import { withRLSContext } from '@/lib/db/with-rls-context';
 import { checkEntitlement } from '@/lib/services/entitlements';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
-import { eq, and } from 'drizzle-orm';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
+import { and } from 'drizzle-orm';
 import { organizationMembers } from '@/db/schema/organization-members-schema';
 
-export const GET = withEnhancedRoleAuth<any>(10, async (request, context) => {
+export const GET = withEnhancedRoleAuth(10, async (request, context) => {
   try {
       // 1. Authenticate and check admin role
       const { userId, organizationId } = context;
@@ -48,7 +44,7 @@ export const GET = withEnhancedRoleAuth<any>(10, async (request, context) => {
       }
 
       // Check admin role
-      const member = await withRLSContext(async (tx: NodePgDatabase<any>) => {
+      const member = await withRLSContext(async (tx) => {
         const [result] = await tx
           .select()
           .from(organizationMembers)
@@ -150,7 +146,7 @@ export const GET = withEnhancedRoleAuth<any>(10, async (request, context) => {
         'Content-Disposition': `attachment; filename="${filename}"`,
       },
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
 return NextResponse.json(
       { error: error.message || 'Failed to export data' },
       { status: 500 }

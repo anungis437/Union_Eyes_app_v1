@@ -38,8 +38,8 @@ async function checkClaimDeadlinesTable() {
       console.log('\n❌ Table does not exist!');
     }
 
-  } catch (error: any) {
-    console.error('\n❌ Error:', error.message || error);
+  } catch (error: unknown) {
+    console.error('\n❌ Error:', (error as Error).message || error);
   } finally {
     await client.end();
   }

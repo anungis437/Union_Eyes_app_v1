@@ -37,14 +37,14 @@ const trendFeedReviews: Review[] = [
   {
     name: "David Chen",
     title: "News Blogger",
-    content: "As a news creator, TrendFeed is indispensable. It monitors 1000+ sources 24/7 and transforms breaking stories into viral TikTok content before competitors even know what's trending. My follower growth has been exponential.",
+    content: "As a news creator, TrendFeed is indispensable. It monitors 1000+ sources 24/7 and transforms breaking stories into viral TikTok content before competitors even know what&apos;s trending. My follower growth has been exponential.",
     rating: 5,
     icon: <Clock className="h-5 w-5 text-primary" />
   },
   {
     name: "Emily Rodriguez",
     title: "Lifestyle Influencer",
-    content: "TrendFeed's AI is surprisingly creative. It takes trending news and adapts it perfectly to my niche and personal style. The voice matching technology makes every video sound authentically like me - my audience can't tell the difference!",
+    content: "TrendFeed's AI is surprisingly creative. It takes trending news and adapts it perfectly to my niche and personal style. The voice matching technology makes every video sound authentically like me - my audience can&apos;t tell the difference!",
     rating: 5,
     icon: <Video className="h-5 w-5 text-primary" />
   },
@@ -58,7 +58,7 @@ const trendFeedReviews: Review[] = [
   {
     name: "Michelle Parker",
     title: "Social Media Consultant",
-    content: "My clients see immediate results with TrendFeed. The platform's trend prediction algorithm identifies viral news stories hours before they blow up. Combined with auto-generation of native TikTok content, it's an unbeatable advantage.",
+    content: "My clients see immediate results with TrendFeed. The platform's trend prediction algorithm identifies viral news stories hours before they blow up. Combined with auto-generation of native TikTok content, it&apos;s an unbeatable advantage.",
     rating: 5,
     icon: <Award className="h-5 w-5 text-primary" />
   }

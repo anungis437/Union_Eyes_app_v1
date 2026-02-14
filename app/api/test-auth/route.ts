@@ -1,7 +1,7 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextResponse } from 'next/server';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
-import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { ErrorCode } from '@/lib/api/standardized-responses';
 
 export const dynamic = 'force-dynamic';
 

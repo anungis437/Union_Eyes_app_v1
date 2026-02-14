@@ -167,7 +167,7 @@ toast.error("Failed to issue certification");
         if (!cert) continue;
 
         // Generate certificate (this would need registrationId)
-        // For manual certifications, we'd need a different approach
+        // For manual certifications, we&apos;d need a different approach
         toast.info(`Generating certificate for ${cert.firstName} ${cert.lastName}...`);
         successCount++;
       } catch (error) {

@@ -59,7 +59,7 @@ export async function exportAwardsToCSV(
   }
 ) {
   try {
-    let conditions = [sql`ra.org_id = ${orgId}`];
+    const conditions = [sql`ra.org_id = ${orgId}`];
     
     if (filters?.startDate) {
       conditions.push(sql`ra.created_at >= ${filters.startDate}`);
@@ -163,7 +163,7 @@ export async function exportLedgerToCSV(
   }
 ) {
   try {
-    let conditions = [sql`rwl.org_id = ${orgId}`];
+    const conditions = [sql`rwl.org_id = ${orgId}`];
     
     if (filters?.startDate) {
       conditions.push(sql`rwl.created_at >= ${filters.startDate}`);
@@ -242,7 +242,7 @@ export async function exportBudgetsToCSV(
   }
 ) {
   try {
-    let conditions = [sql`rbe.org_id = ${orgId}`];
+    const conditions = [sql`rbe.org_id = ${orgId}`];
     
     if (filters?.programId) {
       conditions.push(sql`rbe.program_id = ${filters.programId}`);
@@ -320,7 +320,7 @@ export async function exportRedemptionsToCSV(
   }
 ) {
   try {
-    let conditions = [sql`rr.org_id = ${orgId}`];
+    const conditions = [sql`rr.org_id = ${orgId}`];
     
     if (filters?.startDate) {
       conditions.push(sql`rr.created_at >= ${filters.startDate}`);

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Report Email Templates
  * 
  * Email delivery functions for scheduled reports
@@ -54,7 +54,7 @@ async function sendViaResend(params: SendEmailParams): Promise<void> {
     const { Resend } = await import('resend');
     const resend = new Resend(process.env.RESEND_API_KEY);
 
-    const reportName = (schedule as any).report_name || 'Report';
+    const reportName = (schedule as unknown).report_name || 'Report';
     const fileName = `${reportName.replace(/\s+/g, '-')}.${schedule.exportFormat}`;
 
     await resend.emails.send({
@@ -85,7 +85,7 @@ async function sendViaSendGrid(params: SendEmailParams): Promise<void> {
   // SendGrid integration (install with: pnpm add @sendgrid/mail)
   try {
     // Check if SendGrid is available
-    let sgMail: any;
+    let sgMail: unknown;
     try {
       sgMail = await import('@sendgrid/mail');
     } catch (importError) {
@@ -98,7 +98,7 @@ throw new Error('SendGrid API key not configured. Using Resend fallback.');
 
     sgMail.default.setApiKey(process.env.SENDGRID_API_KEY);
 
-    const reportName = (schedule as any).report_name || 'Report';
+    const reportName = (schedule as unknown).report_name || 'Report';
     const fileName = `${reportName.replace(/\s+/g, '-')}.${schedule.exportFormat}`;
 
     await sgMail.default.send({
@@ -129,8 +129,8 @@ return;
  * Generate HTML email body
  */
 function generateEmailHTML(schedule: ScheduledReport, fileUrl: string): string {
-  const reportName = (schedule as any).report_name || 'Report';
-  const reportDescription = (schedule as any).report_description || '';
+  const reportName = (schedule as unknown).report_name || 'Report';
+  const reportDescription = (schedule as unknown).report_description || '';
   const scheduleType = schedule.scheduleType.charAt(0).toUpperCase() + schedule.scheduleType.slice(1);
 
   return `

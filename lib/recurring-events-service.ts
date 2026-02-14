@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Recurring Events Service
  * 
  * Handles RFC 5545 RRULE parsing and recurring event generation.
@@ -35,7 +35,7 @@ export interface RecurringEventInstance {
   parentEventId: string;
   startTime: Date;
   endTime: Date;
-  originalEventData: any;
+  originalEventData: unknown;
 }
 
 // ============================================================================
@@ -99,7 +99,7 @@ export function parseRRule(rruleString: string): RecurrenceOptions {
 
     switch (key) {
       case 'FREQ':
-        options.frequency = value as any;
+        options.frequency = value as unknown;
         break;
       case 'INTERVAL':
         options.interval = parseInt(value);
@@ -145,7 +145,7 @@ export function getRecurrenceDescription(rruleString: string): string {
  * Generate recurring event instances for a date range
  */
 export function generateRecurringInstances(
-  baseEvent: any,
+  baseEvent: unknown,
   rruleString: string,
   startDate: Date,
   endDate: Date,

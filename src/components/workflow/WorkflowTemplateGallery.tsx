@@ -38,15 +38,15 @@ interface WorkflowTemplate {
   description: string;
   category: 'claim-processing' | 'approval' | 'notification' | 'custom';
   icon: string;
-  nodes: any[];
-  edges: any[];
+  nodes: Array<Record<string, unknown>>;
+  edges: Array<Record<string, unknown>>;
   estimatedDuration?: string;
   usageCount?: number;
 }
 
 interface WorkflowTemplateGalleryProps {
   organizationId: string;
-  onCreateFromTemplate?: (templateId: string, customizations: any) => void;
+  onCreateFromTemplate?: (templateId: string, customizations: Record<string, unknown>) => void;
   onPreview?: (template: WorkflowTemplate) => void;
   className?: string;
 }
@@ -89,7 +89,7 @@ export function WorkflowTemplateGallery({
   const [customizations, setCustomizations] = useState({
     name: '',
     description: '',
-    variables: {} as Record<string, any>,
+    variables: {} as Record<string, string | number | boolean>,
   });
 
   // Fetch templates
@@ -114,7 +114,7 @@ export function WorkflowTemplateGallery({
       const data = await response.json();
       setTemplates(data);
       setFilteredTemplates(data);
-    } catch (error) {
+    } catch (_error) {
     } finally {
       setLoading(false);
     }
@@ -154,15 +154,9 @@ export function WorkflowTemplateGallery({
 
       if (!response.ok) throw new Error('Failed to create workflow from template');
 
-      const workflow = await response.json();
-
-      if (onCreateFromTemplate) {
-        onCreateFromTemplate(selectedTemplate.id, customizations);
-      }
-
       setShowCustomizeDialog(false);
       setSelectedTemplate(null);
-    } catch (error) {
+    } catch (_error) {
     }
   };
 

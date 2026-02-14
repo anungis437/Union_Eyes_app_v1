@@ -13,15 +13,11 @@ import { db } from '@/db';
 import { sql } from '@/db';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 async function getHandler(
   req: NextRequest,
-  context: any,
+  context: any, Record<string, unknown>,
   params?: { id: string }
 ) {
   const { userId, organizationId } = context;
@@ -85,7 +81,7 @@ async function getHandler(
 
 async function putHandler(
   req: NextRequest,
-  context: any,
+  context: any, Record<string, unknown>,
   params?: { id: string }
 ) {
   const { userId, organizationId } = context;
@@ -151,7 +147,7 @@ async function putHandler(
 
 async function deleteHandler(
   req: NextRequest,
-  context: any,
+  context: any, Record<string, unknown>,
   params?: { id: string }
 ) {
   const { userId, organizationId } = context;

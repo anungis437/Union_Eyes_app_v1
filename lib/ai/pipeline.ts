@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Complete AI Pipeline
  * 
  * Ties together all AI components:
@@ -228,7 +228,7 @@ class AIPipeline {
       content: document.content,
       metadata: {
         source: metadata.source,
-        type: extraction.documentType as any,
+        type: extraction.documentType as unknown,
         jurisdiction: metadata.jurisdiction,
         createdAt: new Date(),
         updatedAt: new Date(),

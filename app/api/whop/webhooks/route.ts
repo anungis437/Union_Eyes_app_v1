@@ -6,7 +6,7 @@ import { logger } from '@/lib/logger';
 // Import utility functions
 import { handlePaymentSuccess, handlePaymentFailed } from "./utils/payment-handlers";
 import { handleMembershipChange } from "./utils/membership-handlers";
-import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { ErrorCode } from '@/lib/api/standardized-responses';
 
 // Lazy initialization to avoid module-level env var access during build
 let handleWebhook: ReturnType<typeof makeWebhookHandler> | null = null;
@@ -65,7 +65,7 @@ export async function POST(req: Request) {
             handleMembershipChange(event.data, false);
           } catch (error) {
             logger.error('Error in membershipWentInvalid handler', error as Error, { eventAction: event.action });
-            // Don't rethrow, let the webhook complete successfully
+            // Don&apos;t rethrow, let the webhook complete successfully
           }
         },
         
@@ -75,7 +75,7 @@ export async function POST(req: Request) {
             handlePaymentSuccess(event.data);
           } catch (error) {
             logger.error('Error in paymentSucceeded handler', error as Error, { eventAction: event.action });
-            // Don't rethrow, let the webhook complete successfully
+            // Don&apos;t rethrow, let the webhook complete successfully
           }
         },
         
@@ -85,13 +85,13 @@ export async function POST(req: Request) {
             handlePaymentFailed(event.data);
           } catch (error) {
             logger.error('Error in paymentFailed handler', error as Error, { eventAction: event.action, membershipId: event.data.id });
-            // Don't rethrow, let the webhook complete successfully
+            // Don&apos;t rethrow, let the webhook complete successfully
           }
         }
       });
     } catch (webhookError) {
       logger.error("Error in Whop webhook handler", webhookError as Error);
-      // Return 200 even if there's an error in the webhook handler itself
+      // Return 200 even if there&apos;s an error in the webhook handler itself
       return new Response(JSON.stringify({ 
         status: "error", 
         message: "Webhook handler error but acknowledging receipt" 

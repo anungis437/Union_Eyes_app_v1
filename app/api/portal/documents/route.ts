@@ -2,15 +2,11 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { memberDocuments } from '@/db/schema/domains/documents';
-import { eq, desc } from 'drizzle-orm';
+import { desc } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = async () => {
   return withRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;

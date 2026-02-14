@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Xero Integration Adapter
  * 
  * Implements integration with Xero for accounting data.
@@ -397,7 +397,7 @@ export class XeroAdapter extends BaseIntegration {
             companyName: xeroContact.Name, // Xero uses Name for both
             email: xeroContact.EmailAddress,
             phone: xeroContact.ContactNumber,
-            balance: '0.00', // Xero doesn't provide balance directly in contact
+            balance: '0.00', // Xero doesn&apos;t provide balance directly in contact
             lastSyncedAt: new Date(),
             updatedAt: new Date(),
           };
@@ -461,7 +461,7 @@ export class XeroAdapter extends BaseIntegration {
             accountType: xeroAccount.Type,
             accountSubType: xeroAccount.Code, // Using account code as subtype
             classification: xeroAccount.Class || null,
-            currentBalance: '0.00', // Xero doesn't provide balance in account list
+            currentBalance: '0.00', // Xero doesn&apos;t provide balance in account list
             isActive: xeroAccount.Status === 'ACTIVE',
             lastSyncedAt: new Date(),
             updatedAt: new Date(),
@@ -511,7 +511,7 @@ export class XeroAdapter extends BaseIntegration {
     this.logOperation('webhook', { eventType: event.type, message: `Processing ${event.type}` });
 
     // Xero sends webhook events for various entity changes
-    const payload = event.data as any;
+    const payload = event.data as unknown;
     
     if (payload.events) {
       for (const evt of payload.events) {

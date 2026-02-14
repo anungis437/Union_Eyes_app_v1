@@ -15,16 +15,12 @@ import {
   newsletterEngagement,
   newsletterRecipients 
 } from '@/db/schema';
-import { eq, and, sql, gte } from 'drizzle-orm';
+import { and, sql } from 'drizzle-orm';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }

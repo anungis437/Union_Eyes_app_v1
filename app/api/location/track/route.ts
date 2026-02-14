@@ -3,11 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { GeofencePrivacyService } from "@/services/geofence-privacy-service";
 import { withApiAuth } from "@/lib/api-auth-guard";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * Location Tracking API
  * POST: Record user location (requires explicit consent)
@@ -60,7 +56,7 @@ export const POST = withApiAuth(async (req: NextRequest) => {
       undefined,
       201
     );
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     return NextResponse.json(
       { error: error.message || "Failed to track location" },
       { status: 500 }

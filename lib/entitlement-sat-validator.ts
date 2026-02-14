@@ -422,7 +422,7 @@ export function createUnionEyesEntitlements(): {
 
     // Some feature combinations are incompatible
     // (e.g., certain integrations might conflict)
-    // This is handled at runtime by checking both aren't active
+    // This is handled at runtime by checking both aren&apos;t active
     // For SAT validation, we focus on dependency constraints
   ];
 

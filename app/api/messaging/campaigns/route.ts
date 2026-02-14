@@ -10,7 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { campaigns, messageTemplates } from '@/db/schema';
-import { eq, desc, and, sql } from 'drizzle-orm';
+import { desc, and } from 'drizzle-orm';
 import { withRLSContext } from '@/lib/db/rls-context';
 import { auth } from '@clerk/nextjs/server';
 
@@ -39,14 +39,14 @@ export async function GET(request: NextRequest) {
 
     const result = await withRLSContext(async () => {
       // Build where conditions
-      let whereConditions = [eq(campaigns.organizationId, orgId)];
+      const whereConditions = [eq(campaigns.organizationId, orgId)];
 
       if (status) {
-        whereConditions.push(eq(campaigns.status, status as any));
+        whereConditions.push(eq(campaigns.status, status));
       }
 
       if (channel) {
-        whereConditions.push(eq(campaigns.channel, channel as any));
+        whereConditions.push(eq(campaigns.channel, channel));
       }
 
       // Get campaigns

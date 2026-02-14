@@ -261,7 +261,7 @@ class AISafetyService {
 
     for (const keyword of SENSITIVE_KEYWORDS) {
       if (lowerInput.includes(keyword)) {
-        // Don't flag if it's a general discussion about security
+        // Don&apos;t flag if it&apos;s a general discussion about security
         if (!lowerInput.includes('how to protect') && !lowerInput.includes('best practices')) {
           flags.push({
             type: 'sensitive',

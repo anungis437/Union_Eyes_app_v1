@@ -283,7 +283,7 @@ toast.error("Failed to create program");
         mentorId: "",
         currentLevel: "orientation",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
 toast.error(error.message || "Failed to enroll member");
     }
   };
@@ -337,7 +337,7 @@ toast.error("Failed to update enrollment");
 
       toast.success("Program deactivated");
       fetchPrograms();
-    } catch (error: any) {
+    } catch (error: unknown) {
 toast.error(error.message || "Failed to deactivate program");
     }
   };

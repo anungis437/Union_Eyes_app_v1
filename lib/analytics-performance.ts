@@ -346,7 +346,7 @@ class RedisAnalyticsPerformanceMonitor {
       const cachedQueries = parseInt(summary.cachedQueries as string || '0', 10);
       const slowQueries = parseInt(summary.slowQueries as string || '0', 10);
 
-      // For percentiles, we'd need to fetch all durations (expensive)
+      // For percentiles, we&apos;d need to fetch all durations (expensive)
       // For now, provide estimates based on available data
       const avgDuration = totalDuration / totalQueries;
 
@@ -434,7 +434,7 @@ export async function withPerformanceTracking<T>(
     const result = await queryFn();
     const duration = Date.now() - startTime;
     
-    // Record async (don't await to avoid blocking)
+    // Record async (don&apos;t await to avoid blocking)
     performanceMonitor.recordQuery(endpoint, duration, cached, organizationId).catch(err => {
       logger.error('Failed to record performance metric', err, { endpoint, organizationId });
     });

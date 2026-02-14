@@ -339,7 +339,7 @@ export async function sendSms(options: SendSmsOptions): Promise<SmsServiceResult
       segments,
       cost,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Failed to send SMS', { error, phoneNumber, organizationId });
 
     // Log error to database

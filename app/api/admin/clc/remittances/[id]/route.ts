@@ -16,11 +16,7 @@ import { db } from '@/db';
 import { perCapitaRemittances } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // =====================================================================================
 // GET - Get remittance details
 // =====================================================================================

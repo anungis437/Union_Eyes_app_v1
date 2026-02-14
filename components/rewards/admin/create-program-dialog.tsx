@@ -57,7 +57,7 @@ export function CreateProgramDialog() {
 
       setOpen(false);
       router.refresh();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || t('errorUnknown', { defaultValue: 'An error occurred' }));
       setLoading(false);
     }

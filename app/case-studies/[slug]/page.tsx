@@ -6,6 +6,7 @@
  */
 
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { CaseStudy } from '@/types/marketing';
 import { ImpactMetricCard } from '@/components/marketing/impact-metric-card';
 import { HumanCenteredCallout } from '@/components/marketing/human-centered-callout';
@@ -235,12 +236,11 @@ export default async function CaseStudyPage({ params }: CaseStudyPageProps) {
             Print / Save as PDF
           </button>
 
-          <a
-            href="/case-studies"
+          <Link href="/case-studies"
             className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-md font-medium hover:bg-blue-700 transition-colors"
           >
             View All Case Studies
-          </a>
+          </Link>
         </div>
 
         {/* CTA */}
@@ -252,12 +252,11 @@ export default async function CaseStudyPage({ params }: CaseStudyPageProps) {
             Join our pilot program and see how Union Eyes can transform member advocacy
             at your local.
           </p>
-          <a
-            href="/pilot-request"
+          <Link href="/pilot-request"
             className="inline-block bg-white text-blue-600 px-8 py-3 rounded-md font-medium hover:bg-blue-50 transition-colors"
           >
             Apply for Pilot Program
-          </a>
+          </Link>
         </div>
 
         {/* Metadata Footer */}

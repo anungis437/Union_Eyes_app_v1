@@ -3,16 +3,12 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { members, duesTransactions, employerRemittances } from '@/services/financial-service/src/db/schema';
-import { eq, and } from 'drizzle-orm';
-import { withApiAuth,withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { and } from 'drizzle-orm';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { sendEmail } from '@/lib/email-service';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const reconciliationResolveSchema = z.object({
   remittanceId: z.string().uuid('Invalid remittance ID'),
@@ -159,7 +155,7 @@ export const POST = async (req: NextRequest) => {
             .set({
               totalAmount: newAmount.toString(),
               metadata: JSON.stringify({
-                ...((row.transaction.metadata as any) || {}),
+                ...((row.transaction.metadata as Record<string, unknown>) || {}),
                 adjusted: true,
                 adjustedFrom: oldAmount,
                 adjustedTo: newAmount,

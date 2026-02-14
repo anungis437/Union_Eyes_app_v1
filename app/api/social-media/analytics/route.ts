@@ -11,13 +11,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { createClient } from '@supabase/supabase-js';
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // Lazy initialization - env vars not available during build
 let supabaseClient: ReturnType<typeof createClient> | null = null;
 function getSupabaseClient() {
@@ -100,7 +96,7 @@ return standardErrorResponse(
       }
 
       // Group analytics by account
-      const accountAnalytics = (analytics || []).reduce((acc: any, record: any) => {
+      const accountAnalytics = (analytics || []).reduce((acc: Record<string, unknown>, record: Record<string, unknown>) => {
         const accountId = record.account_id;
         if (!acc[accountId]) {
           acc[accountId] = {
@@ -133,11 +129,11 @@ return standardErrorResponse(
       }, {});
 
       // Calculate average engagement rate
-      Object.values(accountAnalytics).forEach((account: any) => {
+      Object.values(accountAnalytics).forEach((account: Record<string, unknown>) => {
         const analyticsCount = account.analytics.length;
         if (analyticsCount > 0) {
           const totalEngagementRate = account.analytics.reduce(
-            (sum: number, a: any) => sum + (a.engagement_rate || 0),
+            (sum: number, a: Record<string, unknown>) => sum + (a.engagement_rate || 0),
             0
           );
           account.summary.avg_engagement_rate = totalEngagementRate / analyticsCount;
@@ -416,7 +412,7 @@ export const PUT = async (request: NextRequest) => {
           : 0;
 
       // Calculate goal progress
-      const goalProgress = campaign.goals?.map((goal: any) => {
+      const goalProgress = campaign.goals?.map((goal: Record<string, unknown>) => {
         const currentValue = metrics[`total_${goal.metric}` as keyof typeof metrics] || 0;
         const progress = goal.target_value > 0 ? (currentValue / goal.target_value) * 100 : 0;
         return {
@@ -428,7 +424,7 @@ export const PUT = async (request: NextRequest) => {
       });
 
       // Group posts by platform
-      const postsByPlatform = (posts || []).reduce((acc: any, post) => {
+      const postsByPlatform = (posts || []).reduce((acc: Record<string, unknown>, post) => {
         if (!acc[post.platform]) {
           acc[post.platform] = [];
         }
@@ -439,7 +435,7 @@ export const PUT = async (request: NextRequest) => {
       // Calculate platform-specific metrics
       const platformMetrics = Object.entries(postsByPlatform).map(([platform, platformPosts]: [string, any]) => {
         const platformTotal = platformPosts.reduce(
-          (acc: any, post: any) => ({
+          (acc: Record<string, unknown>, post: Record<string, unknown>) => ({
             posts: acc.posts + 1,
             impressions: acc.impressions + (post.impressions || 0),
             engagement: acc.engagement + (post.engagement || 0),
@@ -454,13 +450,13 @@ export const PUT = async (request: NextRequest) => {
           platform,
           ...platformTotal,
           avg_engagement_rate:
-            platformPosts.reduce((sum: number, post: any) => sum + (post.engagement_rate || 0), 0) /
+            platformPosts.reduce((sum: number, post: Record<string, unknown>) => sum + (post.engagement_rate || 0), 0) /
             platformPosts.length,
         };
       });
 
       // Get timeline data (daily metrics)
-      const timeline = (posts || []).reduce((acc: any, post) => {
+      const timeline = (posts || []).reduce((acc: Record<string, unknown>, post) => {
         const date = format(new Date(post.published_at), 'yyyy-MM-dd');
         if (!acc[date]) {
           acc[date] = {
@@ -531,7 +527,7 @@ export const DELETE = async (request: NextRequest) => {
       const startDate = searchParams.get('start_date') || format(subDays(new Date(), 30), 'yyyy-MM-dd');
       const endDate = searchParams.get('end_date') || format(new Date(), 'yyyy-MM-dd');
 
-      let data: any[] = [];
+      let data: Array<Record<string, unknown>> = [];
       let headers: string[] = [];
 
       switch (data_type) {

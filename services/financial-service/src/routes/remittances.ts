@@ -64,7 +64,7 @@ router.get('/', async (req: Request, res: Response) => {
       success: true,
       data: remittances,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
       error: error.message,
@@ -110,7 +110,7 @@ router.get('/:id', async (req: Request, res: Response) => {
         matchedTransactions: transactions,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
       error: error.message,
@@ -160,7 +160,7 @@ router.post('/', async (req: Request, res: Response) => {
       success: true,
       data: remittance,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         success: false,
@@ -306,7 +306,7 @@ router.post('/:id/reconcile', async (req: Request, res: Response) => {
         status: newStatus,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         success: false,
@@ -369,7 +369,7 @@ router.put('/:id', async (req: Request, res: Response) => {
       success: true,
       data: updatedRemittance,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         success: false,
@@ -439,7 +439,7 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
         errors: parseResult.errors,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
       error: error.message,
@@ -558,7 +558,7 @@ router.post('/:id/reconcile', async (req: Request, res: Response) => {
         report,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
       error: error.message,
@@ -656,7 +656,7 @@ router.get('/:id/report', async (req: Request, res: Response) => {
         data: reportData,
       });
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
       error: error.message,

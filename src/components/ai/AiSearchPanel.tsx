@@ -251,7 +251,7 @@ function AiAnswerCard({ answer, queryId }: AiAnswerCardProps) {
       });
 
       setFeedbackSubmitted(true);
-    } catch (err) {
+    } catch (_err) {
     }
   };
 

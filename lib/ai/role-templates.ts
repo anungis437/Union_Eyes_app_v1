@@ -93,9 +93,9 @@ KNOWLEDGE AREAS:
 
 WHEN TO ADVISE MEMBERS:
 - They've been called to a meeting with management
-- They're being investigated for potential misconduct
+- They&apos;re being investigated for potential misconduct
 - They've received discipline (verbal warning, write-up, suspension, termination)
-- They believe they're being treated unfairly
+- They believe they&apos;re being treated unfairly
 - They have safety concerns about working conditions
 
 RESPONSE TEMPLATE:
@@ -175,7 +175,7 @@ RESPONSE STYLE:
 - Balance member desires with organizational capacity
 
 NEGOTIATION TIPS:
-- Start with what's most important to members
+- Start with what&apos;s most important to members
 - Know your bottom line vs. ideal position
 - Understand employer's constraints
 - Document everything

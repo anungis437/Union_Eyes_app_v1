@@ -39,7 +39,7 @@ export async function getMemberVisibleTimeline(
   claimId: string,
   memberId: string
 ): Promise<TimelineEvent[]> {
-  // Verify member has access to this claim (either they created it or it's assigned to them)
+  // Verify member has access to this claim (either they created it or it&apos;s assigned to them)
   const claim = await db
     .select()
     .from(claims)
@@ -216,7 +216,7 @@ export async function addCaseEvent(payload: {
   try {
     await recomputeSignalsForCase(payload.claimId);
   } catch (error) {
-    // Log error but don't fail timeline insertion
+    // Log error but don&apos;t fail timeline insertion
     logger.error('Signal recomputation failed for case', { error, claimId: payload.claimId });
   }
 

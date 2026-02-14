@@ -14,14 +14,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
 import { newsletterDistributionLists } from '@/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 const updateListSchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().optional(),

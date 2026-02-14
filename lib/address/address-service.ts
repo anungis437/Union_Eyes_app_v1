@@ -1,4 +1,4 @@
-/**
+﻿/**
  * International Address Validation Service
  * 
  * Multi-provider address validation and standardization
@@ -49,7 +49,7 @@ export interface ValidationResult {
   confidence: "high" | "medium" | "low";
   corrections?: Partial<AddressInput>;
   deliverability?: "deliverable" | "undeliverable" | "unknown";
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -389,7 +389,7 @@ export class AddressService {
       .values({
         tenantId: data.organizationId,
         userId: data.userId,
-        addressType: data.addressType as any,
+        addressType: data.addressType as unknown,
         countryCode: data.countryCode,
         countryName: countryFormat.countryName,
         addressLine1: data.addressLine1,
@@ -515,7 +515,7 @@ export class AddressService {
     
     if (format.displayOrder) {
       for (const field of format.displayOrder) {
-        const value = (address as any)[field];
+        const value = (address as unknown)[field];
         if (value) parts.push(value);
       }
     } else {
@@ -588,9 +588,9 @@ export class AddressService {
       
       return {
         isValid: cached[0].isValid,
-        confidence: (cached[0].confidence as any) || "medium",
+        confidence: (cached[0].confidence as unknown) || "medium",
         corrections: cached[0].correctedAddress || undefined,
-        metadata: (cached[0].metadata as any) || undefined,
+        metadata: (cached[0].metadata as unknown) || undefined,
       };
     }
     

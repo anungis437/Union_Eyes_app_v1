@@ -23,11 +23,7 @@ import { eq } from 'drizzle-orm';
 import { checkEntitlement } from '@/lib/services/entitlements';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * Version 1 Handler - Original API
  */
@@ -56,7 +52,7 @@ async function handleV1(request: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const claimsList = await withRLSContext(async (tx: NodePgDatabase<any>) => {
+  const claimsList = await withRLSContext(async (tx) => {
     return await tx.select().from(claims).where(eq(claims.organizationId, organizationId)).limit(20);
   });
 
@@ -101,7 +97,7 @@ async function handleV2(request: NextRequest): Promise<NextResponse> {
   const limit = parseInt(searchParams.get('limit') || '20');
   const offset = (page - 1) * limit;
 
-  const claimsList = await withRLSContext(async (tx: NodePgDatabase<any>) => {
+  const claimsList = await withRLSContext(async (tx) => {
     return await tx.select().from(claims).where(eq(claims.organizationId, organizationId)).limit(limit).offset(offset);
   });
 

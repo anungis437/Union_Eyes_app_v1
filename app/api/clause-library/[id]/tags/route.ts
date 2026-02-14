@@ -6,19 +6,15 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { db, organizations } from "@/db";
+import { organizations } from "@/db";
 import { clauseLibraryTags, sharedClauseLibrary } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { and } from "drizzle-orm";
 import { logger } from '@/lib/logger';
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // POST /api/clause-library/[id]/tags - Add tag
 
 const clauseLibraryTagsSchema = z.object({
@@ -103,7 +99,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
       // Check if tag already exists
       const existingTag = await withRLSContext({ organizationId: userOrgId }, async (db) => {
         return await db.query.clauseLibraryTags.findFirst({
-          where: (t, { and, eq }) => 
+          where: (t, { and }) => 
             and(
               eq(t.clauseId, clauseId),
               eq(t.tagName, trimmedTag)

@@ -253,7 +253,7 @@ async function testTriggerFunctionality(
             `;
             // If we get here, trigger didn't fire - fail the test
             throw new Error("Update should have been blocked by trigger");
-          } catch (error: any) {
+          } catch (error: unknown) {
             if (error.message.includes("immutable") || error.message.includes("not allowed")) {
               // Expected error - trigger is working
               // Rollback the transaction
@@ -263,7 +263,7 @@ async function testTriggerFunctionality(
             }
           }
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         if (error.message === "ROLLBACK_TEST") {
           // Expected rollback from successful trigger test
           throw error;
@@ -282,7 +282,7 @@ async function testTriggerFunctionality(
       passed: true,
       message: "✅ Functional test passed (trigger blocked mutation)",
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error.message.includes("immutable") || error.message.includes("not allowed")) {
       return {
         passed: true,
@@ -330,7 +330,7 @@ async function verifyImmutabilityTriggers() {
     try {
       await sql`SELECT 1 as test`;
       console.log(`${colors.green}✅ Database connection successful${colors.reset}\n`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`${colors.red}❌ Database connection failed: ${error.message}${colors.reset}\n`);
       process.exit(1);
     }
@@ -466,7 +466,7 @@ async function verifyImmutabilityTriggers() {
 
     console.log("");
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`\n${colors.red}❌ Verification error: ${error.message}${colors.reset}\n`);
     exitCode = 1;
   } finally {

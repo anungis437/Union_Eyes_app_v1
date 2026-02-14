@@ -11,14 +11,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { newsletterTemplates } from '@/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }

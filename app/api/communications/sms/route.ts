@@ -19,7 +19,7 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { eq, and, desc } from 'drizzle-orm';
+import { and, desc } from 'drizzle-orm';
 import {
   sendSms,
   sendBulkSms,
@@ -38,14 +38,10 @@ import {
   type NewSmsTemplate,
   type NewSmsCampaign,
 } from '@/db/schema/domains/communications';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // ============================================================================
 // GET HANDLER - Routes based on action parameter
 // ============================================================================
@@ -87,7 +83,7 @@ export const GET = async (req: NextRequest) => {
       // TODO: Migrate additional details: campaigns, campaign-details'
     );
       }
-    } catch (error: any) {
+    } catch (error: Record<string, unknown>) {
 return NextResponse.json(
         { error: error.message || 'Internal server error' },
         { status: 500 }
@@ -151,7 +147,7 @@ export const POST = async (req: NextRequest) => {
       // TODO: Migrate additional details: bulk, create-template, create-campaign, send-campaign, webhook'
     );
       }
-    } catch (error: any) {
+    } catch (error: Record<string, unknown>) {
 return NextResponse.json(
         { error: error.message || 'Internal server error' },
         { status: 500 }
@@ -216,7 +212,7 @@ async function getCampaignDetails(campaignId: string) {
   });
 }
 
-async function sendSingleSms(userId: string, body: any) {
+async function sendSingleSms(userId: string, body: Record<string, unknown>) Record<string, unknown>) {
   const { organizationId: organizationIdFromBody, phoneNumber, message, templateId, variables } = body;
   const organizationId = organizationIdFromBody;
 
@@ -267,7 +263,7 @@ async function sendSingleSms(userId: string, body: any) {
   });
 }
 
-async function sendBulkSmsAction(userId: string, body: any) {
+async function sendBulkSmsAction(userId: string, body: Record<string, unknown>) Record<string, unknown>) {
   const { organizationId: organizationIdFromBody, recipients, message, templateId, campaignId } = body;
   const organizationId = organizationIdFromBody;
 
@@ -298,7 +294,7 @@ async function sendBulkSmsAction(userId: string, body: any) {
   });
 }
 
-async function createTemplate(userId: string, contextOrganizationId: string, body: any) {
+async function createTemplate(userId: string, contextOrganizationId: string, body: Record<string, unknown>) Record<string, unknown>) {
   const { organizationId: organizationIdFromBody, name, description, messageTemplate, variables, category } = body;
   const organizationId = organizationIdFromBody ?? contextOrganizationId;
 
@@ -339,7 +335,7 @@ async function createTemplate(userId: string, contextOrganizationId: string, bod
     );
 }
 
-async function createCampaign(userId: string, contextOrganizationId: string, body: any) {
+async function createCampaign(userId: string, contextOrganizationId: string, body: Record<string, unknown>) Record<string, unknown>) {
   const { organizationId: organizationIdFromBody, name, description, message, templateId, recipientFilter, scheduledFor } = body;
   const organizationId = organizationIdFromBody ?? contextOrganizationId;
 
@@ -374,7 +370,7 @@ async function createCampaign(userId: string, contextOrganizationId: string, bod
     );
 }
 
-async function sendCampaignAction(userId: string, body: any) {
+async function sendCampaignAction(userId: string, body: Record<string, unknown>) Record<string, unknown>) {
   const { campaignId, recipients } = body;
 
   if (!campaignId) {
@@ -444,7 +440,7 @@ async function sendCampaignAction(userId: string, body: any) {
       failed: result.failed,
       errors: result.errors,
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     await db
       .update(smsCampaigns)
       .set({
@@ -457,7 +453,7 @@ async function sendCampaignAction(userId: string, body: any) {
   }
 }
 
-async function handleWebhook(body: any) {
+async function handleWebhook(body: Record<string, unknown>) Record<string, unknown>) {
   if (body.MessageSid && body.MessageStatus) {
     await handleTwilioWebhook(body);
     return NextResponse.json({ success: true });

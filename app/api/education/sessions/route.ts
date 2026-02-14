@@ -1,18 +1,14 @@
-﻿import { logApiAuditEvent } from "@/lib/middleware/api-security";
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
 import { NotificationService } from "@/lib/services/notification-service";
 import { db } from "@/db";
 import { courseSessions, trainingCourses, courseRegistrations } from "@/db/schema";
-import { eq, and, gte, lte, inArray, sql } from "drizzle-orm";
+import { and, inArray } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // GET /api/education/sessions - List sessions with filters
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(10, async (request, context) => {
@@ -331,7 +327,7 @@ export const PATCH = async (request: NextRequest) => {
       } = body;
 
       // Build update object
-      const updateData: any = {
+      const updateData = {
         updatedAt: new Date().toISOString(),
       };
 
@@ -482,7 +478,7 @@ export const DELETE = async (request: NextRequest) => {
         }
       } catch (notificationError) {
         logger.error('Failed to send session cancellation notifications', { error: notificationError });
-        // Don't fail the cancellation if notifications fail
+        // Don&apos;t fail the cancellation if notifications fail
       }
 
       logger.info("Session cancelled", {

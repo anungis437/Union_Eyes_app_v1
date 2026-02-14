@@ -2,16 +2,12 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { members, duesTransactions } from '@/services/financial-service/src/db/schema';
-import { eq, and, gte, lte, sql } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { stripe } from '@/lib/stripe';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // Bank reconciliation - compare Stripe payouts with recorded transactions
 export const GET = async (req: NextRequest) => {
   return withRoleAuth('steward', async (request, context) => {

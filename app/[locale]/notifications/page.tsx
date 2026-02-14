@@ -11,6 +11,7 @@
  */
 
 import * as React from "react";
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -146,10 +147,10 @@ export default function NotificationsPage() {
             Mark All Read
           </Button>
           <Button variant="outline" asChild>
-            <a href="/settings?tab=notifications">
+            <Link href="/settings?tab=notifications">
               <Settings className="h-4 w-4 mr-2" />
               Preferences
-            </a>
+            </Link>
           </Button>
         </div>
       </div>

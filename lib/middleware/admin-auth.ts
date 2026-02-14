@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Admin Authentication Middleware
  * 
  * SPRINT 7: Authentication & Authorization
@@ -167,11 +167,11 @@ export async function requireAdmin(
  * });
  * ```
  */
-export function withAdminAuth<P extends Record<string, any>>(
+export function withAdminAuth<P extends Record<string, unknown>>(
   Component: React.ComponentType<P & { userId: string; organizationId?: string }>
 ): React.ComponentType<P> {
   // Type-only placeholder - actual implementation would require .tsx file
-  return Component as any;
+  return Component as unknown;
 }
 
 /**

@@ -347,7 +347,7 @@ return {
         status: claims.status,
         memberId: claims.memberId,
         assignedTo: claims.assignedTo,
-        // deadline: claims.deadline, // Field doesn't exist yet
+        // deadline: claims.deadline, // Field doesn&apos;t exist yet
       })
       .from(claims)
       .where(eq(claims.claimId, claimId))

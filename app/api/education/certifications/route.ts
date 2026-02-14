@@ -1,17 +1,13 @@
-﻿import { logApiAuditEvent } from "@/lib/middleware/api-security";
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { memberCertifications, trainingCourses, members, organizations } from "@/db/schema";
-import { eq, and, or, gte, lte, inArray, sql } from "drizzle-orm";
+import { and, or, inArray } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // GET /api/education/certifications - List certifications with filters
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(10, async (request, context) => {
@@ -241,7 +237,7 @@ export const POST = async (request: NextRequest) => {
       const certificationNumber = `CERT-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
       // Determine certification status based on expiry
-      let certificationStatus: any = "active";
+      let certificationStatus = "active";
       if (expiryDate) {
         const now = new Date();
         const expiry = new Date(expiryDate);
@@ -347,7 +343,7 @@ export const PATCH = async (request: NextRequest) => {
       } = body;
 
       // Build update object
-      const updateData: any = {
+      const updateData = {
         updatedAt: new Date().toISOString(),
       };
 

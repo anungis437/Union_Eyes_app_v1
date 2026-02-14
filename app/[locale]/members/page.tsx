@@ -45,7 +45,7 @@ export default function MembersPage() {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v)}>
         <TabsList>
           <TabsTrigger value="list">All Members</TabsTrigger>
           <TabsTrigger value="onboard">Onboard Member</TabsTrigger>

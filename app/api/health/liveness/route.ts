@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { ErrorCode } from '@/lib/api/standardized-responses';
 
 /**
  * GET /api/health/liveness

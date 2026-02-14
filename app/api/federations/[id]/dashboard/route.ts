@@ -12,15 +12,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { organizations, organizationRelationships } from '@/db/schema-organizations';
 import { perCapitaRemittances } from '@/db/schema/clc-per-capita-schema';
-import { eq, and, desc, gte, sql, count, sum } from 'drizzle-orm';
+import { and, desc, count, sum } from 'drizzle-orm';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { checkRateLimit, createRateLimitHeaders } from '@/lib/rate-limiter';
-import {
-  standardErrorResponse,
-  standardSuccessResponse,
-  ErrorCode,
+import { standardSuccessResponse,
 } from '@/lib/api/standardized-responses';
 
 /**

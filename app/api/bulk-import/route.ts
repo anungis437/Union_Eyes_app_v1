@@ -70,7 +70,7 @@ export const importJobs = pgTable('import_jobs', {
   rolledBackAt: timestamp('rolled_back_at'),
   
   // Metadata
-  metadata: jsonb('metadata').$type<Record<string, any>>(),
+  metadata: jsonb('metadata').$type<Record<string, unknown>>(),
   
   // Audit
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },
@@ -163,7 +163,7 @@ export async function GET(
     }
 
     return NextResponse.json({ job });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching import job:', error);
     return NextResponse.json(
       { error: 'Failed to fetch import job', details: error.message },
@@ -221,7 +221,7 @@ export async function executeImport(jobId: string) {
     console.log(`✅ Import complete: ${results.successful}/${results.total} successful`);
 
     return results;
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     // Update job status to failed
     await db
       .update(importJobs)
@@ -259,7 +259,7 @@ async function validateImportJob(jobId: string) {
     // Fetch and parse CSV
     // In production, fetch from job.fileUrl
     const parsedData = []; // Would be CSV parsing result
-    const errors: any[] = [];
+    const errors: Array<Record<string, unknown>> = [];
 
     // Validate each row based on import type
     const validationRules = getValidationRules(job.importType);
@@ -294,8 +294,8 @@ async function validateImportJob(jobId: string) {
 /**
  * Get validation rules for import type
  */
-function getValidationRules(importType: string): Record<string, any> {
-  const rules: Record<string, any> = {
+function getValidationRules(importType: string): Record<string, unknown> {
+  const rules: Record<string, unknown> = {
     members: {
       email: { required: true, type: 'email' },
       full_name: { required: true, type: 'string' },
@@ -322,8 +322,8 @@ function getValidationRules(importType: string): Record<string, any> {
 /**
  * Validate single row
  */
-function validateRow(row: any, rules: Record<string, any>, rowNumber: number): any[] {
-  const errors: any[] = [];
+function validateRow(row: Record<string, unknown>, Record<string, unknown>, rules: Record<string, unknown>, rowNumber: number): Array<Record<string, unknown>> {
+  const errors: Array<Record<string, unknown>> = [];
 
   Object.entries(rules).forEach(([field, rule]) => {
     const value = row[field];
@@ -366,12 +366,12 @@ function validateRow(row: any, rules: Record<string, any>, rowNumber: number): a
 /**
  * Execute import by type
  */
-async function executeImportByType(job: any): Promise<{
+async function executeImportByType(job: Record<string, unknown>) Record<string, unknown>): Promise<{
   total: number;
   successful: number;
   failed: number;
   allSuccessful: boolean;
-  details: any[];
+  details: Array<Record<string, unknown>>;
 }> {
   // In production, would process actual data
   return {
@@ -419,7 +419,7 @@ export async function rollbackImport(jobId: string) {
     console.log(`↩️  Import rolled back: ${jobId}`);
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Rollback error:', error);
     throw error;
   }

@@ -111,7 +111,7 @@ export async function semanticClauseSearch(
     const embeddingString = `[${queryEmbedding.join(',')}]`;
 
     // Build WHERE clause based on filters
-    let whereConditions = [];
+    const whereConditions = [];
     if (filters.clauseType && filters.clauseType.length > 0) {
       whereConditions.push(
         or(...filters.clauseType.map(type => eq(cbaClause.clauseType, type as any)))
@@ -246,7 +246,7 @@ export async function semanticPrecedentSearch(
     const queryEmbedding = await generateEmbedding(query);
     const embeddingString = `[${queryEmbedding.join(',')}]`;
 
-    let whereFilters = [];
+    const whereFilters = [];
     if (issueType) {
       whereFilters.push(sql`issue_type = ${issueType}`);
     }

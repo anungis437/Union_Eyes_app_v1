@@ -1,8 +1,7 @@
-import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/services/financial-service/src/db';
 import { expenseRequests, expenseApprovals, budgetLineItems } from '@/services/financial-service/src/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 
 interface AuthUser {
   id: string;
@@ -17,11 +16,7 @@ interface RequestContext {
 }
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const updateExpenseSchema = z.object({
   status: z.enum(['draft', 'submitted', 'approved', 'rejected', 'paid', 'cancelled']).optional(),

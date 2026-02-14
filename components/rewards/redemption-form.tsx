@@ -68,7 +68,7 @@ export function RedemptionForm({ balance, mode, userId, orgId }: RedemptionFormP
         // Manual mode or no checkout URL: redirect to wallet with success message
         router.push('/dashboard/rewards?redemption=success');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || t('errors.unknown', { defaultValue: 'An error occurred' }));
       setLoading(false);
     }

@@ -75,7 +75,7 @@ export function ContractAnalyzer({
           const { text } = await response.json();
           setContractText(text);
         }
-      } catch (error) {
+      } catch (_error) {
       }
     } else if (file.type === 'text/plain') {
       const text = await file.text();

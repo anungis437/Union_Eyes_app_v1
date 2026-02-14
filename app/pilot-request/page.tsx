@@ -111,7 +111,7 @@ export default function PilotRequestPage() {
 
         <HumanCenteredCallout 
           variant="trust"
-          message="This is a no-pressure exploration. You'll get an instant readiness assessment before any commitment."
+          message="This is a no-pressure exploration. You&apos;ll get an instant readiness assessment before any commitment."
           className="mb-8"
         />
 
@@ -565,7 +565,7 @@ export default function PilotRequestPage() {
 
               <HumanCenteredCallout
                 variant="transparency"
-                message="We'll now calculate your readiness score based on your responses. This helps us understand how to best support your pilot."
+                message="We&apos;ll now calculate your readiness score based on your responses. This helps us understand how to best support your pilot."
               />
 
               <div className="flex gap-4">
@@ -700,7 +700,7 @@ export default function PilotRequestPage() {
                 Thank you for your interest in the Union Eyes pilot program.
               </p>
               <p className="text-gray-700 mb-6">
-                We'll review your application and contact you within 2-3 business days
+                We&apos;ll review your application and contact you within 2-3 business days
                 to discuss next steps.
               </p>
               <p className="text-sm text-gray-500">

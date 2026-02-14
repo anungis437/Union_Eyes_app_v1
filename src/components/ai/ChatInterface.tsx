@@ -14,7 +14,7 @@ interface Message {
   timestamp: Date;
   confidence?: number;
   sources?: string[];
-  data?: any;
+  data?: Record<string, unknown>;
   sql?: string;
 }
 
@@ -22,13 +22,13 @@ interface AIQueryResponse {
   answer: string;
   confidence: number;
   sources?: string[];
-  data?: any;
+  data?: Record<string, unknown>;
   sql?: string;
 }
 
 interface ChatInterfaceProps {
   organizationId: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   onQueryResult?: (result: AIQueryResponse) => void;
   className?: string;
 }
@@ -118,8 +118,8 @@ export function ChatInterface({
 
       // Get suggested follow-up questions
       fetchSuggestedQuestions(question, result.answer);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Query failed';
+    } catch (_err) {
+      const errorMessage = _err instanceof Error ? _err.message : 'Query failed';
       setError(errorMessage);
 
       const errorResponse: Message = {

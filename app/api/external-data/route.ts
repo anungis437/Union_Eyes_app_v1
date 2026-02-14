@@ -16,13 +16,9 @@ import { wageEnrichmentService } from '@/lib/services/external-data/wage-enrichm
 import { statCanClient, provinceToGeographyCode } from '@/lib/services/external-data/statcan-client';
 import { db } from '@/db/db';
 import { wageBenchmarks, unionDensity as unionDensityTable, costOfLivingData } from '@/db/schema';
-import { eq, desc, and } from 'drizzle-orm';
+import { desc, and } from 'drizzle-orm';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // GET /api/external-data - List available endpoints and sync status
 export const GET = withApiAuth(async (request: NextRequest) => {
   try {

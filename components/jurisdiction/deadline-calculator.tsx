@@ -89,7 +89,7 @@ export function DeadlineCalculator({
 
       setResult(calculatedResult);
       onDeadlineCalculated?.(calculatedResult);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Failed to calculate deadline');
       setResult(null);
     } finally {

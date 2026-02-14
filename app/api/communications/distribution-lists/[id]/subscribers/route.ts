@@ -18,14 +18,10 @@ import {
   newsletterListSubscribers,
   profiles 
 } from '@/db/schema';
-import { eq, and, inArray } from 'drizzle-orm';
+import { and, inArray } from 'drizzle-orm';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 const addSubscribersSchema = z.object({
   profileIds: z.array(z.string()).min(1, 'At least one profile ID required'),
 });

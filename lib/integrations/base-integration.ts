@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Base Integration Abstract Class
  * Provides common functionality for all integration adapters
  */
@@ -185,7 +185,7 @@ export function createSyncResult(
     recordsCreated?: number;
     recordsUpdated?: number;
     recordsFailed?: number;
-    errors?: any[];
+    errors?: unknown[];
     cursor?: string;
     nextSyncAt?: Date;
   }

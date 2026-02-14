@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Batch Migration Engine
  * 
  * Handles batch migration of data from tenant_id to organization_id.
@@ -32,7 +32,7 @@ interface TableMigrationConfig {
   organizationIdColumn: string;
   batchSize: number;
   dependencies: string[]; // Tables that must be migrated first
-  validate?: (row: any) => Promise<boolean>;
+  validate?: (row: unknown) => Promise<boolean>;
 }
 
 // Migration result tracking
@@ -42,7 +42,7 @@ interface MigrationResult {
   migratedRows: number;
   failedRows: number;
   skippedRows: number;
-  errors: Array<{ row: any; error: string }>;
+  errors: Array<{ row: unknown; error: string }>;
   duration: number;
   status: "pending" | "in_progress" | "completed" | "failed";
 }
@@ -180,7 +180,7 @@ export async function migrateTable(
 
       // Get unique tenant IDs from batch
       const tenantIds = Array.from(new Set(
-        batch.map((row: any) => row[config.tenantIdColumn]).filter(Boolean)
+        batch.map((row: unknown) => row[config.tenantIdColumn]).filter(Boolean)
       )) as string[];
 
       // Batch map tenant IDs to organization IDs

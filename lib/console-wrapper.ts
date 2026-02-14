@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Production Console Wrapper
  * 
  * Filters and routes console output in production to prevent sensitive data leaks.
@@ -37,18 +37,18 @@ export function initializeConsoleWrapper(): void {
   }
 
   // Disable console.log in production (use logger.info instead)
-  console.log = (...args: any[]) => {
+  console.log = (...args: unknown[]) => {
     // Silent in production - developers should use logger.info()
     // This prevents accidental sensitive data leaks
   };
 
   // Disable console.info in production (use logger.info instead)
-  console.info = (...args: any[]) => {
+  console.info = (...args: unknown[]) => {
     // Silent in production - use structured logger
   };
 
   // Route console.warn to structured logger
-  console.warn = (...args: any[]) => {
+  console.warn = (...args: unknown[]) => {
     const message = args.map(arg => 
       typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
     ).join(' ');
@@ -57,7 +57,7 @@ export function initializeConsoleWrapper(): void {
   };
 
   // Route console.error to structured logger with Sentry
-  console.error = (...args: any[]) => {
+  console.error = (...args: unknown[]) => {
     // Extract error object if present
     const errorArg = args.find(arg => arg instanceof Error);
     const otherArgs = args.filter(arg => arg !== errorArg);
@@ -75,7 +75,7 @@ export function initializeConsoleWrapper(): void {
   };
 
   // Disable console.debug in production
-  console.debug = (...args: any[]) => {
+  console.debug = (...args: unknown[]) => {
     // Silent in production - debug logs are dev-only
   };
 }

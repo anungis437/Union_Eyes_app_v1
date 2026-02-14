@@ -11,15 +11,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import {
-  standardErrorResponse,
-  standardSuccessResponse,
-  ErrorCode,
+import { standardSuccessResponse,
 } from '@/lib/api/standardized-responses';
 import { logger } from '@/lib/logger';
 import { db } from '@/database';
 import { auditLogs } from '@/db/schema/domains/infrastructure/audit';
-import { and, eq, gte, lte, desc, sql, like } from 'drizzle-orm';
+import { and, desc, like } from 'drizzle-orm';
 import { z } from 'zod';
 
 // ============================================================================

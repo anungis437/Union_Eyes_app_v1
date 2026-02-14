@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Migration Rollback System
  * 
  * Provides rollback capabilities for failed or partial migrations.
@@ -21,7 +21,7 @@ import { updateMappingStatus } from "./tenant-to-org-mapper";
 interface RollbackResult {
   tableName: string;
   rowsRestored: number;
-  errors: Array<{ row: any; error: string }>;
+  errors: Array<{ row: unknown; error: string }>;
   status: "completed" | "failed" | "partial";
   duration: number;
 }

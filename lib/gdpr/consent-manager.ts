@@ -1,4 +1,4 @@
-/**
+﻿/**
  * GDPR Consent Management Service
  * 
  * Handles all GDPR compliance operations:
@@ -54,7 +54,7 @@ export class ConsentManager {
     ipAddress?: string;
     userAgent?: string;
     expiresAt?: Date;
-    metadata?: any;
+    metadata?: unknown;
   }): Promise<typeof userConsents.$inferSelect> {
     const [consent] = await db
       .insert(userConsents)
@@ -125,7 +125,7 @@ export class ConsentManager {
         and(
           eq(userConsents.userId, userId),
           eq(userConsents.organizationId /* was tenantId */, tenantId),
-          eq(userConsents.consentType, consentType as any),
+          eq(userConsents.consentType, consentType as unknown),
           eq(userConsents.status, "granted")
         )
       )
@@ -225,7 +225,7 @@ export class GdprRequestManager {
   static async requestDataAccess(data: {
     userId: string;
     tenantId: string;
-    requestDetails?: any;
+    requestDetails?: unknown;
     verificationMethod?: string;
   }): Promise<typeof gdprDataRequests.$inferSelect> {
     const deadline = new Date();
@@ -270,7 +270,7 @@ export class GdprRequestManager {
       });
     } catch (error) {
       logger.error("Failed to send GDPR request notification", { error });
-      // Don't fail the request creation if notification fails
+      // Don&apos;t fail the request creation if notification fails
     }
     return request;
   }
@@ -281,7 +281,7 @@ export class GdprRequestManager {
   static async requestDataErasure(data: {
     userId: string;
     tenantId: string;
-    requestDetails?: any;
+    requestDetails?: unknown;
     verificationMethod?: string;
   }): Promise<typeof gdprDataRequests.$inferSelect> {
     const deadline = new Date();
@@ -307,7 +307,7 @@ export class GdprRequestManager {
     userId: string;
     tenantId: string;
     preferredFormat?: "json" | "csv" | "xml";
-    requestDetails?: any;
+    requestDetails?: unknown;
   }): Promise<typeof gdprDataRequests.$inferSelect> {
     const deadline = new Date();
     deadline.setDate(deadline.getDate() + 30);
@@ -370,11 +370,11 @@ export class GdprRequestManager {
     status: "in_progress" | "completed" | "rejected",
     data?: {
       processedBy?: string;
-      responseData?: any;
+      responseData?: unknown;
       rejectionReason?: string;
     }
   ) {
-    const updateData: any = {
+    const updateData: unknown = {
       status,
       updatedAt: new Date(),
       ...data,
@@ -409,7 +409,7 @@ export class DataExportService {
     userId: string,
     tenantId: string,
     format: "json" | "csv" | "xml" = "json"
-  ): Promise<any> {
+  ): Promise<unknown> {
     // Collect all user data from various tables
     const userData = {
       exportDate: new Date().toISOString(),
@@ -432,7 +432,7 @@ export class DataExportService {
   private static async getProfileData(userId: string) {
     // Query profile data
     const result = await db.query.profiles.findFirst({
-      where: (profiles: any, { eq }: any) => eq(profiles.userId, userId),
+      where: (profiles: unknown, { eq }: unknown) => eq(profiles.userId, userId),
     });
     return result;
   }
@@ -533,7 +533,7 @@ export class DataExportService {
 
       // Query claim updates/notes for user's claims
       const claimIds = userClaims.map(c => c.claimId);
-      let claimNotes: any[] = [];
+      let claimNotes: unknown[] = [];
       
       if (claimIds.length > 0) {
         claimNotes = await db.query.claimUpdates.findMany({
@@ -567,7 +567,7 @@ export class DataExportService {
         {
           dataType: "claim_notes",
           count: claimNotes.length,
-          data: claimNotes.map((n: any) => ({
+          data: claimNotes.map((n: unknown) => ({
             updateId: n.updateId,
             claimId: n.claimId,
             updateType: n.updateType,

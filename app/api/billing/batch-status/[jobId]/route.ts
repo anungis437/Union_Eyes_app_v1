@@ -1,12 +1,8 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // Get batch job status
 export const GET = async (req: NextRequest, { params }: { params: { jobId: string } }) => {
   return withRoleAuth('steward', async (request, context) => {
@@ -26,7 +22,7 @@ export const GET = async (req: NextRequest, { params }: { params: { jobId: strin
       };
       let startedAt = new Date().toISOString();
       let estimatedCompletion = null;
-      let errors: any[] = [];
+      let errors: Array<Record<string, unknown>> = [];
 
       // Check if this is a newsletter campaign job
       if (jobId.startsWith('campaign-')) {
@@ -34,7 +30,7 @@ export const GET = async (req: NextRequest, { params }: { params: { jobId: strin
         
         const { newsletterCampaigns, newsletterRecipients } = await import('@/db/schema');
         const { db } = await import('@/db');
-        const { eq, and, sql } = await import('drizzle-orm');
+        const { and } = await import('drizzle-orm');
 
         // Get campaign details
         const [campaign] = await db

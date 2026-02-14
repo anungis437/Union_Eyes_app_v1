@@ -21,7 +21,7 @@ export default function LoginPage() {
     }
   }, [isLoaded, isSignedIn, redirectUrl, router]);
 
-  // Don't render SignIn if already signed in or still loading
+  // Don&apos;t render SignIn if already signed in or still loading
   if (!isLoaded || isSignedIn) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">

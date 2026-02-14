@@ -17,8 +17,8 @@ export default async function ExpensesPage() {
     redirect('/login');
   }
 
-  const organizationId = (user as any).organizationId;
-  const userLevel = (user as any).roleLevel || 0;
+  const organizationId = (user as Record<string, unknown>).organizationId as string;
+  const userLevel = (user as Record<string, unknown>).roleLevel as number || 0;
 
   return (
     <div className="container mx-auto py-10">

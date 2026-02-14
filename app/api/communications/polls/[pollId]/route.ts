@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { polls, pollVotes } from '@/db/schema';
-import { and, eq } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { z } from 'zod';
 import { withApiAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // Validation schema for update
 const UpdatePollSchema = z.object({
   question: z.string().min(1).max(200).optional(),
@@ -54,7 +50,7 @@ export const GET = withApiAuth(async (
     }
 
     // Calculate percentages for options
-    const optionsWithPercentages = (poll.options as any[]).map((option: any) => ({
+    const optionsWithPercentages = (poll.options as Array<Record<string, unknown>>).map((option: Record<string, unknown>) => ({
       ...option,
       percentage: poll.totalVotes > 0 ? (option.votes / poll.totalVotes) * 100 : 0,
     }));
@@ -117,7 +113,7 @@ export const PUT = withApiAuth(async (
     }
 
     // Prepare update data
-    const updateData: any = {
+    const updateData = {
       updatedBy: userId,
       updatedAt: new Date(),
     };
@@ -190,7 +186,7 @@ export const DELETE = withApiAuth(async (
     );
     }
 
-    // Don't allow deleting active polls with votes
+    // Don&apos;t allow deleting active polls with votes
     if (existingPoll.status === 'active' && existingPoll.totalVotes > 0) {
       return NextResponse.json(
         { error: 'Cannot delete poll that has votes. Please close it instead.' },

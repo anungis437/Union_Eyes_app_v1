@@ -354,7 +354,7 @@ function SecurityNotice() {
               <li>• Your verification code confirms your vote without revealing choices</li>
               <li>• Votes are encrypted and anonymized before storage</li>
               <li>• No one can connect your code to how you voted</li>
-              <li>• Keep your code private - it's your proof of participation</li>
+              <li>• Keep your code private - it&apos;s your proof of participation</li>
             </ul>
           </div>
         </div>
@@ -381,7 +381,7 @@ function FAQSection() {
         "You can verify your vote immediately after submission and at any time until results are finalized.",
     },
     {
-      question: "What if my code doesn't work?",
+      question: "What if my code doesn&apos;t work?",
       answer:
         "Contact election administrators if your verification code shows invalid. Keep your email receipt as backup proof.",
     },

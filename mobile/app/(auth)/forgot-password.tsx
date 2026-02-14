@@ -79,7 +79,7 @@ export default function ForgotPasswordScreen() {
       setEmail(data.email);
       setStep('code');
       Alert.alert('Code Sent', `A verification code has been sent to ${data.email}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       Alert.alert('Error', err.errors?.[0]?.message || 'Failed to send reset code');
     } finally {
       setLoading(false);
@@ -98,7 +98,7 @@ export default function ForgotPasswordScreen() {
       });
 
       setStep('success');
-    } catch (err: any) {
+    } catch (err: unknown) {
       Alert.alert('Error', err.errors?.[0]?.message || 'Failed to reset password');
     } finally {
       setLoading(false);

@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { sql } from 'drizzle-orm';
 import * as Sentry from '@sentry/nextjs';
 import { Redis } from '@upstash/redis';
-import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { ErrorCode } from '@/lib/api/standardized-responses';
 import { getApiHealthStatus } from '@/lib/api-client';
 
 interface HealthCheckResult {

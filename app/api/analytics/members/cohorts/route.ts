@@ -8,15 +8,11 @@
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
-import { sql, db } from '@/db';
+import { db } from '@/db';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 interface CohortData {
   cohortMonth: string;
   size: number;
@@ -90,7 +86,7 @@ export const GET = withEnhancedRoleAuth(40, async (req: NextRequest, context) =>
       FROM member_activity
       GROUP BY cohort_month
       ORDER BY cohort_month DESC
-    `) as any[];
+    `) as Array<Record<string, unknown>>;
     });
 
     const cohortData: CohortData[] = cohorts.map(row => ({

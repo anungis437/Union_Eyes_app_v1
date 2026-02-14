@@ -2,16 +2,12 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { courseRegistrations, courseSessions, trainingCourses, members } from "@/db/schema";
-import { eq, and, inArray } from "drizzle-orm";
+import { and, inArray } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // GET /api/education/sessions/[id]/attendance - Get attendance records for session
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
@@ -165,7 +161,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
           if (!registration) return null;
 
           // Build attendance dates array
-          const currentDates = (registration.attendanceDates as any[]) || [];
+          const currentDates = (registration.attendanceDates as Array<Record<string, unknown>>) || [];
           const updatedDates = attended
             ? [...currentDates, attendanceDateValue.toISOString()]
             : currentDates;
@@ -244,7 +240,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         }
 
         // Build attendance dates array
-        const currentDates = (registration.attendanceDates as any[]) || [];
+        const currentDates = (registration.attendanceDates as Array<Record<string, unknown>>) || [];
         const updatedDates = attended
           ? [...currentDates, attendanceDateValue.toISOString()]
           : currentDates;
@@ -325,7 +321,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
       }
 
       // Build update object
-      const updateData: any = {
+      const updateData = {
         updatedAt: new Date().toISOString(),
       };
 

@@ -263,7 +263,7 @@ export default function SocialMediaPostComposer() {
     setIsGeneratingContent(true);
     // Simulate API call
     setTimeout(() => {
-      setContent(prev => `${prev}\n\n🔔 Don't miss out! RSVP today.`);
+      setContent(prev => `${prev}\n\n🔔 Don&apos;t miss out! RSVP today.`);
       setIsGeneratingContent(false);
     }, 1500);
   };
@@ -375,7 +375,7 @@ export default function SocialMediaPostComposer() {
               <div className="space-y-2">
                 <Label>Message</Label>
                 <Textarea
-                  placeholder="What's on your mind?"
+                  placeholder="What&apos;s on your mind?"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   rows={8}

@@ -271,7 +271,7 @@ export class SquareProcessor extends BasePaymentProcessor {
     try {
       this.logOperation('cancelPaymentIntent', { paymentIntentId });
 
-      // Square doesn't support direct cancellation, but we can try to cancel
+      // Square doesn&apos;t support direct cancellation, but we can try to cancel
       const response = await this.squareRequest<{ payment: SquarePayment }>(
         `/v2/payments/${paymentIntentId}/cancel`,
         { method: 'POST' }

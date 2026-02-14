@@ -14,13 +14,9 @@ import {
   getPrecedentsByIssueType
 } from "@/lib/services/precedent-service";
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(10, async (request, context) => {
   try {
@@ -52,7 +48,7 @@ export const GET = async (request: NextRequest) => {
       }
 
       // Build filters
-      const filters: any = {};
+      const filters = {};
       
       const tribunal = searchParams.get("tribunal");
       if (tribunal) {
@@ -253,7 +249,7 @@ export const POST = async (request: NextRequest) => {
     );
     } catch (error) {
 // Handle unique constraint violations
-      if ((error as any)?.code === "23505") {
+      if (error && typeof error === 'object' && 'code' in error && error.code === "23505") {
         return standardErrorResponse(
       ErrorCode.ALREADY_EXISTS,
       'Case number already exists',

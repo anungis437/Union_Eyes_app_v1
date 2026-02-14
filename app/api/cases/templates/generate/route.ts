@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     });
 
     // TODO: Generate PDF/DOCX using a library like puppeteer or docx
-    // For now, we'll just store the HTML content
+    // For now, we&apos;ll just store the HTML content
     const documentUrl = null; // Would be set after PDF generation
 
     // Create generated document record
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },

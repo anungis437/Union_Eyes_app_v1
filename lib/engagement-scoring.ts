@@ -117,7 +117,7 @@ export async function calculateEngagementScore(
     .select({
       received: sql<number>`count(*)`,
       replied: sql<number>`count(case when ${smsMessages.direction} = 'inbound' then 1 end)`,
-      clicked: sql<number>`0`, // SMS doesn't track clicks
+      clicked: sql<number>`0`, // SMS doesn&apos;t track clicks
       lastActivity: sql<Date>`max(${smsMessages.sentAt})`,
     })
     .from(smsMessages)
@@ -476,7 +476,7 @@ export async function identifyReEngagementTargets(
 
   for (const score of scores) {
     // Get profile details
-    // Note: profiles table doesn't have firstName/lastName fields
+    // Note: profiles table doesn&apos;t have firstName/lastName fields
     const profile = await db
       .select({
         userId: profiles.userId,

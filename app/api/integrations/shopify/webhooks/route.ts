@@ -15,11 +15,7 @@ import {
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { logger } from '@/lib/logger';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * Shopify Webhook Handler
  * 
@@ -140,7 +136,7 @@ export async function POST(request: NextRequest) {
  * When a Shopify order is paid, mark the redemption as "ordered".
  * This confirms that the member completed checkout successfully.
  */
-async function handleOrderPaid(payload: any) {
+async function handleOrderPaid(payload: Record<string, unknown>) Record<string, unknown>) {
   const orderId = String(payload.id);
   const orderNumber = payload.order_number;
   const discountCodes = payload.discount_codes || [];
@@ -169,7 +165,7 @@ async function handleOrderPaid(payload: any) {
       order_number: orderNumber,
       total_price: payload.total_price,
       currency: payload.currency,
-      line_items: payload.line_items?.map((item: any) => ({
+      line_items: payload.line_items?.map((item: Record<string, unknown>) => ({
         product_id: item.product_id,
         variant_id: item.variant_id,
         title: item.title,
@@ -199,7 +195,7 @@ async function handleOrderPaid(payload: any) {
  * When a Shopify order is fulfilled (shipped), mark the redemption as "fulfilled".
  * This completes the redemption lifecycle.
  */
-async function handleOrderFulfilled(payload: any) {
+async function handleOrderFulfilled(payload: Record<string, unknown>) Record<string, unknown>) {
   const orderId = String(payload.id);
   const orderNumber = payload.order_number;
   const fulfillments = payload.fulfillments || [];
@@ -243,9 +239,9 @@ async function handleOrderFulfilled(payload: any) {
  * Handle refunds/create webhook
  * 
  * When a Shopify order is refunded, return credits to the member's wallet.
- * This ensures members aren't charged for cancelled/returned orders.
+ * This ensures members aren&apos;t charged for cancelled/returned orders.
  */
-async function handleRefundCreated(payload: any) {
+async function handleRefundCreated(payload: Record<string, unknown>) Record<string, unknown>) {
   const refundId = String(payload.id);
   const orderId = String(payload.order_id);
   const refundLineItems = payload.refund_line_items || [];
@@ -261,7 +257,7 @@ async function handleRefundCreated(payload: any) {
   }
 
   // Calculate total refund amount (in cents/minor units)
-  const totalRefund = refundLineItems.reduce((sum: number, item: any) => {
+  const totalRefund = refundLineItems.reduce((sum: number, item: Record<string, unknown>) => {
     return sum + parseFloat(item.subtotal || 0);
   }, 0);
 
@@ -273,7 +269,7 @@ async function handleRefundCreated(payload: any) {
       refund_id: refundId,
       refund_amount: totalRefund,
       currency: payload.currency || 'CAD',
-      refund_line_items: refundLineItems.map((item: any) => ({
+      refund_line_items: refundLineItems.map((item: Record<string, unknown>) => ({
         line_item_id: item.line_item_id,
         quantity: item.quantity,
         subtotal: item.subtotal,

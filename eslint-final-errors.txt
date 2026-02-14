@@ -1,0 +1,142 @@
+﻿
+C:\APPS\Union_Eyes_app_v1\lib\ai\services\cost-tracking-wrapper.ts
+   30:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   33:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   55:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  229:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  278:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\api-auth-guard.ts
+   886:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1034:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1155:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\api\standardized-responses.ts
+  118:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  250:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\csrf-client.ts
+  268:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\database\multi-db-client.ts
+  112:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\enterprise-role-middleware.ts
+  110:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  237:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  350:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\events\event-bus.ts
+   29:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   30:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   32:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   66:10  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   92:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  118:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  177:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\accounting\freshbooks-client.ts
+   51:18  error  Unsafe declaration merging between classes and interfaces  @typescript-eslint/no-unsafe-declaration-merging
+  100:14  error  Unsafe declaration merging between classes and interfaces  @typescript-eslint/no-unsafe-declaration-merging
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\types.ts
+  194:18  error  Unsafe declaration merging between classes and interfaces  @typescript-eslint/no-unsafe-declaration-merging
+  305:14  error  Unsafe declaration merging between classes and interfaces  @typescript-eslint/no-unsafe-declaration-merging
+
+C:\APPS\Union_Eyes_app_v1\lib\organization-middleware.ts
+  32:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\role-middleware.ts
+   56:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  130:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\social-media\meta-api-client.ts
+  100:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\social-media\twitter-api-client.ts
+  119:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\tenant-middleware.ts
+  31:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\workers\cleanup-worker.ts
+  157:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  195:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  205:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  208:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  208:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  211:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\workers\email-worker.ts
+   48:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  126:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  175:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  176:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  220:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  229:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  237:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  312:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  331:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  335:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  335:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  339:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\workers\message-queue-processor.ts
+  133:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  165:97  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  179:97  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  232:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  321:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  524:74  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\workers\notification-worker.ts
+   36:66  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  126:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  165:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  182:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  208:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  301:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  302:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  302:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  305:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  319:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  324:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  353:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  378:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  388:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  392:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  392:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  396:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\workers\report-worker.ts
+   61:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  141:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  150:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  194:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  197:61  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  243:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  252:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  345:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  349:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  392:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  405:69  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  410:70  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  415:73  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  420:68  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  425:75  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  497:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  507:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  510:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  510:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  513:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\workers\sms-worker.ts
+  128:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  184:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  198:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  201:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  201:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  204:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+Γ£û 99 problems (99 errors, 0 warnings)
+

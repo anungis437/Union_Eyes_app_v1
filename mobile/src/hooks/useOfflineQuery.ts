@@ -137,7 +137,7 @@ export function useOfflineQuery<TData = unknown, TError = Error>(
         }
 
         return data;
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Fallback to local DB
         const localData = await localDB.findAll(entity);
         if (localData && localData.length > 0) {
@@ -265,7 +265,7 @@ export function useOfflineMutation<TData = unknown, TVariables = unknown, TError
         }
 
         return result;
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Rollback optimistic update on error
         if (previousData !== undefined) {
           queryClient.setQueryData([entity], previousData);

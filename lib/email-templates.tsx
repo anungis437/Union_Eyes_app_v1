@@ -404,7 +404,7 @@ const footerText = {
  */
 export function renderClaimStatusEmail(props: ClaimNotificationEmailProps): string {
   // Note: In production, you would use @react-email/render
-  // For now, we'll use a simple approach
+  // For now, we&apos;ll use a simple approach
   const React = require('react');
   const { renderToStaticMarkup } = require('react-dom/server');
   

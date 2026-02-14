@@ -13,8 +13,8 @@ import {
   searchDocuments,
   getDocumentStatistics 
 } from "@/lib/services/document-service";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
-import { standardErrorResponse, standardSuccessResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 /**
  * Validation schema for creating documents
@@ -122,7 +122,7 @@ export const GET = withRoleAuth(10, async (request, context) => {
     // Advanced search mode
     if (search) {
       const searchQuery = searchParams.get("searchQuery") || "";
-      const filters: any = {};
+      const filters = {};
 
       const category = searchParams.get("category");
       if (category) filters.category = category;
@@ -154,7 +154,7 @@ export const GET = withRoleAuth(10, async (request, context) => {
     }
 
     // Build filters
-    const filters: any = { organizationId: organizationIdParam };
+    const filters = { organizationId: organizationIdParam };
     
     const folderId = searchParams.get("folderId");
     if (folderId) filters.folderId = folderId;

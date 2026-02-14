@@ -36,7 +36,7 @@ const migrationSQL = fs.readFileSync(
       `;
 }
     
-  } catch (error: any) {
+  } catch (error: unknown) {
 process.exit(1);
   } finally {
     await sql.end();

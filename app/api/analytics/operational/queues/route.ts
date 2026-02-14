@@ -3,13 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { db } from '@/db/db';
 import { claims } from '@/db/schema/domains/claims';
-import { eq, and, sql } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 async function handler(req: NextRequest) {
   const user = await getCurrentUser();
   if (!user || !user.organizationId) {

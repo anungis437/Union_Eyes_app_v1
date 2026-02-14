@@ -310,7 +310,7 @@ export const DEFAULT_QUERY_TIMEOUTS: QueryTimeoutConfig = {
   insertTimeout: 10000,       // 10 seconds
   updateTimeout: 10000,       // 10 seconds
   deleteTimeout: 10000,       // 10 seconds
-  killOnTimeout: false,       // Don't kill by default
+  killOnTimeout: false,       // Don&apos;t kill by default
 };
 
 /**

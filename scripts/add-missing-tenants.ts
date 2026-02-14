@@ -42,7 +42,7 @@ async function main() {
         `);
         console.log(`  ✅ Added tenant ${org.name} with slug ${slug}`);
         break;
-      } catch (e: any) {
+      } catch (e: unknown) {
         if (e.code === '23505') {
           // Slug collision, try with suffix
           slug = `${org.slug}-${suffix}`;

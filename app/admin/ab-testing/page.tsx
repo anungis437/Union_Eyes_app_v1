@@ -258,7 +258,7 @@ export default function ABTestingDashboardPage() {
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <strong>Wait for statistical significance</strong> - Don't stop tests early (aim for 95%+ confidence)
+                  <strong>Wait for statistical significance</strong> - Don&apos;t stop tests early (aim for 95%+ confidence)
                 </div>
               </li>
               <li className="flex items-start gap-2">

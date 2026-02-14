@@ -132,7 +132,7 @@ export function BulkAwardForm({ awardTypes, onSuccess, onCancel }: BulkAwardForm
           failedCount++;
           errors.push(`${recipient.name}: ${result.error}`);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         failedCount++;
         errors.push(`${recipient.name}: ${error.message}`);
       }

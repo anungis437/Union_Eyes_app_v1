@@ -58,7 +58,7 @@ export default function TestimonialApprovalActions({
       }
 
       router.refresh();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message);
     } finally {
       setLoading(false);
@@ -88,7 +88,7 @@ export default function TestimonialApprovalActions({
 
       setDialogOpen(false);
       router.refresh();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message);
     } finally {
       setLoading(false);
@@ -114,7 +114,7 @@ export default function TestimonialApprovalActions({
       }
 
       router.refresh();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message);
     } finally {
       setLoading(false);

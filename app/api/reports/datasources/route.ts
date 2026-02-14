@@ -13,11 +13,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { getAllDataSources } from '@/lib/report-executor';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 async function getHandler(req: NextRequest, context) {
   try {
     const user = await getCurrentUser();
@@ -58,7 +54,7 @@ async function getHandler(req: NextRequest, context) {
       dataSources: formattedDataSources,
       count: formattedDataSources.length,
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
 return NextResponse.json(
       { error: 'Failed to fetch data sources', details: error.message },
       { status: 500 }

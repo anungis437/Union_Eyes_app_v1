@@ -4,11 +4,7 @@ import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { governanceService } from "@/services/governance-service";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 interface RouteParams {
   params: {
     id: string;
@@ -28,7 +24,7 @@ const councilVoteSchema = z.object({
 });
 
 export const POST = async (request: NextRequest, { params }: RouteParams) =>
-  withEnhancedRoleAuth<any>(20, async (_request, context) => {
+  withEnhancedRoleAuth(20, async (_request, context) => {
     const { userId } = context;
 
     let rawBody: unknown;

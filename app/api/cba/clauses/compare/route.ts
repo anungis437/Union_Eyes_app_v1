@@ -10,15 +10,11 @@ import { z } from 'zod';
 import { NextRequest, NextResponse } from "next/server";
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { cbaClause, clauseComparisons, collectiveAgreements } from "@/db/schema";
-import { inArray, eq, and } from "drizzle-orm";
+import { inArray, and } from "drizzle-orm";
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { db } from '@/db/db';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * POST /api/cba/clauses/compare
  * Compare clauses across multiple CBAs
@@ -155,7 +151,7 @@ return standardErrorResponse(
  * Analyze clause content and extract insights
  * In production, this would use OpenAI API for sophisticated analysis
  */
-function analyzeClauseContent(clauses: any[], analysisType: string) {
+function analyzeClauseContent(clauses: Array<Record<string, unknown>>, analysisType: string) {
   const similarities: string[] = [];
   const differences: string[] = [];
   const bestPractices: string[] = [];

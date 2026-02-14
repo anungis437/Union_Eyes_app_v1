@@ -39,7 +39,7 @@ export default function ClaimsPage() {
         </Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v)}>
         <TabsList>
           <TabsTrigger value="list">My Claims</TabsTrigger>
           <TabsTrigger value="submit">Submit Claim</TabsTrigger>

@@ -42,7 +42,7 @@ async function testSessionContext() {
     
     console.log('\n✅ Session context is working correctly!');
     process.exit(0);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ Error:', error.message);
     process.exit(1);
   }

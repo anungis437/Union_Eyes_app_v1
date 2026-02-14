@@ -813,7 +813,7 @@ toast.error("Failed to optimize database");
                       <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                         <div
                           className="bg-green-600 h-2 rounded-full transition-all"
-                          {...({ style: { width: `${(local.activeCount / local.memberCount) * 100}%` } } as any)}
+                          style={{ width: `${(local.activeCount / local.memberCount) * 100}%` }}
                         ></div>
                       </div>
                     </div>

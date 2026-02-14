@@ -14,11 +14,7 @@ import { eq } from "drizzle-orm";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 /**
  * Validation schema for updating incidents
@@ -200,7 +196,7 @@ export const PATCH = async (
         }
 
         // Prepare update data
-        const updateData: any = {
+        const updateData = {
           ...updates,
           updatedBy: userId,
           updatedAt: new Date(),
@@ -301,7 +297,7 @@ export const DELETE = async (
           .update(workplaceIncidents)
           .set({
             metadata: {
-              ...existing.metadata as any,
+              ...(existing.metadata as Record<string, unknown> || {}),
               deleted: true,
               deletedAt: new Date().toISOString(),
               deletedBy: userId,

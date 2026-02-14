@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Client-side CSRF Protection Utilities
  * 
  * Helper functions for including CSRF tokens in client-side requests.
@@ -96,9 +96,9 @@ export async function fetchWithCSRF(
  * setupAxiosCSRF(api);
  * ```
  */
-export function setupAxiosCSRF(axiosInstance: any): void {
+export function setupAxiosCSRF(axiosInstance: unknown): void {
   axiosInstance.interceptors.request.use(
-    (config: any) => {
+    (config: unknown) => {
       const method = config.method?.toUpperCase();
 
       // Add CSRF token for state-changing requests
@@ -113,7 +113,7 @@ export function setupAxiosCSRF(axiosInstance: any): void {
 
       return config;
     },
-    (error: any) => {
+    (error: unknown) => {
       return Promise.reject(error);
     }
   );
@@ -267,7 +267,7 @@ export async function submitFormWithCSRF(
  */
 export async function submitJSONWithCSRF<T = any>(
   url: string,
-  data: any,
+  data: unknown,
   method: string = 'POST'
 ): Promise<T> {
   const csrfToken = getCSRFToken();
@@ -286,7 +286,7 @@ export async function submitJSONWithCSRF<T = any>(
   });
 
   if (!response.ok) {
-    const error: any = new Error(`HTTP ${response.status}: ${response.statusText}`);
+    const error: unknown = new Error(`HTTP ${response.status}: ${response.statusText}`);
     error.response = response;
     throw error;
   }

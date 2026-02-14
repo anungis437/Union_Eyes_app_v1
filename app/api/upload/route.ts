@@ -5,13 +5,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { claims } from '@/db/schema/domains/claims';
 import { eq } from 'drizzle-orm';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // Maximum file size: 10MB
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
@@ -262,7 +258,7 @@ export const DELETE = async (request: NextRequest) => {
         })
         .where(eq(claims.claimId, claimId));
 
-      // Note: We don't delete from Vercel Blob to maintain audit trail
+      // Note: We don&apos;t delete from Vercel Blob to maintain audit trail
       // Files can be manually cleaned up if needed
 
       return NextResponse.json({

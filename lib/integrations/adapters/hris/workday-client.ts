@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Workday API Client
  * 
  * Handles OAuth2 authentication and API communication with Workday.
@@ -221,12 +221,12 @@ export class WorkdayClient {
     if (options?.limit) params.set('limit', options.limit.toString());
     if (options?.offset) params.set('offset', options.offset.toString());
 
-    const response = await this.request<any>(
+    const response = await this.request<unknown>(
       `/workers?${params.toString()}`
     );
 
     return {
-      data: response.data.map((worker: any) => this.mapWorkerToEmployee(worker)),
+      data: response.data.map((worker: unknown) => this.mapWorkerToEmployee(worker)),
       total: response.total || response.data.length,
       cursor: response.next_cursor,
     };
@@ -236,14 +236,14 @@ export class WorkdayClient {
    * Get a single employee by ID
    */
   async getEmployee(employeeId: string): Promise<WorkdayEmployee> {
-    const response = await this.request<any>(`/workers/${employeeId}`);
+    const response = await this.request<unknown>(`/workers/${employeeId}`);
     return this.mapWorkerToEmployee(response);
   }
 
   /**
    * Map Workday worker to our employee format
    */
-  private mapWorkerToEmployee(worker: any): WorkdayEmployee {
+  private mapWorkerToEmployee(worker: unknown): WorkdayEmployee {
     return {
       id: worker.id,
       employeeID: worker.descriptor || worker.id,
@@ -279,17 +279,17 @@ export class WorkdayClient {
     if (options?.limit) params.set('limit', options.limit.toString());
     if (options?.offset) params.set('offset', options.offset.toString());
 
-    const response = await this.request<any>(
+    const response = await this.request<unknown>(
       `/jobProfiles?${params.toString()}`
     );
 
     return {
-      data: response.data.map((profile: any) => this.mapJobProfileToPosition(profile)),
+      data: response.data.map((profile: unknown) => this.mapJobProfileToPosition(profile)),
       total: response.total || response.data.length,
     };
   }
 
-  private mapJobProfileToPosition(profile: any): WorkdayPosition {
+  private mapJobProfileToPosition(profile: unknown): WorkdayPosition {
     return {
       id: profile.id,
       title: profile.descriptor || profile.id,
@@ -314,17 +314,17 @@ export class WorkdayClient {
     if (options?.limit) params.set('limit', options.limit.toString());
     if (options?.offset) params.set('offset', options.offset.toString());
 
-    const response = await this.request<any>(
+    const response = await this.request<unknown>(
       `/organizations?${params.toString()}`
     );
 
     return {
-      data: response.data.map((org: any) => this.mapOrgToDepartment(org)),
+      data: response.data.map((org: unknown) => this.mapOrgToDepartment(org)),
       total: response.total || response.data.length,
     };
   }
 
-  private mapOrgToDepartment(org: any): WorkdayDepartment {
+  private mapOrgToDepartment(org: unknown): WorkdayDepartment {
     return {
       id: org.id,
       name: org.descriptor || org.id,
@@ -348,7 +348,7 @@ export class WorkdayClient {
     try {
       await this.ensureAuthenticated();
       // Simple request to verify connectivity
-      await this.request<any>('/workers?limit=1');
+      await this.request<unknown>('/workers?limit=1');
       return true;
     } catch (error) {
       logger.error('Workday health check failed', {

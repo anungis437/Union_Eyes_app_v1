@@ -38,7 +38,7 @@ async function makeSuperAdmin() {
         WHERE id = ${userId}
       `);
       console.log('✅ Updated profiles.role to super_admin');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log('ℹ️  Could not update profiles (column may not exist):', error.message);
     }
     
@@ -70,7 +70,7 @@ async function makeSuperAdmin() {
         )
       `);
       console.log('✅ Added user to organization_users with admin role');
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error.code === '42P01') {
         console.log('ℹ️  organization_users table does not exist - skipping');
       } else if (error.code === '23505') {

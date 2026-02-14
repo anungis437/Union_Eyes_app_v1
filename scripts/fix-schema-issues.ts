@@ -138,7 +138,7 @@ async function fixSchemaIssues() {
     console.log('\n✅ Schema fixes complete!');
     console.log('🔄 Please restart the dev server for changes to take effect.');
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('\n❌ Error:', error.message);
     if (error.code) {
       console.error(`   Error code: ${error.code}`);

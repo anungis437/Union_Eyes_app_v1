@@ -31,7 +31,7 @@ async function runTest(name: string, command: string): Promise<TestResult> {
       duration,
       details: `${stdout}\n${stderr}`.trim()
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return {
       name,
       passed: false,

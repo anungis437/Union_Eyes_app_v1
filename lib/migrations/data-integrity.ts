@@ -691,6 +691,7 @@ export async function exportReport(
   filePath: string
 ): Promise<boolean> {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const fs = require("fs");
     fs.writeFileSync(filePath, JSON.stringify(report, null, 2));
 return true;

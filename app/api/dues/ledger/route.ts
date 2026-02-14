@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
 import { memberDuesLedger, memberArrears } from '@/db/schema/dues-finance-schema';
-import { eq, and, desc, gte, lte, sql } from 'drizzle-orm';
+import { and, desc } from 'drizzle-orm';
 
 // Validation schema for creating transaction
 const createTransactionSchema = z.object({
@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
         totalPages: Math.ceil(Number(count) / limit),
       },
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching dues ledger:', error);
     return NextResponse.json(
       { error: 'Failed to fetch dues ledger', details: error.message },
@@ -181,7 +181,7 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },

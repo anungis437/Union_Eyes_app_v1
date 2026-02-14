@@ -1,9 +1,5 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * API Route: GET /api/activities
  * 
@@ -13,7 +9,7 @@ import {
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { organizationMembers } from '@/db/schema';
-import { eq, and, desc, sql, or, isNull } from 'drizzle-orm';
+import { and, desc, or, isNull } from 'drizzle-orm';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { getCurrentUser } from '@/lib/api-auth-guard';
 

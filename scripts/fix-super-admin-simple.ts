@@ -57,7 +57,7 @@ async function checkAndFix() {
       allUsers.forEach((u: any) => console.log(`  - ${u.email} (${u.user_id}) - role: ${u.role}`));
     }
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('\n❌ Error:', error.message);
     console.error('Stack:', error.stack);
   }

@@ -8,14 +8,10 @@
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
-import { sql, db } from '@/db';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { db } from '@/db';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 interface ChurnRiskMember {
   id: string;
   name: string;
@@ -83,7 +79,7 @@ async function handler(req: NextRequest, context) {
       WHERE days_since_last_activity >= 30  -- Only include members inactive for 30+ days
       ORDER BY churn_risk_score DESC
       LIMIT 100
-    `) as any[];
+    `) as Array<Record<string, unknown>>;
     });
 
     // Categorize risk levels

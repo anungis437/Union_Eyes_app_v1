@@ -3,14 +3,10 @@ import { z } from "zod";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db";
 import { members, billingTemplates } from "@/services/financial-service/src/db/schema";
-import { eq, and, inArray } from "drizzle-orm";
+import { and, inArray } from "drizzle-orm";
 import { addEmailJob } from "@/lib/job-queue";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 const renderTemplate = (template: string, data: Record<string, string>) => {
   let result = template;
   Object.entries(data).forEach(([key, value]) => {

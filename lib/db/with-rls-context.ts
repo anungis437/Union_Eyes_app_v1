@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Database RLS Context Middleware
  * 
  * Automatically sets PostgreSQL session variables for Row-Level Security policies.
@@ -53,10 +53,10 @@ export async function withRLSContext<T>(
   operation: () => Promise<T>
 ): Promise<T>;
 export async function withRLSContext<T>(
-  operation: (tx: NodePgDatabase<any>) => Promise<T>
+  operation: (tx: NodePgDatabase<unknown>) => Promise<T>
 ): Promise<T>;
 export async function withRLSContext<T>(
-  operation: ((tx: NodePgDatabase<any>) => Promise<T>) | (() => Promise<T>)
+  operation: ((tx: NodePgDatabase<unknown>) => Promise<T>) | (() => Promise<T>)
 ): Promise<T> {
   // Get authenticated user from Clerk
   const { userId } = await auth();
@@ -152,7 +152,7 @@ export async function withExplicitUserContext<T>(
 export async function withSystemContext<T>(
   operation: () => Promise<T>
 ): Promise<T> {
-  // System operations don't set user context
+  // System operations don&apos;t set user context
   // RLS policies should handle this with service role checks
   return await db.transaction(async (tx) => {
     // Explicitly clear any existing user context
@@ -312,7 +312,7 @@ export type RLSAwareQuery<T> = () => Promise<T>;
  * 
  * export const GET = withRLS(handleGET);
  */
-export function withRLS<TArgs extends any[], TReturn>(
+export function withRLS<TArgs extends unknown[], TReturn>(
   handler: (...args: TArgs) => Promise<TReturn>
 ): (...args: TArgs) => Promise<TReturn> {
   return async (...args: TArgs): Promise<TReturn> => {

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Deep Linker Library
  * 
  * Handles universal deep linking for mobile apps (iOS/Android)
@@ -227,8 +227,8 @@ export async function handleDeepLink(url: string): Promise<boolean> {
   }
 
   // Navigate to the parsed route
-  if (typeof window !== 'undefined' && (window as any).navigate) {
-    (window as any).navigate(parsed.route, parsed.params, parsed.query);
+  if (typeof window !== 'undefined' && (window as unknown).navigate) {
+    (window as unknown).navigate(parsed.route, parsed.params, parsed.query);
     return true;
   }
 
@@ -243,9 +243,9 @@ export function registerDeepLinkHandlers(): void {
   if (typeof window === 'undefined') return;
 
   // Handle universal links (iOS)
-  if ((navigator as any).registerProtocolHandler) {
+  if ((navigator as unknown).registerProtocolHandler) {
     try {
-      (navigator as any).registerProtocolHandler(
+      (navigator as unknown).registerProtocolHandler(
         'unioneyes',
         `${window.location.origin}/deep-link?url=%s`,
         'Union Eyes'

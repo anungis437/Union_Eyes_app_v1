@@ -107,7 +107,7 @@ export function PeerNominationForm({
       } else {
         setError(result.error || t('error.submit'));
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || t('error.submit'));
     } finally {
       setIsSubmitting(false);

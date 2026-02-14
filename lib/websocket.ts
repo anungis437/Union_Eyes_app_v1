@@ -134,7 +134,7 @@ export class WebSocketManager {
    * Handle subscription to a room
    */
   private handleSubscribe(socket: WebSocket, roomId: string, userId: string): void {
-    // Create room if doesn't exist
+    // Create room if doesn&apos;t exist
     if (!this.rooms.has(roomId)) {
       this.rooms.set(roomId, {
         id: roomId,

@@ -182,7 +182,7 @@ class DocumentUploadService {
         success: true,
         serverId: response.data.id,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
 
       // Handle retry
       if (task.retryCount < task.maxRetries) {

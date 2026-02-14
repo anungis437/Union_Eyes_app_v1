@@ -84,7 +84,7 @@ return null;
         '@opentelemetry/instrumentation-http': {
           enabled: true,
           ignoreIncomingRequestHook: (request) => {
-            // Don't trace health checks and static assets
+            // Don&apos;t trace health checks and static assets
             const url = request.url || '';
             return url.includes('/api/health') || 
                    url.includes('/_next/') ||

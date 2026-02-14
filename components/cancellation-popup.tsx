@@ -26,7 +26,7 @@ export default function CancellationPopup({ profile }: CancellationPopupProps) {
     try {
       const activePopup = localStorage.getItem('active_popup');
       if (activePopup) {
-        // Another popup is active, don't show this one
+        // Another popup is active, don&apos;t show this one
         return;
       }
     } catch (error) {
@@ -37,7 +37,7 @@ export default function CancellationPopup({ profile }: CancellationPopupProps) {
     const hasShownCancellation = localStorage.getItem(cancelationKey);
     
     if (!hasShownCancellation) {
-      // If we haven't shown it, show the popup now
+      // If we haven&apos;t shown it, show the popup now
       const timer = setTimeout(() => {
         // Check again right before showing that no other popup became active
         try {

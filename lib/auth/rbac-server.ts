@@ -133,7 +133,7 @@ export async function requireAuth(): Promise<{ userId: string; role: UserRole }>
 
 /**
  * Require specific permission
- * Throws an error if user doesn't have the permission
+ * Throws an error if user doesn&apos;t have the permission
  */
 export async function requirePermission(permission: Permission): Promise<{ userId: string; role: UserRole }> {
   const authData = await requireAuth();

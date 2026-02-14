@@ -49,7 +49,7 @@ export async function GET(
     }
 
     return NextResponse.json({ steward });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching steward assignment:', error);
     return NextResponse.json(
       { error: 'Failed to fetch steward assignment', details: error.message },
@@ -71,7 +71,7 @@ export async function PUT(
     const body = await request.json();
     const validatedData = updateStewardSchema.parse(body);
 
-    const updateData: any = {
+    const updateData = {
       ...validatedData,
       updatedAt: new Date(),
       lastModifiedBy: 'system', // TODO: Get from auth
@@ -104,7 +104,7 @@ export async function PUT(
       message: 'Steward assignment updated successfully',
       steward: updatedSteward,
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },
@@ -152,7 +152,7 @@ export async function DELETE(
       message: 'Steward assignment ended successfully',
       steward: deletedSteward,
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error ending steward assignment:', error);
     return NextResponse.json(
       { error: 'Failed to end steward assignment', details: error.message },

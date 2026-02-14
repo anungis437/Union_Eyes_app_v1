@@ -11,13 +11,9 @@ import { pensionTrustees } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
@@ -72,8 +68,8 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
       // Remove fields that shouldn't be updated
       delete updates.id;
       delete updates.createdAt;
-      delete updates.trustBoardId; // Can't change board
-      delete updates.memberId; // Can't change member
+      delete updates.trustBoardId; // Can&apos;t change board
+      delete updates.memberId; // Can&apos;t change member
 
       const result = await db
         .update(pensionTrustees)

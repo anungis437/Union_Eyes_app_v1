@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Deadline Management Service
  * 
  * Orchestrates deadline creation, monitoring, alerts, and escalations:
@@ -142,7 +142,7 @@ export async function getMemberUpcomingDeadlines(
   memberId: string,
   tenantId: string,
   daysAhead: number = 7
-): Promise<any> {
+): Promise<unknown> {
   const summary = await getMemberDeadlineSummary(memberId, tenantId);
   return summary;
 }
@@ -376,14 +376,14 @@ export async function getComplianceReport(
   tenantId: string,
   startDate?: Date,
   endDate?: Date
-): Promise<any> {
+): Promise<unknown> {
   return getDeadlineComplianceMetrics(tenantId, startDate, endDate);
 }
 
 /**
  * Get dashboard summary
  */
-export async function getDashboardSummary(tenantId: string): Promise<any> {
+export async function getDashboardSummary(tenantId: string): Promise<unknown> {
   return getDeadlineDashboardSummary(tenantId);
 }
 
@@ -393,7 +393,7 @@ export async function getDashboardSummary(tenantId: string): Promise<any> {
 export async function getMemberPerformance(
   memberId: string,
   tenantId: string
-): Promise<any> {
+): Promise<unknown> {
   return getMemberDeadlineSummary(memberId, tenantId);
 }
 

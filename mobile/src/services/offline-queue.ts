@@ -281,7 +281,7 @@ class OfflineQueue {
       const response = await this.executeOperation(operation);
       this.notifyListeners(operation, 'completed');
       this.dequeue(operation.id);
-    } catch (error: any) {
+    } catch (error: unknown) {
       operation.retryCount++;
       operation.lastError = error.message || 'Unknown error';
 

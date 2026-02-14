@@ -282,7 +282,7 @@ export function EmployerManagement({ organizationId, onUpdate }: EmployerManagem
       setIsDialogOpen(false);
       fetchEmployers();
       onUpdate?.();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
         description: error.message || "Failed to save employer",

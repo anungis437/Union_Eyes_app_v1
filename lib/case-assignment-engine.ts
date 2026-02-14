@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 // INTELLIGENT CASE ASSIGNMENT ENGINE
 // ============================================================================
 // Description: Automated assignment system with workload balancing, expertise
@@ -402,8 +402,8 @@ async function getEligibleOfficers(
       const workload = await getOfficerWorkload(officer.userId, tenantId);
       
       // Extract metadata (this would come from officer profile/settings)
-      // Note: organizationMembers doesn't have metadata - using defaults
-      const metadata: Record<string, any> = {};
+      // Note: organizationMembers doesn&apos;t have metadata - using defaults
+      const metadata: Record<string, unknown> = {};
       
       profiles.push({
         userId: officer.userId,
@@ -432,7 +432,7 @@ return [];
  */
 async function scoreOfficers(
   officers: OfficerProfile[],
-  claim: any,
+  claim: unknown,
   criteria: AssignmentCriteria,
   tenantId: string
 ): Promise<AssignmentRecommendation[]> {
@@ -600,7 +600,7 @@ export async function getOfficerWorkload(
       })
     );
 
-    const metadata: Record<string, any> = {};
+    const metadata: Record<string, unknown> = {};
     const maxCaseload = metadata.maxCaseload || 20;
     const utilizationRate = Math.round((activeCases / maxCaseload) * 100);
 
@@ -768,7 +768,7 @@ export async function removeCollaborator(
       return { success: false, error: "Assignment not found" };
     }
 
-    // Don't allow removing primary officer this way
+    // Don&apos;t allow removing primary officer this way
     if (assignment.role === "primary_officer") {
       return {
         success: false,

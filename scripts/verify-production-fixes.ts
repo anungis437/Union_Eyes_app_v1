@@ -52,8 +52,8 @@ try {
   enabled.forEach((job: any) => {
     console.log(`     - ${job.name} (${job.schedule})`);
   });
-} catch (e: any) {
-  console.log(`  ❌ Error loading jobs: ${e.message}`);
+} catch (e: unknown) {
+  console.log(`  ❌ Error loading jobs: ${(e as Error).message}`);
 }
 
 // Test 4: Check analytics cache (async)
@@ -78,7 +78,7 @@ console.log('\n💾 Test 4: Analytics Cache (Redis)...');
         console.log('  ❌ Cache methods are NOT async (old implementation)');
       }
     }
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.log(`  ⚠️  ${e.message}`);
     if (e.message.includes('UPSTASH_REDIS')) {
       console.log('     This is expected if Redis is not configured yet');
@@ -97,7 +97,7 @@ console.log('\n💾 Test 4: Analytics Cache (Redis)...');
     } else {
       console.log('  ⚠️  authOptions has content (check if intentional)');
     }
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.log(`  ⚠️  ${e.message}`);
   }
   
@@ -120,7 +120,7 @@ console.log('\n💾 Test 4: Analytics Cache (Redis)...');
     } else {
       console.log('  ❌ Organization switch API NOT found');
     }
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.log(`  ⚠️  ${e.message}`);
   }
   
@@ -146,7 +146,7 @@ console.log('\n💾 Test 4: Analytics Cache (Redis)...');
     if (content.includes('REDIS_HOST is not configured')) {
       console.log('  ✅ Environment validation added');
     }
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.log(`  ⚠️  ${e.message}`);
   }
   

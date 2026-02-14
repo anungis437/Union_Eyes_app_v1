@@ -247,7 +247,7 @@ async function shouldSkipMessage(message: any): Promise<boolean> {
     if (message.channel === 'sms' && prefs.smsOptIn !== 'true') return true;
 
     // Check quiet hours (only for non-urgent messages)
-    // Note: Campaign type checking removed as schema doesn't have a type field
+    // Note: Campaign type checking removed as schema doesn&apos;t have a type field
     // Quiet hours apply to all messages unless they need immediate delivery
     if (prefs.quietHoursStart && prefs.quietHoursEnd) {
       const now = new Date();
@@ -266,7 +266,7 @@ async function shouldSkipMessage(message: any): Promise<boolean> {
     return false;
   } catch (error) {
     console.error('[MessageQueue] Error checking if should skip:', error);
-    return false; // Don't skip on error
+    return false; // Don&apos;t skip on error
   }
 }
 

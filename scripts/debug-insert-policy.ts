@@ -51,7 +51,7 @@ async function debugInsertPolicy() {
     
     await sql.end();
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error:', error.message);
     await sql.end();
     process.exit(1);

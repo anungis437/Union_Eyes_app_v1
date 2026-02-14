@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Alert Rules Management
  * 
  * Core functionality for defining, validating, and managing alert rules
@@ -390,9 +390,9 @@ export function validateAlertRule(rule: Partial<AlertRule>): AlertRuleValidation
   try {
     // Schema validation
     AlertRuleSchema.parse(rule);
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error.errors) {
-      errors.push(...error.errors.map((e: any) => `${e.path.join('.')}: ${e.message}`));
+      errors.push(...error.errors.map((e: unknown) => `${e.path.join('.')}: ${e.message}`));
     }
   }
 
@@ -488,7 +488,7 @@ export function createRuleFromTemplate(
     category: template.category,
     severity: template.severity,
     rule_type: template.rule_type,
-    conditions: template.default_conditions as any,
+    conditions: template.default_conditions as unknown,
     recipients: template.recommended_recipients.map(channel => ({
       channel,
       target: '', // Must be filled in by user

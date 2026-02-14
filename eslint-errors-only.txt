@@ -1,0 +1,116 @@
+﻿
+C:\APPS\Union_Eyes_app_v1\lib\ai\services\cost-tracking-wrapper.ts
+   30:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   33:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   55:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  229:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  278:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\api-auth-guard.ts
+   886:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1034:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1155:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\api\standardized-responses.ts
+  118:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  250:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\auth\roles.ts
+  250:3  error  Duplicate enum member value manage_affiliates        @typescript-eslint/no-duplicate-enum-values
+  251:3  error  Duplicate enum member value view_all_organizations   @typescript-eslint/no-duplicate-enum-values
+  252:3  error  Duplicate enum member value manage_organizations     @typescript-eslint/no-duplicate-enum-values
+  253:3  error  Duplicate enum member value view_compliance_reports  @typescript-eslint/no-duplicate-enum-values
+  254:3  error  Duplicate enum member value manage_sector_analytics  @typescript-eslint/no-duplicate-enum-values
+
+C:\APPS\Union_Eyes_app_v1\lib\calendar-reminder-scheduler.ts
+  21:1  error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+
+C:\APPS\Union_Eyes_app_v1\lib\csrf-client.ts
+  268:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\database\multi-db-client.ts
+  112:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\enterprise-role-middleware.ts
+  110:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  237:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  350:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\events\event-bus.ts
+   29:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   30:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   32:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   66:10  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   92:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  118:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  177:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\examples\static-generation-patterns.ts
+  1:1  error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\adapters\accounting\freshbooks-client.ts
+   51:18  error  Unsafe declaration merging between classes and interfaces  @typescript-eslint/no-unsafe-declaration-merging
+  100:14  error  Unsafe declaration merging between classes and interfaces  @typescript-eslint/no-unsafe-declaration-merging
+
+C:\APPS\Union_Eyes_app_v1\lib\integrations\types.ts
+  194:18  error  Unsafe declaration merging between classes and interfaces  @typescript-eslint/no-unsafe-declaration-merging
+  305:14  error  Unsafe declaration merging between classes and interfaces  @typescript-eslint/no-unsafe-declaration-merging
+
+C:\APPS\Union_Eyes_app_v1\lib\job-queue.ts
+  29:20  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  35:19  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\APPS\Union_Eyes_app_v1\lib\middleware\auth-middleware.ts
+  29:21  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\APPS\Union_Eyes_app_v1\lib\migrations\data-integrity.ts
+  694:16  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\APPS\Union_Eyes_app_v1\lib\organization-middleware.ts
+  32:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\role-middleware.ts
+   56:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  130:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\scheduled-jobs.ts
+  186:18  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\APPS\Union_Eyes_app_v1\lib\social-media\meta-api-client.ts
+  100:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\social-media\social-media-service.ts
+  202:7  error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  206:7  error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  367:9  error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  431:7  error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  518:9  error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+
+C:\APPS\Union_Eyes_app_v1\lib\social-media\twitter-api-client.ts
+  119:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\tenant-middleware.ts
+  31:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\APPS\Union_Eyes_app_v1\lib\workers\cleanup-worker.ts
+  12:20  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  15:15  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\APPS\Union_Eyes_app_v1\lib\workers\email-worker.ts
+  13:20  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  16:15  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\APPS\Union_Eyes_app_v1\lib\workers\notification-worker.ts
+  13:20  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  16:15  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\APPS\Union_Eyes_app_v1\lib\workers\report-worker.ts
+  12:20  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  15:15  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\APPS\Union_Eyes_app_v1\lib\workers\sms-worker.ts
+  12:20  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  15:15  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+Γ£û 59 problems (59 errors, 0 warnings)
+

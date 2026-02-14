@@ -9,16 +9,12 @@ import {
   arbitrationPrecedents,
   organizationSharingSettings
 } from "@/db/schema";
-import { eq, and, gte, desc, sql, inArray } from "drizzle-orm";
+import { and, desc, inArray } from "drizzle-orm";
 import { unstable_cache } from 'next/cache';
 import { logger } from '@/lib/logger';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
     try {
@@ -61,7 +57,7 @@ export const GET = async (request: NextRequest) => {
         .limit(limit);
       
       // SECURITY: Get organization names using parameterized query
-      let mostActiveOrgs: any[] = [];
+      let mostActiveOrgs: Array<Record<string, unknown>> = [];
       if (mostActiveOrgsData.length > 0) {
         const activeOrgIds = mostActiveOrgsData.map(o => o.organizationId).filter(Boolean);
         if (activeOrgIds.length > 0) {
@@ -270,7 +266,7 @@ export const GET = async (request: NextRequest) => {
         .limit(20);
       
       // Get organization names if we have collaboration data
-      let collaborationPatterns: any[] = [];
+      let collaborationPatterns: Array<Record<string, unknown>> = [];
       if (collaborationData.length > 0) {
         const orgIds = [...new Set([
           ...collaborationData.map(c => c.userOrganizationId),
@@ -284,7 +280,7 @@ export const GET = async (request: NextRequest) => {
           SELECT id, name FROM organizations WHERE id = ANY(ARRAY[${idList}]::uuid[])
         `));
     });
-          const orgNames = new Map(((orgResult.rows || []) as any[]).map(o => [o.id, o.name]));
+          const orgNames = new Map(((orgResult.rows || []) as Array<Record<string, unknown>>).map(o => [o.id, o.name]));
           
           collaborationPatterns = collaborationData.map(c => ({
             userOrg: orgNames.get(c.userOrganizationId) || 'Unknown',
@@ -370,7 +366,7 @@ export const GET = async (request: NextRequest) => {
         SELECT id, organization_type FROM organizations WHERE id = ANY(ARRAY[${idList}]::uuid[])
       `));
     });
-        orgTypes = new Map(((orgTypesResult.rows || []) as any[]).map(o => [o.id, o.organization_type]));
+        orgTypes = new Map(((orgTypesResult.rows || []) as Array<Record<string, unknown>>).map(o => [o.id, o.organization_type]));
       }
       
       // Aggregate by org type

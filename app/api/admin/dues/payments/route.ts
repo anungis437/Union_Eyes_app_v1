@@ -14,17 +14,13 @@
  * @module app/api/admin/dues/payments
  */
 
-import { NextRequest } from 'next/server';
 import { db } from '@/db';
 import { duesTransactions } from '@/db/schema/domains/finance/dues';
 import { organizationMembers } from '@/db/schema-organizations';
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
-import {
-  standardErrorResponse,
-  standardSuccessResponse,
-  ErrorCode,
+import { standardSuccessResponse,
 } from '@/lib/api/standardized-responses';
-import { eq, and, gte, lte, or, like, desc, count } from 'drizzle-orm';
+import { and, or, like, desc, count } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -73,7 +69,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
       search,
     });
 
-    const result = await withRLSContext(async (dbClient: NodePgDatabase<any>) => {
+    const result = await withRLSContext(async (dbClient) => {
       // Build where conditions
       const conditions = [eq(duesTransactions.organizationId, organizationId)];
 
@@ -115,7 +111,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
         .offset(offset);
 
       // Get member names (simplified - in production, join with users table)
-      const payments = paymentsData.map((payment: any) => ({
+      const payments = paymentsData.map((payment: Record<string, unknown>) => ({
         id: payment.id,
         memberId: payment.memberId,
         memberName: payment.memberId, // TODO: Replace with actual member name from users table

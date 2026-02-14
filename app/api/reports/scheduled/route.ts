@@ -10,12 +10,8 @@
 
 import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
-import { withOrganizationAuth, OrganizationContext } from '@/lib/organization-middleware';
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { OrganizationContext } from '@/lib/organization-middleware';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 import {
   getScheduledReports,
   createScheduledReport,
@@ -39,7 +35,7 @@ async function getHandler(req: NextRequest, context: OrganizationContext) {
     const scheduleType = searchParams.get('scheduleType') || undefined;
 
     // Build filters
-    const filters: any = {};
+    const filters = {};
     if (reportId) filters.reportId = reportId;
     if (isActive !== null) filters.isActive = isActive === 'true';
     if (scheduleType) filters.scheduleType = scheduleType;

@@ -9,7 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { campaigns } from '@/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { withRLSContext } from '@/lib/db/rls-context';
 import { auth } from '@clerk/nextjs/server';
 import { getCampaignService } from '@/lib/services/messaging/campaign-service';

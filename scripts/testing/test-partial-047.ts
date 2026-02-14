@@ -20,7 +20,7 @@ async function testPartial() {
       try {
         await sql.unsafe(partial);
         console.log(`✅ First ${lineCount} lines executed successfully`);
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error(`❌ Error at ${lineCount} lines:`, error.message);
         console.error('Position:', error.position);
         console.error(`Around line ${lineCount}:`, lines.slice(lineCount - 3, lineCount + 1).join('\n'));

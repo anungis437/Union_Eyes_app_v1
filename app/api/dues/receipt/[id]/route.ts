@@ -4,18 +4,14 @@ import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { db } from '@/db';
 import { members, duesTransactions } from '@/services/financial-service/src/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { renderToBuffer } from '@react-pdf/renderer';
 import { put } from '@vercel/blob';
 import { ReceiptDocument, ReceiptData } from '@/components/pdf/receipt-template';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { organizations } from '@/db/schema-organizations';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * GET: Generate and download receipt PDF for transaction
  * 
@@ -141,7 +137,7 @@ export const GET = async (
           unionAddress: address || 'Address not available',
           unionPhone: organization?.phone || 'Phone not available',
           unionEmail: organization?.email || 'Email not available',
-          unionLogo: (organization?.settings as Record<string, any>)?.logoUrl,
+          unionLogo: (organization?.settings as Record<string, unknown>)?.logoUrl,
           
           // Member info
           memberName: member.name,
@@ -209,7 +205,7 @@ export const GET = async (
 
         // Generate PDF
         const pdfBuffer = await renderToBuffer(
-          React.createElement(ReceiptDocument, { data: receiptData }) as any
+          React.createElement(ReceiptDocument, { data: receiptData }) as Record<string, unknown>
         );
 
         if (format === 'pdf-url') {

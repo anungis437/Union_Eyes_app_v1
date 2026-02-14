@@ -48,7 +48,7 @@ async function runScanner(): Promise<string> {
   log('📊 Running RLS scanner...', 'blue');
   try {
     return execSync('pnpm tsx scripts/scan-rls-usage-v2.ts 2>&1', { encoding: 'utf-8' });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return error.stdout || error.stderr || '';
   }
 }

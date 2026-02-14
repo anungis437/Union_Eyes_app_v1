@@ -32,7 +32,7 @@ interface AIInsightsPanelProps {
     page?: string;
     claimId?: string;
     memberId?: string;
-    [key: string]: any;
+    [key: string]: string | undefined;
   };
   onInsightAction?: (insight: Insight) => void;
   className?: string;
@@ -92,7 +92,7 @@ export function AIInsightsPanel({
       ];
 
       setInsights(mockInsights);
-    } catch (error) {
+    } catch (_error) {
     } finally {
       setIsLoading(false);
     }

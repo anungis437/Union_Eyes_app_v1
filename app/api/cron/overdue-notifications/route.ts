@@ -11,14 +11,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { deadlines } from '@/db/schema/domains/claims';
-import { and, eq } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { sendOverdueClaimNotification } from '@/lib/claim-notifications';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export async function GET(request: NextRequest) {
   try {
     // Verify cron secret (for security)

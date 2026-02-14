@@ -112,7 +112,7 @@ export function useDocuments(): UseDocumentsReturn {
         addDocument(newDocument);
         setError(undefined);
         return newDocument;
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err.message);
         throw err;
       } finally {
@@ -129,7 +129,7 @@ export function useDocuments(): UseDocumentsReturn {
         await documentUploadService.uploadDocument(document);
         updateDocument(document.id, { status: DocumentStatus.COMPLETED });
         setError(undefined);
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err.message);
         updateDocument(document.id, { status: DocumentStatus.FAILED });
         throw err;
@@ -208,7 +208,7 @@ export function useDocumentUpload(): UseDocumentUploadReturn {
           status: DocumentStatus.COMPLETED,
           uploadedAt: new Date(),
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         updateDocument(document.id, { status: DocumentStatus.FAILED });
         throw error;
       }
@@ -276,7 +276,7 @@ export function useOCRProcess(): UseOCRProcessReturn {
         setProgress(100);
 
         return result;
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err.message);
         throw err;
       } finally {

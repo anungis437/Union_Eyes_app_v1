@@ -58,7 +58,7 @@ export default function RevokeConsentButton({ consentId }: RevokeConsentButtonPr
       // Close dialog and refresh page
       setOpen(false);
       router.refresh();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message);
     } finally {
       setLoading(false);

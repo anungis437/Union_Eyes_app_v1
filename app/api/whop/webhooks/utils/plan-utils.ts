@@ -2,7 +2,7 @@
  * Plan-related utilities for webhook processing
  * Functions to determine plan types and billing periods
  * 
- * Figures out important details about a user's subscription plan - like whether it's monthly or yearly, when it will end
+ * Figures out important details about a user's subscription plan - like whether it&apos;s monthly or yearly, when it will end
  * and converting timestamps from Whop into proper dates
  * 
  */
@@ -21,7 +21,7 @@ return "yearly";
   } else if (planId === monthlyPlanId) {
 return "monthly";
   } else {
-    // Default to monthly if we can't determine
+    // Default to monthly if we can&apos;t determine
 return "monthly";
   }
 }

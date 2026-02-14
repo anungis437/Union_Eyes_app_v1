@@ -317,7 +317,7 @@ function generateExpirationWarningHTML(data: ExpirationNotificationData): string
       <p style="color: #991b1b; margin: 10px 0 0 0; font-size: 16px; font-weight: bold;">in ${daysUntilExpiration} ${daysUntilExpiration === 1 ? 'day' : 'days'}</p>
     </div>
     
-    <p style="font-size: 16px;">Don't let your hard-earned credits go to waste! Redeem them now for exclusive rewards.</p>
+    <p style="font-size: 16px;">Don&apos;t let your hard-earned credits go to waste! Redeem them now for exclusive rewards.</p>
     
     <div style="text-align: center; margin-top: 30px;">
       <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/rewards/redeem" style="display: inline-block; background: #ef4444; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">Redeem Now</a>

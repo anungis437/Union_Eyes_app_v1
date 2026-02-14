@@ -6,6 +6,7 @@
  */
 
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { buildCaseTimeline, getCaseJourneySummary, calculateCaseProgress, TimelineContext } from '@/lib/member-experience/timeline-builder';
 import { GrievanceTimeline, TimelineSummary } from '@/components/marketing/grievance-timeline';
 import { HumanCenteredCallout } from '@/components/marketing/human-centered-callout';
@@ -63,7 +64,7 @@ export default async function CaseTimelinePage({ params }: TimelinePageProps) {
         <HumanCenteredCallout
           variant="human"
           title="Your journey in plain language"
-          description="This timeline shows your case's journey in plain language. Every case is different, and we're here to support you through the entire process."
+          description="This timeline shows your case's journey in plain language. Every case is different, and we&apos;re here to support you through the entire process."
           className="mb-8"
         />
 
@@ -217,8 +218,8 @@ export default async function CaseTimelinePage({ params }: TimelinePageProps) {
                 Can I talk to someone?
               </h4>
               <p className="text-gray-700">
-                Absolutely. Your steward is here for you. If you need to talk through what's
-                happening, reach out directly. Union solidarity means you're never alone in this.
+                Absolutely. Your steward is here for you. If you need to talk through what&apos;s
+                happening, reach out directly. Union solidarity means you&apos;re never alone in this.
               </p>
             </div>
           </div>
@@ -230,13 +231,13 @@ export default async function CaseTimelinePage({ params }: TimelinePageProps) {
                 className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-md font-medium text-center hover:bg-blue-700 transition-colors"
               >
                 Message Your Steward
-              </a>
+              </Link>
               <a
                 href={`/${params.locale}/dashboard/member/cases/${params.caseId}`}
                 className="flex-1 bg-gray-200 text-gray-700 px-6 py-3 rounded-md font-medium text-center hover:bg-gray-300 transition-colors"
               >
                 View Case Details
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -245,9 +246,9 @@ export default async function CaseTimelinePage({ params }: TimelinePageProps) {
         <div className="mt-8 text-center text-sm text-gray-600">
           <p>
             Your case data is protected by our{' '}
-            <a href="/trust" className="text-blue-600 hover:underline">
+            <Link href="/trust" className="text-blue-600 hover:underline">
               trust infrastructure
-            </a>
+            </Link>
             . Only you and your assigned steward can see these details.
           </p>
         </div>

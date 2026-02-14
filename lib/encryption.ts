@@ -558,7 +558,7 @@ class EncryptionService {
       const key = this.getEncryptionKeyByVersion(keyVersion);
       
       if (!key) {
-        // Log but don't expose version details to avoid information leakage
+        // Log but don&apos;t expose version details to avoid information leakage
         logger.error('Decryption failed - key version not available', {
           hasKeyVersion: !!encryptedData.keyVersion,
           availableVersions: Array.from(this.keyCache.keys()),

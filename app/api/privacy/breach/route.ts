@@ -4,14 +4,10 @@ import { db } from "@/db";
 import { ProvincialPrivacyService } from "@/services/provincial-privacy-service";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * Helper to check if user has security/admin role
  */
@@ -20,7 +16,7 @@ async function checkSecurityPermissions(userId: string, organizationId: string):
     // Check for security officer or admin roles in any organization
     const member = await withRLSContext({ organizationId }, async (db) => {
       return await db.query.organizationMembers.findFirst({
-        where: (organizationMembers, { eq, or }) =>
+        where: (organizationMembers, { or }) =>
           or(
             eq(organizationMembers.userId, userId),
             // Check multiple roles if available
@@ -116,7 +112,7 @@ export const POST = async (request: NextRequest) => {
         message: "Privacy breach reported successfully",
         notificationDeadline: breach.notificationDeadline,
       });
-    } catch (error: any) {
+    } catch (error: Record<string, unknown>) {
       logger.error("Breach reporting error:", { error });
       return NextResponse.json(
         { error: error.message || "Failed to report breach" },
@@ -145,7 +141,7 @@ export const GET = async (request: NextRequest) => {
       logger.info('Retrieved overdue breaches', { userId, count: breaches.length });
 
       return NextResponse.json({ breaches, count: breaches.length });
-    } catch (error: any) {
+    } catch (error: Record<string, unknown>) {
       logger.error("Breach retrieval error:", { error });
       return NextResponse.json(
         { error: error.message || "Failed to retrieve breaches" },

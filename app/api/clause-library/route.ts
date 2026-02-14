@@ -6,7 +6,7 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { db, organizations } from "@/db";
+import { organizations } from "@/db";
 import { 
   sharedClauseLibrary, 
   clauseLibraryTags,
@@ -14,20 +14,16 @@ import {
   SharingLevel
 } from "@/db/schema";
 import { organizationSharingSettings } from "@/db/schema/sharing-permissions-schema";
-import { eq, and, or, ilike, inArray, sql, count } from "drizzle-orm";
+import { and, or, ilike, inArray, count } from "drizzle-orm";
 import { getOrCreateUserUuid } from "@/lib/utils/user-uuid-helpers";
 import { logger } from '@/lib/logger';
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { validateHierarchyAccess, validateSharingLevel } from '@/lib/auth/hierarchy-access-control';
 import type { InferSelectModel } from 'drizzle-orm';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // =============================================================================
 // VALIDATION SCHEMAS
 // =============================================================================
@@ -71,11 +67,11 @@ function anonymizeEmployerName(originalName: string): string {
 }
 
 // Helper to check if user can access clause based on sharing level
-async function canAccessClause(
+async function async function canAccessClause(
   userId: string,
   userOrgId: string,
   userOrgHierarchyPath: string,
-  clause: any
+  clause: any Record<string, unknown>
 ): Promise<boolean> {
   // Owner always has access
   if (clause.sourceOrganizationId === userOrgId) {
@@ -159,7 +155,7 @@ export const GET = async (request: NextRequest) => {
       const searchQuery = searchParams.get("q");
 
       // Build filters
-      const filters: any[] = [];
+      const filters: Array<Record<string, unknown>> = [];
 
       if (clauseType) {
         filters.push(eq(sharedClauseLibrary.clauseType, clauseType));
@@ -344,7 +340,7 @@ export const POST = async (request: NextRequest) => {
         orgSharingSettings = settings[0];
       } catch (error) {
         logger.error('Error fetching organization sharing settings:', error);
-        // Continue with defaults if settings don't exist
+        // Continue with defaults if settings don&apos;t exist
         orgSharingSettings = null;
       }
 

@@ -3,9 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
-import { 
-  standardErrorResponse, 
-  ErrorCode 
+import { ErrorCode 
 } from '@/lib/api/standardized-responses';
 
 // Lazy initialization to avoid module-level env var access during build

@@ -36,7 +36,7 @@ import type { SMSService } from './sms-service';
 export interface CampaignSendOptions {
   campaignId: string;
   userId: string;
-  dryRun?: boolean; // Preview mode: don't actually send, just calculate
+  dryRun?: boolean; // Preview mode: don&apos;t actually send, just calculate
 }
 
 export interface CampaignSendResult {

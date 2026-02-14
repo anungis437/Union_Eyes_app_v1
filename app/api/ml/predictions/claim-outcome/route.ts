@@ -9,11 +9,7 @@ import { claims } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { mlPredictions } from '@/db/schema/ml-predictions-schema';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * POST /api/ml/predictions/claim-outcome
  * Predict claim outcome using ML model

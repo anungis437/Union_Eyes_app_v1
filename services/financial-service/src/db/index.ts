@@ -4,7 +4,7 @@ config(); // Load environment variables first
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema';
-// TODO: Fix logger import path
+import { logger } from '@/lib/logger';
 // import { logger } from '@/lib/logger';
 const logger = console;
 

@@ -13,13 +13,9 @@ import { withRLSContext } from '@/lib/db/with-rls-context';
 import { organizationUsers } from "@/db/schema/domains/member";
 import { eq } from "drizzle-orm";
 import { logger } from "@/lib/logger";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(90, async (request, context) => {
   try {

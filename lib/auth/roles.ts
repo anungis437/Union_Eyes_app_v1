@@ -247,11 +247,6 @@ export enum Permission {
   MANAGE_PROVINCIAL_AFFILIATES = "manage_provincial_affiliates",
   VIEW_PROVINCIAL_REMITTANCES = "view_provincial_remittances",
   PROVINCIAL_COMPLIANCE = "provincial_compliance",
-  MANAGE_AFFILIATES = "manage_affiliates",
-  VIEW_ALL_ORGANIZATIONS = "view_all_organizations",
-  MANAGE_ORGANIZATIONS = "manage_organizations",
-  VIEW_COMPLIANCE_REPORTS = "view_compliance_reports",
-  MANAGE_SECTOR_ANALYTICS = "manage_sector_analytics",
   
   // Admin permissions
   MANAGE_USERS = "manage_users",

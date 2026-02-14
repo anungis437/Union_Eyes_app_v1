@@ -1,4 +1,4 @@
-/**
+﻿/**
  * BambooHR HRIS Integration Adapter
  * 
  * Implements integration with BambooHR for employee and department data.
@@ -219,7 +219,7 @@ export class BambooHRAdapter extends BaseIntegration {
     let failed = 0;
 
     try {
-      let employees: any[];
+      let employees: unknown[];
 
       if (syncType === SyncType.INCREMENTAL && cursor) {
         // Use changed employees API for incremental sync
@@ -373,7 +373,7 @@ export class BambooHRAdapter extends BaseIntegration {
   /**
    * Map BambooHR employment status to our enum
    */
-  private mapEmploymentStatus(status?: string): any {
+  private mapEmploymentStatus(status?: string): unknown {
     if (!status) return 'active';
 
     const normalized = status.toLowerCase();

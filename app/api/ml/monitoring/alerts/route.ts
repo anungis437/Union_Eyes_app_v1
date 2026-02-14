@@ -1,16 +1,10 @@
 import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { db } from '@/db';
-import { sql } from 'drizzle-orm';
-
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * GET /api/ml/monitoring/alerts
  * 
@@ -155,7 +149,7 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
       LIMIT 50
     `);
 
-    const alerts = (alertsData || []).map((row: any) => ({
+    const alerts = (alertsData || []).map((row: Record<string, unknown>) => ({
       id: row.alert_id,
       severity: row.severity,
       message: row.message,
@@ -168,11 +162,11 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
 
     // Calculate summary statistics
     const summary = {
-      p1: alerts.filter((a: any) => a.severity === 'P1').length,
-      p2: alerts.filter((a: any) => a.severity === 'P2').length,
-      p3: alerts.filter((a: any) => a.severity === 'P3').length,
-      p4: alerts.filter((a: any) => a.severity === 'P4').length,
-      unacknowledged: alerts.filter((a: any) => !a.acknowledged).length
+      p1: alerts.filter((a: Record<string, unknown>) => a.severity === 'P1').length,
+      p2: alerts.filter((a: Record<string, unknown>) => a.severity === 'P2').length,
+      p3: alerts.filter((a: Record<string, unknown>) => a.severity === 'P3').length,
+      p4: alerts.filter((a: Record<string, unknown>) => a.severity === 'P4').length,
+      unacknowledged: alerts.filter((a: Record<string, unknown>) => !a.acknowledged).length
     };
 
     return NextResponse.json({

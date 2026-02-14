@@ -5,7 +5,7 @@ import Stripe from "stripe";
 import { updateProfile, updateProfileByStripeCustomerId } from "@/db/queries/profiles-queries";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { logger } from '@/lib/logger';
-import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { ErrorCode } from '@/lib/api/standardized-responses';
 
 const relevantEvents = new Set<Stripe.Event.Type>([
   "checkout.session.completed", 
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
       severity: 'low',
       details: { eventType: event.type, eventId: event.id },
     });
-  } catch (err: any) {
+  } catch (err: Record<string, unknown>) {
     logApiAuditEvent({
       timestamp: new Date().toISOString(),
       userId: 'webhook:stripe',
@@ -231,7 +231,7 @@ async function handleDuesPaymentSuccess(event: Stripe.Event) {
   try {
     const { db } = await import('@/db');
     const { duesTransactions, members, autopaySettings } = await import('@/services/financial-service/src/db/schema');
-    const { eq, and, sql } = await import('drizzle-orm');
+    const { and } = await import('drizzle-orm');
     
     // Find transaction by Stripe payment intent ID
     const [transaction] = await db
@@ -307,7 +307,7 @@ async function handleDuesPaymentSuccess(event: Stripe.Event) {
         }
       } catch (emailError) {
         logger.error('Failed to send payment confirmation email', { error: emailError });
-        // Don't fail the webhook if email fails
+        // Don&apos;t fail the webhook if email fails
       }
     } else {
       logger.warn(`No transaction found for payment intent ${paymentIntent.id}`);
@@ -323,7 +323,7 @@ async function handleDuesPaymentFailed(event: Stripe.Event) {
   try {
     const { db } = await import('@/db');
     const { duesTransactions, autopaySettings } = await import('@/services/financial-service/src/db/schema');
-    const { eq, and, sql } = await import('drizzle-orm');
+    const { and } = await import('drizzle-orm');
     
     // Find transaction by Stripe payment intent ID
     const [transaction] = await db
@@ -427,7 +427,7 @@ async function handleDuesPaymentFailed(event: Stripe.Event) {
         }
       } catch (emailError) {
         logger.error('Failed to send payment failure email', { error: emailError });
-        // Don't fail the webhook if email fails
+        // Don&apos;t fail the webhook if email fails
       }
     } else {
       logger.warn(`No transaction found for payment intent ${paymentIntent.id}`);
@@ -444,7 +444,7 @@ async function handleDuesPaymentFailed(event: Stripe.Event) {
   try {
     const { db } = await import('@/db');
     const { paymentMethods, members } = await import('@/services/financial-service/src/db/schema');
-    const { eq, and } = await import('drizzle-orm');
+    const { and } = await import('drizzle-orm');
     
     const memberId = setupIntent.metadata?.memberId;
     const organizationId = setupIntent.metadata?.organizationId;

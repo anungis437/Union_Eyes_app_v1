@@ -2,11 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/lib/api-auth-guard";
 import { getUserRole } from "@/lib/auth/rbac-server";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 /**
  * GET /api/auth/user-role

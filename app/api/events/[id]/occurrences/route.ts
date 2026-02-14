@@ -14,7 +14,7 @@ import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { calendarEvents } from '@/db/schema/calendar-schema';
-import { eq, and, gte, lte } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import {
   generateRecurringInstances,
   createRecurringInstances,
@@ -22,13 +22,9 @@ import {
   getRecurrenceDescription,
 } from '@/lib/recurring-events-service';
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // ============================================================================
 // GET /api/events/[id]/occurrences
 // List all instances of a recurring event
@@ -98,7 +94,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
       );
 
       // Get database instances if requested
-      let dbInstances: any[] = [];
+      let dbInstances: Array<Record<string, unknown>> = [];
       if (includeGenerated) {
         dbInstances = await db
           .select()

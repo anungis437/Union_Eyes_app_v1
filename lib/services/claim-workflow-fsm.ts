@@ -351,7 +351,7 @@ export function getAllowedClaimTransitions(
 
 /**
  * Get transition requirements for a specific target status
- * (Used by UI to show what's needed before transition)
+ * (Used by UI to show what&apos;s needed before transition)
  */
 export function getTransitionRequirements(
   currentStatus: ClaimStatus,

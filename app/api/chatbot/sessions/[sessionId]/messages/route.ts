@@ -8,11 +8,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { chatSessions, chatMessages } from '@/db/schema/ai-chatbot-schema';
-import { eq, and, asc } from 'drizzle-orm';
+import { and, asc } from 'drizzle-orm';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
 type MessagesResponse = {
-  messages?: any[];
+  messages?: Array<Record<string, unknown>>;
   error?: string;
 };
 

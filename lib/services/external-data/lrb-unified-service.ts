@@ -500,7 +500,7 @@ export class UnifiedLRBService {
     const limit = params.limit || 20;
     const offset = (page - 1) * limit;
 
-    let conditions = [];
+    const conditions = [];
     
     if (params.source) {
       conditions.push(eq(lrbAgreements.source, params.source));
@@ -563,7 +563,7 @@ export class UnifiedLRBService {
    * Get wage comparisons for an occupation
    */
   async getWageComparisons(nocCode: string, jurisdiction?: string): Promise<AgreementComparison[]> {
-    let conditions = [];
+    const conditions = [];
     
     if (jurisdiction) {
       conditions.push(eq(lrbAgreements.jurisdiction, jurisdiction));

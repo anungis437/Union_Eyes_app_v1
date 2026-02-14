@@ -13,15 +13,12 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { organizations } from '@/db/schema-organizations';
 import { calendarEvents } from '@/db/schema';
-import { eq, and, desc, gte, lte, or, like, sql } from 'drizzle-orm';
+import { and, desc, or, like } from 'drizzle-orm';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { checkRateLimit, createRateLimitHeaders } from '@/lib/rate-limiter';
-import {
-  standardErrorResponse,
-  standardSuccessResponse,
-  ErrorCode,
+import { standardSuccessResponse,
 } from '@/lib/api/standardized-responses';
 
 /**

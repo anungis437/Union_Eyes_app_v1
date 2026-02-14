@@ -2,11 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { client } from '@/db/db';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 async function handler(req: NextRequest) {
   try {
     const user = await getCurrentUser();

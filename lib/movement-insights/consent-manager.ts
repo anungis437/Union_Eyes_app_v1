@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Consent Manager Service
  * 
  * Manages opt-in consent for cross-union data aggregation.
@@ -81,7 +81,7 @@ export async function createConsentRecord(
       consentGivenBy,
       grantedAt: new Date(),
       status: 'active',
-      preferences: preferences as any, // Cast to JSONB
+      preferences: preferences as unknown, // Cast to JSONB
       purpose,
       ipAddress,
       userAgent,
@@ -147,7 +147,7 @@ export async function updateConsentPreferences(
   const [consent] = await db
     .update(dataAggregationConsent)
     .set({
-      preferences: updatedPreferences as any, // Cast to JSONB
+      preferences: updatedPreferences as unknown, // Cast to JSONB
       updatedAt: new Date(),
     })
     .where(eq(dataAggregationConsent.id, consentId))

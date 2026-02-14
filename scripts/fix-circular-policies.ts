@@ -67,7 +67,7 @@ async function fixCircularPolicies() {
     
     process.exit(0);
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('\n❌ Error:', error.message);
     console.error(error);
     process.exit(1);

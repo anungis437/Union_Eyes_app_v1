@@ -107,7 +107,7 @@ export function useUserProfile(options: UseUserProfileOptions = {}): UseUserProf
       if (fetchError) throw fetchError;
       
       setProfile(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       logger.error('[useUserProfile] Error fetching profile:', err);
       setError(err);
     } finally {
@@ -150,7 +150,7 @@ export function useUserProfile(options: UseUserProfileOptions = {}): UseUserProf
       if (data) {
         setProfile(data);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       logger.error('[useUserProfile] Error updating profile:', err);
       setError(err);
       
@@ -186,7 +186,7 @@ export function useUserProfile(options: UseUserProfileOptions = {}): UseUserProf
       }
       
       return data;
-    } catch (err: any) {
+    } catch (err: unknown) {
       logger.error('[useUserProfile] Error uploading avatar:', err);
       setError(err);
       throw err;
@@ -214,7 +214,7 @@ export function useUserProfile(options: UseUserProfileOptions = {}): UseUserProf
       if (deleteError) throw deleteError;
       
       await fetchProfile();
-    } catch (err: any) {
+    } catch (err: unknown) {
       logger.error('[useUserProfile] Error deleting avatar:', err);
       setError(err);
       
@@ -264,7 +264,7 @@ export function useUserProfile(options: UseUserProfileOptions = {}): UseUserProf
             updatedAt: new Date()
           });
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         logger.error('[useUserProfile] Error updating notification preferences:', err);
         setError(err);
         await fetchProfile();
@@ -304,7 +304,7 @@ export function useUserProfile(options: UseUserProfileOptions = {}): UseUserProf
             updatedAt: new Date()
           });
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         logger.error('[useUserProfile] Error updating UI preferences:', err);
         setError(err);
         await fetchProfile();
@@ -347,7 +347,7 @@ export function useUserProfile(options: UseUserProfileOptions = {}): UseUserProf
             updatedAt: new Date()
           });
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         logger.error('[useUserProfile] Error updating privacy settings:', err);
         setError(err);
         await fetchProfile();
@@ -390,7 +390,7 @@ export function useUserProfile(options: UseUserProfileOptions = {}): UseUserProf
             updatedAt: new Date()
           });
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         logger.error('[useUserProfile] Error updating security settings:', err);
         setError(err);
         await fetchProfile();
@@ -420,7 +420,7 @@ export function useUserProfile(options: UseUserProfileOptions = {}): UseUserProf
         if (completeError) throw completeError;
         
         await fetchProfile();
-      } catch (err: any) {
+      } catch (err: unknown) {
         logger.error('[useUserProfile] Error completing onboarding step:', err);
         setError(err);
         throw err;
@@ -451,7 +451,7 @@ export function useUserProfile(options: UseUserProfileOptions = {}): UseUserProf
             updatedAt: new Date()
           });
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         logger.error('[useUserProfile] Error updating onboarding progress:', err);
         setError(err);
         throw err;
@@ -480,7 +480,7 @@ export function useUserProfile(options: UseUserProfileOptions = {}): UseUserProf
           lastActivityAt: new Date()
         });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Silently fail for activity updates
       logger.warn('[useUserProfile] Error updating activity:', err);
     }

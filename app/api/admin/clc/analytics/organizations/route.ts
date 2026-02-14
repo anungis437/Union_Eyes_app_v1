@@ -12,14 +12,9 @@ import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { analyzeOrganizationPerformance } from '@/services/clc/compliance-reports';
 import { db } from '@/database';
 import { perCapitaRemittances } from '@/db/schema/clc-per-capita-schema';
-import { sql } from 'drizzle-orm';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
     const { userId } = context;

@@ -11,15 +11,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { revokeCertificate } from '@/services/pki/certificate-manager';
 import { db } from '@/db';
 import { digitalSignatures } from '@/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withRoleAuth(90, async (request, context) => {
   try {

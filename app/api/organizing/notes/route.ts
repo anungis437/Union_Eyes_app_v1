@@ -12,7 +12,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { fieldNotes } from '@/db/schema';
-import { and, eq, desc, sql, ilike, or, gte, lte } from 'drizzle-orm';
+import { and, desc, ilike, or } from 'drizzle-orm';
 
 /**
  * GET /api/organizing/notes
@@ -55,11 +55,11 @@ export async function GET(request: NextRequest) {
     }
 
     if (noteType) {
-      conditions.push(eq(fieldNotes.noteType, noteType as any));
+      conditions.push(eq(fieldNotes.noteType, noteType));
     }
 
     if (sentiment) {
-      conditions.push(eq(fieldNotes.sentiment, sentiment as any));
+      conditions.push(eq(fieldNotes.sentiment, sentiment));
     }
 
     if (followUpPending === 'true') {
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
         and(
           sql`${fieldNotes.followUpDate} IS NOT NULL`,
           eq(fieldNotes.followUpCompleted, false)
-        ) as any
+        ) as Record<string, unknown>
       );
     }
 
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
         or(
           ilike(fieldNotes.subject, `%${search}%`),
           ilike(fieldNotes.content, `%${search}%`)
-        ) as any
+        ) as Record<string, unknown>
       );
     }
 
@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
       or(
         eq(fieldNotes.authorId, userId),
         eq(fieldNotes.isPrivate, false)
-      ) as any
+      ) as Record<string, unknown>
     );
 
     // Fetch notes

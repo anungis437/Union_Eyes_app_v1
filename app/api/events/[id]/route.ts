@@ -15,16 +15,12 @@ import { NotificationService } from "@/lib/services/notification-service";
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { calendarEvents, calendars, eventAttendees, calendarSharing } from '@/db/schema/calendar-schema';
-import { eq, and } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * Check if user has access to event
  */
@@ -317,7 +313,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         });
 
         if (attendees.length > 0) {
-          const attendeeValues = attendees.map((attendee: any) => {
+          const attendeeValues = attendees.map((attendee: Record<string, unknown>) => {
             const attendeeUserId = attendee.userId ?? attendee.user?.id ?? null;
 
             return {
@@ -411,7 +407,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         const { cancelEventReminders } = await import('@/lib/calendar-reminder-scheduler');
         await cancelEventReminders(eventId);
       } catch (reminderError) {
-// Don't fail event cancellation if reminder cancellation fails
+// Don&apos;t fail event cancellation if reminder cancellation fails
       }
 
       // Send cancellation notifications to attendees via email
@@ -456,7 +452,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
           }
         }
       } catch (notificationError) {
-// Don't fail event cancellation if notifications fail
+// Don&apos;t fail event cancellation if notifications fail
       }
 
       return NextResponse.json({

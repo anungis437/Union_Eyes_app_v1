@@ -63,7 +63,7 @@ export function RuleComparison({
       }
 
       setRules(data.data.comparison);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Failed to load comparison');
       setRules({});
     } finally {

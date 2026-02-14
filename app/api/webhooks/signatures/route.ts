@@ -21,11 +21,7 @@ import { logger } from "@/lib/logger";
 import { createHmac } from "crypto";
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // ============================================================================
 // DOCUSIGN WEBHOOK HANDLER
 // ============================================================================
@@ -248,7 +244,7 @@ export async function handleHelloSignWebhook(
 /**
  * Verify Adobe Sign webhook
  */
-function verifyAdobeSignWebhook(payload: any, clientId: string): boolean {
+function verifyAdobeSignWebhook(payload: any, Record<string, unknown>, clientId: string): boolean {
   try {
     // Adobe Sign uses client ID verification
     return payload.webhookInfo?.applicationId === clientId;
@@ -325,7 +321,7 @@ export async function handleAdobeSignWebhook(
 /**
  * Handle envelope sent event
  */
-async function handleEnvelopeSent(workflowId: string, payload: any): Promise<void> {
+async function handleEnvelopeSent(workflowId: string, payload: Record<string, unknown>) Record<string, unknown>): Promise<void> {
   try {
     logger.info("Processing envelope sent", { workflowId });
 
@@ -346,9 +342,9 @@ async function handleEnvelopeSent(workflowId: string, payload: any): Promise<voi
 /**
  * Handle recipient signed event
  */
-async function handleRecipientSigned(
+async function async function handleRecipientSigned(
   workflowId: string,
-  payload: any
+  payload: any Record<string, unknown>
 ): Promise<void> {
   try {
     logger.info("Processing recipient signed", { workflowId });
@@ -380,9 +376,9 @@ async function handleRecipientSigned(
 /**
  * Handle envelope completed event
  */
-async function handleEnvelopeCompleted(
+async function async function handleEnvelopeCompleted(
   workflowId: string,
-  payload: any
+  payload: any Record<string, unknown>
 ): Promise<void> {
   try {
     logger.info("Processing envelope completed", { workflowId });
@@ -407,9 +403,9 @@ async function handleEnvelopeCompleted(
 /**
  * Handle envelope declined event
  */
-async function handleEnvelopeDeclined(
+async function async function handleEnvelopeDeclined(
   workflowId: string,
-  payload: any
+  payload: any Record<string, unknown>
 ): Promise<void> {
   try {
     logger.info("Processing envelope declined", { workflowId });
@@ -492,9 +488,9 @@ Please review the workflow and take appropriate action.`,
 /**
  * Handle envelope voided event
  */
-async function handleEnvelopeVoided(
+async function async function handleEnvelopeVoided(
   workflowId: string,
-  payload: any
+  payload: any Record<string, unknown>
 ): Promise<void> {
   try {
     logger.info("Processing envelope voided", { workflowId });

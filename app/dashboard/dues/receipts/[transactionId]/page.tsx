@@ -363,7 +363,7 @@ export default function ReceiptViewerPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              The receipt you're looking for doesn't exist or you don't have permission to view it.
+              The receipt you&apos;re looking for doesn&apos;t exist or you don&apos;t have permission to view it.
             </p>
             <Button onClick={() => router.push('/dashboard/dues')}>
               Return to Dues Dashboard

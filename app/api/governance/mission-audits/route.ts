@@ -8,11 +8,7 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { governanceService } from "@/services/governance-service";
 import type { NewMissionAudit } from "@/db/schema/domains/governance";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 const listAuditsSchema = z.object({
   limit: z.string().optional().transform(value => (value ? parseInt(value, 10) : 25)),
 });
@@ -41,7 +37,7 @@ const createAuditSchema = z.object({
 });
 
 export const GET = async (request: NextRequest) =>
-  withEnhancedRoleAuth<any>(10, async (_request, context) => {
+  withEnhancedRoleAuth(10, async (_request, context) => {
     const { userId } = context;
     const parsed = listAuditsSchema.safeParse(
       Object.fromEntries(request.nextUrl.searchParams)
@@ -93,7 +89,7 @@ export const GET = async (request: NextRequest) =>
   })(request, {});
 
 export const POST = async (request: NextRequest) =>
-  withEnhancedRoleAuth<any>(20, async (_request, context) => {
+  withEnhancedRoleAuth(20, async (_request, context) => {
     const { userId } = context;
 
     let rawBody: unknown;

@@ -21,22 +21,18 @@ import {
   sendPaymentReceivedNotification,
   sendPaymentFailedNotification,
 } from "@/lib/services/payment-notifications";
-import { eq, and, sql } from "drizzle-orm";
+import { and } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { createHmac } from "crypto";
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // ============================================================================
 // INITIALIZATION
 // ============================================================================
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2024-04-10" as any,
+  apiVersion: "2024-04-10" as const,
 });
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
@@ -103,10 +99,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Store webhook event for audit trail and recovery
     await db.insert(stripeWebhookEvents).values({
-      organizationId: (event.data.object as any)?.metadata?.organizationId || "system",
+      organizationId: ((event.data.object as Record<string, unknown>)?.metadata as Record<string, unknown>)?.organizationId as string || "system",
       eventId: event.id,
       eventType: event.type,
-      eventData: event.data as any,
+      eventData: event.data as Record<string, unknown>,
       timestamp: new Date(event.created * 1000),
       processed: false,
       processedAt: null,
@@ -190,7 +186,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             for (const cycle of existingCycles) {
               await db.update(paymentCycles)
                 .set({
-                  status: "cancelled" as any,
+                  status: "cancelled" as const,
                   cancelledAt: new Date(),
                   updatedAt: new Date(),
                 })
@@ -212,7 +208,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                 subscriptionId: subscription.id,
                 cancelledAt: new Date().toISOString(),
               },
-            }).catch((err: any) => logger.warn("Failed to create audit log for subscription deletion", { error: err instanceof Error ? err.message : String(err) }));
+            }).catch((err: Record<string, unknown>) => logger.warn("Failed to create audit log for subscription deletion", { error: err instanceof Error ? err.message : String(err) }));
 
             logger.info("Subscription deleted processed", {
               subscriptionId: subscription.id,
@@ -505,7 +501,7 @@ async function handleSubscriptionUpdated(
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
         currentPeriodEnd: currentPeriodEnd.toISOString(),
       },
-    }).catch((err: any) => logger.warn("Failed to create audit log for subscription update", { error: err instanceof Error ? err.message : String(err) }));
+    }).catch((err: Record<string, unknown>) => logger.warn("Failed to create audit log for subscription update", { error: err instanceof Error ? err.message : String(err) }));
 
     logger.info("Subscription updated processed", {
       subscriptionId: subscription.id,
@@ -539,7 +535,7 @@ async function handleSubscriptionDeleted(
     for (const cycle of existingCycles) {
       await db.update(paymentCycles)
         .set({
-          status: "cancelled" as any,
+          status: "cancelled" as const,
           cancelledAt: new Date(),
           updatedAt: new Date(),
         })
@@ -560,7 +556,7 @@ async function handleSubscriptionDeleted(
         subscriptionId: subscription.id,
         cancelledAt: new Date().toISOString(),
       },
-    }).catch((err: any) => logger.warn("Failed to create audit log for subscription deletion", { error: err instanceof Error ? err.message : String(err) }));
+    }).catch((err: Record<string, unknown>) => logger.warn("Failed to create audit log for subscription deletion", { error: err instanceof Error ? err.message : String(err) }));
 
     logger.info("Subscription deleted processed", {
       subscriptionId: subscription.id,
@@ -734,7 +730,7 @@ async function handlePaymentMethodAttached(
             memberId,
             stripePaymentMethodId: paymentMethod.id,
             stripeCustomerId: paymentMethod.customer as string,
-            type: paymentMethod.type as any,
+            type: paymentMethod.type,
             lastFour: paymentMethod.card?.last4 || paymentMethod.us_bank_account?.last4,
             brand: paymentMethod.card?.brand,
             expiryMonth: paymentMethod.card?.exp_month?.toString(),

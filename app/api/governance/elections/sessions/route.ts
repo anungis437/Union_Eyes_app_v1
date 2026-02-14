@@ -8,7 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { votingSessions, voterEligibility, votes, votingOptions } from '@/db/schema/voting-schema';
-import { eq, and, desc, sql, or, like } from 'drizzle-orm';
+import { and, desc, or, like } from 'drizzle-orm';
 import { z } from 'zod';
 
 // Validation schema for creating voting session
@@ -132,7 +132,7 @@ export async function GET(req: NextRequest) {
         totalPages: Math.ceil(count / limit),
       },
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching voting sessions:', error);
     return NextResponse.json(
       { error: 'Failed to fetch voting sessions', details: error.message },
@@ -169,7 +169,7 @@ export async function POST(req: NextRequest) {
       message: 'Voting session created successfully',
       session,
     }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error creating voting session:', error);
     
     if (error instanceof z.ZodError) {

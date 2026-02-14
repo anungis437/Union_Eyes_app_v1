@@ -627,7 +627,7 @@ export async function calculateRankedChoiceResults(
 
     const options = session.options || [];
     const rounds: RankedChoiceResults['rounds'] = [];
-    let activeOptions = new Set(options.map(o => o.id));
+    const activeOptions = new Set(options.map(o => o.id));
     let roundNumber = 1;
 
     // IRV Algorithm: Eliminate lowest vote-getter each round until winner emerges
@@ -674,7 +674,7 @@ export async function calculateRankedChoiceResults(
         )
       };
 
-      // If we have a majority winner, we're done
+      // If we have a majority winner, we&apos;re done
       if (maxVotes > majorityThreshold) {
         rounds.push(roundData);
         
@@ -714,7 +714,7 @@ export async function calculateRankedChoiceResults(
       }
     }
 
-    // If we exit the loop with one option remaining, it's the winner
+    // If we exit the loop with one option remaining, it&apos;s the winner
     const winnerOption = Array.from(activeOptions)[0];
     const lastRound = rounds[rounds.length - 1];
     

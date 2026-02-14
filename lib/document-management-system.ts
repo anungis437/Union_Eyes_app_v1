@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 // DOCUMENT MANAGEMENT SYSTEM
 // ============================================================================
 // Description: Version control, e-signature integration, OCR, full-text search,
@@ -515,7 +515,7 @@ export async function requestESignature(
             order: 1,
           },
         ],
-        organizationId: document.organizationId as any,
+        organizationId: document.organizationId as unknown,
         userId: request.signerUserId,
       });
 
@@ -616,7 +616,7 @@ export async function getSignatureStatus(
 
     return {
       documentId: document.id,
-      status: (document.signatureStatus as any) || "pending",
+      status: (document.signatureStatus as unknown) || "pending",
       signedAt: document.signedAt ? new Date(document.signedAt) : undefined,
       signedBy: document.signedBy || undefined,
       provider: signatureData?.provider,
@@ -842,7 +842,7 @@ async function sendSignatureRequestNotification(
       },
     });
 } catch (error) {
-// Don't throw - notification failure shouldn't block the request
+// Don&apos;t throw - notification failure shouldn't block the request
   }
 }
 

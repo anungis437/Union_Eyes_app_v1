@@ -9,15 +9,10 @@
 import { z } from 'zod';
 import { NextRequest, NextResponse } from "next/server";
 import { withRLSContext } from '@/lib/db/with-rls-context';
-import { sql } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { withApiAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const dynamic = "force-dynamic";
 
 /**
@@ -158,7 +153,7 @@ export const PATCH = withApiAuth(async (request: NextRequest) => {
 
     // Build update fields
     const updates: string[] = [];
-    const values: any[] = [];
+    const values: Array<Record<string, unknown>> = [];
 
     if (registrationConfirmations !== undefined) {
       updates.push("registration_confirmations = $" + (values.length + 1));
@@ -193,7 +188,7 @@ export const PATCH = withApiAuth(async (request: NextRequest) => {
       ? sql`member_id = ${memberId}`
       : sql`unsubscribe_token = ${token}`;
 
-    // If we don't have a memberId, look it up first
+    // If we don&apos;t have a memberId, look it up first
     let effectiveMemberId = memberId;
     if (!effectiveMemberId && token) {
       const memberLookup = await db.execute(sql`SELECT member_id FROM training_notification_preferences WHERE unsubscribe_token = ${token}`);

@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { boardPackets, boardPacketDistributions } from '@/db/schema/board-packet-schema';
-import { eq, and, desc, sql, or, like, gte, lte } from 'drizzle-orm';
+import { and, desc, or, like } from 'drizzle-orm';
 import { z } from 'zod';
 import { boardPacketGenerator } from '@/lib/services/board-packet-generator';
 
@@ -129,7 +129,7 @@ export async function GET(req: NextRequest) {
         totalPages: Math.ceil(count / limit),
       },
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching board packets:', error);
     return NextResponse.json(
       { error: 'Failed to fetch board packets', details: error.message },
@@ -166,7 +166,7 @@ export async function POST(req: NextRequest) {
       message: 'Board packet generated successfully',
       packet,
     }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error generating board packet:', error);
     
     if (error instanceof z.ZodError) {

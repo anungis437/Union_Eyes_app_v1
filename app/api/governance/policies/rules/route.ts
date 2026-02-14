@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { policyRules } from '@/db/schema/policy-engine-schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { and, desc } from 'drizzle-orm';
 import { z } from 'zod';
 import { policyEngine } from '@/lib/services/policy-engine';
 
@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
     const rules = await rulesQuery;
     
     return NextResponse.json({ rules });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error fetching policy rules:', error);
     return NextResponse.json(
       { error: 'Failed to fetch policy rules', details: error.message },
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
       message: 'Policy rule created successfully',
       rule,
     }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error creating policy rule:', error);
     
     if (error instanceof z.ZodError) {

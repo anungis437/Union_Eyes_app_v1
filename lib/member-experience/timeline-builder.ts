@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Timeline Builder Service
  * 
  * Converts FSM state transitions into visual timeline stages
@@ -18,7 +18,7 @@ export interface TimelineStage {
   isPastStage: boolean;
   isFutureStage: boolean;
   explanation: HumanExplanation;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface TimelineContext {
@@ -27,7 +27,7 @@ export interface TimelineContext {
   statusHistory: {
     status: string;
     timestamp: Date;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   }[];
   priority?: 'low' | 'medium' | 'high' | 'urgent';
   assignedSteward?: {
@@ -62,7 +62,7 @@ export function buildCaseTimeline(context: TimelineContext): TimelineStage[] {
 
     // Get human explanation
     const explanation = getHumanExplainer({
-      status: history.status as any,
+      status: history.status as unknown,
       daysInStatus: isCurrentStage ? daysInStage : 0,
       priority: context.priority,
       assignedSteward: context.assignedSteward,
@@ -241,7 +241,7 @@ export function generateStatusUpdateMessage(
   context: Partial<TimelineContext>
 ): string {
   const explanation = getHumanExplainer({
-    status: newStatus as any,
+    status: newStatus as unknown,
     daysInStatus: 0,
     priority: context.priority,
     assignedSteward: context.assignedSteward,

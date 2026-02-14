@@ -6,18 +6,14 @@
 import { z } from 'zod';
 import { NextRequest, NextResponse } from "next/server";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 import { db } from "@/db/db";
 import { documents } from "@/db/schema";
-import { eq, sql, and, lte } from "drizzle-orm";
+import { sql, and } from "drizzle-orm";
 import { del } from "@vercel/blob";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 interface CleanupOptions {
   organizationId: string;
   daysOld?: number;

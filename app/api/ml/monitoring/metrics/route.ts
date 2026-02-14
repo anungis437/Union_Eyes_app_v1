@@ -1,15 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { db } from '@/db';
-import { sql } from 'drizzle-orm';
-
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * GET /api/ml/monitoring/metrics
  * 
@@ -135,7 +129,7 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
     `);
 
     // Transform database results into response format
-    const models = ((modelMetrics as any[]) || []).map((row: any) => ({
+    const models = ((modelMetrics as Array<Record<string, unknown>>) || []).map((row: Record<string, unknown>) => ({
       modelName: row.model_name,
       accuracy: parseFloat(row.accuracy || 0),
       precision: parseFloat(row.precision || 0),

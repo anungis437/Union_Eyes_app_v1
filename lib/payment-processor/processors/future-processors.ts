@@ -241,7 +241,7 @@ export class SquareProcessor extends BasePaymentProcessor {
  * Manual Processor - PLACEHOLDER
  * For manual payment tracking (cheques, bank transfers, etc.)
  * 
- * This processor doesn't interact with external APIs but provides
+ * This processor doesn&apos;t interact with external APIs but provides
  * a consistent interface for manual payment recording
  */
 export class ManualProcessor extends BasePaymentProcessor {

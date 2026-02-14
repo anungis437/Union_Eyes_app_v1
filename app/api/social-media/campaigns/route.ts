@@ -10,13 +10,9 @@ import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // Lazy initialization - env vars not available during build
 let supabaseClient: ReturnType<typeof createClient> | null = null;
 function getSupabaseClient() {
@@ -129,7 +125,7 @@ return standardErrorResponse(
           };
 
           // Calculate goal progress
-          const goalProgress = campaign.goals?.map((goal: any) => {
+          const goalProgress = campaign.goals?.map((goal: Record<string, unknown>) => {
             const currentValue = metrics[`total_${goal.metric}` as keyof typeof metrics] || 0;
             const progress = goal.target_value > 0 ? (currentValue / goal.target_value) * 100 : 0;
             return {
@@ -384,7 +380,7 @@ export const PUT = async (request: NextRequest) => {
       }
 
       // Update campaign
-      const updateData: any = {
+      const updateData = {
         updated_at: new Date().toISOString(),
       };
 

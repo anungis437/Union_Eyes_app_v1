@@ -1,4 +1,4 @@
-/**
+﻿/**
  * AI Insights Generator
  * Q1 2025 - Advanced Analytics
  * 
@@ -31,7 +31,7 @@ interface GeneratedInsight {
   affectedMetrics: string[];
   estimatedImpact: string;
   confidence: number;
-  dataPoints: any[];
+  dataPoints: unknown[];
 }
 
 /**
@@ -234,7 +234,7 @@ async function generateTrendInsights(
         affectedMetrics: [trend.analysisType],
         estimatedImpact: trendStrength > 0.85 ? 'High' : 'Medium',
         confidence: trendStrength,
-        dataPoints: (trend.visualizationData as any)?.dataPoints || []
+        dataPoints: (trend.visualizationData as unknown)?.dataPoints || []
       });
     }
 
@@ -255,7 +255,7 @@ async function generateTrendInsights(
         affectedMetrics: [trend.analysisType],
         estimatedImpact: 'High',
         confidence: 0.8,
-        dataPoints: (trend.visualizationData as any)?.dataPoints || []
+        dataPoints: (trend.visualizationData as unknown)?.dataPoints || []
       });
     }
 
@@ -276,7 +276,7 @@ async function generateTrendInsights(
         affectedMetrics: [trend.analysisType],
         estimatedImpact: 'Medium',
         confidence: trendStrength,
-        dataPoints: (trend.visualizationData as any)?.dataPoints || []
+        dataPoints: (trend.visualizationData as unknown)?.dataPoints || []
       });
     }
   }
@@ -325,7 +325,7 @@ async function generateAnomalyInsights(
         affectedMetrics: [analysis.analysisType],
         estimatedImpact: 'High',
         confidence: 0.9,
-        dataPoints: (analysis.visualizationData as any)?.dataPoints || []
+        dataPoints: (analysis.visualizationData as unknown)?.dataPoints || []
       });
     }
   }
@@ -535,10 +535,10 @@ export async function saveInsights(
         priority: insight.priority,
         title: insight.title,
         description: insight.description,
-        recommendations: insight.recommendations as any,
-        metrics: { affectedMetrics: insight.affectedMetrics, estimatedImpact: insight.estimatedImpact } as any,
+        recommendations: insight.recommendations as unknown,
+        metrics: { affectedMetrics: insight.affectedMetrics, estimatedImpact: insight.estimatedImpact } as unknown,
         confidenceScore: insight.confidence.toString(),
-        dataSource: { dataPoints: insight.dataPoints } as any,
+        dataSource: { dataPoints: insight.dataPoints } as unknown,
         status: 'new'
       });
     }

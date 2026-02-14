@@ -14,13 +14,9 @@ import { createLinkedInClient } from '@/lib/social-media/linkedin-api-client';
 import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // Lazy initialization to avoid build-time execution
 let supabaseClient: ReturnType<typeof createClient> | null = null;
 
@@ -308,7 +304,7 @@ export const DELETE = async (request: NextRequest) => {
             await twitterClient.revokeToken();
             break;
           }
-          // Meta and LinkedIn don't require explicit revocation
+          // Meta and LinkedIn don&apos;t require explicit revocation
         }
       } catch (revokeError) {
 // Continue with deletion even if revocation fails
@@ -441,7 +437,7 @@ export const PUT = async (request: NextRequest) => {
 
         // Update account with new tokens
         const expiresAt = new Date(Date.now() + expiresIn * 1000);
-        const updateData: any = {
+        const updateData = {
           access_token: newAccessToken,
           token_expires_at: expiresAt.toISOString(),
           status: 'active',

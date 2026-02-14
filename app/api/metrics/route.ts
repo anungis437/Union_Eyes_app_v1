@@ -24,8 +24,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getMetrics, getMetricsContentType, dbConnectionsActive, dbConnectionsIdle, dbConnectionsMax } from '@/lib/observability/metrics';
 import { db } from '@/db/db';
-import { sql } from 'drizzle-orm';
-import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { ErrorCode } from '@/lib/api/standardized-responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -78,7 +77,7 @@ async function updateDatabaseMetrics(): Promise<void> {
       dbConnectionsMax.set(Number(stats.max_connections || 100));
     }
   } catch (error) {
-// Don't fail the whole endpoint if DB metrics fail
+// Don&apos;t fail the whole endpoint if DB metrics fail
   }
 }
 

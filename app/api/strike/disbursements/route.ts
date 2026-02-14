@@ -7,16 +7,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db/db';
-import { sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 // Validation schema for GET query parameters
@@ -179,7 +174,7 @@ export const POST = withRoleAuth(90, async (request, context) => {
 
       // Insert the calculated disbursements
       if (result.length > 0) {
-        const insertValues = result.map((row: any) => sql`(
+        const insertValues = result.map((row: Record<string, unknown>) => sql`(
           gen_random_uuid(), ${fundId}, ${row.member_id},
           ${weekStartDate}, ${weekEndDate},
           ${row.hours_worked}, ${row.stipend_amount}, ${row.payment_status},

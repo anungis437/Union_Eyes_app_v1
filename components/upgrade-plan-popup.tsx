@@ -79,7 +79,7 @@ export default function UpgradePlanPopup({
       try {
         const activePopup = localStorage.getItem('active_popup');
         if (activePopup) {
-          // Another popup is active, don't show this one
+          // Another popup is active, don&apos;t show this one
           return;
         }
       } catch (error) {
@@ -96,7 +96,7 @@ export default function UpgradePlanPopup({
       } catch (error) {
 }
 
-      // Don't show if already manually dismissed this session
+      // Don&apos;t show if already manually dismissed this session
       if (manuallyDismissed) {
         return;
       }

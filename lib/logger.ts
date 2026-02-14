@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto';
+﻿import { randomUUID } from 'crypto';
 
 /**
  * Production-grade structured logger with Sentry integration
@@ -316,7 +316,7 @@ export function setRequestCorrelationId(request: Request): string {
 /**
  * API route wrapper with automatic logging
  */
-export function withLogging<T extends (...args: any[]) => Promise<Response>>(
+export function withLogging<T extends (...args: unknown[]) => Promise<Response>>(
   handler: T,
   routeName: string
 ): T {

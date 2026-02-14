@@ -7,17 +7,13 @@
  * @module app/api/admin/dues/payments/[id]
  */
 
-import { NextRequest } from 'next/server';
 import { db } from '@/db';
 import { duesTransactions } from '@/db/schema/domains/finance/dues';
 import { organizationMembers } from '@/db/schema-organizations';
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
-import {
-  standardErrorResponse,
-  standardSuccessResponse,
-  ErrorCode,
+import { standardSuccessResponse,
 } from '@/lib/api/standardized-responses';
-import { eq, and } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -88,7 +84,7 @@ export const GET = withApiAuth(async (
   });
 
   try {
-    const paymentDetail = await withRLSContext(async (dbClient: NodePgDatabase<any>) => {
+    const paymentDetail = await withRLSContext(async (dbClient) => {
       // Get payment transaction
       const [payment] = await dbClient
         .select({
@@ -127,9 +123,9 @@ export const GET = withApiAuth(async (
 
       // TODO: Get audit log entries for this payment
       // This would require an audit_logs table
-      const auditLog: any[] = [];
+      const auditLog: Array<Record<string, unknown>> = [];
 
-      const metadata = (payment.metadata || {}) as any;
+      const metadata = (payment.metadata || {}) as Record<string, unknown>;
 
       const result: PaymentDetail = {
         id: payment.id,

@@ -47,7 +47,7 @@ export async function POST(
         sent: distributions.length,
       },
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('Error distributing board packet:', error);
     
     if (error instanceof z.ZodError) {

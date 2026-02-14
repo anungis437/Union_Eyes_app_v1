@@ -15,13 +15,9 @@ import { organizations } from "@/db/schema-organizations";
 import { eq } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { withSecureAPI, logApiAuditEvent } from "@/lib/middleware/api-security";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * Validation schemas for admin users API
  */
@@ -167,7 +163,7 @@ export const POST = withRoleAuth('admin', async (request, context) => {
   }
 
 try {
-      // Parse body separately since POST doesn't use query
+      // Parse body separately since POST doesn&apos;t use query
       const body = await request.json();
       
       // Validate body

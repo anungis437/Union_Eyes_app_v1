@@ -9,17 +9,13 @@ import {
   courseRegistrations,
   trainingCourses,
 } from "@/db/schema";
-import { eq, and, sql } from "drizzle-orm";
+import { and } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { sendProgramMilestone } from "@/lib/email/training-notifications";
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // GET /api/education/programs/[id]/enrollments - List program enrollments
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withRoleAuth(10, async (request, context) => {
@@ -120,7 +116,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
             return {
               ...enrollment,
               progress: {
-                completedCourses: completedCourses.map((c: any) => ({
+                completedCourses: completedCourses.map((c: Record<string, unknown>) => ({
                   registrationId: c.registration_id,
                   courseId: c.course_id,
                   courseName: c.course_name,
@@ -356,7 +352,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
       } = body;
 
       // Build update object
-      const updateData: any = {
+      const updateData = {
         lastProgressUpdate: new Date(),
         updatedAt: new Date(),
       };

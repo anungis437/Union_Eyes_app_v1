@@ -16,15 +16,11 @@ import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { ReportExecutor } from '@/lib/report-executor';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 interface AuthContext {
   userId: string;
   organizationId: string;
-  params?: Record<string, any>;
+  params?: Record<string, unknown>;
 }
 
 interface ReportConfig {
@@ -139,7 +135,7 @@ export const POST = withRoleAuth('officer', async (request: NextRequest, context
 
     // Execute report using secured ReportExecutor
     const executor = new ReportExecutor(organizationId, organizationId);
-    const result = await executor.execute(config as any);
+    const result = await executor.execute(config);
 
     // Log successful execution
     logApiAuditEvent({
@@ -166,7 +162,7 @@ export const POST = withRoleAuth('officer', async (request: NextRequest, context
       rowCount: result.rowCount,
       executionTime: result.executionTimeMs,
     });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     logApiAuditEvent({
       timestamp: new Date().toISOString(),
       userId: userId || 'unknown',
@@ -216,7 +212,7 @@ function validateReportConfig(config: ReportConfig): string | null {
 
   // SECURITY: Block custom formulas (P0 protection)
   for (const field of config.fields) {
-    if ((field as any).formula) {
+    if (field && typeof field === 'object' && 'formula' in field) {
       return 'Custom formulas are not supported for security reasons';
     }
   }

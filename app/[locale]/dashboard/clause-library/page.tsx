@@ -53,7 +53,7 @@ export default function ClauseLibraryPage() {
   const [isLoadingComparison, setIsLoadingComparison] = useState(false);
   const pageSize = 20;
   
-  // Use ref to track if we're currently fetching to prevent race conditions
+  // Use ref to track if we&apos;re currently fetching to prevent race conditions
   const isFetchingRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const lastFetchParamsRef = useRef<string>("");
@@ -132,7 +132,7 @@ setClausesData({ clauses: [], total: 0, page: currentPage, limit: pageSize });
         } else {
 setClausesData({ clauses: [], total: 0, page: currentPage, limit: pageSize });
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Ignore abort errors
         if (error.name !== 'AbortError') {
 // Set empty data to prevent further retries
@@ -276,7 +276,7 @@ toast({
     });
   };
 
-  // Re-fetch comparison when clause IDs change and we're on compare tab
+  // Re-fetch comparison when clause IDs change and we&apos;re on compare tab
   useEffect(() => {
     if (activeTab === "compare" && selectedClauseIds.length >= 2) {
       fetchComparison();

@@ -29,7 +29,7 @@ import { isFrictionlessPayment, handleFrictionlessPayment, createOrUpdatePending
  * 
  * @param data The webhook event data
  */
-export async function handlePaymentSuccess(data: any) {
+export async function handlePaymentSuccess(data: Record<string, unknown>) Record<string, unknown>) {
   const eventId = data.id || Date.now().toString();
 try {
     // Debug the frictionless detection
@@ -85,7 +85,7 @@ return;
     const nextCreditRenewal = new Date();
     nextCreditRenewal.setDate(nextCreditRenewal.getDate() + CREDIT_RENEWAL_DAYS);
 // Prepare update data - we need to update all the important fields
-    const updateData: any = {
+    const updateData = {
       // Store Whop identifiers
       whopUserId: data?.user_id || null,
       whopMembershipId: data?.membership_id || data?.id || null,
@@ -146,7 +146,7 @@ await new Promise(resolve => setTimeout(resolve, backoffMs));
  * Helper function to prepare profile update data from webhook data
  * Extracts common fields needed for both authenticated and unauthenticated payments
  */
-function prepareProfileUpdateData(data: any) {
+function prepareProfileUpdateData(data: Record<string, unknown>) Record<string, unknown>) {
   // Calculate billing cycle details
   let billingCycleStart = new Date();
   let billingCycleEnd = null;
@@ -211,7 +211,7 @@ function prepareProfileUpdateData(data: any) {
  * 
  * @param data The webhook event data
  */
-export async function handlePaymentFailed(data: any): Promise<void> {
+export async function handlePaymentFailed(data: Record<string, unknown>) Record<string, unknown>): Promise<void> {
   if (!data) {
 return;
   }

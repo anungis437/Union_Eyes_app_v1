@@ -14,13 +14,9 @@ import { withApiAuth } from '@/lib/api-auth-guard';
 import { unifiedLRBService } from '@/lib/services/external-data/lrb-unified-service';
 import { db } from '@/db/db';
 import { lrbAgreements, lrbSyncLog } from '@/db/schema/lrb-agreements-schema';
-import { eq, desc } from 'drizzle-orm';
+import { desc } from 'drizzle-orm';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 // GET /api/external-data/lrb - Search agreements
 export const GET = withApiAuth(async (request: NextRequest) => {
@@ -31,7 +27,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
     switch (action) {
       case 'search': {
         const result = await unifiedLRBService.search({
-          source: searchParams.get('source') as any || undefined,
+          source: searchParams.get('source') as Record<string, unknown> || undefined,
           employerName: searchParams.get('employer') || undefined,
           unionName: searchParams.get('union') || undefined,
           jurisdiction: searchParams.get('jurisdiction') || undefined,

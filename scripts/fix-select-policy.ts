@@ -45,7 +45,7 @@ async function fixSelectPolicy() {
     await sql.end();
     process.exit(0);
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error:', error.message);
     console.error(error);
     await sql.end();

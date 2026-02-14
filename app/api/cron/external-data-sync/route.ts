@@ -17,11 +17,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { wageEnrichmentService } from '@/lib/services/external-data/wage-enrichment-service';
 import { logger } from '@/lib/logger';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // Common NOC codes for unionized occupations
 const COMMON_NOC_CODES = [
   '6513', // Food and beverage servers
@@ -69,10 +65,10 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString(),
       syncType: 'scheduled',
       dataSources: {
-        wages: null as any,
-        unionDensity: null as any,
-        cola: null as any,
-        contributions: null as any,
+        wages: null,
+        unionDensity: null,
+        cola: null,
+        contributions: null,
       },
       summary: {
         totalProcessed: 0,

@@ -1,14 +1,10 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { smsConversations } from '@/db/schema/domains/communications';
-import { and, eq } from 'drizzle-orm';
+import { and } from 'drizzle-orm';
 import { withRoleAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 type SmsConversationContext = { params: { conversationId: string }; organizationId?: string };
 
 export const POST = withRoleAuth<SmsConversationContext>('steward', async (request, authContext) => {

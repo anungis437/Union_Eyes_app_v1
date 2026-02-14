@@ -10,16 +10,12 @@ import { NextResponse } from "next/server";
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { organizations } from "@/db/schema-organizations";
 import { organizationUsers } from "@/db/schema/domains/member";
-import { eq, and } from "drizzle-orm";
+import { and } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const organizationSwitchSchema = z.object({
   organizationId: z.string().uuid('Invalid organizationId'),

@@ -17,22 +17,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { organizations, perCapitaRemittances } from '@/db/schema';
-import { and, eq, gte, lte, inArray, sql } from 'drizzle-orm';
+import { and, inArray } from 'drizzle-orm';
 import { 
   PerCapitaCalculator,
   calculatePerCapita,
   calculateAllPerCapita,
   savePerCapitaRemittances 
 } from '@/services/clc/per-capita-calculator';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * Query schema for listing remittances
  */
@@ -260,7 +256,7 @@ export const POST = withRoleAuth(90, async (request, context) => {
   const body = parsed.data;
   const { userId, organizationId } = context;
 
-  // Validate organization ID if provided (can't calculate for different org than user's context)
+  // Validate organization ID if provided (can&apos;t calculate for different org than user's context)
   const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
     return standardErrorResponse(

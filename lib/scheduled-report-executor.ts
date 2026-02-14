@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Scheduled Report Executor
  * 
  * Core engine for executing scheduled reports:
@@ -34,7 +34,7 @@ interface ExecutionResult {
 
 interface ReportData {
   columns: string[];
-  rows: any[];
+  rows: unknown[];
   totalCount: number;
 }
 
@@ -122,7 +122,7 @@ return {
 /**
  * Create an export job record
  */
-async function createExportJob(schedule: ScheduledReport): Promise<any> {
+async function createExportJob(schedule: ScheduledReport): Promise<unknown> {
   const result = await db.execute(sql`
     INSERT INTO export_jobs (
       report_id,
@@ -142,7 +142,7 @@ async function createExportJob(schedule: ScheduledReport): Promise<any> {
     RETURNING *
   `);
 
-  const rows = result as any[];
+  const rows = result as unknown[];
   return rows[0];
 }
 
@@ -187,7 +187,7 @@ async function fetchReportData(schedule: ScheduledReport): Promise<ReportData> {
     SELECT config FROM reports WHERE id = ${schedule.reportId}
   `);
   
-  const reportRows = reportResult as any[];
+  const reportRows = reportResult as unknown[];
   if (reportRows.length === 0) {
     throw new Error('Report not found');
   }
@@ -196,7 +196,7 @@ async function fetchReportData(schedule: ScheduledReport): Promise<ReportData> {
   const config = reportConfig.config;
 
   // Execute the report query based on its type
-  let result: any[];
+  let result: unknown[];
 
   switch (config.reportType || config.type) {
     case 'claims':
@@ -222,7 +222,7 @@ async function fetchReportData(schedule: ScheduledReport): Promise<ReportData> {
 /**
  * Execute claims report query
  */
-async function executeClaimsQuery(tenantId: string, config: any): Promise<any[]> {
+async function executeClaimsQuery(tenantId: string, config: unknown): Promise<unknown[]> {
   const result = await db.execute(sql`
     SELECT 
       c.claim_number,
@@ -242,13 +242,13 @@ async function executeClaimsQuery(tenantId: string, config: any): Promise<any[]>
     LIMIT 1000
   `);
   
-  return result as any[];
+  return result as unknown[];
 }
 
 /**
  * Execute analytics report query
  */
-async function executeAnalyticsQuery(tenantId: string, config: any): Promise<any[]> {
+async function executeAnalyticsQuery(tenantId: string, config: unknown): Promise<unknown[]> {
   const groupBy = config.groupBy || 'status';
 
   // SECURITY FIX: Whitelist validation to prevent SQL injection via GROUP BY column
@@ -272,13 +272,13 @@ async function executeAnalyticsQuery(tenantId: string, config: any): Promise<any
     LIMIT 100
   `);
   
-  return result as any[];
+  return result as unknown[];
 }
 
 /**
  * Execute default query
  */
-async function executeDefaultQuery(tenantId: string, config: any): Promise<any[]> {
+async function executeDefaultQuery(tenantId: string, config: unknown): Promise<unknown[]> {
   const result = await db.execute(sql`
     SELECT 
       id,
@@ -293,7 +293,7 @@ async function executeDefaultQuery(tenantId: string, config: any): Promise<any[]
     LIMIT 500
   `);
   
-  return result as any[];
+  return result as unknown[];
 }
 
 /**
@@ -303,7 +303,7 @@ async function executeDefaultQuery(tenantId: string, config: any): Promise<any[]
  * security risk. It should ONLY be used with pre-approved, validated SQL queries.
  * Implementation includes strict allowlist validation.
  */
-async function executeCustomQuery(tenantId: string, config: any): Promise<any[]> {
+async function executeCustomQuery(tenantId: string, config: unknown): Promise<unknown[]> {
   const customQuery = config.query || '';
   if (!customQuery) {
     return executeDefaultQuery(tenantId, config);
@@ -334,7 +334,7 @@ async function executeCustomQuery(tenantId: string, config: any): Promise<any[]>
   }
   
   // SECURITY FIX: Use proper parameterization instead of string replacement
-  let result: any[];
+  let result: unknown[];
   switch (queryKey) {
     case 'claims_summary':
       result = await db.execute(sql`
@@ -363,7 +363,7 @@ async function executeCustomQuery(tenantId: string, config: any): Promise<any[]>
       throw new Error(`Query not implemented: ${queryKey}`);
   }
   
-  return result as any[];
+  return result as unknown[];
 }
 
 // ============================================================================
@@ -783,7 +783,7 @@ async function deliverViaWebhook(
   schedule: ScheduledReport,
   fileUrl: string
 ): Promise<void> {
-  const webhookUrl = (schedule.scheduleConfig as any).webhookUrl;
+  const webhookUrl = (schedule.scheduleConfig as unknown).webhookUrl;
   
   if (!webhookUrl) {
     throw new Error('Webhook URL not configured');
@@ -823,7 +823,7 @@ export async function retryFailedExecution(
     SELECT * FROM report_schedules WHERE id = ${scheduleId}
   `);
   
-  const rows = result as any[];
+  const rows = result as unknown[];
   if (rows.length === 0) {
     throw new Error('Schedule not found');
   }

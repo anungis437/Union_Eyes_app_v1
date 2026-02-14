@@ -11,16 +11,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { db as drizzleDb } from '@/db';
 import { meetingRooms, roomBookings } from '@/db/schema/calendar-schema';
-import { eq, and, or, gte, lte } from 'drizzle-orm';
+import { and, or } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * Helper to check if user is admin
  */
@@ -49,7 +45,7 @@ export const GET = async (request: NextRequest) => {
       const buildingName = searchParams.get('building');
 
       // Base query
-      let query = db
+      const query = db
         .select()
         .from(meetingRooms)
         .where(

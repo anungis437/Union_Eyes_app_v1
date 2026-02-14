@@ -10,16 +10,12 @@ import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { equitySnapshots } from '@/db/schema';
-import { eq, desc, sql } from 'drizzle-orm';
+import { desc } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {

@@ -68,7 +68,7 @@ async function diagnosticWithFreshConnection() {
       } else {
         console.log('   ❌ RLS NOT BLOCKING (bad!)\n');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log(`   ✅ RLS BLOCKING with error (good!): ${error.message.substring(0, 50)}...\n`);
     }
     
@@ -126,7 +126,7 @@ async function diagnosticWithFreshConnection() {
     await freshClient.end();
     process.exit(0);
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('\n❌ Error:', error.message);
     if (error.stack) {
       console.error(error.stack);

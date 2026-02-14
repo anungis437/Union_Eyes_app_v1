@@ -32,7 +32,7 @@ async function testPolicy() {
     
     process.exit(0);
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('\n❌ Error:');
     console.error('Message:', error.message);
     console.error('Code:', error.code);

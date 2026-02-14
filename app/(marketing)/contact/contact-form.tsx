@@ -7,6 +7,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -45,7 +46,7 @@ export function ContactForm() {
 
     try {
       // In production, this would send to an API endpoint
-      // For now, we'll simulate a successful submission
+      // For now, we&apos;ll simulate a successful submission
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Simulate API call
@@ -83,7 +84,7 @@ export function ContactForm() {
               Message sent!
             </h3>
             <p className="text-green-700 mb-4">
-              Thank you for reaching out. We'll get back to you within 24 hours.
+              Thank you for reaching out. We&apos;ll get back to you within 24 hours.
             </p>
             <Button 
               variant="outline" 
@@ -199,7 +200,7 @@ export function ContactForm() {
         <Label htmlFor="message">Message</Label>
         <Textarea
           id="message"
-          placeholder="Tell us about your organization and what you're looking for..."
+          placeholder="Tell us about your organization and what you&apos;re looking for..."
           rows={5}
           value={formData.message}
           onChange={(e) => handleChange('message', e.target.value)}
@@ -225,8 +226,8 @@ export function ContactForm() {
 
       <p className="text-xs text-slate-500 text-center">
         By submitting this form, you agree to our{' '}
-        <a href="/privacy" className="underline hover:text-slate-700">Privacy Policy</a>.
-        We'll never share your information with third parties.
+        <Link href="/privacy" className="underline hover:text-slate-700">Privacy Policy</Link>.
+        We&apos;ll never share your information with third parties.
       </p>
     </form>
   );

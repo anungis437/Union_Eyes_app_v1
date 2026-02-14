@@ -89,7 +89,7 @@ router.get('/', async (req: Request, res: Response) => {
       data: rules,
       total: rules.length,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
       error: error.message,
@@ -125,7 +125,7 @@ router.get('/:id', async (req: Request, res: Response) => {
       success: true,
       data: rule,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
       error: error.message,
@@ -179,7 +179,7 @@ router.post('/', async (req: Request, res: Response) => {
       data: newRule[0],
       message: 'Dues rule created successfully',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         success: false,
@@ -252,7 +252,7 @@ router.put('/:id', async (req: Request, res: Response) => {
       data: updatedRule[0],
       message: 'Dues rule updated successfully',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         success: false,
@@ -305,7 +305,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
       success: true,
       message: 'Dues rule deactivated successfully',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
       error: error.message,
@@ -372,7 +372,7 @@ router.post('/:id/duplicate', async (req: Request, res: Response) => {
       data: duplicatedRule[0],
       message: 'Dues rule duplicated successfully',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       success: false,
       error: error.message,

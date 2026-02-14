@@ -13,7 +13,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { fieldNotes } from '@/db/schema';
-import { eq, and, or } from 'drizzle-orm';
+import { and, or } from 'drizzle-orm';
 
 interface RouteParams {
   params: {
@@ -110,7 +110,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     // Build update object
-    const updateData: any = {
+    const updateData = {
       updatedAt: new Date(),
     };
 

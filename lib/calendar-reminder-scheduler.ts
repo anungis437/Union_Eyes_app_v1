@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Calendar Reminder Scheduler
  * 
  * Integrates calendar events with Area 9's job queue system.
@@ -18,7 +18,7 @@ import { db } from '@/db/db';
 import { calendarEvents, eventAttendees, eventReminders } from '@/db/schema/calendar-schema';
 import { eq, and, lte, gte, isNull } from 'drizzle-orm';
 import { subMinutes, subHours, subDays, addMinutes } from 'date-fns';
-// @ts-ignore - Area 9's job queue system
+// @ts-expect-error - Area 9's job queue system
 import { addNotificationJob } from '@/lib/job-queue';
 
 // ============================================================================
@@ -92,7 +92,7 @@ export async function scheduleEventReminders(
         for (const channel of channels) {
           const reminderTime = subMinutes(new Date(event.startTime), minutes);
 
-          // Don't schedule reminders in the past
+          // Don&apos;t schedule reminders in the past
           if (reminderTime < new Date()) {
             continue;
           }
@@ -130,8 +130,8 @@ throw error;
  */
 async function scheduleReminderJob(
   reminderId: string,
-  event: any,
-  attendee: any,
+  event: unknown,
+  attendee: unknown,
   minutes: number,
   channel: 'email' | 'sms' | 'push' | 'in-app',
   scheduledFor: Date
@@ -203,7 +203,7 @@ export async function cancelEventReminders(eventId: string): Promise<number> {
         const jobs = await queue.getJobs(['waiting', 'delayed', 'active']);
         
         // Filter jobs related to this event
-        const eventJobs = jobs.filter((job: any) => 
+        const eventJobs = jobs.filter((job: unknown) => 
           job.data.metadata?.eventId === eventId
         );
         
@@ -213,7 +213,7 @@ export async function cancelEventReminders(eventId: string): Promise<number> {
 }
 }
     } catch (error) {
-// Don't throw - we already updated the database status
+// Don&apos;t throw - we already updated the database status
     }
 
     return pendingReminders.length;
@@ -329,7 +329,7 @@ throw error;
 export async function getPendingReminders(options?: {
   limit?: number;
   lookAheadMinutes?: number;
-}): Promise<any[]> {
+}): Promise<unknown[]> {
   try {
     const limit = options?.limit || 100;
     const lookAhead = options?.lookAheadMinutes || 15;

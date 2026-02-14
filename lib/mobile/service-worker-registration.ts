@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Service Worker Registration Hook
  * 
  * Provides React hooks and utilities for PWA service worker management
@@ -94,7 +94,7 @@ export function usePWAInstall(): {
 
     // Check if running in standalone mode
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
-                        (window.navigator as any).standalone === true;
+                        (window.navigator as unknown).standalone === true;
 
     // Check if can install
     const handleBeforeInstall = (e: Event) => {
@@ -113,8 +113,8 @@ export function usePWAInstall(): {
   const install = useCallback(async () => {
     if (!deferredPrompt) return;
 
-    (deferredPrompt as any).prompt();
-    const { outcome } = await (deferredPrompt as any).userChoice;
+    (deferredPrompt as unknown).prompt();
+    const { outcome } = await (deferredPrompt as unknown).userChoice;
     
     if (outcome === 'accepted') {
       setCanInstall(false);
@@ -126,7 +126,7 @@ export function usePWAInstall(): {
   return {
     isStandalone: typeof window !== 'undefined' && 
       (window.matchMedia('(display-mode: standalone)').matches ||
-       (window.navigator as any).standalone === true),
+       (window.navigator as unknown).standalone === true),
     isInstalled: typeof window !== 'undefined' && 
       window.matchMedia('(display-mode: standalone)').matches,
     canInstall,
@@ -152,9 +152,9 @@ export function useNetworkStatus(): {
     if (typeof window === 'undefined') return;
 
     const updateStatus = () => {
-      const connection = (navigator as any).connection || 
-                       (navigator as any).mozConnection || 
-                       (navigator as any).webkitConnection;
+      const connection = (navigator as unknown).connection || 
+                       (navigator as unknown).mozConnection || 
+                       (navigator as unknown).webkitConnection;
       
       setStatus({
         isOnline: navigator.onLine,
@@ -169,7 +169,7 @@ export function useNetworkStatus(): {
     window.addEventListener('offline', updateStatus);
 
     // Listen for connection changes
-    const connection = (navigator as any).connection;
+    const connection = (navigator as unknown).connection;
     if (connection) {
       connection.addEventListener('change', updateStatus);
     }

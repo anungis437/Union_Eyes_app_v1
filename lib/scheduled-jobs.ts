@@ -183,6 +183,7 @@ export function initializeAnalyticsJobs() {
 
   // Integrate with node-cron for scheduled job execution
   if (typeof window === 'undefined') { // Server-side only
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const cron = require('node-cron');
     
     enabledJobs.forEach(job => {

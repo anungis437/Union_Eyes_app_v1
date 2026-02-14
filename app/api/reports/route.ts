@@ -7,15 +7,11 @@
 
 import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser, BaseAuthContext } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser, BaseAuthContext } from '@/lib/api-auth-guard';
 import { getReports, createReport } from '@/db/queries/analytics-queries';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 import { checkEntitlement, getCreditCost } from '@/lib/services/entitlements';
 
 async function getHandler(req: NextRequest, context: BaseAuthContext) {

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Social Media Service - Phase 10
  * 
  * Unified service for managing social media integrations across
@@ -199,11 +199,11 @@ export class SocialMediaService {
         ...(newRefreshToken && { refresh_token: newRefreshToken }),
       };
 
-      // @ts-ignore - Supabase client without Database type
+      // @ts-expect-error - Supabase client without Database type
       await this.supabase.from('social_accounts').update(updateData).eq('id', accountId);
     } catch (error) {
       // Update account status to error
-      // @ts-ignore - Supabase client without Database type
+      // @ts-expect-error - Supabase client without Database type
       await this.supabase.from('social_accounts').update({ status: 'error', error_message: error instanceof Error ? error.message : 'Token refresh failed' }).eq('id', accountId);
 
       throw error;
@@ -293,7 +293,7 @@ export class SocialMediaService {
                 // Fetch and upload media
                 const mediaResponse = await fetch(url);
                 const mediaBuffer = Buffer.from(await mediaResponse.arrayBuffer());
-                const mediaType = mediaResponse.headers.get('content-type') as any;
+                const mediaType = mediaResponse.headers.get('content-type') as unknown;
                 const media = await twitterClient.uploadMedia(mediaBuffer, mediaType);
                 mediaIds.push(media.media_id_string);
               }
@@ -364,7 +364,7 @@ export class SocialMediaService {
           created_by: createdById,
         };
 
-        // @ts-ignore - Supabase client without Database type
+        // @ts-expect-error - Supabase client without Database type
         await this.supabase.from('social_posts').insert(postData);
 
         results.push({
@@ -399,7 +399,7 @@ export class SocialMediaService {
       throw new Error(`Post not found: ${postId}`);
     }
 
-    const typedPost = post as any;
+    const typedPost = post as unknown;
     const client = await this.getClient(typedPost.account_id);
 
     try {
@@ -407,7 +407,7 @@ export class SocialMediaService {
         case 'facebook':
         case 'instagram': {
           const metaClient = client as MetaAPIClient;
-          await metaClient.deletePost(typedPost.platform_post_id, (typedPost.account as any).access_token);
+          await metaClient.deletePost(typedPost.platform_post_id, (typedPost.account as unknown).access_token);
           break;
         }
 
@@ -428,7 +428,7 @@ export class SocialMediaService {
       }
 
       // Update post status in database
-      // @ts-ignore - Supabase client without Database type
+      // @ts-expect-error - Supabase client without Database type
       await this.supabase.from('social_posts').update({ status: 'deleted', deleted_at: new Date().toISOString() }).eq('id', postId);
     } catch (error) {
       throw new Error(`Failed to delete post: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -515,7 +515,7 @@ export class SocialMediaService {
 
       // Save analytics to database
       for (const data of analytics) {
-        // @ts-ignore - Supabase client without Database type
+        // @ts-expect-error - Supabase client without Database type
         await this.supabase.from('social_analytics').upsert({
           organization_id: typedAccount.organizationId,
           account_id: accountId,
@@ -621,7 +621,7 @@ throw error;
       if (content.media_urls.length > 1) {
         return 'carousel';
       }
-      // Check if it's a video (simple check, could be more sophisticated)
+      // Check if it&apos;s a video (simple check, could be more sophisticated)
       const url = content.media_urls[0].toLowerCase();
       if (url.includes('.mp4') || url.includes('.mov') || url.includes('video')) {
         return 'video';

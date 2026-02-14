@@ -246,7 +246,7 @@ export class TwilioAdapter implements SMSProvider {
   }
 
   async sendBatch(messages: SMSMessage[]): Promise<SMSResult[]> {
-    // Twilio doesn't have native batch API, send sequentially
+    // Twilio doesn&apos;t have native batch API, send sequentially
     const results: SMSResult[] = [];
     
     for (const message of messages) {

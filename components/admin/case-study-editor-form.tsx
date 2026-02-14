@@ -9,6 +9,7 @@
  */
 
 'use client';
+import Link from 'next/link';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -116,7 +117,7 @@ export default function CaseStudyEditorForm({ caseStudy }: CaseStudyEditorFormPr
         router.push('/admin/case-studies');
         router.refresh();
       }, 1000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message);
     } finally {
       setLoading(false);
@@ -413,7 +414,7 @@ export default function CaseStudyEditorForm({ caseStudy }: CaseStudyEditorFormPr
       {/* Action Buttons */}
       <div className="flex items-center justify-between">
         <Button variant="outline" asChild>
-          <a href="/admin/case-studies">Cancel</a>
+          <Link href="/admin/case-studies">Cancel</Link>
         </Button>
 
         <div className="flex items-center gap-2">

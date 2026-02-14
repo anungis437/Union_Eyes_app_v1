@@ -10,11 +10,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 /**
  * GET /api/audits/[id]
@@ -26,7 +22,7 @@ export const GET = withEnhancedRoleAuth(60, async (request, context, { params })
 
   try {
     // Mock detailed audit data repository
-    const auditDetails: Record<string, any> = {
+    const auditDetails: Record<string, unknown> = {
       "audit-2026-001": {
         id: "audit-2026-001",
         auditNumber: "AUD-2026-001",

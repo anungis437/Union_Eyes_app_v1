@@ -12,15 +12,10 @@ import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { analyzePaymentPatterns } from '@/services/clc/compliance-reports';
 import { db } from '@/database';
 import { perCapitaRemittances } from '@/db/schema/clc-per-capita-schema';
-import { sql } from 'drizzle-orm';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(90, async (request, context) => {
     const { userId } = context;

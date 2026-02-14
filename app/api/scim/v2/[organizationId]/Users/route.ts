@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { scimConfigurations, scimEventsLog } from '@/db/schema/sso-scim-schema';
 import { users } from '@/db/schema/user-management-schema';
-import { eq, and, like, or } from 'drizzle-orm';
+import { and, like, or } from 'drizzle-orm';
 import crypto from 'crypto';
 
 /**
@@ -50,7 +50,7 @@ async function logSCIMEvent(
   status: string,
   statusCode: number,
   requestBody?: any,
-  responseBody?: any,
+  responseBody?: any, Record<string, unknown>,
   errorMessage?: string
 ) {
   await db.insert(scimEventsLog).values({
@@ -183,7 +183,7 @@ export async function GET(
     );
     
     return NextResponse.json(response);
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('SCIM Users GET error:', error);
     return NextResponse.json(
       {
@@ -340,7 +340,7 @@ export async function POST(
       .where(eq(scimConfigurations.id, config.id));
     
     return NextResponse.json(scimUser, { status: 201 });
-  } catch (error: any) {
+  } catch (error: Record<string, unknown>) {
     console.error('SCIM Users POST error:', error);
     return NextResponse.json(
       {

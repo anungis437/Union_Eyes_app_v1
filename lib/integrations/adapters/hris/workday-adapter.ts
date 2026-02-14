@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Workday HRIS Integration Adapter
  * 
  * Implements integration with Workday for employee, position, and department data.
@@ -39,7 +39,7 @@ export class WorkdayAdapter extends BaseIntegration {
     super(IntegrationType.HRIS, IntegrationProvider.WORKDAY, {
       supportsFullSync: true,
       supportsIncrementalSync: true,
-      supportsWebhooks: false, // Workday doesn't support webhooks in most plans
+      supportsWebhooks: false, // Workday doesn&apos;t support webhooks in most plans
       supportsRealTime: false,
       supportedEntities: ['employees', 'positions', 'departments'],
       requiresOAuth: true,
@@ -246,7 +246,7 @@ export class WorkdayAdapter extends BaseIntegration {
                 department: workdayEmployee.department,
                 location: workdayEmployee.location,
                 hireDate: workdayEmployee.hireDate ? new Date(workdayEmployee.hireDate) : null,
-                employmentStatus: workdayEmployee.employmentStatus as any,
+                employmentStatus: workdayEmployee.employmentStatus as unknown,
                 workSchedule: workdayEmployee.workSchedule,
                 supervisorId: workdayEmployee.supervisor?.id,
                 supervisorName: workdayEmployee.supervisor?.name,
@@ -270,7 +270,7 @@ export class WorkdayAdapter extends BaseIntegration {
               department: workdayEmployee.department,
               location: workdayEmployee.location,
               hireDate: workdayEmployee.hireDate ? new Date(workdayEmployee.hireDate) : null,
-              employmentStatus: workdayEmployee.employmentStatus as any,
+              employmentStatus: workdayEmployee.employmentStatus as unknown,
               workSchedule: workdayEmployee.workSchedule,
               supervisorId: workdayEmployee.supervisor?.id,
               supervisorName: workdayEmployee.supervisor?.name,
@@ -451,7 +451,7 @@ export class WorkdayAdapter extends BaseIntegration {
   // ==========================================================================
 
   async verifyWebhook(payload: string, signature: string): Promise<boolean> {
-    // Workday doesn't support webhooks in most plans
+    // Workday doesn&apos;t support webhooks in most plans
     return false;
   }
 

@@ -22,15 +22,11 @@ import { withRLSContext } from '@/lib/db/with-rls-context';
 import { db as drizzleDb } from "@/db";
 import { organizationMembers } from "@/db/schema-organizations";
 import { organizations } from "@/db/schema-organizations";
-import { eq, and, inArray } from "drizzle-orm";
+import { and, inArray } from "drizzle-orm";
 import { logger } from "@/lib/logger";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // Type definitions for import
 interface ImportRow {
   organizationSlug: string;
@@ -353,7 +349,7 @@ export const POST = async (request: NextRequest) => {
       }
 
       // Create members in batch
-      const createdMembers: any[] = [];
+      const createdMembers: Array<Record<string, unknown>> = [];
       
       // Batch insert all members
       try {
@@ -363,8 +359,8 @@ export const POST = async (request: NextRequest) => {
           name: row.name,
           email: row.email,
           phone: row.phone || null,
-          role: (row.role || "member") as any,
-          status: (row.status || "active") as any,
+          role: (row.role || "member") as Record<string, unknown>,
+          status: (row.status || "active") as Record<string, unknown>,
           department: row.department || null,
           position: row.position || null,
           hireDate: row.hireDate ? new Date(row.hireDate) : null,
@@ -423,7 +419,7 @@ function parseCSV(text: string): ImportRow[] {
 
   for (let i = 1; i < lines.length; i++) {
     const values = lines[i].split(",").map((v) => v.trim().replace(/"/g, ""));
-    const row: any = {};
+    const row: Record<string, unknown> = {};
 
     headers.forEach((header, index) => {
       const value = values[index];

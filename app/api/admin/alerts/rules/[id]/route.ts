@@ -3,7 +3,7 @@
  */
 
 import { z } from "zod";
-import { and, eq } from "drizzle-orm";
+import { and } from "drizzle-orm";
 import { withRLSContext } from "@/lib/db/with-rls-context";
 import { withRoleAuth } from "@/lib/api-auth-guard";
 import {
@@ -16,10 +16,7 @@ import {
   alertActionType,
   alertConditionOperator,
 } from "@/db/schema";
-import {
-  ErrorCode,
-  standardErrorResponse,
-  standardSuccessResponse,
+import { standardSuccessResponse,
 } from "@/lib/api/standardized-responses";
 
 const updateRuleSchema = z.object({

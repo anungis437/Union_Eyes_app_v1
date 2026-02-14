@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Excel Generator Utility
  * 
  * Generates Excel spreadsheets from structured data
@@ -13,7 +13,7 @@ import ExcelJS from 'exceljs';
 
 export interface ExcelOptions {
   title: string;
-  data: any[] | Record<string, any>;
+  data: unknown[] | Record<string, unknown>;
   columns: ExcelColumn[];
   sheetName?: string;
   includeHeader?: boolean;
@@ -41,7 +41,7 @@ export interface MultiSheetExcelOptions {
   filename: string;
   sheets: {
     name: string;
-    data: any[];
+    data: unknown[];
     columns: ExcelColumn[];
   }[];
 }
@@ -215,9 +215,9 @@ export async function generateMultiSheetExcel(
  * Generate financial Excel report with multiple sheets
  */
 export async function generateFinancialExcel(data: {
-  summary: any;
-  transactions: any[];
-  categories: any[];
+  summary: unknown;
+  transactions: unknown[];
+  categories: unknown[];
 }): Promise<Buffer> {
   return await generateMultiSheetExcel({
     filename: 'financial-report',
@@ -259,7 +259,7 @@ export async function generateFinancialExcel(data: {
 /**
  * Generate membership roster Excel
  */
-export async function generateMembershipRoster(members: any[]): Promise<Buffer> {
+export async function generateMembershipRoster(members: unknown[]): Promise<Buffer> {
   return await generateExcel({
     title: 'Membership Roster',
     data: members,
@@ -279,7 +279,7 @@ export async function generateMembershipRoster(members: any[]): Promise<Buffer> 
 /**
  * Generate claims/grievances Excel report
  */
-export async function generateClaimsExcel(claims: any[]): Promise<Buffer> {
+export async function generateClaimsExcel(claims: unknown[]): Promise<Buffer> {
   return await generateExcel({
     title: 'Claims Report',
     data: claims,
@@ -300,9 +300,9 @@ export async function generateClaimsExcel(claims: any[]): Promise<Buffer> {
  * Generate CLC remittance Excel
  */
 export async function generateRemittanceExcel(data: {
-  organizationInfo: any;
-  remittances: any[];
-  summary: any;
+  organizationInfo: unknown;
+  remittances: unknown[];
+  summary: unknown;
 }): Promise<Buffer> {
   return await generateMultiSheetExcel({
     filename: 'clc-remittance',
@@ -337,9 +337,9 @@ export async function generateRemittanceExcel(data: {
  * Generate training report Excel
  */
 export async function generateTrainingReportExcel(data: {
-  programs: any[];
-  enrollments: any[];
-  completions: any[];
+  programs: unknown[];
+  enrollments: unknown[];
+  completions: unknown[];
 }): Promise<Buffer> {
   return await generateMultiSheetExcel({
     filename: 'training-report',
@@ -391,7 +391,7 @@ export async function generateTrainingReportExcel(data: {
 export function applyConditionalFormatting(
   worksheet: ExcelJS.Worksheet,
   range: string,
-  rules: any[]
+  rules: unknown[]
 ) {
   worksheet.addConditionalFormatting({
     ref: range,

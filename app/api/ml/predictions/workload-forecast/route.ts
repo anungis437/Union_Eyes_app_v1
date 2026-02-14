@@ -16,12 +16,7 @@ import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { sql } from 'drizzle-orm';
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 import { 
   predictWorkloadBatch, 
   calculateMovingAverage, 
@@ -117,7 +112,7 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
       ORDER BY prediction_date ASC
     `);
 
-    const predictions: ForecastPoint[] = ((result as any[]) || []).map((row: any) => {
+    const predictions: ForecastPoint[] = ((result as Array<Record<string, unknown>>) || []).map((row: Record<string, unknown>) => {
       const predictedValue = parseFloat(row.predicted_value);
       const lowerBound = parseFloat(row.lower_bound);
       const upperBound = parseFloat(row.upper_bound);
@@ -171,7 +166,7 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
       LIMIT 1
     `);
 
-    const accuracy = (metadataResult as any[])?.[0]?.accuracy || 0.8;
+    const accuracy = (metadataResult as Array<Record<string, unknown>>)?.[0]?.accuracy || 0.8;
 
     // Generate resource recommendations
     const resourceRecommendations = generateResourceRecommendations(
@@ -266,7 +261,7 @@ export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, contex
       ORDER BY claim_date DESC
     `);
 
-    const recentVolumes = (historicalResult as any[]).map((row: any) => ({
+    const recentVolumes = (historicalResult as Array<Record<string, unknown>>).map((row: Record<string, unknown>) => ({
       date: new Date(row.claim_date),
       count: parseInt(row.claim_count)
     }));
@@ -291,7 +286,7 @@ export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, contex
       ORDER BY prediction_date ASC
     `);
 
-    const predictions: ForecastPoint[] = ((forecastResult as any[]) || []).map((row: any) => {
+    const predictions: ForecastPoint[] = ((forecastResult as Array<Record<string, unknown>>) || []).map((row: Record<string, unknown>) => {
       const predictedValue = parseFloat(row.predicted_value);
       const lowerBound = parseFloat(row.lower_bound);
       const upperBound = parseFloat(row.upper_bound);

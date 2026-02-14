@@ -21,14 +21,10 @@ import {
 } from "@/db/schema";
 import { organizationMembers } from "@/db/schema/organization-members-schema";
 import { memberDocuments } from "@/db/schema/domains/documents";
-import { eq, sql } from "drizzle-orm";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { sql } from "drizzle-orm";
+import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 /**
  * Helper function to get user's organization context
  */
@@ -172,7 +168,7 @@ try {
       }
 
       // Build merged data based on field selections
-      const mergedData: any = {
+      const mergedData = {
         id: primaryMemberId,
         organizationId: orgId,
       };
@@ -323,7 +319,7 @@ export const GET = async (request: NextRequest) => {
           .where(eq(organizationMembers.organizationId, orgId));
 
         // Simple duplicate detection (expand in production)
-        const candidates: Array<{ primary: any; duplicates: any[] }> = [];
+        const candidates: Array<{ primary: any; duplicates: Array<Record<string, unknown>> }> = [];
         
         // Example: Find members with exact same email
         const emailMap = new Map<string, any[]>();

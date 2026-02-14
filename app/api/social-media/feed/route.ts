@@ -13,11 +13,7 @@ import { createClient } from '@supabase/supabase-js';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 // Lazy initialization - env vars not available during build
 let supabaseClient: ReturnType<typeof createClient> | null = null;
 function getSupabaseClient() {

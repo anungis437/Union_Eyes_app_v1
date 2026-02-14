@@ -8,11 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { CookieConsentManager } from "@/lib/gdpr/consent-manager";
 
-import { 
-  standardErrorResponse, 
-  standardSuccessResponse, 
-  ErrorCode 
-} from '@/lib/api/standardized-responses';
+import { standardSuccessResponse } from '@/lib/api/standardized-responses';
 
 const gdprCookieConsentSchema = z.object({
   consentId: z.string().uuid('Invalid consentId'),
