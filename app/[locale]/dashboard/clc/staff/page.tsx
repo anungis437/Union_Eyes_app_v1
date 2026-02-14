@@ -22,6 +22,10 @@ import {
 import Link from 'next/link';
 import { getUserRoleInOrganization } from '@/lib/organization-utils';
 import { CLCApprovalWorkflow } from '@/components/admin/clc-approval-workflow';
+import { db } from '@/db';
+import { clcOrganizationSyncLog } from '@/db/schema/clc-sync-audit-schema';
+import { perCapitaRemittances, remittanceApprovals } from '@/db/schema/clc-per-capita-schema';
+import { eq, desc, count, and, sql, lte } from 'drizzle-orm';
 
 export const metadata: Metadata = {
   title: 'CLC Staff Dashboard | Union Eyes',
@@ -40,21 +44,67 @@ async function checkCLCStaffAccess(userId: string, orgId: string): Promise<boole
 
 async function getCLCOperationalMetrics(_orgId: string) {
   try {
-    // TODO: Replace with actual queries to clc_sync_log and related tables
-    const pendingSyncs = 0;
-    const failedSyncs = 0;
-    const lastSyncTime = null;
-    const pendingApprovals = 0;
-    const overdueRemittances = 0;
-    const recentActivity = [];
+    // Query sync log for failed syncs in last 24 hours
+    const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const [failedSyncStats] = await db
+      .select({ count: count() })
+      .from(clcOrganizationSyncLog)
+      .where(
+        and(
+          eq(clcOrganizationSyncLog.action, 'failed'),
+          sql`${clcOrganizationSyncLog.syncedAt} >= ${last24Hours}`
+        )
+      );
+
+    // Get most recent sync
+    const [mostRecentSync] = await db
+      .select({
+        syncedAt: clcOrganizationSyncLog.syncedAt,
+        action: clcOrganizationSyncLog.action,
+      })
+      .from(clcOrganizationSyncLog)
+      .orderBy(desc(clcOrganizationSyncLog.syncedAt))
+      .limit(1);
+
+    // Count pending approvals
+    const [pendingApprovalStats] = await db
+      .select({ count: count() })
+      .from(remittanceApprovals)
+      .where(eq(remittanceApprovals.status, 'pending'));
+
+    // Count overdue remittances (past due date and not paid)
+    const today = new Date().toISOString().split('T')[0];
+    const [overdueStats] = await db
+      .select({ count: count() })
+      .from(perCapitaRemittances)
+      .where(
+        and(
+          lte(perCapitaRemittances.dueDate, today),
+          sql`${perCapitaRemittances.status} NOT IN ('paid', 'approved')`
+        )
+      );
+
+    // Get recent sync activity (last 10 syncs)
+    const recentSyncs = await db
+      .select({
+        id: clcOrganizationSyncLog.id,
+        affiliateCode: clcOrganizationSyncLog.affiliateCode,
+        action: clcOrganizationSyncLog.action,
+        duration: clcOrganizationSyncLog.duration,
+        syncedAt: clcOrganizationSyncLog.syncedAt,
+        error: clcOrganizationSyncLog.error,
+      })
+      .from(clcOrganizationSyncLog)
+      .orderBy(desc(clcOrganizationSyncLog.syncedAt))
+      .limit(10);
 
     return {
-      pendingSyncs,
-      failedSyncs,
-      lastSyncTime,
-      pendingApprovals,
-      overdueRemittances,
-      recentActivity,
+      pendingSyncs: 0, // This would need a separate queue table to track
+      failedSyncs: failedSyncStats?.count || 0,
+      lastSyncTime: mostRecentSync?.syncedAt || null,
+      pendingApprovals: pendingApprovalStats?.count || 0,
+      overdueRemittances: overdueStats?.count || 0,
+      recentActivity: recentSyncs || [],
     };
   } catch (error) {
     console.error('Error fetching CLC operational metrics:', error);

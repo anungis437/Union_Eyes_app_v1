@@ -32,7 +32,6 @@ export const POST = async (request: NextRequest) => {
         return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
       'Bad Request - jurisdictionId, actionType, proposedDate, and eventDate are required'
-      // TODO: Migrate additional details: actionType, proposedDate, and eventDate are required'
     );
       }
 

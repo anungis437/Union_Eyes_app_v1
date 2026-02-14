@@ -111,7 +111,6 @@ export const POST = async (request: NextRequest) => {
         return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
       'Bad Request - organizationId, planName, planType, planEffectiveDate, and planYearEnd are required'
-      // TODO: Migrate additional details: planName, planType, planEffectiveDate, and planYearEnd are required'
     );
       }
 

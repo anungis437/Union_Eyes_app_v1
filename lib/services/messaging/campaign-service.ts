@@ -17,8 +17,12 @@
  */
 
 import { db } from '@/db';
-import { sql, eq, and, desc, inArray } from 'drizzle-orm';
+import { sql, eq, and, desc, inArray, like, or } from 'drizzle-orm';
 import { campaigns, messageLog } from '@/db/schema';
+import { organizationMembers } from '@/db/schema/organization-members-schema';
+import { users } from '@/db/schema/user-management-schema';
+import { communicationPreferences } from '@/db/schema/communication-analytics-schema';
+import { memberSegments, type MemberSegmentFilters } from '@/db/schema/domains/member/member-segments';
 import type {
   Campaign,
   InsertCampaign,
@@ -167,13 +171,73 @@ export class CampaignService {
       throw new Error('Campaign not found');
     }
 
-    // TODO: Implement segment query resolution
-    // For now, return placeholder
-    // In production, this would:
-    // 1. Execute segment query to get initial audience
-    // 2. Filter by communication preferences
-    // 3. Filter by consent status
-    // 4. Deduplicate recipients
+    const segmentFilters: MemberSegmentFilters | undefined = campaign.segmentId
+      ? (await db
+          .select({ filters: memberSegments.filters })
+          .from(memberSegments)
+          .where(
+            and(
+              eq(memberSegments.id, campaign.segmentId),
+              eq(memberSegments.organizationId, organizationId)
+            )
+          )
+          .limit(1)
+        )[0]?.filters
+      : (campaign.segmentQuery as MemberSegmentFilters | undefined);
+
+    let baseQuery = db
+      .select({
+        userId: organizationMembers.userId,
+        email: users.email,
+        phone: users.phone,
+        name: users.displayName,
+        firstName: users.firstName,
+        lastName: users.lastName,
+      })
+      .from(organizationMembers)
+      .leftJoin(users, eq(organizationMembers.userId, users.userId))
+      .where(eq(organizationMembers.organizationId, organizationId));
+
+    if (segmentFilters?.status?.length) {
+      baseQuery = baseQuery.where(inArray(organizationMembers.status, segmentFilters.status));
+    }
+
+    if (segmentFilters?.role?.length) {
+      baseQuery = baseQuery.where(inArray(organizationMembers.role, segmentFilters.role));
+    }
+
+    if (segmentFilters?.searchQuery) {
+      const q = `%${segmentFilters.searchQuery}%`;
+      baseQuery = baseQuery.where(
+        or(
+          like(users.email, q),
+          like(users.firstName, q),
+          like(users.lastName, q),
+          like(users.displayName, q),
+          like(organizationMembers.membershipNumber, q)
+        )
+      );
+    }
+
+    const rawAudience = await baseQuery;
+    const uniqueAudience = new Map<string, typeof rawAudience[0]>();
+    rawAudience.forEach((item) => {
+      if (item.userId) {
+        uniqueAudience.set(item.userId, item);
+      }
+    });
+
+    const audience = Array.from(uniqueAudience.values());
+
+    const preferences = await db
+      .select()
+      .from(communicationPreferences)
+      .where(
+        and(
+          eq(communicationPreferences.organizationId, organizationId),
+          inArray(communicationPreferences.userId, audience.map((a) => a.userId))
+        )
+      );
 
     const recipients: AudienceResolutionResult['recipients'] = [];
     const skippedReasons: Record<string, number> = {
@@ -183,18 +247,45 @@ export class CampaignService {
       invalid_contact_info: 0,
     };
 
-    // Example implementation:
-    // const rawAudience = await this.executeSegmentQuery(campaign.segmentQuery);
-    // const preferences = await this.getPreferences(rawAudience.map(r => r.userId));
-    //
-    // for (const recipient of rawAudience) {
-    //   const pref = preferences.find(p => p.userId === recipient.userId);
-    //   if (!this.hasConsent(pref, campaign.channel)) {
-    //     skippedReasons.no_consent++;
-    //     continue;
-    //   }
-    //   recipients.push(recipient);
-    // }
+    for (const recipient of audience) {
+      const pref = preferences.find((p) => p.userId === recipient.userId);
+      const channel = campaign.channel;
+
+      const emailOk = !!recipient.email && (pref?.emailEnabled ?? true);
+      const smsOk = !!recipient.phone && (pref?.smsEnabled ?? true);
+      const pushOk = (pref?.pushEnabled ?? true);
+
+      const hasConsent = channel === 'email'
+        ? emailOk
+        : channel === 'sms'
+        ? smsOk
+        : channel === 'push'
+        ? pushOk
+        : (emailOk || smsOk || pushOk);
+
+      if (!hasConsent) {
+        skippedReasons.no_consent++;
+        continue;
+      }
+
+      const contactValid = channel === 'email'
+        ? !!recipient.email
+        : channel === 'sms'
+        ? !!recipient.phone
+        : true;
+
+      if (!contactValid) {
+        skippedReasons.invalid_contact_info++;
+        continue;
+      }
+
+      recipients.push({
+        userId: recipient.userId,
+        email: recipient.email || undefined,
+        phone: recipient.phone || undefined,
+        name: recipient.name || [recipient.firstName, recipient.lastName].filter(Boolean).join(' ') || undefined,
+      });
+    }
 
     const totalCount = recipients.length + Object.values(skippedReasons).reduce((a, b) => a + b, 0);
 

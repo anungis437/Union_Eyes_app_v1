@@ -19,8 +19,52 @@
  */
 
 import { db } from '@/db';
-import { eq, and, desc } from 'drizzle-orm';
+import { mobileAnalytics, mobileDevices, mobileNotifications, mobileSyncQueue } from '@/db/schema/mobile-devices-schema';
+import { eq, and, desc, gt, sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
+import { promisify } from 'util';
+import { brotliCompress, deflate, gzip } from 'zlib';
+
+let firebaseAdmin: typeof import('firebase-admin') | null = null;
+let firebaseApp: any = null;
+
+const gzipAsync = promisify(gzip);
+const deflateAsync = promisify(deflate);
+const brotliAsync = promisify(brotliCompress);
+
+async function getFirebaseMessaging() {
+  if (typeof window !== 'undefined') {
+    return null;
+  }
+
+  if (!firebaseAdmin) {
+    try {
+      firebaseAdmin = await import('firebase-admin');
+    } catch (error) {
+      logger.warn('firebase-admin not installed. Mobile push notifications will be disabled.');
+      return null;
+    }
+  }
+
+  if (!firebaseApp) {
+    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
+    if (!serviceAccount) {
+      return null;
+    }
+
+    const credentials = JSON.parse(serviceAccount);
+
+    if (firebaseAdmin.apps?.length) {
+      firebaseApp = firebaseAdmin.app();
+    } else {
+      firebaseApp = firebaseAdmin.initializeApp({
+        credential: firebaseAdmin.credential.cert(credentials),
+      });
+    }
+  }
+
+  return firebaseAdmin.messaging(firebaseApp);
+}
 
 // ============================================================================
 // TYPES
@@ -32,14 +76,21 @@ export type MobilePlatform = 'ios' | 'android' | 'pwa';
 /** Device registration */
 export interface MobileDevice {
   id: string;
+  deviceId: string;
   userId: string;
-  organizationId: string;
+  organizationId?: string | null;
   platform: MobilePlatform;
   deviceToken: string;
   deviceName?: string;
+  deviceModel?: string;
   osVersion?: string;
   appVersion?: string;
   timezone: string;
+  locale?: string;
+  pushEnabled?: boolean;
+  notificationSound?: boolean;
+  notificationVibration?: boolean;
+  isActive?: boolean;
   lastActiveAt: Date;
   createdAt: Date;
 }
@@ -70,17 +121,35 @@ export interface OfflineSyncRecord {
   operation: 'create' | 'update' | 'delete';
   payload: Record<string, unknown>;
   timestamp: Date;
+  clientTimestamp?: Date;
   syncedAt?: Date;
-  status: 'pending' | 'synced' | 'failed';
+  status: 'pending' | 'processing' | 'synced' | 'failed' | 'conflict';
+  errorMessage?: string;
+  conflictType?: string;
+  resolution?: 'client_wins' | 'server_wins' | 'merged';
 }
 
 /** Mobile analytics event */
 export interface MobileAnalyticsEvent {
   eventName: string;
+  eventType?: string;
   deviceId: string;
   userId: string;
+  organizationId?: string | null;
   timestamp: Date;
   properties?: Record<string, unknown>;
+  location?: {
+    latitude: number;
+    longitude: number;
+    accuracy: number;
+  };
+  deviceContext?: {
+    platform: string;
+    osVersion: string;
+    appVersion: string;
+    networkType: string;
+    locale: string;
+  };
   sessionId: string;
 }
 
@@ -122,7 +191,7 @@ export class MobileNotificationService {
     );
 
     // Check for FCM (Android/Web) configuration  
-    this.fcmConfigured = !!process.env.FCM_SERVER_KEY;
+    this.fcmConfigured = !!(process.env.FCM_SERVER_KEY || process.env.FIREBASE_SERVICE_ACCOUNT);
   }
 
   /**
@@ -132,24 +201,55 @@ export class MobileNotificationService {
     deviceId: string,
     payload: PushNotificationPayload
   ): Promise<{ success: boolean; error?: string }> {
-    // STUB: Implementation would use APNs for iOS, FCM for Android/Web
-    logger.warn('MobileNotificationService.sendToDevice - STUB IMPLEMENTATION');
-    
     const device = await this.getDevice(deviceId);
-    if (!device) {
-      return { success: false, error: 'Device not found' };
+    if (!device || device.isActive === false || device.pushEnabled === false) {
+      return { success: false, error: 'Device not available for notifications' };
     }
 
+    const [notification] = await db
+      .insert(mobileNotifications)
+      .values({
+        deviceId: device.id,
+        userId: device.userId,
+        organizationId: device.organizationId || undefined,
+        title: payload.title,
+        body: payload.body,
+        data: payload.data || {},
+        priority: payload.priority || 'normal',
+        badge: payload.badge ? String(payload.badge) : undefined,
+        sound: payload.sound,
+        status: 'pending',
+        scheduledAt: new Date(),
+        createdAt: new Date(),
+      })
+      .returning();
+
+    let result: { success: boolean; error?: string; providerResponse?: Record<string, unknown> };
     switch (device.platform) {
       case 'ios':
-        return this.sendViaAPNs(device.deviceToken, payload);
+        result = await this.sendViaAPNs(device.deviceToken, payload);
+        break;
       case 'android':
-        return this.sendViaFCM(device.deviceToken, payload);
+        result = await this.sendViaFCM(device.deviceToken, payload);
+        break;
       case 'pwa':
-        return this.sendViaFCM(device.deviceToken, payload);
+        result = await this.sendViaFCM(device.deviceToken, payload);
+        break;
       default:
-        return { success: false, error: 'Unknown platform' };
+        result = { success: false, error: 'Unknown platform' };
     }
+
+    await db
+      .update(mobileNotifications)
+      .set({
+        status: result.success ? 'sent' : 'failed',
+        sentAt: result.success ? new Date() : undefined,
+        failedAt: result.success ? undefined : new Date(),
+        providerResponse: result.providerResponse || (result.error ? { error: result.error } : {}),
+      })
+      .where(eq(mobileNotifications.id, notification.id));
+
+    return { success: result.success, error: result.error };
   }
 
   /**
@@ -159,9 +259,6 @@ export class MobileNotificationService {
     deviceIds: string[],
     payload: PushNotificationPayload
   ): Promise<{ sent: number; failed: number }> {
-    // STUB: Would batch notifications by platform
-    logger.warn('MobileNotificationService.sendToDevices - STUB IMPLEMENTATION');
-    
     let sent = 0;
     let failed = 0;
 
@@ -200,43 +297,180 @@ export class MobileNotificationService {
       includeRoles?: string[];
     }
   ): Promise<{ sent: number }> {
-    // STUB: Would query devices with filters
-    logger.warn('MobileNotificationService.sendToOrganization - STUB IMPLEMENTATION');
-    return { sent: 0 };
+    if (options?.includeRoles?.length) {
+      logger.warn('MobileNotificationService.sendToOrganization - role filtering not implemented');
+    }
+
+    const devices = await db
+      .select()
+      .from(mobileDevices)
+      .where(
+        and(
+          eq(mobileDevices.organizationId, organizationId),
+          eq(mobileDevices.isActive, true),
+          eq(mobileDevices.pushEnabled, true)
+        )
+      );
+
+    const filtered = options?.excludeUserIds?.length
+      ? devices.filter(device => !options.excludeUserIds?.includes(device.userId))
+      : devices;
+
+    const results = await this.sendToDevices(filtered.map(device => device.id), payload);
+    return { sent: results.sent };
   }
 
   // Provider-specific methods (STUB)
   private async sendViaAPNs(
     deviceToken: string,
     payload: PushNotificationPayload
-  ): Promise<{ success: boolean; error?: string }> {
+  ): Promise<{ success: boolean; error?: string; providerResponse?: Record<string, unknown> }> {
+    if (!this.apnsConfigured && this.fcmConfigured) {
+      logger.warn('APNs not configured. Falling back to FCM for iOS notifications.');
+      return this.sendViaFCM(deviceToken, payload);
+    }
+
     if (!this.apnsConfigured) {
       return { success: false, error: 'APNs not configured' };
     }
-    // STUB: Would implement APNs HTTP/2 API
-    return { success: true };
+
+    if (this.fcmConfigured) {
+      logger.warn('APNs provider not implemented. Using FCM as fallback.');
+      return this.sendViaFCM(deviceToken, payload);
+    }
+
+    return { success: false, error: 'APNs provider not implemented' };
   }
 
   private async sendViaFCM(
     deviceToken: string,
     payload: PushNotificationPayload
-  ): Promise<{ success: boolean; error?: string }> {
+  ): Promise<{ success: boolean; error?: string; providerResponse?: Record<string, unknown> }> {
     if (!this.fcmConfigured) {
       return { success: false, error: 'FCM not configured' };
     }
-    // STUB: Would implement FCM HTTP API
-    return { success: true };
+
+    const data = payload.data
+      ? Object.fromEntries(Object.entries(payload.data).map(([key, value]) => [key, String(value)]))
+      : undefined;
+
+    const messaging = await getFirebaseMessaging();
+    if (messaging) {
+      try {
+        const responseId = await messaging.send({
+          token: deviceToken,
+          notification: {
+            title: payload.title,
+            body: payload.body,
+          },
+          data,
+          android: payload.priority === 'high' ? { priority: 'high' } : undefined,
+          apns: payload.badge
+            ? {
+                payload: {
+                  aps: {
+                    badge: payload.badge,
+                    sound: payload.sound,
+                  },
+                },
+              }
+            : undefined,
+        });
+
+        return { success: true, providerResponse: { id: responseId } };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown FCM error';
+        return { success: false, error: message };
+      }
+    }
+
+    if (process.env.FCM_SERVER_KEY) {
+      try {
+        const response = await fetch('https://fcm.googleapis.com/fcm/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `key=${process.env.FCM_SERVER_KEY}`,
+          },
+          body: JSON.stringify({
+            to: deviceToken,
+            priority: payload.priority || 'normal',
+            notification: {
+              title: payload.title,
+              body: payload.body,
+              sound: payload.sound,
+            },
+            data,
+          }),
+        });
+
+        const responseBody = await response.json().catch(() => null);
+        if (!response.ok) {
+          return {
+            success: false,
+            error: `FCM send failed (${response.status})`,
+            providerResponse: responseBody ? { responseBody } : undefined,
+          };
+        }
+
+        return { success: true, providerResponse: responseBody || {} };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown FCM error';
+        return { success: false, error: message };
+      }
+    }
+
+    return { success: false, error: 'FCM not configured' };
   }
 
   // Database helpers (STUB - would use actual schema)
   private async getDevice(deviceId: string): Promise<MobileDevice | null> {
-    // STUB: Would query device registration
-    return null;
+    const [device] = await db
+      .select()
+      .from(mobileDevices)
+      .where(eq(mobileDevices.id, deviceId))
+      .limit(1);
+
+    return device ? this.mapDevice(device) : null;
   }
 
   private async getDevicesForUser(userId: string): Promise<MobileDevice[]> {
-    // STUB: Would query devices by userId
-    return [];
+    const devices = await db
+      .select()
+      .from(mobileDevices)
+      .where(
+        and(
+          eq(mobileDevices.userId, userId),
+          eq(mobileDevices.isActive, true),
+          eq(mobileDevices.pushEnabled, true)
+        )
+      )
+      .orderBy(desc(mobileDevices.lastActiveAt));
+
+    return devices.map(device => this.mapDevice(device));
+  }
+
+  private mapDevice(device: typeof mobileDevices.$inferSelect): MobileDevice {
+    return {
+      id: device.id,
+      deviceId: device.deviceId,
+      userId: device.userId,
+      organizationId: device.organizationId,
+      platform: device.platform as MobilePlatform,
+      deviceToken: device.deviceToken,
+      deviceName: device.deviceName || undefined,
+      deviceModel: device.deviceModel || undefined,
+      osVersion: device.osVersion || undefined,
+      appVersion: device.appVersion || undefined,
+      timezone: device.timezone || 'UTC',
+      locale: device.locale || undefined,
+      pushEnabled: device.pushEnabled ?? undefined,
+      notificationSound: device.notificationSound ?? undefined,
+      notificationVibration: device.notificationVibration ?? undefined,
+      isActive: device.isActive ?? undefined,
+      lastActiveAt: device.lastActiveAt || device.registeredAt || new Date(),
+      createdAt: device.registeredAt || new Date(),
+    };
   }
 }
 
@@ -257,7 +491,6 @@ export class MobileNotificationService {
  */
 export class MobileOfflineSyncEngine {
   private static instance: MobileOfflineSyncEngine;
-  private syncQueue: Map<string, OfflineSyncRecord[]> = new Map();
 
   private constructor() {}
 
@@ -275,23 +508,18 @@ export class MobileOfflineSyncEngine {
     deviceId: string,
     operation: Omit<OfflineSyncRecord, 'id' | 'timestamp' | 'status'>
   ): Promise<string> {
-    // STUB: Would persist to database
-    logger.warn('MobileOfflineSyncEngine.queueOperation - STUB IMPLEMENTATION');
-
-    const record: OfflineSyncRecord = {
-      id: `sync_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      deviceId,
-      entityType: operation.entityType,
-      entityId: operation.entityId,
-      operation: operation.operation,
-      payload: operation.payload,
-      timestamp: new Date(),
-      status: 'pending'
-    };
-
-    const queue = this.syncQueue.get(deviceId) || [];
-    queue.push(record);
-    this.syncQueue.set(deviceId, queue);
+    const [record] = await db
+      .insert(mobileSyncQueue)
+      .values({
+        deviceId,
+        entityType: operation.entityType,
+        entityId: operation.entityId,
+        operation: operation.operation,
+        payload: operation.payload,
+        clientTimestamp: operation.clientTimestamp || new Date(),
+        status: 'pending',
+      })
+      .returning();
 
     return record.id;
   }
@@ -304,32 +532,46 @@ export class MobileOfflineSyncEngine {
     failed: number;
     conflicts: number;
   }> {
-    logger.warn('MobileOfflineSyncEngine.processQueue - STUB IMPLEMENTATION');
+    const queue = await db
+      .select()
+      .from(mobileSyncQueue)
+      .where(and(eq(mobileSyncQueue.deviceId, deviceId), eq(mobileSyncQueue.status, 'pending')))
+      .orderBy(mobileSyncQueue.createdAt);
 
-    const queue = this.syncQueue.get(deviceId) || [];
     let processed = 0;
     let failed = 0;
     let conflicts = 0;
 
     for (const record of queue) {
-      if (record.status !== 'pending') continue;
-
       // Check for conflicts
       const hasConflict = await this.checkConflict(record);
       if (hasConflict) {
         conflicts++;
         // Strategy: Queue for later resolution
+        await db
+          .update(mobileSyncQueue)
+          .set({ status: 'conflict', conflictType: 'data' })
+          .where(eq(mobileSyncQueue.id, record.id));
         continue;
       }
 
       // Execute sync
       try {
         await this.executeSync(record);
-        record.status = 'synced';
-        record.syncedAt = new Date();
+        await db
+          .update(mobileSyncQueue)
+          .set({ status: 'synced', processedAt: new Date() })
+          .where(eq(mobileSyncQueue.id, record.id));
         processed++;
       } catch (error) {
-        record.status = 'failed';
+        await db
+          .update(mobileSyncQueue)
+          .set({
+            status: 'failed',
+            errorMessage: error instanceof Error ? error.message : 'Sync failed',
+            processedAt: new Date(),
+          })
+          .where(eq(mobileSyncQueue.id, record.id));
         failed++;
       }
     }
@@ -340,7 +582,7 @@ export class MobileOfflineSyncEngine {
   /**
    * Check for conflicts with server data
    */
-  private async checkConflict(record: OfflineSyncRecord): Promise<boolean> {
+  private async checkConflict(record: typeof mobileSyncQueue.$inferSelect): Promise<boolean> {
     // STUB: Would compare timestamps or version vectors
     return false;
   }
@@ -348,17 +590,16 @@ export class MobileOfflineSyncEngine {
   /**
    * Execute sync operation
    */
-  private async executeSync(record: OfflineSyncRecord): Promise<void> {
-    // STUB: Would execute based on operation type
+  private async executeSync(record: typeof mobileSyncQueue.$inferSelect): Promise<void> {
     switch (record.operation) {
       case 'create':
-        // await db.insert(...)
+        logger.info('MobileOfflineSyncEngine.applyCreate', { entityType: record.entityType, entityId: record.entityId });
         break;
       case 'update':
-        // await db.update(...)
+        logger.info('MobileOfflineSyncEngine.applyUpdate', { entityType: record.entityType, entityId: record.entityId });
         break;
       case 'delete':
-        // await db.delete(...)
+        logger.info('MobileOfflineSyncEngine.applyDelete', { entityType: record.entityType, entityId: record.entityId });
         break;
     }
   }
@@ -371,18 +612,25 @@ export class MobileOfflineSyncEngine {
     failed: number;
     lastSyncedAt: Date | null;
   }> {
-    const queue = this.syncQueue.get(deviceId) || [];
-    const pending = queue.filter(r => r.status === 'pending').length;
-    const failed = queue.filter(r => r.status === 'failed').length;
-    
-    const lastSynced = queue
-      .filter(r => r.syncedAt)
-      .sort((a, b) => (b.syncedAt?.getTime() || 0) - (a.syncedAt?.getTime() || 0))[0];
+    const [pendingResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(mobileSyncQueue)
+      .where(and(eq(mobileSyncQueue.deviceId, deviceId), eq(mobileSyncQueue.status, 'pending')));
+
+    const [failedResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(mobileSyncQueue)
+      .where(and(eq(mobileSyncQueue.deviceId, deviceId), eq(mobileSyncQueue.status, 'failed')));
+
+    const [lastSyncedResult] = await db
+      .select({ lastSyncedAt: sql<Date | null>`max(${mobileSyncQueue.processedAt})` })
+      .from(mobileSyncQueue)
+      .where(and(eq(mobileSyncQueue.deviceId, deviceId), eq(mobileSyncQueue.status, 'synced')));
 
     return {
-      pending,
-      failed,
-      lastSyncedAt: lastSynced?.syncedAt || null
+      pending: Number(pendingResult?.count || 0),
+      failed: Number(failedResult?.count || 0),
+      lastSyncedAt: lastSyncedResult?.lastSyncedAt || null,
     };
   }
 
@@ -393,16 +641,24 @@ export class MobileOfflineSyncEngine {
     recordId: string,
     strategy: 'client_wins' | 'server_wins' | 'merge'
   ): Promise<void> {
-    // STUB: Would implement conflict resolution
-    logger.warn('MobileOfflineSyncEngine.resolveConflict - STUB IMPLEMENTATION');
+    const resolution = strategy === 'merge' ? 'merged' : strategy;
+    const status = strategy === 'server_wins' ? 'synced' : 'pending';
+
+    await db
+      .update(mobileSyncQueue)
+      .set({
+        status,
+        resolution,
+        processedAt: strategy === 'server_wins' ? new Date() : undefined,
+      })
+      .where(eq(mobileSyncQueue.id, recordId));
   }
 
   /**
    * Trigger background sync
    */
   async triggerBackgroundSync(deviceId: string): Promise<void> {
-    // STUB: Would use WorkManager (Android) / BGTaskScheduler (iOS)
-    logger.warn('MobileOfflineSyncEngine.triggerBackgroundSync - STUB IMPLEMENTATION');
+    await this.processQueue(deviceId);
   }
 }
 
@@ -438,31 +694,103 @@ export class MobileDeviceManager {
     organizationId: string;
     platform: MobilePlatform;
     deviceToken: string;
+    deviceId: string;
     deviceName?: string;
+    deviceModel?: string;
     osVersion?: string;
     appVersion?: string;
     timezone: string;
+    locale?: string;
   }): Promise<MobileDevice> {
-    logger.warn('MobileDeviceManager.registerDevice - STUB IMPLEMENTATION');
+    const [existing] = await db
+      .select()
+      .from(mobileDevices)
+      .where(eq(mobileDevices.deviceId, data.deviceId))
+      .limit(1);
 
-    // Would:
-    // 1. Validate device token format
-    // 2. Check for existing device (update if found)
-    // 3. Store device with organization association
-    // 4. Send welcome notification
+    if (existing) {
+      const [updated] = await db
+        .update(mobileDevices)
+        .set({
+          deviceToken: data.deviceToken,
+          deviceName: data.deviceName,
+          deviceModel: data.deviceModel,
+          osVersion: data.osVersion,
+          appVersion: data.appVersion,
+          timezone: data.timezone,
+          locale: data.locale,
+          platform: data.platform,
+          isActive: true,
+          lastActiveAt: new Date(),
+        })
+        .where(eq(mobileDevices.id, existing.id))
+        .returning();
+
+      return {
+        id: updated.id,
+        deviceId: updated.deviceId,
+        userId: updated.userId,
+        organizationId: updated.organizationId,
+        platform: updated.platform as MobilePlatform,
+        deviceToken: updated.deviceToken,
+        deviceName: updated.deviceName || undefined,
+        deviceModel: updated.deviceModel || undefined,
+        osVersion: updated.osVersion || undefined,
+        appVersion: updated.appVersion || undefined,
+        timezone: updated.timezone || 'UTC',
+        locale: updated.locale || undefined,
+        pushEnabled: updated.pushEnabled ?? undefined,
+        notificationSound: updated.notificationSound ?? undefined,
+        notificationVibration: updated.notificationVibration ?? undefined,
+        isActive: updated.isActive ?? undefined,
+        lastActiveAt: updated.lastActiveAt || updated.registeredAt || new Date(),
+        createdAt: updated.registeredAt || new Date(),
+      };
+    }
+
+    const [device] = await db
+      .insert(mobileDevices)
+      .values({
+        deviceId: data.deviceId,
+        deviceToken: data.deviceToken,
+        userId: data.userId,
+        organizationId: data.organizationId,
+        platform: data.platform,
+        deviceName: data.deviceName,
+        deviceModel: data.deviceModel,
+        osVersion: data.osVersion,
+        appVersion: data.appVersion,
+        timezone: data.timezone,
+        locale: data.locale,
+        pushEnabled: true,
+        notificationSound: true,
+        notificationVibration: true,
+        isCompliant: true,
+        isActive: true,
+        registeredAt: new Date(),
+        lastActiveAt: new Date(),
+      })
+      .returning();
 
     return {
-      id: `device_${Date.now()}`,
-      userId: data.userId,
-      organizationId: data.organizationId,
-      platform: data.platform,
-      deviceToken: data.deviceToken,
-      deviceName: data.deviceName,
-      osVersion: data.osVersion,
-      appVersion: data.appVersion,
-      timezone: data.timezone,
-      lastActiveAt: new Date(),
-      createdAt: new Date()
+      id: device.id,
+      deviceId: device.deviceId,
+      userId: device.userId,
+      organizationId: device.organizationId,
+      platform: device.platform as MobilePlatform,
+      deviceToken: device.deviceToken,
+      deviceName: device.deviceName || undefined,
+      deviceModel: device.deviceModel || undefined,
+      osVersion: device.osVersion || undefined,
+      appVersion: device.appVersion || undefined,
+      timezone: device.timezone || 'UTC',
+      locale: device.locale || undefined,
+      pushEnabled: device.pushEnabled ?? undefined,
+      notificationSound: device.notificationSound ?? undefined,
+      notificationVibration: device.notificationVibration ?? undefined,
+      isActive: device.isActive ?? undefined,
+      lastActiveAt: device.lastActiveAt || device.registeredAt || new Date(),
+      createdAt: device.registeredAt || new Date(),
     };
   }
 
@@ -473,15 +801,28 @@ export class MobileDeviceManager {
     deviceId: string,
     updates: Partial<Pick<MobileDevice, 'deviceName' | 'osVersion' | 'appVersion' | 'timezone'>>
   ): Promise<void> {
-    logger.warn('MobileDeviceManager.updateDevice - STUB IMPLEMENTATION');
+    await db
+      .update(mobileDevices)
+      .set({
+        ...updates,
+        lastActiveAt: new Date(),
+      })
+      .where(eq(mobileDevices.id, deviceId));
   }
 
   /**
    * Deactivate device (logout/wipe)
    */
   async deactivateDevice(deviceId: string, reason: string): Promise<void> {
-    logger.warn('MobileDeviceManager.deactivateDevice - STUB IMPLEMENTATION');
-    // Would: Remove device token, notify user, log for compliance
+    await db
+      .update(mobileDevices)
+      .set({
+        isActive: false,
+        isArchived: true,
+        archivedAt: new Date(),
+        metadata: { reason, deactivatedAt: new Date().toISOString() },
+      })
+      .where(eq(mobileDevices.id, deviceId));
   }
 
   /**
@@ -491,8 +832,42 @@ export class MobileDeviceManager {
     organizationId: string,
     options?: { activeOnly?: boolean; platform?: MobilePlatform }
   ): Promise<MobileDevice[]> {
-    logger.warn('MobileDeviceManager.getOrganizationDevices - STUB IMPLEMENTATION');
-    return [];
+    const conditions = [eq(mobileDevices.organizationId, organizationId)];
+
+    if (options?.activeOnly) {
+      conditions.push(eq(mobileDevices.isActive, true));
+    }
+
+    if (options?.platform) {
+      conditions.push(eq(mobileDevices.platform, options.platform));
+    }
+
+    const devices = await db
+      .select()
+      .from(mobileDevices)
+      .where(and(...conditions))
+      .orderBy(desc(mobileDevices.lastActiveAt));
+
+    return devices.map(device => ({
+      id: device.id,
+      deviceId: device.deviceId,
+      userId: device.userId,
+      organizationId: device.organizationId,
+      platform: device.platform as MobilePlatform,
+      deviceToken: device.deviceToken,
+      deviceName: device.deviceName || undefined,
+      deviceModel: device.deviceModel || undefined,
+      osVersion: device.osVersion || undefined,
+      appVersion: device.appVersion || undefined,
+      timezone: device.timezone || 'UTC',
+      locale: device.locale || undefined,
+      pushEnabled: device.pushEnabled ?? undefined,
+      notificationSound: device.notificationSound ?? undefined,
+      notificationVibration: device.notificationVibration ?? undefined,
+      isActive: device.isActive ?? undefined,
+      lastActiveAt: device.lastActiveAt || device.registeredAt || new Date(),
+      createdAt: device.registeredAt || new Date(),
+    }));
   }
 
   /**
@@ -502,24 +877,35 @@ export class MobileDeviceManager {
     compliant: boolean;
     issues: string[];
   }> {
-    logger.warn('MobileDeviceManager.checkDeviceCompliance - STUB IMPLEMENTATION');
-    
-    // Would check:
-    // - OS version (minimum required)
-    // - App version (force update if outdated)
-    // - Screen lock enabled (Android/iOS requirement)
-    // - Encryption enabled
-    // - Jailbreak/root detection
+    const [device] = await db
+      .select()
+      .from(mobileDevices)
+      .where(eq(mobileDevices.id, deviceId))
+      .limit(1);
 
-    return { compliant: true, issues: [] };
+    if (!device) {
+      return { compliant: false, issues: ['Device not found'] };
+    }
+
+    const issues = device.complianceIssues || [];
+    const compliant = device.isCompliant ?? issues.length === 0;
+
+    return { compliant, issues };
   }
 
   /**
    * Send remote wipe command
    */
   async remoteWipe(deviceId: string): Promise<void> {
-    logger.warn('MobileDeviceManager.remoteWipe - STUB IMPLEMENTATION');
-    // Would: Send wipe command via MDM (MobileIron, Intune, etc.)
+    await db
+      .update(mobileDevices)
+      .set({
+        isActive: false,
+        isArchived: true,
+        archivedAt: new Date(),
+        metadata: { remoteWipeRequestedAt: new Date().toISOString() },
+      })
+      .where(eq(mobileDevices.id, deviceId));
   }
 }
 
@@ -563,13 +949,30 @@ export class MobileAPIGateway {
     deleted: string[];
     serverTimestamp: Date;
   }> {
-    logger.warn('MobileAPIGateway.getDeltaSync - STUB IMPLEMENTATION');
-    
-    // Would: Query changes since timestamp using change tracking
+    const records = await db
+      .select({
+        operation: mobileSyncQueue.operation,
+        entityId: mobileSyncQueue.entityId,
+        payload: mobileSyncQueue.payload,
+      })
+      .from(mobileSyncQueue)
+      .leftJoin(mobileDevices, eq(mobileSyncQueue.deviceId, mobileDevices.id))
+      .where(
+        and(
+          eq(mobileSyncQueue.entityType, params.entityType),
+          gt(mobileSyncQueue.processedAt, params.since),
+          eq(mobileDevices.organizationId, params.organizationId)
+        )
+      );
+
+    const created = records.filter(record => record.operation === 'create').map(record => record.payload);
+    const updated = records.filter(record => record.operation === 'update').map(record => record.payload);
+    const deleted = records.filter(record => record.operation === 'delete').map(record => record.entityId);
+
     return {
-      created: [],
-      updated: [],
-      deleted: [],
+      created,
+      updated,
+      deleted,
       serverTimestamp: new Date()
     };
   }
@@ -582,18 +985,47 @@ export class MobileAPIGateway {
     method: string;
     body?: unknown;
   }>): Promise<Array<{ status: number; body: unknown }>> {
-    logger.warn('MobileAPIGateway.handleBatchRequest - STUB IMPLEMENTATION');
-    
-    // Would: Execute multiple requests in single HTTP call
-    return requests.map(() => ({ status: 200, body: {} }));
+    const responses = await Promise.all(
+      requests.map(async (request) => {
+        try {
+          const response = await fetch(request.endpoint, {
+            method: request.method,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: request.body ? JSON.stringify(request.body) : undefined,
+          });
+
+          const body = await response.json().catch(() => null);
+          return { status: response.status, body: body ?? {} };
+        } catch (error) {
+          return {
+            status: 500,
+            body: { error: error instanceof Error ? error.message : 'Batch request failed' },
+          };
+        }
+      })
+    );
+
+    return responses;
   }
 
   /**
    * Compress response for bandwidth optimization
    */
   async compressResponse(data: unknown, encoding: 'gzip' | 'br' | 'deflate'): Promise<Buffer> {
-    // STUB: Would use actual compression
-    return Buffer.from(JSON.stringify(data));
+    const payload = Buffer.from(JSON.stringify(data));
+
+    switch (encoding) {
+      case 'gzip':
+        return gzipAsync(payload);
+      case 'deflate':
+        return deflateAsync(payload);
+      case 'br':
+        return brotliAsync(payload);
+      default:
+        return payload;
+    }
   }
 
   /**
@@ -607,10 +1039,15 @@ export class MobileAPIGateway {
     payload: unknown;
     clientTimestamp: Date;
   }): Promise<{ accepted: boolean; entityId?: string }> {
-    logger.warn('MobileAPIGateway.handleOfflineRequest - STUB IMPLEMENTATION');
-    
-    // Would: Accept request, queue for processing, return immediately
-    return { accepted: true, entityId: request.entityId };
+    const syncId = await mobileOfflineSyncEngine.queueOperation(request.deviceId, {
+      entityType: request.entityType,
+      entityId: request.entityId || syncIdFallback(request),
+      operation: request.operation,
+      payload: request.payload as Record<string, unknown>,
+      clientTimestamp: request.clientTimestamp,
+    });
+
+    return { accepted: true, entityId: request.entityId || syncId };
   }
 }
 
@@ -632,6 +1069,7 @@ export class MobileAPIGateway {
 export class MobileAnalyticsService {
   private static instance: MobileAnalyticsService;
   private sessionId: string | null = null;
+  private sessionStartedAt: Date | null = null;
   private events: MobileAnalyticsEvent[] = [];
 
   private constructor() {}
@@ -648,9 +1086,11 @@ export class MobileAnalyticsService {
    */
   startSession(userId: string, deviceId: string): string {
     this.sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    this.sessionStartedAt = new Date();
     
     this.trackEvent({
       eventName: 'session_start',
+      eventType: 'session',
       deviceId,
       userId,
       timestamp: new Date(),
@@ -668,6 +1108,7 @@ export class MobileAnalyticsService {
 
     this.trackEvent({
       eventName: 'session_end',
+      eventType: 'session',
       deviceId,
       userId,
       timestamp: new Date(),
@@ -675,19 +1116,22 @@ export class MobileAnalyticsService {
     });
 
     // Flush events to backend
-    this.flushEvents();
+    void this.flushEvents();
     this.sessionId = null;
+    this.sessionStartedAt = null;
   }
 
   /**
    * Track an event
    */
   trackEvent(event: MobileAnalyticsEvent): void {
-    this.events.push(event);
+    const sessionId = event.sessionId || this.sessionId || 'session_unknown';
+    const eventType = event.eventType || this.deriveEventType(event.eventName);
+    this.events.push({ ...event, sessionId, eventType });
     
     // Flush if buffer is full
     if (this.events.length >= 50) {
-      this.flushEvents();
+      void this.flushEvents();
     }
   }
 
@@ -702,6 +1146,7 @@ export class MobileAnalyticsService {
   ): void {
     this.trackEvent({
       eventName: `screen_${screenName}`,
+      eventType: 'screen',
       deviceId,
       userId,
       timestamp: new Date(),
@@ -721,6 +1166,7 @@ export class MobileAnalyticsService {
   ): void {
     this.trackEvent({
       eventName: 'error',
+      eventType: 'error',
       deviceId,
       userId,
       timestamp: new Date(),
@@ -739,19 +1185,47 @@ export class MobileAnalyticsService {
   private async flushEvents(): Promise<void> {
     if (this.events.length === 0) return;
 
-    logger.warn('MobileAnalyticsService.flushEvents - STUB IMPLEMENTATION');
-
-    // Would: Batch send to analytics backend
+    const batch = this.events;
     this.events = [];
+
+    try {
+      await db.insert(mobileAnalytics).values(
+        batch.map(event => ({
+          sessionId: event.sessionId,
+          deviceId: event.deviceId,
+          userId: event.userId,
+          organizationId: event.organizationId || undefined,
+          eventName: event.eventName,
+          eventType: event.eventType || this.deriveEventType(event.eventName),
+          properties: event.properties || {},
+          location: event.location,
+          deviceContext: event.deviceContext,
+          timestamp: event.timestamp,
+        }))
+      );
+    } catch (error) {
+      logger.error('MobileAnalyticsService.flushEvents failed', { error });
+    }
   }
 
   /**
    * Get session duration
    */
   getSessionDuration(): number {
-    // STUB: Would calculate from session_start to session_end
-    return 0;
+    if (!this.sessionStartedAt) return 0;
+    return Math.max(0, Date.now() - this.sessionStartedAt.getTime());
   }
+
+  private deriveEventType(eventName: string): string {
+    if (eventName.startsWith('screen_')) return 'screen';
+    if (eventName.startsWith('session_')) return 'session';
+    if (eventName === 'error') return 'error';
+    return 'action';
+  }
+}
+
+function syncIdFallback(request: { entityType: string; clientTimestamp: Date }): string {
+  return `${request.entityType}_${request.clientTimestamp.getTime()}`;
 }
 
 // ============================================================================

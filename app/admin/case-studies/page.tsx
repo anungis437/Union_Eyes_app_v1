@@ -14,7 +14,7 @@
 import { Suspense } from 'react';
 import { db } from '@/db';
 import { caseStudies } from '@/db/schema/domains/marketing';
-import { desc, eq, or, like } from 'drizzle-orm';
+import { desc, eq, or, like, and } from 'drizzle-orm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -70,7 +70,7 @@ export default async function AdminCaseStudiesPage({ searchParams }: AdminCaseSt
   const studies = await db
     .select()
     .from(caseStudies)
-    .where(conditions.length > 0 ? conditions[0] : undefined) // TODO: Use AND for multiple conditions
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(desc(caseStudies.updatedAt))
     .limit(100);
 

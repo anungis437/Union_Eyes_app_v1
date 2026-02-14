@@ -13,6 +13,9 @@ import { withApiAuth, getCurrentUser } from "@/lib/api-auth-guard";
 import { logger } from "@/lib/logger";
 import { standardSuccessResponse,
 } from "@/lib/api/standardized-responses";
+import { db } from "@/db";
+import { organizations } from "@/db/schema-organizations";
+import { eq } from "drizzle-orm";
 import {
   searchMembersAdvanced,
   executeSegment,
@@ -83,10 +86,17 @@ export async function POST(request: NextRequest) {
       // Generate watermark
       let watermark: string | undefined;
       if (includeWatermark) {
+        // Get actual organization name
+        const [org] = await db
+          .select({ name: organizations.name })
+          .from(organizations)
+          .where(eq(organizations.id, organizationId))
+          .limit(1);
+        
         watermark = generateExportWatermark(
           user.id,
           user.email || "Unknown User",
-          "Organization" // TODO: Get actual org name
+          org?.name || "Unknown Organization"
         );
       }
 

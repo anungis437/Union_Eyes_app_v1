@@ -110,7 +110,6 @@ export const POST = async (request: NextRequest) => {
         return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
       'Bad Request - pensionPlanId, memberId, and enrollmentDate are required'
-      // TODO: Migrate additional details: memberId, and enrollmentDate are required'
     );
       }
 

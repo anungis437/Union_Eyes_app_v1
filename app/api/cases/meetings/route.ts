@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { and, desc } from 'drizzle-orm';
 import { pgTable, uuid, text, timestamp, jsonb, boolean } from 'drizzle-orm/pg-core';
+import { requireUserForOrganization } from '@/lib/api-auth-guard';
 
 // Case meetings schema
 export const caseMeetings = pgTable('case_meetings', {
@@ -189,6 +190,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const validatedData = createMeetingSchema.parse(body);
+    const authContext = await requireUserForOrganization(validatedData.organizationId);
 
     // Create meeting
     const [newMeeting] = await db
@@ -197,10 +199,10 @@ export async function POST(request: NextRequest) {
         ...validatedData,
         scheduledStart: new Date(validatedData.scheduledStart),
         scheduledEnd: new Date(validatedData.scheduledEnd),
-        organizer: 'system', // TODO: Get from auth
+        organizer: authContext.userId,
         status: 'scheduled',
-        createdBy: 'system', // TODO: Get from auth
-        lastModifiedBy: 'system',
+        createdBy: authContext.userId,
+        lastModifiedBy: authContext.userId,
       })
       .returning();
 
@@ -212,6 +214,14 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error: Record<string, unknown>) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },

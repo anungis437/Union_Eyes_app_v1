@@ -13,9 +13,7 @@ import {
   processPendingNotifications,
   retryFailedNotifications,
 } from '../services/notification-service';
-// TODO: Fix logger import path
-// import { logger } from '@/lib/logger';
-const logger = console;
+import { logger } from '../../../lib/logger';
 
 const router = Router();
 

@@ -103,7 +103,6 @@ export const POST = async (request: NextRequest) => {
         return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Missing required fields: documentId, documentType, name, workflowType, steps'
-      // TODO: Migrate additional details: documentType, name, workflowType, steps'
     );
       }
 

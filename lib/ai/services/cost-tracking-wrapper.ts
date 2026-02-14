@@ -15,10 +15,12 @@
 
 import { db } from '@/db';
 import { aiUsageMetrics, aiBudgets } from '@/db/schema';
+import { organizationMembers, organizations } from '@/db/schema-organizations';
 import { logger } from '@/lib/logger';
 import { aiRateLimiter } from './rate-limiter';
 import { tokenCostCalculator } from './token-cost-calculator';
-import { eq, and, gte } from 'drizzle-orm';
+import { eq, and, gte, inArray, or } from 'drizzle-orm';
+import { getNotificationService } from '@/lib/services/notification-service';
 
 export interface LLMRequest {
   provider: 'openai' | 'anthropic' | 'google';
@@ -365,8 +367,13 @@ export class CostTrackingWrapper {
           alertLevel,
         });
         
-        // TODO: Send actual alert notification (email, Slack, etc.)
-        // This would integrate with notification-service.ts
+        await this.sendBudgetAlertNotification({
+          organizationId,
+          currentSpend,
+          monthlyLimit,
+          percentUsed,
+          alertLevel,
+        });
         
         return {
           organizationId,
@@ -381,6 +388,92 @@ export class CostTrackingWrapper {
     } catch (error) {
       logger.error('Failed to check budget alerts', { error, organizationId });
       return null;
+    }
+  }
+
+  private async sendBudgetAlertNotification(alert: BudgetAlert): Promise<void> {
+    try {
+      const [org] = await db
+        .select({
+          id: organizations.id,
+          name: organizations.name,
+          slug: organizations.slug,
+          email: organizations.email,
+        })
+        .from(organizations)
+        .where(or(eq(organizations.id, alert.organizationId as any), eq(organizations.slug, alert.organizationId)))
+        .limit(1);
+
+      const orgIdentifiers = new Set<string>();
+      orgIdentifiers.add(alert.organizationId);
+      if (org?.id) orgIdentifiers.add(String(org.id));
+      if (org?.slug) orgIdentifiers.add(org.slug);
+
+      const adminRoles = ['admin', 'super_admin', 'billing_manager', 'billing_specialist', 'platform_lead'];
+      const admins = await db
+        .select({
+          email: organizationMembers.email,
+          name: organizationMembers.name,
+        })
+        .from(organizationMembers)
+        .where(
+          and(
+            inArray(organizationMembers.organizationId, Array.from(orgIdentifiers)),
+            inArray(organizationMembers.role, adminRoles)
+          )
+        );
+
+      const notificationService = getNotificationService();
+      const organizationName = org?.name || alert.organizationId;
+      const recipients = new Map<string, string>();
+
+      for (const admin of admins) {
+        if (admin.email) {
+          recipients.set(admin.email, admin.name || admin.email);
+        }
+      }
+
+      if (org?.email) {
+        recipients.set(org.email, organizationName);
+      }
+
+      if (recipients.size === 0) {
+        logger.warn('No recipients found for AI budget alert', {
+          organizationId: alert.organizationId,
+        });
+        return;
+      }
+
+      const subject = `AI budget ${alert.alertLevel === 'critical' ? 'critical alert' : 'warning'} - ${organizationName}`;
+      const body = `AI usage for ${organizationName} is at ${alert.percentUsed.toFixed(2)}% of the monthly limit.\n\n` +
+        `Current spend: $${alert.currentSpend.toFixed(2)}\n` +
+        `Monthly limit: $${alert.monthlyLimit.toFixed(2)}\n` +
+        `Alert level: ${alert.alertLevel.toUpperCase()}\n`;
+
+      await Promise.all(
+        Array.from(recipients.entries()).map(([email, name]) =>
+          notificationService.send({
+            organizationId: alert.organizationId,
+            recipientEmail: email,
+            type: 'email',
+            priority: alert.alertLevel === 'critical' ? 'urgent' : 'high',
+            subject,
+            title: subject,
+            body,
+            htmlBody: body.replace(/\n/g, '<br />'),
+            metadata: {
+              alertLevel: alert.alertLevel,
+              percentUsed: alert.percentUsed,
+              recipientName: name,
+            },
+          })
+        )
+      );
+    } catch (error) {
+      logger.error('Failed to send budget alert notification', {
+        error,
+        organizationId: alert.organizationId,
+      });
     }
   }
   

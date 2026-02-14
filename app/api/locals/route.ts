@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { locals } from '@/db/schema/union-structure-schema';
 import { and, desc, like, or } from 'drizzle-orm';
+import { requireUserForOrganization } from '@/lib/api-auth-guard';
 
 // Validation schema for creating local
 const createLocalSchema = z.object({
@@ -122,6 +123,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const validatedData = createLocalSchema.parse(body);
+    const authContext = await requireUserForOrganization(validatedData.organizationId);
 
     // Create local
     const [newLocal] = await db
@@ -131,8 +133,8 @@ export async function POST(request: NextRequest) {
         charterDate: validatedData.charterDate ? new Date(validatedData.charterDate) : null,
         memberCount: 0,
         activeCount: 0,
-        createdBy: 'system', // TODO: Get from auth
-        lastModifiedBy: 'system',
+        createdBy: authContext.userId,
+        lastModifiedBy: authContext.userId,
       })
       .returning();
 
@@ -144,6 +146,14 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error: Record<string, unknown>) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },

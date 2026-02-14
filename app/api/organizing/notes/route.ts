@@ -12,7 +12,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { fieldNotes } from '@/db/schema';
-import { and, desc, ilike, or } from 'drizzle-orm';
+import { organizationMembers } from '@/db/schema-organizations';
+import { and, desc, ilike, or, eq } from 'drizzle-orm';
 
 /**
  * GET /api/organizing/notes
@@ -88,14 +89,38 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Privacy filter: users can only see their own notes or public notes
-    // TODO: Add role-based access (admins, stewards can see more)
-    conditions.push(
-      or(
-        eq(fieldNotes.authorId, userId),
-        eq(fieldNotes.isPrivate, false)
-      ) as Record<string, unknown>
-    );
+    // Privacy filter: users can see their own notes, public notes,
+    // or all notes if they are admin/steward
+    const organizationId = searchParams.get('organizationId');
+    
+    // Check if user has admin or steward role
+    let canSeeAllNotes = false;
+    if (organizationId) {
+      const [membership] = await db
+        .select({ role: organizationMembers.role })
+        .from(organizationMembers)
+        .where(
+          and(
+            eq(organizationMembers.userId, userId),
+            eq(organizationMembers.organizationId, organizationId),
+            eq(organizationMembers.status, 'active')
+          )
+        )
+        .limit(1);
+      
+      canSeeAllNotes = membership && ['admin', 'steward', 'officer'].includes(membership.role);
+    }
+    
+    // Apply privacy filter based on role
+    if (!canSeeAllNotes) {
+      conditions.push(
+        or(
+          eq(fieldNotes.authorId, userId),
+          eq(fieldNotes.isPrivate, false)
+        ) as Record<string, unknown>
+      );
+    }
+    // If canSeeAllNotes is true, don't add privacy filter - user can see all notes
 
     // Fetch notes
     const notes = await db

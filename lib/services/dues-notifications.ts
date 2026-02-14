@@ -14,10 +14,53 @@
 import { getNotificationService } from '@/lib/services/notification-service';
 import { DuesNotificationTemplates, DuesNotificationData } from '@/lib/notification-templates/dues-notifications';
 import { db } from '@/db';
-import { organizationMembers } from '@/db/schema-organizations';
+import { organizationMembers, organizations } from '@/db/schema-organizations';
 import { duesTransactions } from '@/db/schema/domains/finance/dues';
-import { eq } from 'drizzle-orm';
+import { eq, and, inArray, or } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
+
+async function getOrganizationNotificationContext(organizationId: string): Promise<{
+  organizationName: string;
+  adminEmails: string[];
+}> {
+  const [org] = await db
+    .select({
+      id: organizations.id,
+      name: organizations.name,
+      slug: organizations.slug,
+      email: organizations.email,
+    })
+    .from(organizations)
+    .where(or(eq(organizations.id, organizationId as any), eq(organizations.slug, organizationId)))
+    .limit(1);
+
+  const orgIdentifiers = new Set<string>();
+  orgIdentifiers.add(organizationId);
+  if (org?.id) orgIdentifiers.add(String(org.id));
+  if (org?.slug) orgIdentifiers.add(org.slug);
+
+  const adminRoles = ['admin', 'super_admin', 'billing_manager', 'billing_specialist'];
+  const adminMembers = await db
+    .select({ email: organizationMembers.email })
+    .from(organizationMembers)
+    .where(
+      and(
+        inArray(organizationMembers.organizationId, Array.from(orgIdentifiers)),
+        inArray(organizationMembers.role, adminRoles)
+      )
+    );
+
+  const adminEmails = new Set<string>();
+  for (const member of adminMembers) {
+    if (member.email) adminEmails.add(member.email);
+  }
+  if (org?.email) adminEmails.add(org.email);
+
+  return {
+    organizationName: org?.name || organizationId,
+    adminEmails: Array.from(adminEmails),
+  };
+}
 
 // =============================================================================
 // NOTIFICATION HELPERS
@@ -58,12 +101,13 @@ export async function sendPaymentConfirmation(
 
     const { transaction, memberName, memberEmail, memberMetadata } = result[0];
     const notificationService = getNotificationService();
+    const { organizationName } = await getOrganizationNotificationContext(transaction.organizationId);
     const template = DuesNotificationTemplates.DUES_PAYMENT_CONFIRMATION;
 
     const data: DuesNotificationData = {
       memberName,
       memberEmail,
-      organizationName: 'UnionEyes',
+      organizationName,
       amount: transaction.totalAmount,
       dueDate: transaction.dueDate,
       periodStart: transaction.periodStart,
@@ -169,6 +213,7 @@ export async function sendPaymentFailure(
 
     const { transaction, memberName, memberEmail, memberMetadata } = result[0];
     const notificationService = getNotificationService();
+    const { organizationName } = await getOrganizationNotificationContext(transaction.organizationId);
 
     // Choose template based on retry status
     const template = retryScheduled
@@ -181,7 +226,7 @@ export async function sendPaymentFailure(
     const data: DuesNotificationData = {
       memberName,
       memberEmail,
-      organizationName: 'UnionEyes',
+      organizationName,
       amount: transaction.totalAmount,
       dueDate: transaction.dueDate,
       periodStart: transaction.periodStart,
@@ -281,6 +326,7 @@ export async function sendAdminIntervention(
     const { transaction, memberName, memberEmail } = result[0];
     const notificationService = getNotificationService();
     const template = DuesNotificationTemplates.DUES_ADMIN_INTERVENTION;
+    const { organizationName, adminEmails } = await getOrganizationNotificationContext(transaction.organizationId);
 
     const metadata = (transaction.metadata as Record<string, unknown>) || {};
     const attemptNumber = (metadata.failureCount as number) || 4;
@@ -288,7 +334,7 @@ export async function sendAdminIntervention(
     const data: DuesNotificationData = {
       memberName,
       memberEmail,
-      organizationName: 'UnionEyes',
+      organizationName,
       amount: transaction.totalAmount,
       dueDate: transaction.dueDate,
       periodStart: transaction.periodStart,
@@ -297,25 +343,30 @@ export async function sendAdminIntervention(
       attemptNumber,
     };
 
-    // Send to admin email (TODO: Get from organization settings)
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@unioneyes.ca';
+    const recipients = adminEmails.length > 0
+      ? adminEmails
+      : [process.env.ADMIN_EMAIL || 'admin@unioneyes.ca'];
 
-    await notificationService.send({
-      organizationId: transaction.organizationId,
-      recipientEmail: adminEmail,
-      type: 'email',
-      priority: 'urgent',
-      subject: template.subject(data),
-      title: template.title(data),
-      body: template.body(data),
-      htmlBody: template.htmlBody(data),
-      templateId: template.id,
-      metadata: {
-        type: 'dues_admin_intervention',
-        transactionId: transaction.id,
-        memberId: transaction.memberId,
-      },
-    });
+    await Promise.all(
+      recipients.map((adminEmail) =>
+        notificationService.send({
+          organizationId: transaction.organizationId,
+          recipientEmail: adminEmail,
+          type: 'email',
+          priority: 'urgent',
+          subject: template.subject(data),
+          title: template.title(data),
+          body: template.body(data),
+          htmlBody: template.htmlBody(data),
+          templateId: template.id,
+          metadata: {
+            type: 'dues_admin_intervention',
+            transactionId: transaction.id,
+            memberId: transaction.memberId,
+          },
+        })
+      )
+    );
 
     logger.info('Admin intervention notification sent', {
       transactionId,

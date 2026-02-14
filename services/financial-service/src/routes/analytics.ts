@@ -20,9 +20,7 @@ import {
   stipendDisbursements,
 } from '../db/schema';
 import { eq, and, gte, lte, sql, desc } from 'drizzle-orm';
-// TODO: Fix logger import path
-// import { logger } from '@/lib/logger';
-const logger = console;
+import { logger } from '../../../lib/logger';
 
 const router = Router();
 

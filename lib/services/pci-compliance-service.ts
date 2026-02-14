@@ -6,23 +6,16 @@
  */
 
 import { db } from '@/db';
-// TODO: Create PCI-DSS schema tables
-// import { 
-//   pciDssSaqAssessments,
-//   pciDssRequirements,
-//   pciDssQuarterlyScans,
-//   pciDssCardholderDataFlow,
-//   pciDssEncryptionKeys
-// } from '@/db/schema/domains/compliance/pci-dss';
+import { 
+  pciDssSaqAssessments,
+  pciDssRequirements,
+  pciDssQuarterlyScans,
+  pciDssCardholderDataFlow,
+  pciDssEncryptionKeys
+} from '@/db/schema/domains/compliance/pci-dss';
 import { eq, and, desc } from 'drizzle-orm';
 import { getSupabaseClient } from '@unioneyes/supabase';
 
-// Temporary stubs until schema is created
-const pciDssSaqAssessments: any = {} as any;
-const pciDssRequirements: any = {} as any;
-const pciDssQuarterlyScans: any = {} as any;
-const pciDssCardholderDataFlow: any = {} as any;
-const pciDssEncryptionKeys: any = {} as any;
 
 export interface PCIAssessmentResult {
   id: string;

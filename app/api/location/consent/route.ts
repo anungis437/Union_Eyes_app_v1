@@ -31,7 +31,6 @@ export const POST = withApiAuth(async (req: NextRequest) => {
       return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Missing required fields: userId, purpose, purposeDescription, consentText'
-      // TODO: Migrate additional details: purpose, purposeDescription, consentText"
     );
     }
 

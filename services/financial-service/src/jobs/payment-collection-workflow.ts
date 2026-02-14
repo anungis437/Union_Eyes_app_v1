@@ -21,7 +21,7 @@ import {
   payments,
 } from '../db/schema';
 import { eq, and, inArray, sql } from 'drizzle-orm';
-// import { NotificationService } from '../services/notification-service'; // TODO: Export NotificationService
+import { NotificationService } from '../services/notification-service';
 
 const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
@@ -128,19 +128,18 @@ export async function processPaymentCollection(params: {
           });
           
           // Mark payment as 'unmatched' for manual review
-          // TODO: Uncomment when payments table is added to schema
-          // await db.update(payments)
-          //   .set({ 
-          //     status: 'failed',
-          //     reconciliationStatus: 'unreconciled',
-          //     failureReason: 'No outstanding dues transactions found for member',
-          //     notes: `Payment requires manual review - no matching transactions found for member ${payment.memberId}`,
-          //     updatedAt: new Date(),
-          //   } as any)
-          //   .where(eq(payments.id, payment.paymentId))
-          //   .catch((err: any) => {
-          //     logger.error('Failed to mark payment as unmatched', { error: err, paymentId: payment.paymentId });
-          //   });
+          await db.update(payments)
+            .set({ 
+              status: 'failed',
+              reconciliationStatus: 'unreconciled',
+              failureReason: 'No outstanding dues transactions found for member',
+              notes: `Payment requires manual review - no matching transactions found for member ${payment.memberId}`,
+              updatedAt: new Date(),
+            } as any)
+            .where(eq(payments.id, payment.id))
+            .catch((err: any) => {
+              logger.error('Failed to mark payment as unmatched', { error: err, paymentId: payment.id });
+            });
           
           continue;
         }
@@ -202,20 +201,19 @@ export async function processPaymentCollection(params: {
           ? `Partial payment applied: ${parseFloat(payment.amount) - remainingAmount} allocated, ${remainingAmount} remaining`
           : `Full payment applied to ${updatedTransactionIds.length} transaction(s)`;
         
-        // TODO: Uncomment when payments table is added to schema
-        // await db.update(payments)
-        //   .set({ 
-        //     status: finalPaymentStatus as any,
-        //     reconciliationStatus: 'reconciled',
-        //     reconciliationDate: new Date(),
-        //     paidDate: new Date(),
-        //     notes: paymentNotes,
-        //     updatedAt: new Date(),
-        //   } as any)
-        //   .where(eq(payments.id, payment.paymentId))
-        //   .catch((err: any) => {
-        //     logger.error('Failed to update payment status', { error: err, paymentId: payment.paymentId });
-        //   });
+        await db.update(payments)
+          .set({ 
+            status: finalPaymentStatus as any,
+            reconciliationStatus: 'reconciled',
+            reconciliationDate: new Date(),
+            paidDate: new Date(),
+            notes: paymentNotes,
+            updatedAt: new Date(),
+          } as any)
+          .where(eq(payments.id, payment.id))
+          .catch((err: any) => {
+            logger.error('Failed to update payment status', { error: err, paymentId: payment.id });
+          });
 
         paymentsProcessed++;
 
@@ -262,19 +260,18 @@ export async function processPaymentCollection(params: {
         });
 
         // Mark payment as 'failed' for retry
-        // TODO: Uncomment when payments table is added to schema
-        // await db.update(payments)
-        //   .set({ 
-        //     status: 'failed',
-        //     reconciliationStatus: 'unreconciled',
-        //     failureReason: paymentError instanceof Error ? paymentError.message : String(paymentError),
-        //     notes: `Payment processing failed - marked for retry. Error: ${paymentError instanceof Error ? paymentError.message : String(paymentError)}`,
-        //     updatedAt: new Date(),
-        //   } as any)
-        //   .where(eq(payments.id, payment.paymentId))
-        //   .catch((err: any) => {
-        //     logger.error('Failed to mark payment as failed', { error: err, paymentId: payment.paymentId });
-        //   });
+        await db.update(payments)
+          .set({ 
+            status: 'failed',
+            reconciliationStatus: 'unreconciled',
+            failureReason: paymentError instanceof Error ? paymentError.message : String(paymentError),
+            notes: `Payment processing failed - marked for retry. Error: ${paymentError instanceof Error ? paymentError.message : String(paymentError)}`,
+            updatedAt: new Date(),
+          } as any)
+          .where(eq(payments.id, payment.id))
+          .catch((err: any) => {
+            logger.error('Failed to mark payment as failed', { error: err, paymentId: payment.id });
+          });
       }
     }
 
@@ -349,39 +346,37 @@ Your dues account has been updated. If you have any questions, please contact yo
   // Send notification via notification service
   try {
     if (memberEmail) {
-      // TODO: Re-enable when NotificationService is properly exported
-      // await NotificationService.queue({
-      //   tenantId: organizationId,
-      //   userId: memberEmail.split('@')[0] || 'unknown',
-      //   type: 'payment_confirmation',
-      //   channels: ['email'],
-      //   priority: 'normal',
-      //   data: {
-      //     email: memberEmail,
-      //     memberName,
-      //     amount,
-      //     paymentMethod,
-      //     referenceNumber,
-      //     paymentDate: paymentDate.toISOString(),
-      //     transactionsUpdated,
-      //   },
-      // });
+      await NotificationService.queue({
+        organizationId,
+        userId: memberEmail.split('@')[0] || 'unknown',
+        type: 'payment_confirmation',
+        channels: ['email'],
+        priority: 'normal',
+        data: {
+          email: memberEmail,
+          memberName,
+          amount,
+          paymentMethod,
+          referenceNumber,
+          paymentDate: paymentDate.toISOString(),
+          transactionsUpdated,
+        },
+      });
       logger.info('Payment receipt email queued', { to: memberEmail });
     }
 
     if (memberPhone) {
-      // TODO: Re-enable when NotificationService is properly exported
-      // await NotificationService.queue({
-      //   tenantId: organizationId,
-      //   userId: memberPhone || 'unknown',
-      //   type: 'payment_confirmation',
-      //   channels: ['sms'],
-      //   priority: 'normal',
-      //   data: {
-      //     phone: memberPhone,
-      //     message: `Payment received: $${amount.toFixed(2)} via ${paymentMethod}. Receipt sent to email.`,
-      //   },
-      // });
+      await NotificationService.queue({
+        organizationId,
+        userId: memberPhone || 'unknown',
+        type: 'payment_confirmation',
+        channels: ['sms'],
+        priority: 'normal',
+        data: {
+          phone: memberPhone,
+          message: `Payment received: $${amount.toFixed(2)} via ${paymentMethod}. Receipt sent to email.`,
+        },
+      });
       logger.info('Payment receipt SMS queued', { to: memberPhone });
     }
   } catch (error) {

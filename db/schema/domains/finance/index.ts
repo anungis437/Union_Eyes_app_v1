@@ -26,3 +26,4 @@ export * from './payments';
 export * from './accounting';
 export * from './taxes';
 export * from './transfer-pricing';
+export * from './billing-config';

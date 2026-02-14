@@ -43,7 +43,6 @@ export const POST = async (request: NextRequest) => {
         return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Missing required fields: claimId, newStatus'
-      // TODO: Migrate additional details: newStatus'
     );
       }
 

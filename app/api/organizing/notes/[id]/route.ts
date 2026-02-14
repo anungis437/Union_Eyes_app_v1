@@ -13,7 +13,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { fieldNotes } from '@/db/schema';
-import { and, or } from 'drizzle-orm';
+import { organizationMembers } from '@/db/schema-organizations';
+import { and, or, eq } from 'drizzle-orm';
 
 interface RouteParams {
   params: {
@@ -57,7 +58,26 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Access denied: private note' }, { status: 403 });
     }
 
-    // TODO: Add role-based confidentiality checks for isConfidential notes
+    // Confidentiality check: only admins, stewards, and officers can access confidential notes
+    if (note[0].isConfidential && note[0].authorId !== userId) {
+      const [membership] = await db
+        .select({ role: organizationMembers.role })
+        .from(organizationMembers)
+        .where(
+          and(
+            eq(organizationMembers.userId, userId),
+            eq(organizationMembers.organizationId, organizationId),
+            eq(organizationMembers.status, 'active')
+          )
+        )
+        .limit(1);
+      
+      const hasConfidentialAccess = membership && ['admin', 'steward', 'officer'].includes(membership.role);
+      
+      if (!hasConfidentialAccess) {
+        return NextResponse.json({ error: 'Access denied: confidential note' }, { status: 403 });
+      }
+    }
 
     return NextResponse.json(note[0]);
   } catch (error) {

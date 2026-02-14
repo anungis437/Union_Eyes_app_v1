@@ -229,7 +229,6 @@ export const POST = async (request: NextRequest) => {
         return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Missing required fields: organizationId, memberId, certificationName, issueDate'
-      // TODO: Migrate additional details: memberId, certificationName, issueDate"
     );
       }
 

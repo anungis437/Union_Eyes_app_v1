@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { and, desc } from 'drizzle-orm';
 import { pgTable, uuid, text, timestamp, jsonb, integer, boolean } from 'drizzle-orm/pg-core';
+import { requireUser } from '@/lib/api-auth-guard';
 
 // Segments schema
 export const memberSegments = pgTable('member_segments', {
@@ -107,6 +108,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const validatedData = createSegmentSchema.parse(body);
+    const authContext = await requireUser();
 
     // Calculate initial member count
     let memberCount = 0;
@@ -120,10 +122,10 @@ export async function POST(request: NextRequest) {
       .insert(memberSegments)
       .values({
         ...validatedData,
-        organizationId: 'org-id', // TODO: Get from context
+        organizationId: authContext.organizationId,
         memberCount,
         lastCalculated: new Date(),
-        createdBy: 'system', // TODO: Get from auth
+        createdBy: authContext.userId,
       })
       .returning();
 
@@ -137,6 +139,14 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error: Record<string, unknown>) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },

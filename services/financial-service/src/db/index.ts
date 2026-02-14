@@ -4,9 +4,21 @@ config(); // Load environment variables first
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema';
-import { logger } from '@/lib/logger';
-// import { logger } from '@/lib/logger';
-const logger = console;
+type LoggerType = {
+  info: (message: string, context?: Record<string, unknown>) => void;
+  warn: (message: string, context?: Record<string, unknown>) => void;
+  error: (message: string, context?: Record<string, unknown>) => void;
+};
+
+let logger: LoggerType | null = null;
+
+function getLogger(): LoggerType {
+  if (!logger) {
+    const module = require('../../../../lib/logger') as { logger: LoggerType };
+    logger = module.logger;
+  }
+  return logger;
+}
 
 // Database connection configuration
 const connectionString = process.env.DATABASE_URL || '';
@@ -34,7 +46,7 @@ export async function checkDatabaseConnection(): Promise<boolean> {
     await client`SELECT 1`;
     return true;
   } catch (error) {
-    logger.error('Database connection failed', { error });
+    getLogger().error('Database connection failed', { error });
     return false;
   }
 }

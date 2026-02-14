@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { eq } from 'drizzle-orm';
 import { caseTemplates, generatedDocuments } from '../templates/route';
+import { requireUserForOrganization } from '@/lib/api-auth-guard';
 
 // Validation schema for generating document
 const generateDocumentSchema = z.object({
@@ -30,6 +31,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const validatedData = generateDocumentSchema.parse(body);
+    const authContext = await requireUserForOrganization(validatedData.organizationId);
 
     // Get template
     const [template] = await db
@@ -75,7 +77,7 @@ export async function POST(request: NextRequest) {
         recipientEmail: validatedData.recipientEmail,
         recipientAddress: validatedData.recipientAddress,
         status: 'generated',
-        createdBy: 'system', // TODO: Get from auth
+        createdBy: authContext.userId,
       })
       .returning();
 
@@ -100,6 +102,14 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error: Record<string, unknown>) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },

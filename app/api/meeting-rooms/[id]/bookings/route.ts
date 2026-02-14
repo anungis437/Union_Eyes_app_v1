@@ -70,7 +70,6 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
       'Start time, end time, and purpose are required'
-      // TODO: Migrate additional details: end time, and purpose are required'
     );
       }
 

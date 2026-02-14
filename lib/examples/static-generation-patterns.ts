@@ -21,8 +21,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { organizations } from '@/db/schema';
-// TODO: Add publicContent schema
-// import { publicContent } from '@/db/schema';
+import { publicContent } from '@/db/schema';
 
 // ============================================================================
 // Example 1: Basic Static Page with ISR (Incremental Static Regeneration)

@@ -7,7 +7,7 @@ import { logApiAuditEvent, SQLInjectionScanner } from '@/lib/middleware/api-secu
 import { RequestValidator } from '@/lib/middleware/request-validation';
 import { withApiAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-import { standardSuccessResponse } from '@/lib/api/standardized-responses';
+import { standardErrorResponse, standardSuccessResponse, ErrorCode } from '@/lib/api/standardized-responses';
 interface RouteParams {
   params: {
     id: string;
@@ -305,8 +305,8 @@ export const PATCH = async (request: NextRequest, { params }: RouteParams) => {
 
         return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
-      'Validation failed'
-      // TODO: Migrate additional details: details: validationResult.error.flatten()
+      'Validation failed',
+      validationResult.error.flatten()
     );
       }
 

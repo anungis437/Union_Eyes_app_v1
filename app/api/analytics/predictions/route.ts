@@ -33,8 +33,8 @@ export const POST = async (request: NextRequest) => {
     if (!rateLimitResult.allowed) {
       return standardErrorResponse(
       ErrorCode.RATE_LIMIT_EXCEEDED,
-      'Rate limit exceeded'
-      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+      'Rate limit exceeded',
+      { resetIn: rateLimitResult.resetIn }
     );
     }
 
@@ -58,7 +58,6 @@ export const POST = async (request: NextRequest) => {
         return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Missing required fields: predictionType, periodsAhead'
-      // TODO: Migrate additional details: periodsAhead'
     );
       }
       
@@ -66,7 +65,6 @@ export const POST = async (request: NextRequest) => {
         return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Invalid predictionType. Must be one of: claims_volume, resource_needs, budget_forecast'
-      // TODO: Migrate additional details: resource_needs, budget_forecast'
     );
       }
       

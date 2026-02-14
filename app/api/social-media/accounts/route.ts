@@ -49,8 +49,8 @@ export const GET = async (request: NextRequest) => {
       if (!rateLimitResult.allowed) {
         return standardErrorResponse(
       ErrorCode.RATE_LIMIT_EXCEEDED,
-      'Rate limit exceeded'
-      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+      'Rate limit exceeded',
+      { resetIn: rateLimitResult.resetIn }
     );
       }
 
@@ -142,8 +142,8 @@ export const POST = async (request: NextRequest) => {
       if (!rateLimitResult.allowed) {
         return standardErrorResponse(
       ErrorCode.RATE_LIMIT_EXCEEDED,
-      'Rate limit exceeded'
-      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+      'Rate limit exceeded',
+      { resetIn: rateLimitResult.resetIn }
     );
       }
 
@@ -256,8 +256,8 @@ export const DELETE = async (request: NextRequest) => {
       if (!rateLimitResult.allowed) {
         return standardErrorResponse(
       ErrorCode.RATE_LIMIT_EXCEEDED,
-      'Rate limit exceeded'
-      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+      'Rate limit exceeded',
+      { resetIn: rateLimitResult.resetIn }
     );
       }
 

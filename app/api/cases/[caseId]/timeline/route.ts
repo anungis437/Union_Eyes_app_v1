@@ -7,8 +7,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { grievances } from '@/db/schema/domains/claims';
-import { eq } from 'drizzle-orm';
+import { organizationMembers } from '@/db/schema-organizations';
+import { eq, and } from 'drizzle-orm';
 import { TimelineContext } from '@/lib/member-experience/timeline-builder';
+import { requireUserForOrganization } from '@/lib/api-auth-guard';
+import { getNotificationService } from '@/lib/services/notification-service';
 
 interface RouteParams {
   params: {
@@ -116,12 +119,14 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
+    const authContext = await requireUserForOrganization(grievance.organizationId);
+
     // Add new status to timeline
     const timeline = grievance.timeline || [];
     timeline.push({
       date: new Date().toISOString(),
       action: newStatus,
-      actor: 'system', // TODO: Get actual user ID from auth context
+      actor: authContext.userId,
       notes: metadata?.notes || `Status updated to ${newStatus}`,
     });
 
@@ -135,11 +140,70 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       })
       .where(eq(grievances.id, params.caseId));
 
-    // TODO: Send notification to member about status change
-    // await sendStatusUpdateNotification(params.caseId, grievance.status, newStatus);
+    // Send notification to member about status change
+    try {
+      if (grievance.grievantId) {
+        // Get member email from organization_members table
+        const [member] = await db
+          .select({
+            email: organizationMembers.email,
+            name: organizationMembers.fullName,
+          })
+          .from(organizationMembers)
+          .where(
+            and(
+              eq(organizationMembers.userId, grievance.grievantId),
+              eq(organizationMembers.organizationId, grievance.organizationId)
+            )
+          )
+          .limit(1);
+
+        if (member?.email) {
+          const notificationService = getNotificationService();
+          await notificationService.send({
+            organizationId: grievance.organizationId,
+            recipientEmail: member.email,
+            type: 'email',
+            priority: 'normal',
+            subject: `Case ${grievance.grievanceNumber} Status Update`,
+            title: 'Case Status Update',
+            body: `Your case status has been updated from "${grievance.status}" to "${newStatus}".\n\nCase Number: ${grievance.grievanceNumber}\nNew Status: ${newStatus}\n${metadata?.notes ? `Notes: ${metadata.notes}` : ''}`,
+            htmlBody: `
+              <h2>Case Status Update</h2>
+              <p>Hello ${member.name || 'Member'},</p>
+              <p>Your case status has been updated:</p>
+              <ul>
+                <li><strong>Case Number:</strong> ${grievance.grievanceNumber}</li>
+                <li><strong>Previous Status:</strong> ${grievance.status}</li>
+                <li><strong>New Status:</strong> ${newStatus}</li>
+                ${metadata?.notes ? `<li><strong>Notes:</strong> ${metadata.notes}</li>` : ''}
+              </ul>
+              <p>If you have any questions, please contact your union representative.</p>
+            `,
+            metadata: {
+              caseId: params.caseId,
+              caseNumber: grievance.grievanceNumber,
+              oldStatus: grievance.status,
+              newStatus,
+            },
+          });
+        }
+      }
+    } catch (notificationError) {
+      // Log error but don't fail the status update
+      console.error('Failed to send status update notification:', notificationError);
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     console.error('Failed to update case status:', error);
     return NextResponse.json(
       { error: 'Failed to update case status' },

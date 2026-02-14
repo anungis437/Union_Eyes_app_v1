@@ -171,10 +171,10 @@ export async function generateRL1(
 
   const member = memberResult as typeof memberResult;
 
-  // Note: Users table doesn&apos;t have province field
-  // Province check should be done via strikeFundDisbursements or organization federation
-  // For now, we&apos;ll rely on caller to only call this for QC members
-  // TODO: Add province validation via federation lookup
+  const isQuebecMember = await isMemberInQuebec(memberId);
+  if (!isQuebecMember) {
+    throw new Error(`Member ${memberId} is not eligible for RL-1 (not Quebec)`);
+  }
 
   const strikePay = await getYearlyStrikePay(memberId, taxYear);
 

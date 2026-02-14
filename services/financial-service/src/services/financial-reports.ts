@@ -1,8 +1,6 @@
 import { db } from '../db';
 import { sql } from 'drizzle-orm';
-// TODO: Fix logger import path
-// import { logger } from '@/lib/logger';
-const logger = console;
+import { logger } from '../../../lib/logger';
 
 export interface DateRange {
   startDate: Date;

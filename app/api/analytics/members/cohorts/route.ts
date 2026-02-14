@@ -33,8 +33,8 @@ export const GET = withEnhancedRoleAuth(40, async (req: NextRequest, context) =>
   if (!rateLimitResult.allowed) {
     return standardErrorResponse(
       ErrorCode.RATE_LIMIT_EXCEEDED,
-      'Rate limit exceeded'
-      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+      'Rate limit exceeded',
+      { resetIn: rateLimitResult.resetIn }
     );
   }
 

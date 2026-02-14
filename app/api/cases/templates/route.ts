@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { and, desc, like } from 'drizzle-orm';
 import { pgTable, uuid, text, timestamp, jsonb, boolean } from 'drizzle-orm/pg-core';
+import { requireUser, requireUserForOrganization } from '@/lib/api-auth-guard';
 
 // Case templates schema
 export const caseTemplates = pgTable('case_templates', {
@@ -224,6 +225,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const validatedData = createTemplateSchema.parse(body);
+    const authContext = validatedData.organizationId
+      ? await requireUserForOrganization(validatedData.organizationId)
+      : await requireUser();
 
     // Create template
     const [newTemplate] = await db
@@ -233,8 +237,8 @@ export async function POST(request: NextRequest) {
         usageCount: { total: 0, lastUsed: '' },
         isActive: true,
         version: '1.0',
-        createdBy: 'system', // TODO: Get from auth
-        lastModifiedBy: 'system',
+        createdBy: authContext.userId,
+        lastModifiedBy: authContext.userId,
       })
       .returning();
 
@@ -246,6 +250,14 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error: Record<string, unknown>) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },

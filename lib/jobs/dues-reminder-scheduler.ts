@@ -14,7 +14,7 @@
 
 import { db } from '@/db';
 import { duesTransactions } from '@/db/schema/domains/finance/dues';
-import { organizationMembers } from '@/db/schema-organizations';
+import { organizationMembers, organizations } from '@/db/schema-organizations';
 import { eq, and, lte, gte, sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { getNotificationService } from '@/lib/services/notification-service';
@@ -327,10 +327,11 @@ export class DuesReminderScheduler {
       const notificationService = getNotificationService();
       const template = DuesNotificationTemplates.DUES_REMINDER_7_DAYS;
 
+      const organizationName = await this.getOrganizationName(transaction.organizationId);
       const data: DuesNotificationData = {
         memberName: member.name,
         memberEmail: member.email,
-        organizationName: 'UnionEyes', // TODO: Get from organization
+        organizationName,
         amount: transaction.totalAmount,
         dueDate: transaction.dueDate,
         periodStart: transaction.periodStart,
@@ -407,10 +408,11 @@ export class DuesReminderScheduler {
       const notificationService = getNotificationService();
       const template = DuesNotificationTemplates.DUES_REMINDER_1_DAY;
 
+      const organizationName = await this.getOrganizationName(transaction.organizationId);
       const data: DuesNotificationData = {
         memberName: member.name,
         memberEmail: member.email,
-        organizationName: 'UnionEyes',
+        organizationName,
         amount: transaction.totalAmount,
         dueDate: transaction.dueDate,
         periodStart: transaction.periodStart,
@@ -499,10 +501,11 @@ export class DuesReminderScheduler {
       const notificationService = getNotificationService();
       const template = DuesNotificationTemplates.DUES_OVERDUE;
 
+      const organizationName = await this.getOrganizationName(transaction.organizationId);
       const data: DuesNotificationData = {
         memberName: member.name,
         memberEmail: member.email,
-        organizationName: 'UnionEyes',
+        organizationName,
         amount: transaction.totalAmount,
         dueDate: transaction.dueDate,
         periodStart: transaction.periodStart,
@@ -606,6 +609,21 @@ export class DuesReminderScheduler {
     } catch (error) {
       logger.error('Error getting member details', { error, memberId });
       return null;
+    }
+  }
+
+  private static async getOrganizationName(organizationId: string): Promise<string> {
+    try {
+      const [org] = await db
+        .select({ name: organizations.name })
+        .from(organizations)
+        .where(eq(organizations.id, organizationId as any))
+        .limit(1);
+
+      return org?.name || 'UnionEyes';
+    } catch (error) {
+      logger.error('Error getting organization name', { error, organizationId });
+      return 'UnionEyes';
     }
   }
 }

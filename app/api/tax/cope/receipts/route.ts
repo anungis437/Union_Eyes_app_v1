@@ -221,7 +221,6 @@ export const GET = async (request: NextRequest) => {
         return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
       'Bad Request - memberId, organizationId, contributionDate, totalAmount, politicalPortion, and administrativePortion are required'
-      // TODO: Migrate additional details: organizationId, contributionDate, totalAmount, politicalPortion, and administrativePortion are required'
     );
       }
 

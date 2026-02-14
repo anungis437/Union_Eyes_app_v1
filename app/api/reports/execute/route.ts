@@ -84,8 +84,8 @@ export const POST = withRoleAuth('officer', async (request: NextRequest, context
 
       return standardErrorResponse(
       ErrorCode.RATE_LIMIT_EXCEEDED,
-      'Rate limit exceeded'
-      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+      'Rate limit exceeded',
+      { resetIn: rateLimitResult.resetIn }
     );
     }
 

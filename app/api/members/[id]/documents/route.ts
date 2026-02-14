@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { and, desc } from 'drizzle-orm';
 import { memberDocuments } from '@/db/schema/member-profile-v2-schema';
+import { requireUser } from '@/lib/api-auth-guard';
 
 // Validation schema
 const uploadDocumentSchema = z.object({
@@ -87,6 +88,14 @@ export async function POST(
     const userId = params.id;
     const body = await request.json();
     const validatedData = uploadDocumentSchema.parse(body);
+    const authContext = await requireUser();
+
+    if (!authContext.organizationId) {
+      return NextResponse.json(
+        { error: 'Organization context required' },
+        { status: 403 }
+      );
+    }
 
     // Check if expired
     const isExpired = validatedData.expiryDate && 
@@ -96,11 +105,11 @@ export async function POST(
       .insert(memberDocuments)
       .values({
         userId,
-        organizationId: 'org-id',
+        organizationId: authContext.organizationId,
         ...validatedData,
         isExpired: isExpired || false,
         confidentialityLevel: validatedData.confidentialityLevel || 'internal',
-        uploadedBy: 'system', // TODO: Get from auth
+        uploadedBy: authContext.userId,
       })
       .returning();
 
@@ -114,6 +123,14 @@ export async function POST(
       { status: 201 }
     );
   } catch (error: Record<string, unknown>) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },

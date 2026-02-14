@@ -10,10 +10,12 @@
 import { db } from '@/db';
 import { duesTransactions } from '@/db/schema/domains/finance/dues';
 import { organizationMembers } from '@/db/schema-organizations';
+import { users } from '@/db/schema/domains/member/user-management';
+import { auditLogs } from '@/db/schema/audit-security-schema';
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
-import { standardSuccessResponse,
+import { standardSuccessResponse, standardErrorResponse, ErrorCode
 } from '@/lib/api/standardized-responses';
-import { and } from 'drizzle-orm';
+import { and, eq, desc } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -85,8 +87,8 @@ export const GET = withApiAuth(async (
 
   try {
     const paymentDetail = await withRLSContext(async (dbClient) => {
-      // Get payment transaction
-      const [payment] = await dbClient
+      // Get payment transaction with member details
+      const [paymentWithMember] = await dbClient
         .select({
           id: duesTransactions.id,
           memberId: duesTransactions.memberId,
@@ -107,50 +109,87 @@ export const GET = withApiAuth(async (
           periodStart: duesTransactions.periodStart,
           periodEnd: duesTransactions.periodEnd,
           metadata: duesTransactions.metadata,
+          // Member details from users table
+          memberFirstName: users.firstName,
+          memberLastName: users.lastName,
+          memberEmail: users.email,
         })
         .from(duesTransactions)
+        .leftJoin(users, eq(duesTransactions.memberId, users.userId))
         .where(eq(duesTransactions.id, paymentId))
         .limit(1);
 
-      if (!payment) {
+      if (!paymentWithMember) {
         throw new Error('Payment not found');
       }
 
-      // Get member information
-      // TODO: In production, join with users table to get full name and email
-      const memberName = payment.memberId;
-      const memberEmail = '';
+      // Format member name
+      const firstName = paymentWithMember.memberFirstName as string | null;
+      const lastName = paymentWithMember.memberLastName as string | null;
+      const memberName = firstName && lastName 
+        ? `${firstName} ${lastName}` 
+        : firstName || lastName || 'Unknown Member';
+      const memberEmail = (paymentWithMember.memberEmail as string) || '';
 
-      // TODO: Get audit log entries for this payment
-      // This would require an audit_logs table
-      const auditLog: Array<Record<string, unknown>> = [];
+      // Get audit log entries for this payment
+      const auditLogEntries = await dbClient
+        .select({
+          action: auditLogs.action,
+          timestamp: auditLogs.createdAt,
+          userId: auditLogs.userId,
+          userName: users.displayName,
+          userEmail: users.email,
+          outcome: auditLogs.outcome,
+          metadata: auditLogs.metadata,
+        })
+        .from(auditLogs)
+        .leftJoin(users, eq(auditLogs.userId, users.userId))
+        .where(
+          and(
+            eq(auditLogs.resourceType, 'dues_transaction'),
+            eq(auditLogs.resourceId, paymentId)
+          )
+        )
+        .orderBy(desc(auditLogs.createdAt))
+        .limit(50);
 
-      const metadata = (payment.metadata || {}) as Record<string, unknown>;
+      const auditLog = auditLogEntries.map((entry) => {
+        const metadata = (entry.metadata || {}) as Record<string, unknown>;
+        return {
+          action: entry.action,
+          timestamp: entry.timestamp ? new Date(entry.timestamp).toISOString() : new Date().toISOString(),
+          userId: entry.userId || 'system',
+          userName: entry.userName || entry.userEmail || 'System',
+          details: metadata.details || entry.action || 'Action performed',
+        };
+      });
+
+      const metadata = (paymentWithMember.metadata || {}) as Record<string, unknown>;
 
       const result: PaymentDetail = {
-        id: payment.id,
-        memberId: payment.memberId,
+        id: paymentWithMember.id,
+        memberId: paymentWithMember.memberId,
         memberName,
         memberEmail,
-        amount: Number(payment.totalAmount) || 0,
-        status: payment.status,
-        dueDate: payment.dueDate,
-        paidDate: payment.paidDate ? new Date(payment.paidDate).toISOString() : null,
-        paymentMethod: payment.paymentMethod,
-        transactionReference: payment.paymentReference,
-        createdAt: payment.createdAt ? new Date(payment.createdAt).toISOString() : new Date().toISOString(),
-        updatedAt: payment.updatedAt ? new Date(payment.updatedAt).toISOString() : new Date().toISOString(),
+        amount: Number(paymentWithMember.totalAmount) || 0,
+        status: paymentWithMember.status,
+        dueDate: paymentWithMember.dueDate,
+        paidDate: paymentWithMember.paidDate ? new Date(paymentWithMember.paidDate).toISOString() : null,
+        paymentMethod: paymentWithMember.paymentMethod,
+        transactionReference: paymentWithMember.paymentReference,
+        createdAt: paymentWithMember.createdAt ? new Date(paymentWithMember.createdAt).toISOString() : new Date().toISOString(),
+        updatedAt: paymentWithMember.updatedAt ? new Date(paymentWithMember.updatedAt).toISOString() : new Date().toISOString(),
         breakdown: {
-          duesAmount: Number(payment.duesAmount) || 0,
-          copeAmount: Number(payment.copeAmount) || 0,
-          pacAmount: Number(payment.pacAmount) || 0,
-          strikeFundAmount: Number(payment.strikeFundAmount) || 0,
-          lateFees: Number(payment.lateFeeAmount) || 0,
+          duesAmount: Number(paymentWithMember.duesAmount) || 0,
+          copeAmount: Number(paymentWithMember.copeAmount) || 0,
+          pacAmount: Number(paymentWithMember.pacAmount) || 0,
+          strikeFundAmount: Number(paymentWithMember.strikeFundAmount) || 0,
+          lateFees: Number(paymentWithMember.lateFeeAmount) || 0,
         },
         metadata: {
           frequency: metadata.frequency || 'monthly',
-          periodStart: payment.periodStart,
-          periodEnd: payment.periodEnd,
+          periodStart: paymentWithMember.periodStart,
+          periodEnd: paymentWithMember.periodEnd,
           invoiceNumber: metadata.invoiceNumber || null,
         },
         auditLog,

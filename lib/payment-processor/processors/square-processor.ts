@@ -29,8 +29,8 @@ import {
 import { logger } from '@/lib/logger';
 
 /**
- * Square SDK Types (to be replaced with actual SDK when installed)
- * TODO: Install square SDK: npm install square
+ * Square SDK Types (REST-backed implementation)
+ * Square SDK is available for future migration to official client usage.
  */
 interface SquarePayment {
   id: string;

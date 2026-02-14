@@ -130,8 +130,8 @@ export const POST = withApiAuth(async (request: NextRequest) => {
     if (!validation.success) {
       return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
-      'Validation failed'
-      // TODO: Migrate additional details: details: validation.error.errors
+      'Validation failed',
+      validation.error.errors
     );
     }
 

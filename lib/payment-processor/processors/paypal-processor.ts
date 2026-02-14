@@ -3,7 +3,7 @@
  * Integrates PayPal Checkout and PayPal Commerce Platform
  * 
  * @see https://developer.paypal.com/docs/api/overview/
- * @requires @paypal/checkout-server-sdk
+ * Uses PayPal REST APIs (Vault + Checkout)
  */
 
 import { BasePaymentProcessor } from './base-processor';
@@ -30,8 +30,7 @@ import { Decimal } from 'decimal.js';
 import { logger } from '@/lib/logger';
 
 /**
- * PayPal SDK Types (to be replaced with actual SDK when installed)
- * TODO: Install @paypal/checkout-server-sdk
+ * PayPal REST Types (used for API responses)
  */
 interface PayPalOrder {
   id: string;
@@ -70,6 +69,46 @@ interface PayPalRefund {
     value: string;
   };
   create_time: string;
+}
+
+interface PayPalVaultCustomer {
+  id: string;
+  email_address?: string;
+  name?: {
+    given_name?: string;
+    surname?: string;
+  };
+  phone?: {
+    phone_number?: {
+      national_number?: string;
+    };
+  };
+  address?: {
+    address_line_1?: string;
+    address_line_2?: string;
+    admin_area_2?: string;
+    admin_area_1?: string;
+    postal_code?: string;
+    country_code?: string;
+  };
+  create_time?: string;
+  update_time?: string;
+}
+
+interface PayPalPaymentToken {
+  id: string;
+  customer_id?: string;
+  payment_source?: {
+    card?: {
+      brand?: string;
+      last_digits?: string;
+      expiry?: string; // YYYY-MM
+    };
+    paypal?: {
+      email_address?: string;
+    };
+  };
+  create_time?: string;
 }
 
 export class PayPalProcessor extends BasePaymentProcessor {
@@ -417,18 +456,47 @@ export class PayPalProcessor extends BasePaymentProcessor {
     try {
       this.logOperation('createCustomer', { email: customer.email });
 
-      // PayPal uses "Customer" concept through Vault API
-      // For now, return a pseudo-customer ID (email-based)
-      // TODO: Implement PayPal Vault API for payment method storage
-      
-      const customerId = `paypal_${Buffer.from(customer.email).toString('base64').substring(0, 16)}`;
-      
-      logger.info('PayPal customer created (pseudo-ID)', { 
+      const payload: Record<string, unknown> = {
+        email_address: customer.email,
+      };
+
+      if (customer.name) {
+        const [givenName, ...surnameParts] = customer.name.split(' ');
+        payload.name = {
+          given_name: givenName,
+          surname: surnameParts.join(' ') || undefined,
+        };
+      }
+
+      if (customer.phone) {
+        payload.phone = { phone_number: { national_number: customer.phone } };
+      }
+
+      if (customer.address) {
+        payload.address = {
+          address_line_1: customer.address.line1,
+          address_line_2: customer.address.line2,
+          admin_area_2: customer.address.city,
+          admin_area_1: customer.address.state,
+          postal_code: customer.address.postalCode,
+          country_code: customer.address.country,
+        };
+      }
+
+      const created = await this.paypalRequest<PayPalVaultCustomer>(
+        '/v3/vault/customers',
+        {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        }
+      );
+
+      logger.info('PayPal customer created', {
         email: customer.email,
-        customerId,
+        customerId: created.id,
       });
 
-      return customerId;
+      return created.id;
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       this.logError('createCustomer', error instanceof Error ? error : new Error(errorMessage), { email: customer.email });
@@ -447,11 +515,23 @@ export class PayPalProcessor extends BasePaymentProcessor {
     try {
       this.logOperation('retrieveCustomer', { customerId });
 
-      // TODO: Implement PayPal Vault API customer retrieval
-      // For now, return mock data
+      const customer = await this.paypalRequest<PayPalVaultCustomer>(
+        `/v3/vault/customers/${customerId}`
+      );
+
       return {
-        id: customerId,
-        email: 'customer@example.com',
+        id: customer.id,
+        email: customer.email_address || '',
+        name: [customer.name?.given_name, customer.name?.surname].filter(Boolean).join(' ') || undefined,
+        phone: customer.phone?.phone_number?.national_number,
+        address: customer.address ? {
+          line1: customer.address.address_line_1,
+          line2: customer.address.address_line_2,
+          city: customer.address.admin_area_2,
+          state: customer.address.admin_area_1,
+          postalCode: customer.address.postal_code,
+          country: customer.address.country_code,
+        } : undefined,
         metadata: { source: 'paypal' },
       };
     } catch (error: unknown) {
@@ -472,9 +552,48 @@ export class PayPalProcessor extends BasePaymentProcessor {
     try {
       this.logOperation('updateCustomer', { customerId });
 
-      // TODO: Implement PayPal Vault API customer update
-      const customer = await this.retrieveCustomer(customerId);
-      return { ...customer, ...updates };
+      const patchOps: Array<{ op: 'replace'; path: string; value: unknown }> = [];
+
+      if (updates.email) {
+        patchOps.push({ op: 'replace', path: '/email_address', value: updates.email });
+      }
+
+      if (updates.name) {
+        const [givenName, ...surnameParts] = updates.name.split(' ');
+        patchOps.push({ op: 'replace', path: '/name', value: {
+          given_name: givenName,
+          surname: surnameParts.join(' ') || undefined,
+        } });
+      }
+
+      if (updates.phone) {
+        patchOps.push({ op: 'replace', path: '/phone', value: {
+          phone_number: { national_number: updates.phone },
+        } });
+      }
+
+      if (updates.address) {
+        patchOps.push({ op: 'replace', path: '/address', value: {
+          address_line_1: updates.address.line1,
+          address_line_2: updates.address.line2,
+          admin_area_2: updates.address.city,
+          admin_area_1: updates.address.state,
+          postal_code: updates.address.postalCode,
+          country_code: updates.address.country,
+        } });
+      }
+
+      if (patchOps.length > 0) {
+        await this.paypalRequest<void>(
+          `/v3/vault/customers/${customerId}`,
+          {
+            method: 'PATCH',
+            body: JSON.stringify(patchOps),
+          }
+        );
+      }
+
+      return this.retrieveCustomer(customerId);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       this.logError('updateCustomer', error instanceof Error ? error : new Error(errorMessage), { customerId });
@@ -493,15 +612,11 @@ export class PayPalProcessor extends BasePaymentProcessor {
     try {
       this.logOperation('attachPaymentMethod', { paymentMethodId, customerId });
 
-      // TODO: Implement PayPal Vault API payment method attachment
-      return {
-        id: paymentMethodId,
-        type: PaymentMethodType.PAYPAL,
-        processor: this.type,
-        processorMethodId: paymentMethodId,
-        customerId,
-        createdAt: new Date(),
-      };
+      const token = await this.paypalRequest<PayPalPaymentToken>(
+        `/v3/vault/payment-tokens/${paymentMethodId}`
+      );
+
+      return this.mapPaymentTokenToMethod(token, customerId);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       this.logError('attachPaymentMethod', error instanceof Error ? error : new Error(errorMessage), { paymentMethodId, customerId });
@@ -520,14 +635,16 @@ export class PayPalProcessor extends BasePaymentProcessor {
     try {
       this.logOperation('detachPaymentMethod', { paymentMethodId });
 
-      // TODO: Implement PayPal Vault API payment method detachment
-      return {
-        id: paymentMethodId,
-        type: PaymentMethodType.PAYPAL,
-        processor: this.type,
-        processorMethodId: paymentMethodId,
-        createdAt: new Date(),
-      };
+      const existing = await this.paypalRequest<PayPalPaymentToken>(
+        `/v3/vault/payment-tokens/${paymentMethodId}`
+      );
+
+      await this.paypalRequest<void>(
+        `/v3/vault/payment-tokens/${paymentMethodId}`,
+        { method: 'DELETE' }
+      );
+
+      return this.mapPaymentTokenToMethod(existing, existing.customer_id);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       this.logError('detachPaymentMethod', error instanceof Error ? error : new Error(errorMessage), { paymentMethodId });
@@ -546,8 +663,12 @@ export class PayPalProcessor extends BasePaymentProcessor {
     try {
       this.logOperation('listPaymentMethods', { customerId });
 
-      // TODO: Implement PayPal Vault API payment methods listing
-      return [];
+      const response = await this.paypalRequest<{ payment_tokens?: PayPalPaymentToken[]; items?: PayPalPaymentToken[] }>(
+        `/v3/vault/payment-tokens?customer_id=${customerId}`
+      );
+
+      const tokens = response.payment_tokens || response.items || [];
+      return tokens.map((token) => this.mapPaymentTokenToMethod(token, customerId));
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       this.logError('listPaymentMethods', error instanceof Error ? error : new Error(errorMessage), { customerId });
@@ -557,6 +678,25 @@ export class PayPalProcessor extends BasePaymentProcessor {
         error
       );
     }
+  }
+
+  private mapPaymentTokenToMethod(token: PayPalPaymentToken, customerId?: string): PaymentMethod {
+    const card = token.payment_source?.card;
+    const expiryParts = card?.expiry?.split('-') || [];
+
+    return {
+      id: token.id,
+      type: card ? PaymentMethodType.CREDIT_CARD : PaymentMethodType.PAYPAL,
+      processor: this.type,
+      processorMethodId: token.id,
+      customerId: customerId || token.customer_id,
+      last4: card?.last_digits,
+      expiryMonth: expiryParts[1] ? Number(expiryParts[1]) : undefined,
+      expiryYear: expiryParts[0] ? Number(expiryParts[0]) : undefined,
+      brand: card?.brand,
+      metadata: { source: 'paypal' },
+      createdAt: token.create_time ? new Date(token.create_time) : new Date(),
+    };
   }
 
   /**

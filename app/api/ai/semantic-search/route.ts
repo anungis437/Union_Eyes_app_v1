@@ -160,7 +160,6 @@ export const POST = async (request: NextRequest) => {
           return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Invalid searchType. Use: clauses, precedents, unified, or similar'
-      // TODO: Migrate additional details: precedents, unified, or similar'
     );
       }
     } catch (error) {

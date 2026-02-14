@@ -54,8 +54,8 @@ export async function GET(
       if (!rateLimitResult.allowed) {
         return standardErrorResponse(
       ErrorCode.RATE_LIMIT_EXCEEDED,
-      'Rate limit exceeded'
-      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+      'Rate limit exceeded',
+      { resetIn: rateLimitResult.resetIn }
     );
       }
 
@@ -120,8 +120,8 @@ export async function PUT(
       if (!rateLimitResult.allowed) {
         return standardErrorResponse(
       ErrorCode.RATE_LIMIT_EXCEEDED,
-      'Rate limit exceeded'
-      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+      'Rate limit exceeded',
+      { resetIn: rateLimitResult.resetIn }
     );
       }
 
@@ -222,8 +222,8 @@ export async function DELETE(
       if (!rateLimitResult.allowed) {
         return standardErrorResponse(
       ErrorCode.RATE_LIMIT_EXCEEDED,
-      'Rate limit exceeded'
-      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+      'Rate limit exceeded',
+      { resetIn: rateLimitResult.resetIn }
     );
       }
 

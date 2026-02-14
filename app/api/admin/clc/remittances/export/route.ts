@@ -67,7 +67,6 @@ export const GET = async (request: NextRequest) => {
           return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Invalid format. Must be csv, xml, or statcan'
-      // TODO: Migrate additional details: xml, or statcan'
     );
         }
 

@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { eq } from 'drizzle-orm';
 import { memberContactPreferences } from '@/db/schema/member-profile-v2-schema';
+import { requireUser } from '@/lib/api-auth-guard';
 
 // Validation schema
 const updatePreferencesSchema = z.object({
@@ -81,6 +82,14 @@ export async function PUT(
     const userId = params.id;
     const body = await request.json();
     const validatedData = updatePreferencesSchema.parse(body);
+    const authContext = await requireUser();
+
+    if (!authContext.organizationId) {
+      return NextResponse.json(
+        { error: 'Organization context required' },
+        { status: 403 }
+      );
+    }
 
     // Check if preferences exist
     const [existing] = await db
@@ -95,7 +104,7 @@ export async function PUT(
         .set({
           ...validatedData,
           updatedAt: new Date(),
-          lastModifiedBy: 'system', // TODO: Get from auth
+          lastModifiedBy: authContext.userId,
         })
         .where(eq(memberContactPreferences.userId, userId))
         .returning();
@@ -110,7 +119,7 @@ export async function PUT(
         .insert(memberContactPreferences)
         .values({
           userId,
-          organizationId: 'org-id', // TODO: Get from member or context
+          organizationId: authContext.organizationId,
           ...validatedData,
         })
         .returning();
@@ -124,6 +133,14 @@ export async function PUT(
       );
     }
   } catch (error: Record<string, unknown>) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },

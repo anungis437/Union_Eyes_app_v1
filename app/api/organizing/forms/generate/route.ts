@@ -49,7 +49,6 @@ export const POST = async (request: NextRequest) => {
         return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
       'Campaign ID, template ID, and form data are required'
-      // TODO: Migrate additional details: template ID, and form data are required'
     );
       }
 

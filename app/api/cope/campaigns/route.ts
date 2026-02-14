@@ -180,7 +180,6 @@ export const POST = async (request: NextRequest) => {
         return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
       'Bad Request - organizationId, campaignName, and campaignType are required'
-      // TODO: Migrate additional details: campaignName, and campaignType are required'
     );
       }
 

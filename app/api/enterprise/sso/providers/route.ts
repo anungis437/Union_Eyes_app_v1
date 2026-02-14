@@ -9,6 +9,7 @@ import { db } from '@/db';
 import { ssoProviders } from '@/db/schema/sso-scim-schema';
 import { and, desc } from 'drizzle-orm';
 import { z } from 'zod';
+import { requireUserForOrganization } from '@/lib/api-auth-guard';
 
 // Validation schema for creating SSO provider
 const createSSOProviderSchema = z.object({
@@ -88,9 +89,8 @@ export async function POST(req: NextRequest) {
     
     // Validate input
     const validatedData = createSSOProviderSchema.parse(body);
-    
-    // TODO: Extract from auth
-    const createdBy = 'system';
+    const authContext = await requireUserForOrganization(validatedData.organizationId);
+    const createdBy = authContext.userId;
     
     // Validate provider-specific required fields
     if (validatedData.providerType === 'saml') {
@@ -127,6 +127,14 @@ export async function POST(req: NextRequest) {
       },
     }, { status: 201 });
   } catch (error: Record<string, unknown>) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     console.error('Error creating SSO provider:', error);
     
     if (error instanceof z.ZodError) {

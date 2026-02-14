@@ -10,6 +10,7 @@ import { db } from '@/db';
 import { votingSessions, voterEligibility, votes, votingOptions } from '@/db/schema/voting-schema';
 import { and, desc, or, like } from 'drizzle-orm';
 import { z } from 'zod';
+import { requireUserForOrganization } from '@/lib/api-auth-guard';
 
 // Validation schema for creating voting session
 const createSessionSchema = z.object({
@@ -152,8 +153,8 @@ export async function POST(req: NextRequest) {
     // Validate input
     const validatedData = createSessionSchema.parse(body);
     
-    // TODO: Extract from auth
-    const createdBy = 'system'; // Replace with actual user ID
+    const authContext = await requireUserForOrganization(validatedData.organizationId);
+    const createdBy = authContext.userId;
     
     // Create voting session
     const [session] = await db
@@ -170,6 +171,14 @@ export async function POST(req: NextRequest) {
       session,
     }, { status: 201 });
   } catch (error: Record<string, unknown>) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     console.error('Error creating voting session:', error);
     
     if (error instanceof z.ZodError) {

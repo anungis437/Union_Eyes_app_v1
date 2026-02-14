@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { stewardAssignments } from '@/db/schema/union-structure-schema';
 import { and, desc, or } from 'drizzle-orm';
+import { requireUserForOrganization } from '@/lib/api-auth-guard';
 
 // Validation schema for creating steward assignment
 const createStewardSchema = z.object({
@@ -115,6 +116,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const validatedData = createStewardSchema.parse(body);
+    const authContext = await requireUserForOrganization(validatedData.organizationId);
 
     // Check for overlapping assignments
     const existing = await db
@@ -153,8 +155,8 @@ export async function POST(request: NextRequest) {
           ? new Date(validatedData.certificationExpiryDate) 
           : null,
         status: 'active',
-        createdBy: 'system', // TODO: Get from auth
-        lastModifiedBy: 'system',
+        createdBy: authContext.userId,
+        lastModifiedBy: authContext.userId,
       })
       .returning();
 
@@ -166,6 +168,14 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error: Record<string, unknown>) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },

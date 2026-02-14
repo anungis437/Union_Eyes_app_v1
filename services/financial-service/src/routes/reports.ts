@@ -7,9 +7,7 @@ import {
   getMemberPaymentPatterns,
   getFinancialDashboard,
 } from '../services/financial-reports';
-// TODO: Fix logger import path
-// import { logger } from '@/lib/logger';
-const logger = console;
+import { logger } from '../../../lib/logger';
 
 const router = Router();
 

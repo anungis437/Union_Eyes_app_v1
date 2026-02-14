@@ -8,7 +8,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
 import { memberDuesLedger, memberArrears } from '@/db/schema/dues-finance-schema';
-import { and, desc } from 'drizzle-orm';
+import { and, desc, eq, gte, lte, sql, lt } from 'drizzle-orm';
+import { requireUserForOrganization } from '@/lib/api-auth-guard';
 
 // Validation schema for creating transaction
 const createTransactionSchema = z.object({
@@ -120,6 +121,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const validatedData = createTransactionSchema.parse(body);
+    const authContext = await requireUserForOrganization(validatedData.organizationId);
 
     // Get current balance
     const latestTransaction = await db
@@ -164,7 +166,7 @@ export async function POST(request: NextRequest) {
           ? new Date(validatedData.periodStart).getMonth() + 1 
           : new Date().getMonth() + 1,
         status: 'posted',
-        createdBy: 'system', // TODO: Get from auth
+        createdBy: authContext.userId,
       })
       .returning();
 
@@ -182,6 +184,14 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error: Record<string, unknown>) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },
@@ -216,11 +226,40 @@ async function updateMemberArrears(userId: string, organizationId: string) {
   const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
   const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
 
-  // Get aged balances (simplified - real implementation would be more complex)
-  // This would calculate unpaid charges by age
-  const over30Days = 0; // TODO: Calculate from unpaid charges
-  const over60Days = 0;
-  const over90Days = 0;
+  // Calculate unpaid charges by age
+  // Get all charge transactions that contributed to current balance
+  const charges = await db
+    .select({
+      effectiveDate: memberDuesLedger.effectiveDate,
+      amount: memberDuesLedger.amount,
+    })
+    .from(memberDuesLedger)
+    .where(
+      and(
+        eq(memberDuesLedger.userId, userId),
+        eq(memberDuesLedger.organizationId, organizationId),
+        eq(memberDuesLedger.transactionType, 'charge'),
+        eq(memberDuesLedger.status, 'posted')
+      )
+    );
+
+  // Allocate charges to aging buckets based on effective date
+  let over30Days = 0;
+  let over60Days = 0;
+  let over90Days = 0;
+
+  for (const charge of charges) {
+    const chargeAmount = Number(charge.amount);
+    const chargeDate = new Date(charge.effectiveDate);
+    
+    if (chargeDate < ninetyDaysAgo) {
+      over90Days += chargeAmount;
+    } else if (chargeDate < sixtyDaysAgo) {
+      over60Days += chargeAmount;
+    } else if (chargeDate < thirtyDaysAgo) {
+      over30Days += chargeAmount;
+    }
+  }
 
   // Determine status
   let arrearsStatus = 'current';

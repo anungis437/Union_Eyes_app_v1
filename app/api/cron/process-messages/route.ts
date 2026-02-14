@@ -24,6 +24,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
+import { db } from '@/db';
+import { organizationMembers } from '@/db/schema-organizations';
+import { eq, and, or } from 'drizzle-orm';
 import { processMessageQueue, getQueueStatus } from '@/lib/workers/message-queue-processor';
 
 export async function GET(request: NextRequest) {
@@ -45,8 +48,28 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      // TODO: Add admin role check here
-      // For now, allow any authenticated user (development mode)
+      // Check if user has admin role in any organization
+      const adminMemberships = await db
+        .select({ role: organizationMembers.role })
+        .from(organizationMembers)
+        .where(
+          and(
+            eq(organizationMembers.userId, userId),
+            eq(organizationMembers.status, 'active'),
+            or(
+              eq(organizationMembers.role, 'admin'),
+              eq(organizationMembers.role, 'super_admin')
+            )
+          )
+        )
+        .limit(1);
+      
+      if (adminMemberships.length === 0) {
+        return NextResponse.json(
+          { error: 'Forbidden: Admin access required' },
+          { status: 403 }
+        );
+      }
     }
 
     // Get action from query params

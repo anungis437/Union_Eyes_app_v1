@@ -29,6 +29,7 @@ export * from './sms';
 export * from './surveys';
 export * from '../../analytics';
 export * from './push-notifications';
+export * from './public-content';
 
 // Phase 4: Communications & Organizing
 export * from './campaigns';

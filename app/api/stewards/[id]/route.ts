@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { stewardAssignments } from '@/db/schema/union-structure-schema';
 import { eq } from 'drizzle-orm';
+import { requireUser } from '@/lib/api-auth-guard';
 
 // Validation schema for updating steward assignment
 const updateStewardSchema = z.object({
@@ -70,11 +71,12 @@ export async function PUT(
     const { id } = params;
     const body = await request.json();
     const validatedData = updateStewardSchema.parse(body);
+    const authContext = await requireUser();
 
     const updateData = {
       ...validatedData,
       updatedAt: new Date(),
-      lastModifiedBy: 'system', // TODO: Get from auth
+      lastModifiedBy: authContext.userId,
     };
 
     if (validatedData.effectiveTo) {
@@ -105,6 +107,14 @@ export async function PUT(
       steward: updatedSteward,
     });
   } catch (error: Record<string, unknown>) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },
@@ -129,6 +139,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = params;
+    const authContext = await requireUser();
 
     const [deletedSteward] = await db
       .update(stewardAssignments)
@@ -136,7 +147,7 @@ export async function DELETE(
         effectiveTo: new Date(),
         status: 'resigned',
         updatedAt: new Date(),
-        lastModifiedBy: 'system', // TODO: Get from auth
+        lastModifiedBy: authContext.userId,
       })
       .where(eq(stewardAssignments.id, id))
       .returning();
@@ -153,6 +164,14 @@ export async function DELETE(
       steward: deletedSteward,
     });
   } catch (error: Record<string, unknown>) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     console.error('Error ending steward assignment:', error);
     return NextResponse.json(
       { error: 'Failed to end steward assignment', details: error.message },

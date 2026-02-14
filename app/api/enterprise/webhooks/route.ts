@@ -10,6 +10,7 @@ import { webhookSubscriptions, webhookDeliveries } from '@/db/schema/integration
 import { and, desc } from 'drizzle-orm';
 import { z } from 'zod';
 import crypto from 'crypto';
+import { requireUserForOrganization } from '@/lib/api-auth-guard';
 
 // Validation schema for creating webhook subscription
 const createWebhookSchema = z.object({
@@ -77,9 +78,8 @@ export async function POST(req: NextRequest) {
     
     // Validate input
     const validatedData = createWebhookSchema.parse(body);
-    
-    // TODO: Extract from auth
-    const createdBy = 'system';
+    const authContext = await requireUserForOrganization(validatedData.organizationId);
+    const createdBy = authContext.userId;
     
     // Validate auth secret for bearer/hmac types
     if (['bearer', 'hmac'].includes(validatedData.authType) && !validatedData.authSecret) {
@@ -106,6 +106,14 @@ export async function POST(req: NextRequest) {
       },
     }, { status: 201 });
   } catch (error: Record<string, unknown>) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     console.error('Error creating webhook:', error);
     
     if (error instanceof z.ZodError) {

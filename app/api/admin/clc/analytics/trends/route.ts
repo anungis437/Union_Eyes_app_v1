@@ -49,7 +49,6 @@ export const GET = async (request: NextRequest) => {
           return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Invalid years parameter. Must be 3, 5, or 10'
-      // TODO: Migrate additional details: 5, or 10'
     );
         }
 

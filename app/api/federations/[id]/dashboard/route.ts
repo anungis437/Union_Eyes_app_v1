@@ -12,7 +12,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { organizations, organizationRelationships } from '@/db/schema-organizations';
 import { perCapitaRemittances } from '@/db/schema/clc-per-capita-schema';
-import { and, desc, count, sum } from 'drizzle-orm';
+import { eq, and, desc, gte, count, sum, sql } from 'drizzle-orm';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
@@ -167,7 +167,7 @@ export const GET = async (
           .where(
             and(
               eq(perCapitaRemittances.toOrganizationId, federationId),
-              gte(perCapitaRemittances.remittanceDate, startDate.toISOString().split('T')[0])
+              gte(perCapitaRemittances.dueDate, startDate.toISOString().split('T')[0])
             )
           );
 
@@ -181,11 +181,11 @@ export const GET = async (
             totalAmount: perCapitaRemittances.totalAmount,
             totalMembers: perCapitaRemittances.totalMembers,
             status: perCapitaRemittances.status,
-            remittanceDate: perCapitaRemittances.remittanceDate,
+            dueDate: perCapitaRemittances.dueDate,
           })
           .from(perCapitaRemittances)
           .where(eq(perCapitaRemittances.toOrganizationId, federationId))
-          .orderBy(desc(perCapitaRemittances.remittanceDate))
+          .orderBy(desc(perCapitaRemittances.dueDate))
           .limit(10);
 
         // 5. Compliance Rate
@@ -259,7 +259,7 @@ export const GET = async (
             .where(
               and(
                 eq(perCapitaRemittances.toOrganizationId, federationId),
-                gte(perCapitaRemittances.remittanceDate, startDate.toISOString().split('T')[0])
+                gte(perCapitaRemittances.dueDate, startDate.toISOString().split('T')[0])
               )
             )
             .groupBy(perCapitaRemittances.remittanceMonth, perCapitaRemittances.remittanceYear)

@@ -14,9 +14,11 @@
 
 import { db } from '@/db';
 import { duesTransactions } from '@/db/schema/domains/finance/dues';
-import { organizationMembers } from '@/db/schema-organizations';
+import { organizationMembers, organizations } from '@/db/schema-organizations';
 import { eq, and } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
+import { Document, Page, StyleSheet, Text, pdf } from '@react-pdf/renderer';
+import React from 'react';
 import { PaymentProcessorType } from '@/lib/payment-processor/types';
 import Stripe from 'stripe';
 import { Decimal } from 'decimal.js';
@@ -229,6 +231,45 @@ export class PaymentService {
 
   /**
    * Handle successful payment
+  private static async generateReceiptPdfUrl(params: {
+    receiptNumber: string;
+    memberName: string;
+    memberEmail: string;
+    organizationName: string;
+    amount: string;
+    currency: string;
+    paidDate: Date;
+  }): Promise<string> {
+    const styles = StyleSheet.create({
+      page: { padding: 32, fontSize: 12 },
+      title: { fontSize: 18, marginBottom: 12 },
+      section: { marginBottom: 8 },
+      label: { fontSize: 10, color: '#555' },
+      value: { fontSize: 12 },
+    });
+
+    const doc = React.createElement(
+      Document,
+      null,
+      React.createElement(
+        Page,
+        { size: 'A4', style: styles.page },
+        React.createElement(Text, { style: styles.title }, 'Payment Receipt'),
+        React.createElement(Text, { style: styles.section }, `Organization: ${params.organizationName}`),
+        React.createElement(Text, { style: styles.section }, `Receipt Number: ${params.receiptNumber}`),
+        React.createElement(Text, { style: styles.section }, `Paid Date: ${params.paidDate.toLocaleDateString()}`),
+        React.createElement(Text, { style: styles.label }, 'Member'),
+        React.createElement(Text, { style: styles.value }, params.memberName),
+        React.createElement(Text, { style: styles.value }, params.memberEmail),
+        React.createElement(Text, { style: styles.label }, 'Amount'),
+        React.createElement(Text, { style: styles.value }, `${params.currency} ${params.amount}`)
+      )
+    );
+
+    const buffer = await pdf(doc).toBuffer();
+    const base64 = buffer.toString('base64');
+    return `data:application/pdf;base64,${base64}`;
+  }
    */
   static async handlePaymentSuccess(
     params: PaymentSuccessParams
@@ -367,11 +408,16 @@ export class PaymentService {
           transaction: duesTransactions,
           memberName: organizationMembers.name,
           memberEmail: organizationMembers.email,
+          organizationName: organizations.name,
         })
         .from(duesTransactions)
         .innerJoin(
           organizationMembers,
           eq(duesTransactions.memberId, organizationMembers.id)
+        )
+        .innerJoin(
+          organizations,
+          eq(duesTransactions.organizationId, organizations.id)
         )
         .where(eq(duesTransactions.id, transactionId))
         .limit(1);
@@ -380,7 +426,7 @@ export class PaymentService {
         throw new Error(`Transaction not found: ${transactionId}`);
       }
 
-      const { transaction, memberName, memberEmail } = result[0];
+      const { transaction, memberName, memberEmail, organizationName } = result[0];
 
       if (transaction.status !== 'paid') {
         throw new Error(`Transaction not paid: ${transactionId}`);
@@ -394,9 +440,15 @@ export class PaymentService {
         .padStart(5, '0');
       const receiptNumber = `DUES-${dateStr}-${random}`;
 
-      // TODO: Generate PDF receipt with receipt-generator library
-      // For now, return basic receipt data
-      const receiptUrl = transaction.receiptUrl || `/api/receipts/${transactionId}`;
+      const receiptUrl = transaction.receiptUrl || await PaymentService.generateReceiptPdfUrl({
+        receiptNumber,
+        memberName,
+        memberEmail,
+        organizationName,
+        amount: transaction.totalAmount,
+        currency: 'USD',
+        paidDate: transaction.paidDate || new Date(),
+      });
 
       // Update receipt URL if not set
       if (!transaction.receiptUrl) {
@@ -417,7 +469,7 @@ export class PaymentService {
         amount: transaction.totalAmount,
         memberName,
         memberEmail,
-        organizationName: 'UnionEyes', // TODO: Get from organization
+        organizationName: organizationName || 'UnionEyes',
       };
     } catch (error) {
       logger.error('Error generating receipt', { error, transactionId });

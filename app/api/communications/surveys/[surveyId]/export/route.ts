@@ -205,7 +205,6 @@ export const GET = withApiAuth(async (
       return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Invalid format. Supported formats: csv, excel'
-      // TODO: Migrate additional details: excel'
     );
     }
   } catch (error) {

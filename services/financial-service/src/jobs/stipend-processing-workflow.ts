@@ -23,7 +23,7 @@ import {
 } from '../db/schema';
 import { eq, and, gte, lte, sql, inArray } from 'drizzle-orm';
 import Stripe from 'stripe';
-// import { NotificationService } from '../services/notification-service'; // TODO: Export NotificationService
+import { queueNotification } from '../services/notification-service';
 
 // Initialize Stripe
 const stripe = process.env.STRIPE_SECRET_KEY
@@ -436,9 +436,8 @@ export async function processDisbursements(params: {
           
         // Send notification
         try {
-          // TODO: NotificationService not exported yet
-          /* await NotificationService.queue({
-            tenantId: stipend.tenantId, // Use tenantId from stipend record
+          await queueNotification({
+            organizationId: stipend.tenantId,
             userId: stipend.memberId,
             type: 'stipend_disbursed',
             channels: ['email', 'push'],
@@ -449,8 +448,8 @@ export async function processDisbursements(params: {
               paymentDate: new Date().toISOString(),
               paymentIntentId,
             },
-          }); */
-logger.info('Stipend notification queued', { stipendId: stipend.id });
+          });
+          logger.info('Stipend notification queued', { stipendId: stipend.id });
         } catch (notifError) {
           logger.error('Failed to queue stipend notification', notifError);
           // Don't fail the entire payment if notification fails

@@ -13,6 +13,7 @@ import {
   remittanceExceptions 
 } from '@/db/schema/dues-finance-schema';
 import { and, desc } from 'drizzle-orm';
+import { requireUserForOrganization } from '@/lib/api-auth-guard';
 
 // Validation schema for creating remittance
 const createRemittanceSchema = z.object({
@@ -130,6 +131,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const validatedData = createRemittanceSchema.parse(body);
+    const authContext = await requireUserForOrganization(validatedData.organizationId);
 
     // Calculate fiscal period
     const periodStart = new Date(validatedData.periodStart);
@@ -152,8 +154,8 @@ export async function POST(request: NextRequest) {
         recordsProcessed: 0,
         recordsMatched: 0,
         recordsException: 0,
-        createdBy: 'system', // TODO: Get from auth
-        lastModifiedBy: 'system',
+        createdBy: authContext.userId,
+        lastModifiedBy: authContext.userId,
       })
       .returning();
 
@@ -165,6 +167,14 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error: Record<string, unknown>) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },

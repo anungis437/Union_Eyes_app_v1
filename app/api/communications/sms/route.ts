@@ -80,7 +80,6 @@ export const GET = async (req: NextRequest) => {
           return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Invalid action. Valid actions: templates, campaigns, campaign-details'
-      // TODO: Migrate additional details: campaigns, campaign-details'
     );
       }
     } catch (error: Record<string, unknown>) {
@@ -144,7 +143,6 @@ export const POST = async (req: NextRequest) => {
           return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Invalid action. Valid actions: send, bulk, create-template, create-campaign, send-campaign, webhook'
-      // TODO: Migrate additional details: bulk, create-template, create-campaign, send-campaign, webhook'
     );
       }
     } catch (error: Record<string, unknown>) {
@@ -220,7 +218,6 @@ async function sendSingleSms(userId: string, body: Record<string, unknown>) Reco
     return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Missing required fields: organizationId, phoneNumber, message'
-      // TODO: Migrate additional details: phoneNumber, message'
     );
   }
 
@@ -228,7 +225,6 @@ async function sendSingleSms(userId: string, body: Record<string, unknown>) Reco
     return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Invalid phone number. Must be E.164 format (e.g., +14155552671)'
-      // TODO: Migrate additional details: +14155552671)'
     );
   }
 
@@ -271,7 +267,7 @@ async function sendBulkSmsAction(userId: string, body: Record<string, unknown>) 
     return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Missing required fields: organizationId, recipients (array), message'
-      // TODO: Migrate additional details: recipients (array), message'
+
     );
   }
 
@@ -302,7 +298,6 @@ async function createTemplate(userId: string, contextOrganizationId: string, bod
     return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Missing required fields: organizationId, name, messageTemplate'
-      // TODO: Migrate additional details: name, messageTemplate'
     );
   }
 
@@ -343,7 +338,6 @@ async function createCampaign(userId: string, contextOrganizationId: string, bod
     return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Missing required fields: organizationId, name, message'
-      // TODO: Migrate additional details: name, message'
     );
   }
 

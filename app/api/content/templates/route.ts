@@ -11,11 +11,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import { standardSuccessResponse,
+import { 
+  standardSuccessResponse, 
+  standardErrorResponse, 
+  ErrorCode 
 } from '@/lib/api/standardized-responses';
 import { logger } from '@/lib/logger';
 import { z } from 'zod';
 import crypto from 'crypto';
+import { db } from '@/db';
+import { cmsTemplates } from '@/db/schema/domains/infrastructure/cms';
+import { eq, and, ilike, desc } from 'drizzle-orm';
 
 // ============================================================================
 // VALIDATION SCHEMAS
@@ -95,9 +101,40 @@ export const GET = async (request: NextRequest) => {
 
       const filters = validation.data;
 
-      // TODO: Implement actual template storage and retrieval
-      // For now, return empty array as placeholder
-      const templates = [];
+      // Build query conditions
+      const conditions = [];
+      if (filters.organization_id) {
+        conditions.push(eq(cmsTemplates.organizationId, filters.organization_id));
+      }
+      if (filters.category) {
+        // Map request categories to template types
+        const categoryMap: Record<string, string> = {
+          'email': 'page',
+          'document': 'post',
+          'notification': 'event',
+          'report': 'landing',
+          'other': 'custom',
+        };
+        conditions.push(eq(cmsTemplates.templateType, categoryMap[filters.category] || filters.category));
+      }
+      if (typeof filters.is_active === 'boolean') {
+        conditions.push(eq(cmsTemplates.isPublished, filters.is_active));
+      }
+      if (filters.search) {
+        conditions.push(ilike(cmsTemplates.name, `%${filters.search}%`));
+      }
+
+      // Query templates from database
+      const query = db
+        .select()
+        .from(cmsTemplates)
+        .orderBy(desc(cmsTemplates.createdAt))
+        .limit(filters.limit)
+        .offset(filters.offset);
+
+      const templates = conditions.length > 0
+        ? await query.where(and(...conditions))
+        : await query;
 
       // Audit log
       await logApiAuditEvent({
@@ -178,22 +215,34 @@ export const POST = async (request: NextRequest) => {
 
       const templateData = validation.data;
 
-      // TODO: Store template in database
-      const template = {
-        id: crypto.randomUUID(),
-        name: templateData.name,
-        description: templateData.description,
-        category: templateData.category,
-        content: templateData.content,
-        variables: templateData.variables || [],
-        isActive: templateData.is_active,
-        organizationId: templateData.organization_id,
-        createdBy: userId,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        usageCount: 0,
-        metadata: templateData.metadata,
+      // Map request category to template type
+      const categoryMap: Record<string, string> = {
+        'email': 'page',
+        'document': 'post',
+        'notification': 'event',
+        'report': 'landing',
+        'other': 'custom',
       };
+
+      // Store template in database
+      const [template] = await db
+        .insert(cmsTemplates)
+        .values({
+          organizationId: templateData.organization_id || crypto.randomUUID(), // Default org if not provided
+          name: templateData.name,
+          description: templateData.description || null,
+          templateType: categoryMap[templateData.category] || 'custom',
+          category: templateData.category,
+          layoutConfig: {
+            content: templateData.content,
+            variables: templateData.variables || [],
+            metadata: templateData.metadata || {},
+          },
+          isSystem: false,
+          isPublished: templateData.is_active,
+          createdBy: userId,
+        })
+        .returning();
 
       // Audit log
       await logApiAuditEvent({

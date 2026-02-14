@@ -11,9 +11,7 @@
 
 import { db, schema } from '../db';
 import { eq, and, between, desc, sql, sum } from 'drizzle-orm';
-// TODO: Fix logger import path
-// import { logger } from '@/lib/logger';
-const logger = { error: console.error, info: console.info, warn: console.warn, debug: console.debug };
+import { logger } from '../../../lib/logger';
 
 // Configuration constants
 const DEFAULT_MINIMUM_HOURS_PER_WEEK = 20; // Minimum hours to qualify for stipend

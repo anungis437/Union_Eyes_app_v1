@@ -13,7 +13,9 @@ import {
   movementTrends, 
   organizations 
 } from '@/db/schema';
-import { and, inArray } from 'drizzle-orm';
+import { grievances } from '@/db/schema/grievance-schema';
+import { claims } from '@/db/schema/claims-schema';
+import { and, inArray, eq, gte, sql, count, avg } from 'drizzle-orm';
 import { 
   aggregateWithPrivacy, 
   calculateTrendWithConfidence,
@@ -120,13 +122,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Query actual case data from grievances table based on trendType
-    // This is a placeholder - in production, you&apos;d query real data
-    const mockDataPoints = consents.map((consent) => ({
-      organizationId: consent.organizationId,
-      value: Math.random() * 100, // Replace with real query
-      weight: Math.floor(Math.random() * 50) + 10, // Number of cases
-    }));
+    // Query actual case data from participating organizations
+    const dataPoints = await queryAggregateData(
+      consents.map(c => c.organizationId),
+      trendType,
+      timeframe as 'month' | 'quarter' | 'year',
+      jurisdiction || undefined,
+      sector || undefined
+    );
 
     // Aggregate with privacy guarantees
     const { trend, confidence, message } = calculateTrendWithConfidence({
@@ -134,7 +137,7 @@ export async function POST(request: NextRequest) {
       jurisdiction,
       sector,
       timeframe,
-      dataPoints: mockDataPoints,
+      dataPoints,
     });
 
     if (!trend) {
@@ -167,12 +170,14 @@ export async function POST(request: NextRequest) {
 /**
  * Helper to query aggregate case data
  * 
- * This would be used by the POST endpoint to get real data
+ * Queries grievances and claims based on trendType
  */
 async function queryAggregateData(
   organizationIds: string[],
   trendType: string,
-  timeframe: 'month' | 'quarter' | 'year'
+  timeframe: 'month' | 'quarter' | 'year',
+  jurisdiction?: string,
+  sector?: string
 ): Promise<Array<{ organizationId: string; value: number; weight: number }>> {
   // Calculate date range
   const now = new Date();
@@ -186,16 +191,121 @@ async function queryAggregateData(
     startDate.setFullYear(now.getFullYear() - 1);
   }
 
-  // TODO: Implement actual queries based on trendType
-  // Examples:
-  // - 'avg-resolution-time': AVG(resolution_days) grouped by organization
-  // - 'win-rate': COUNT(favorable_outcomes) / COUNT(*) grouped by organization
-  // - 'member-satisfaction': AVG(satisfaction_rating) grouped by organization
-  
-  // This is a placeholder
-  return organizationIds.map((orgId) => ({
-    organizationId: orgId,
-    value: 0,
-    weight: 0,
-  }));
+  // Build base query filters
+  const baseFilters: any[] = [
+    inArray(grievances.organizationId, organizationIds),
+    gte(grievances.filedDate, startDate),
+  ];
+
+  try {
+    // Query based on trend type
+    switch (trendType) {
+      case 'success_rate':
+      case 'win_rate': {
+        // Calculate percentage of favorable outcomes
+        const results = await db
+          .select({
+            organizationId: grievances.organizationId,
+            total: count(),
+            favorable: sql<number>`COUNT(CASE WHEN ${grievances.status} IN ('resolved', 'settled') THEN 1 END)`,
+          })
+          .from(grievances)
+          .where(and(...baseFilters))
+          .groupBy(grievances.organizationId);
+        
+        return results.map(r => ({
+          organizationId: r.organizationId,
+          value: Number(r.total) > 0 ? (Number(r.favorable) / Number(r.total)) * 100 : 0,
+          weight: Number(r.total),
+        }));
+      }
+
+      case 'settlement_time':
+      case 'avg_resolution_time': {
+        // Calculate average days to resolution
+        const results = await db
+          .select({
+            organizationId: grievances.organizationId,
+            avgDays: sql<number>`AVG(EXTRACT(EPOCH FROM (${grievances.resolvedAt} - ${grievances.filedDate})) / 86400)`,
+            total: count(),
+          })
+          .from(grievances)
+          .where(
+            and(
+              ...baseFilters,
+              sql`${grievances.resolvedAt} IS NOT NULL`
+            )
+          )
+          .groupBy(grievances.organizationId);
+        
+        return results.map(r => ({
+          organizationId: r.organizationId,
+          value: Number(r.avgDays) || 0,
+          weight: Number(r.total),
+        }));
+      }
+
+      case 'case_volume': {
+        // Count total cases
+        const results = await db
+          .select({
+            organizationId: grievances.organizationId,
+            total: count(),
+          })
+          .from(grievances)
+          .where(and(...baseFilters))
+          .groupBy(grievances.organizationId);
+        
+        return results.map(r => ({
+          organizationId: r.organizationId,
+          value: Number(r.total),
+          weight: Number(r.total),
+        }));
+      }
+
+      case 'arbitration_rate': {
+        // Percentage of cases going to arbitration
+        const results = await db
+          .select({
+            organizationId: grievances.organizationId,
+            total: count(),
+            arbitrations: sql<number>`COUNT(CASE WHEN ${grievances.step} = 'arbitration' THEN 1 END)`,
+          })
+          .from(grievances)
+          .where(and(...baseFilters))
+          .groupBy(grievances.organizationId);
+        
+        return results.map(r => ({
+          organizationId: r.organizationId,
+          value: Number(r.total) > 0 ? (Number(r.arbitrations) / Number(r.total)) * 100 : 0,
+          weight: Number(r.total),
+        }));
+      }
+
+      default:
+        // Default: return case counts
+        const results = await db
+          .select({
+            organizationId: grievances.organizationId,
+            total: count(),
+          })
+          .from(grievances)
+          .where(and(...baseFilters))
+          .groupBy(grievances.organizationId);
+        
+        return results.map(r => ({
+          organizationId: r.organizationId,
+          value: Number(r.total),
+          weight: Number(r.total),
+        }));
+    }
+  } catch (error) {
+    console.error('Error querying aggregate data:', error);
+    // Return empty results on error
+    return organizationIds.map((orgId) => ({
+      organizationId: orgId,
+      value: 0,
+      weight: 0,
+    }));
+  }
 }

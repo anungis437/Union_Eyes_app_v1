@@ -25,7 +25,6 @@ import twilio from 'twilio';
 // TODO: Fix FCM and email service imports
 // import { FCMService } from '@/services/fcm-service';
 // import { FinancialEmailService } from '@/lib/services/financial-email-service';
-import { logger } from '@/lib/logger';
 // import { logger } from '@/lib/logger';
 const logger = console;
 
@@ -209,10 +208,11 @@ export async function sendNotification(notificationId: string): Promise<SendNoti
         undefined
       );
     } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
       channelResults.push({
         channel: channel as any,
         success: false,
-        error: error.message,
+        error: errorMessage,
       });
 
       // Log failed delivery
@@ -220,7 +220,7 @@ export async function sendNotification(notificationId: string): Promise<SendNoti
         notificationId,
         channel as any,
         'failed',
-        error.message
+        errorMessage
       );
     }
   }

@@ -8,7 +8,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
 import { pgTable, uuid, text, timestamp, jsonb, integer } from 'drizzle-orm/pg-core';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
+import { requireUser } from '@/lib/api-auth-guard';
+import { organizationMembers } from '@/db/schema-organizations';
+import { duesTransactions } from '@/db/schema/domains/finance/dues';
+import { documents } from '@/db/schema/domains/documents/documents';
 
 // Import jobs schema
 export const importJobs = pgTable('import_jobs', {
@@ -100,14 +104,15 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const validatedData = initiateImportSchema.parse(body);
+    const authContext = await requireUser();
 
     const [job] = await db
       .insert(importJobs)
       .values({
-        organizationId: 'org-id', // TODO: Get from context
+        organizationId: authContext.organizationId,
         ...validatedData,
         status: 'pending',
-        createdBy: 'system', // TODO: Get from auth
+        createdBy: authContext.userId,
       })
       .returning();
 
@@ -125,6 +130,14 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error: Record<string, unknown>) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },
@@ -405,8 +418,71 @@ export async function rollbackImport(jobId: string) {
       throw new Error('Job cannot be rolled back');
     }
 
-    // TODO: Implement rollback logic based on importResults
-    // Would delete or revert created records
+    // Implement rollback logic based on importResults
+    const results = job.importResults as Array<{ row: number; recordId?: string; success: boolean; error?: string }>;
+    
+    if (!results || results.length === 0) {
+      throw new Error('No import results found to rollback');
+    }
+
+    // Extract surolled_back',
+        metadata: {
+          ...((job.metadata as Record<string, unknown>) || {}),
+          deletedCount,
+          rollbackCompletedAt: new Date().toISOString(),
+        },
+      })
+      .where(eq(importJobs.id, jobId));
+
+    console.log(`↩️  Import rolled back: ${jobId} (${deletedCount} records deleted)`);
+
+    return { success: true, deletedCountrecords to rollback');
+      await db
+        .update(importJobs)
+        .set({
+          rolledBackAt: new Date(),
+        })
+        .where(eq(importJobs.id, jobId));
+      return { success: true, deletedCount: 0 };
+    }
+
+    // Delete records based on import type
+    let deletedCount = 0;
+    
+    switch (job.importType) {
+      case 'members':
+        // Delete imported members
+        await db
+          .delete(organizationMembers)
+          .where(inArray(organizationMembers.id, recordIds));
+        deletedCount = recordIds.length;
+        break;
+      
+      case 'dues':
+        // Delete imported dues transactions
+        await db
+          .delete(duesTransactions)
+          .where(inArray(duesTransactions.id, recordIds));
+        deletedCount = recordIds.length;
+        break;
+      
+      case 'documents':
+        // Delete imported documents
+        await db
+          .delete(documents)
+          .where(inArray(documents.id, recordIds));
+        deletedCount = recordIds.length;
+        break;
+      
+      case 'cases':
+        // Cases rollback would require more complex logic
+        // due to related records (assignments, documents, etc.)
+        console.warn('⚠️  Cases rollback not fully implemented - requires cascade handling');
+        throw new Error('Cases rollback requires manual intervention');
+      
+      default:
+        throw new Error(`Unsupported import type for rollback: ${job.importType}`);
+    }
 
     await db
       .update(importJobs)

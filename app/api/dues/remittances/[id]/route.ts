@@ -13,6 +13,7 @@ import {
   remittanceExceptions 
 } from '@/db/schema/dues-finance-schema';
 import { eq } from 'drizzle-orm';
+import { requireUserForOrganization } from '@/lib/api-auth-guard';
 
 /**
  * GET /api/dues/remittances/[id]
@@ -75,16 +76,30 @@ export async function PUT(
     const { id } = params;
     const body = await request.json();
 
+    const [existingRemittance] = await db
+      .select({ organizationId: employerRemittances.organizationId })
+      .from(employerRemittances)
+      .where(eq(employerRemittances.id, id));
+
+    if (!existingRemittance) {
+      return NextResponse.json(
+        { error: 'Remittance not found' },
+        { status: 404 }
+      );
+    }
+
+    const authContext = await requireUserForOrganization(existingRemittance.organizationId);
+
     const updateData = {
       updatedAt: new Date(),
-      lastModifiedBy: 'system', // TODO: Get from auth
+      lastModifiedBy: authContext.userId,
     };
 
     if (body.processingStatus) {
       updateData.processingStatus = body.processingStatus;
       if (body.processingStatus === 'completed') {
         updateData.processedAt = new Date();
-        updateData.processedBy = 'system';
+        updateData.processedBy = authContext.userId;
       }
     }
 
@@ -92,7 +107,7 @@ export async function PUT(
       updateData.isReconciled = body.isReconciled;
       if (body.isReconciled) {
         updateData.reconciledAt = new Date();
-        updateData.reconciledBy = 'system';
+        updateData.reconciledBy = authContext.userId;
       }
     }
 
@@ -118,6 +133,14 @@ export async function PUT(
       remittance: updatedRemittance,
     });
   } catch (error: Record<string, unknown>) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     console.error('Error updating remittance:', error);
     return NextResponse.json(
       { error: 'Failed to update remittance', details: error.message },

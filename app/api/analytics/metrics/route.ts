@@ -43,7 +43,6 @@ export const POST = async (request: NextRequest) => {
         return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Missing required fields: metricType, metricName, periodType, periodStart, periodEnd'
-      // TODO: Migrate additional details: metricName, periodType, periodStart, periodEnd'
     );
       }
       
@@ -51,7 +50,6 @@ export const POST = async (request: NextRequest) => {
         return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Invalid periodType. Must be one of: daily, weekly, monthly, quarterly, yearly'
-      // TODO: Migrate additional details: weekly, monthly, quarterly, yearly'
     );
       }
       

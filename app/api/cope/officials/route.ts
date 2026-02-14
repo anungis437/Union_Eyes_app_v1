@@ -174,7 +174,6 @@ export const POST = async (request: NextRequest) => {
         return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
       'Bad Request - organizationId, firstName, lastName, and governmentLevel are required'
-      // TODO: Migrate additional details: firstName, lastName, and governmentLevel are required'
     );
       }
 

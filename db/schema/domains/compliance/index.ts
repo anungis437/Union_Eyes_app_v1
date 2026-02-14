@@ -28,3 +28,4 @@ export * from './force-majeure';
 export * from './employer-interference';
 export * from './whiplash';
 export * from './certifications';
+export * from './pci-dss';

@@ -15,6 +15,9 @@ import {
 import { strikeActions } from '@/db/schema/domains/strike-fund';
 import { eq, and, gte, lte, desc, sql } from 'drizzle-orm';
 import crypto from 'crypto';
+import { Document, Page, StyleSheet, Text, pdf } from '@react-pdf/renderer';
+import React from 'react';
+import { getEmailService } from '@/lib/services/messaging/email-service';
 
 interface BoardPacketData {
   title: string;
@@ -310,8 +313,14 @@ export class BoardPacketGenerator {
         .where(eq(boardPackets.id, packetId))
         .returning();
       
-      // TODO: Generate PDF here
-      // const pdfUrl = await this.generatePDF(packet);
+      const pdfResult = await this.generatePDF(packet);
+      await db
+        .update(boardPackets)
+        .set({
+          pdfUrl: pdfResult.pdfUrl,
+          updatedAt: new Date(),
+        })
+        .where(eq(boardPackets.id, packetId));
       
       return packet;
     } catch (error) {
@@ -333,6 +342,18 @@ export class BoardPacketGenerator {
     }>
   ) {
     try {
+      const [packet] = await db
+        .select()
+        .from(boardPackets)
+        .where(eq(boardPackets.id, packetId))
+        .limit(1);
+
+      if (!packet) {
+        throw new Error('Board packet not found');
+      }
+
+      const pdfResult = await this.generatePDF(packet);
+
       // Create distribution records
       const distributions = await db
         .insert(boardPacketDistributions)
@@ -353,18 +374,67 @@ export class BoardPacketGenerator {
           status: 'distributed',
           distributedAt: new Date(),
           distributionList: recipients,
+          pdfUrl: pdfResult.pdfUrl,
           updatedAt: new Date(),
         })
         .where(eq(boardPackets.id, packetId));
       
-      // TODO: Send emails to recipients
-      // await this.sendDistributionEmails(distributions);
+      const emailService = getEmailService();
+      const emailPromises = recipients.map((recipient) =>
+        emailService.send({
+          to: recipient.recipientEmail,
+          subject: `Board Packet: ${packet.title}`,
+          html: `
+            <h2>${packet.title}</h2>
+            <p>Hello ${recipient.recipientName},</p>
+            <p>The latest board packet has been distributed.</p>
+            <p>Period: ${packet.periodStart} to ${packet.periodEnd}</p>
+          `,
+          attachments: [
+            {
+              filename: `${packet.title.replace(/\s+/g, '_')}.pdf`,
+              content: pdfResult.pdfBuffer,
+              contentType: 'application/pdf',
+            },
+          ],
+        })
+      );
+
+      await Promise.all(emailPromises);
       
       return distributions;
     } catch (error) {
       console.error('Error distributing board packet:', error);
       throw error;
     }
+  }
+
+  private async generatePDF(packet: any): Promise<{ pdfBuffer: Buffer; pdfUrl: string }> {
+    const styles = StyleSheet.create({
+      page: { padding: 32, fontSize: 12 },
+      title: { fontSize: 18, marginBottom: 12 },
+      section: { marginBottom: 8 },
+    });
+
+    const doc = React.createElement(
+      Document,
+      null,
+      React.createElement(
+        Page,
+        { size: 'A4', style: styles.page },
+        React.createElement(Text, { style: styles.title }, packet.title),
+        React.createElement(Text, { style: styles.section }, `Period: ${packet.periodStart} to ${packet.periodEnd}`),
+        React.createElement(Text, { style: styles.section }, `Status: ${packet.status}`),
+        React.createElement(Text, { style: styles.section }, `Financial Summary: ${packet.financialSummary?.summary || 'N/A'}`),
+        React.createElement(Text, { style: styles.section }, `Membership Summary: ${packet.membershipStats?.summary || 'N/A'}`),
+        React.createElement(Text, { style: styles.section }, `Compliance Summary: ${packet.complianceStatus?.summary || 'N/A'}`)
+      )
+    );
+
+    const pdfBuffer = await pdf(doc).toBuffer();
+    const pdfUrl = `data:application/pdf;base64,${pdfBuffer.toString('base64')}`;
+
+    return { pdfBuffer, pdfUrl };
   }
 }
 

@@ -6,9 +6,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { createHash } from 'crypto';
 import { db } from '@/db';
 import { and, desc } from 'drizzle-orm';
 import { pgTable, uuid, text, timestamp, integer, jsonb, boolean } from 'drizzle-orm/pg-core';
+import { requireUserForOrganization } from '@/lib/api-auth-guard';
 
 // Evidence schema (if not exists, this defines it)
 export const caseEvidence = pgTable('case_evidence', {
@@ -77,6 +79,29 @@ const uploadEvidenceSchema = z.object({
   collectedAt: z.string().optional(),
   collectionMethod: z.string().optional(),
 });
+
+/**
+ * Generate SHA-256 hash from file content
+ * Note: In production, this should be called during file upload on the server
+ * For files already stored, this would need to fetch and hash the content
+ */
+async function generateFileHash(fileUrl: string): Promise<string | null> {
+  try {
+    // Fetch file content
+    const response = await fetch(fileUrl);
+    if (!response.ok) return null;
+    
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    
+    // Generate SHA-256 hash
+    const hash = createHash('sha256').update(buffer).digest('hex');
+    return hash;
+  } catch (error) {
+    console.error('Error generating file hash:', error);
+    return null;
+  }
+}
 
 /**
  * GET /api/cases/evidence
@@ -157,20 +182,22 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const validatedData = uploadEvidenceSchema.parse(body);
+    const authContext = await requireUserForOrganization(validatedData.organizationId);
 
-    // TODO: Generate file hash for integrity
-    // const fileHash = await generateFileHash(validatedData.fileUrl);
+    // Generate file hash for integrity verification
+    const fileHash = await generateFileHash(validatedData.fileUrl);
 
     // Create evidence record
     const [newEvidence] = await db
       .insert(caseEvidence)
       .values({
         ...validatedData,
+        fileHash,
         collectedAt: validatedData.collectedAt ? new Date(validatedData.collectedAt) : null,
-        submittedBy: 'system', // TODO: Get from auth
+        submittedBy: authContext.userId,
         status: 'active',
-        createdBy: 'system', // TODO: Get from auth
-        lastModifiedBy: 'system',
+        createdBy: authContext.userId,
+        lastModifiedBy: authContext.userId,
       })
       .returning();
 
@@ -182,6 +209,14 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error: Record<string, unknown>) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },

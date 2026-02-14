@@ -32,7 +32,6 @@ export const POST = withApiAuth(async (req: NextRequest) => {
       return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Missing required fields: name, geofenceType, centerLatitude, centerLongitude, radiusMeters'
-      // TODO: Migrate additional details: geofenceType, centerLatitude, centerLongitude, radiusMeters"
     );
     }
 
@@ -95,7 +94,6 @@ export const GET = withApiAuth(async (req: NextRequest) => {
       return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Missing required parameters: userId, geofenceId, latitude, longitude'
-      // TODO: Migrate additional details: geofenceId, latitude, longitude"
     );
     }
 

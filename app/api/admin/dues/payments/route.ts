@@ -17,10 +17,11 @@
 import { db } from '@/db';
 import { duesTransactions } from '@/db/schema/domains/finance/dues';
 import { organizationMembers } from '@/db/schema-organizations';
+import { users } from '@/db/schema/domains/member/user-management';
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
-import { standardSuccessResponse,
+import { standardSuccessResponse, standardErrorResponse, ErrorCode
 } from '@/lib/api/standardized-responses';
-import { and, or, like, desc, count } from 'drizzle-orm';
+import { and, or, like, desc, count, eq } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -103,25 +104,38 @@ export const GET = withApiAuth(async (request: NextRequest) => {
           paidDate: duesTransactions.paidDate,
           paymentMethod: duesTransactions.paymentMethod,
           createdAt: duesTransactions.createdAt,
+          // Join with users table to get member name
+          memberFirstName: users.firstName,
+          memberLastName: users.lastName,
+          memberEmail: users.email,
         })
         .from(duesTransactions)
+        .leftJoin(users, eq(duesTransactions.memberId, users.userId))
         .where(and(...conditions))
         .orderBy(desc(duesTransactions.createdAt))
         .limit(pageSize)
         .offset(offset);
 
-      // Get member names (simplified - in production, join with users table)
-      const payments = paymentsData.map((payment: Record<string, unknown>) => ({
-        id: payment.id,
-        memberId: payment.memberId,
-        memberName: payment.memberId, // TODO: Replace with actual member name from users table
-        amount: Number(payment.amount) || 0,
-        status: payment.status,
-        dueDate: payment.dueDate.toISOString(),
-        paidDate: payment.paidDate ? payment.paidDate.toISOString() : null,
-        paymentMethod: payment.paymentMethod,
-        createdAt: payment.createdAt.toISOString(),
-      }));
+      // Format payments with member names
+      const payments = paymentsData.map((payment: Record<string, unknown>) => {
+        const firstName = payment.memberFirstName as string | null;
+        const lastName = payment.memberLastName as string | null;
+        const memberName = firstName && lastName 
+          ? `${firstName} ${lastName}` 
+          : firstName || lastName || payment.memberEmail as string || 'Unknown Member';
+
+        return {
+          id: payment.id,
+          memberId: payment.memberId,
+          memberName,
+          amount: Number(payment.amount) || 0,
+          status: payment.status,
+          dueDate: payment.dueDate.toISOString(),
+          paidDate: payment.paidDate ? payment.paidDate.toISOString() : null,
+          paymentMethod: payment.paymentMethod,
+          createdAt: payment.createdAt.toISOString(),
+        };
+      });
 
       const totalPages = Math.ceil(Number(totalCount) / pageSize);
 

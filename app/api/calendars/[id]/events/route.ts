@@ -240,7 +240,6 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
       'Title, start time, and end time are required'
-      // TODO: Migrate additional details: start time, and end time are required'
     );
       }
 

@@ -11,7 +11,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { organizations } from '@/db/schema-organizations';
 import { perCapitaRemittances } from '@/db/schema/clc-per-capita-schema';
-import { and, desc, sum, count } from 'drizzle-orm';
+import { eq, and, desc, gte, lte, sum, count, sql } from 'drizzle-orm';
+import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
@@ -102,11 +103,11 @@ export const GET = async (
         const conditions = [eq(perCapitaRemittances.toOrganizationId, federationId)];
 
         if (fromDate) {
-          conditions.push(gte(perCapitaRemittances.remittanceDate, fromDate));
+          conditions.push(gte(perCapitaRemittances.dueDate, fromDate));
         }
 
         if (toDate) {
-          conditions.push(lte(perCapitaRemittances.remittanceDate, toDate));
+          conditions.push(lte(perCapitaRemittances.dueDate, toDate));
         }
 
         if (fromYear) {
@@ -137,25 +138,24 @@ export const GET = async (
             fromOrganizationId: perCapitaRemittances.fromOrganizationId,
             remittanceMonth: perCapitaRemittances.remittanceMonth,
             remittanceYear: perCapitaRemittances.remittanceYear,
-            remittanceDate: perCapitaRemittances.remittanceDate,
+            dueDate: perCapitaRemittances.dueDate,
             totalMembers: perCapitaRemittances.totalMembers,
             goodStandingMembers: perCapitaRemittances.goodStandingMembers,
-            suspendedMembers: perCapitaRemittances.suspendedMembers,
+            remittableMembers: perCapitaRemittances.remittableMembers,
             perCapitaRate: perCapitaRemittances.perCapitaRate,
             totalAmount: perCapitaRemittances.totalAmount,
             status: perCapitaRemittances.status,
             paymentMethod: perCapitaRemittances.paymentMethod,
-            paymentDate: perCapitaRemittances.paymentDate,
-            receiptNumber: perCapitaRemittances.receiptNumber,
+            paidDate: perCapitaRemittances.paidDate,
+            paymentReference: perCapitaRemittances.paymentReference,
             notes: perCapitaRemittances.notes,
-            dueDate: perCapitaRemittances.dueDate,
-            submittedAt: perCapitaRemittances.submittedAt,
-            submittedBy: perCapitaRemittances.submittedBy,
+            submittedDate: perCapitaRemittances.submittedDate,
+            createdBy: perCapitaRemittances.createdBy,
             createdAt: perCapitaRemittances.createdAt,
           })
           .from(perCapitaRemittances)
           .where(and(...conditions))
-          .orderBy(desc(perCapitaRemittances.remittanceDate))
+          .orderBy(desc(perCapitaRemittances.dueDate))
           .limit(limit)
           .offset(offset);
 

@@ -10,7 +10,9 @@
  * @module actions/member-segments-actions
  */
 
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { db } from "@/db";
+import { organizations } from "@/db/schema-organizations";
 import {
   createSegment,
   getSegments,
@@ -37,6 +39,7 @@ import type {
 import { ActionResult } from "@/types/actions/actions-types";
 import { revalidatePath } from "next/cache";
 import { logger } from "@/lib/logger";
+import { eq, or } from "drizzle-orm";
 
 // =============================================================================
 // SEGMENT CRUD ACTIONS
@@ -365,11 +368,25 @@ export async function exportMembersAction(
       };
     }
 
+    const clerkUser = await currentUser();
+    const userDisplayName = clerkUser?.fullName
+      || [clerkUser?.firstName, clerkUser?.lastName].filter(Boolean).join(" ")
+      || clerkUser?.primaryEmailAddress?.emailAddress
+      || userId;
+
+    const [org] = await db
+      .select({ name: organizations.name })
+      .from(organizations)
+      .where(or(eq(organizations.id, organizationId as any), eq(organizations.slug, organizationId)))
+      .limit(1);
+
+    const organizationName = org?.name || organizationId;
+
     // Generate watermark
     const watermark = generateExportWatermark(
       userId,
-      "Current User", // TODO: Get actual user name
-      "Organization" // TODO: Get actual organization name
+      userDisplayName,
+      organizationName
     );
 
     // Generate export hash (simplified - in practice would hash actual export data)

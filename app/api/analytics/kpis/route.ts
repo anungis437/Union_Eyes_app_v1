@@ -41,8 +41,8 @@ export const POST = async (request: NextRequest) => {
     if (!rateLimitResult.allowed) {
       return standardErrorResponse(
       ErrorCode.RATE_LIMIT_EXCEEDED,
-      'Rate limit exceeded'
-      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+      'Rate limit exceeded',
+      { resetIn: rateLimitResult.resetIn }
     );
     }
 
@@ -79,7 +79,6 @@ export const POST = async (request: NextRequest) => {
         return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Missing required fields: name, metricType, dataSource, calculation, visualizationType'
-      // TODO: Migrate additional details: metricType, dataSource, calculation, visualizationType'
     );
       }
       
@@ -87,7 +86,6 @@ export const POST = async (request: NextRequest) => {
         return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Invalid visualizationType. Must be one of: line, bar, pie, gauge, number'
-      // TODO: Migrate additional details: bar, pie, gauge, number'
     );
       }
       

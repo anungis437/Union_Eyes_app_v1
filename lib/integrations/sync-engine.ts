@@ -7,6 +7,7 @@ import { logger } from '@/lib/logger';
 import { db } from '@/db/db';
 import { integrationSyncLog, syncJobs } from '@/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
+import cron from 'node-cron';
 import {
   IntegrationType,
   IntegrationProvider,
@@ -40,6 +41,7 @@ export class SyncEngine {
   private static instance: SyncEngine;
   private factory: IntegrationFactory;
   private runningJobs: Set<string> = new Set();
+  private scheduledTasks: Map<string, cron.ScheduledTask> = new Map();
 
   private constructor() {
     this.factory = IntegrationFactory.getInstance();
@@ -198,11 +200,47 @@ export class SyncEngine {
       },
     });
 
-    // TODO: Integrate with job scheduler (e.g., BullMQ, node-cron)
-    // - Use BullMQ or similar job queue for reliable scheduling
-    // - Parse cron expression to determine next run time
-    // - Create recurring job with proper error handling
-    // - Implement retry logic for failed jobs
+    const jobKey = `${config.organizationId}:${config.provider}:${config.type}`;
+
+    if (!config.schedule || !config.enabled) {
+      const existing = this.scheduledTasks.get(jobKey);
+      if (existing) {
+        existing.stop();
+        this.scheduledTasks.delete(jobKey);
+      }
+      return;
+    }
+
+    if (!cron.validate(config.schedule)) {
+      throw new IntegrationError(
+        `Invalid cron expression: ${config.schedule}`,
+        config.provider,
+        'INVALID_SCHEDULE'
+      );
+    }
+
+    const existing = this.scheduledTasks.get(jobKey);
+    if (existing) {
+      existing.stop();
+      this.scheduledTasks.delete(jobKey);
+    }
+
+    const task = cron.schedule(config.schedule, async () => {
+      try {
+        await this.executeSync(config.organizationId, config.provider, {
+          type: config.type,
+          entities: config.entities,
+        });
+      } catch (error) {
+        logger.error('Scheduled sync job failed', error instanceof Error ? error : new Error(String(error)), {
+          organizationId: config.organizationId,
+          provider: config.provider,
+          syncType: config.type,
+        });
+      }
+    });
+
+    this.scheduledTasks.set(jobKey, task);
   }
 
   /**

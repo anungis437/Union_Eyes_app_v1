@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { locals } from '@/db/schema/union-structure-schema';
 import { eq } from 'drizzle-orm';
+import { requireUserForOrganization } from '@/lib/api-auth-guard';
 
 // Validation schema for updating local
 const updateLocalSchema = z.object({
@@ -77,10 +78,24 @@ export async function PUT(
     const body = await request.json();
     const validatedData = updateLocalSchema.parse(body);
 
+    const [existingLocal] = await db
+      .select({ organizationId: locals.organizationId })
+      .from(locals)
+      .where(eq(locals.id, id));
+
+    if (!existingLocal) {
+      return NextResponse.json(
+        { error: 'Local not found' },
+        { status: 404 }
+      );
+    }
+
+    const authContext = await requireUserForOrganization(existingLocal.organizationId);
+
     const updateData = {
       ...validatedData,
       updatedAt: new Date(),
-      lastModifiedBy: 'system', // TODO: Get from auth
+      lastModifiedBy: authContext.userId,
     };
 
     if (validatedData.charterDate) {
@@ -105,6 +120,14 @@ export async function PUT(
       local: updatedLocal,
     });
   } catch (error: Record<string, unknown>) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.errors },
@@ -130,13 +153,27 @@ export async function DELETE(
   try {
     const { id } = params;
 
+    const [existingLocal] = await db
+      .select({ organizationId: locals.organizationId })
+      .from(locals)
+      .where(eq(locals.id, id));
+
+    if (!existingLocal) {
+      return NextResponse.json(
+        { error: 'Local not found' },
+        { status: 404 }
+      );
+    }
+
+    const authContext = await requireUserForOrganization(existingLocal.organizationId);
+
     // Soft delete by setting status to inactive
     const [deletedLocal] = await db
       .update(locals)
       .set({
         status: 'inactive',
         updatedAt: new Date(),
-        lastModifiedBy: 'system', // TODO: Get from auth
+        lastModifiedBy: authContext.userId,
       })
       .where(eq(locals.id, id))
       .returning();
@@ -153,6 +190,14 @@ export async function DELETE(
       local: deletedLocal,
     });
   } catch (error: Record<string, unknown>) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     console.error('Error deleting local:', error);
     return NextResponse.json(
       { error: 'Failed to delete local', details: error.message },

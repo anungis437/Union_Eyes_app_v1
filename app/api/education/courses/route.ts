@@ -182,7 +182,6 @@ export const POST = async (request: NextRequest) => {
         return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
       'Bad Request - organizationId, courseName, courseCategory, and deliveryMethod are required'
-      // TODO: Migrate additional details: courseName, courseCategory, and deliveryMethod are required'
     );
       }
 

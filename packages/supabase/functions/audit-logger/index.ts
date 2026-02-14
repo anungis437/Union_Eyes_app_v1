@@ -169,22 +169,40 @@ async function enrichWithGeolocation(ipAddress?: string): Promise<GeolocationDat
   }
 
   try {
-    // For Deno edge functions, use dynamic import or provide geoip-lite data
-    // Note: geoip-lite uses local database, so it works offline
-    // In production with Deno, you may need to:
-    // 1. Use a Deno-compatible IP lookup library
-    // 2. Or use MaxMind GeoIP2 API via fetch
-    // 3. Or deploy geoip-lite database to edge function storage
-    
-    // For now, using a lightweight approach with no external dependencies
-    // TODO: Implement MaxMind GeoIP2 API or deploy geoip-lite database
-    const response = await fetch(`https://ipapi.co/${ipAddress}/json/`);
-    if (!response.ok) {
+    const maxmindAccountId = Deno.env.get('MAXMIND_ACCOUNT_ID');
+    const maxmindLicenseKey = Deno.env.get('MAXMIND_LICENSE_KEY');
+
+    if (maxmindAccountId && maxmindLicenseKey) {
+      const auth = btoa(`${maxmindAccountId}:${maxmindLicenseKey}`);
+      const response = await fetch(
+        `https://geoip.maxmind.com/geoip/v2.1/city/${ipAddress}`,
+        {
+          headers: {
+            Authorization: `Basic ${auth}`,
+            Accept: 'application/json',
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        return {
+          city: data.city?.names?.en || undefined,
+          region: data.subdivisions?.[0]?.iso_code || undefined,
+          country: data.country?.iso_code || undefined,
+          latitude: data.location?.latitude || undefined,
+          longitude: data.location?.longitude || undefined,
+        };
+      }
+    }
+
+    const fallbackResponse = await fetch(`https://ipapi.co/${ipAddress}/json/`);
+    if (!fallbackResponse.ok) {
       throw new Error('IP geolocation service unavailable');
     }
-    
-    const data = await response.json();
-    
+
+    const data = await fallbackResponse.json();
+
     return {
       city: data.city || undefined,
       region: data.region || undefined,

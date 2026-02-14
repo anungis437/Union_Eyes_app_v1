@@ -160,7 +160,6 @@ export const POST = async (request: NextRequest) => {
         return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
       'Bad Request - organizationId, memberId, courseId, and sessionId are required'
-      // TODO: Migrate additional details: memberId, courseId, and sessionId are required'
     );
       }
 

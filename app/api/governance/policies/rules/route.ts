@@ -10,6 +10,7 @@ import { policyRules } from '@/db/schema/policy-engine-schema';
 import { and, desc } from 'drizzle-orm';
 import { z } from 'zod';
 import { policyEngine } from '@/lib/services/policy-engine';
+import { requireUserForOrganization } from '@/lib/api-auth-guard';
 
 // Validation schema for creating policy rule
 const createRuleSchema = z.object({
@@ -90,9 +91,8 @@ export async function POST(req: NextRequest) {
     
     // Validate input
     const validatedData = createRuleSchema.parse(body);
-    
-    // TODO: Extract from auth
-    const createdBy = 'system';
+    const authContext = await requireUserForOrganization(validatedData.organizationId);
+    const createdBy = authContext.userId;
     
     // Create rule
     const [rule] = await db
@@ -109,6 +109,14 @@ export async function POST(req: NextRequest) {
       rule,
     }, { status: 201 });
   } catch (error: Record<string, unknown>) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     console.error('Error creating policy rule:', error);
     
     if (error instanceof z.ZodError) {

@@ -138,7 +138,6 @@ export const POST = async (request: NextRequest) => {
             return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
       'caseTitle, facts, reasoning, and decision are required'
-      // TODO: Migrate additional details: facts, reasoning, and decision are required'
     );
           }
           const precedentClass = await classifyPrecedent(caseTitle, facts, reasoning, decision);

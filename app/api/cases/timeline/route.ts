@@ -7,8 +7,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
-import { and, desc, asc } from 'drizzle-orm';
+import { and, desc, asc, eq } from 'drizzle-orm';
 import { pgTable, uuid, text, timestamp, jsonb } from 'drizzle-orm/pg-core';
+import { grievances } from '@/db/schema/domains/claims/grievances';
+import { grievanceStages, grievanceAssignments, grievanceDocuments, grievanceDeadlines, grievanceSettlements } from '@/db/schema/domains/claims/workflows';
+import { claims } from '@/db/schema/domains/claims/claims';
 
 // Timeline events schema
 export const caseTimelineEvents = pgTable('case_timeline_events', {
@@ -151,20 +154,186 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { caseId } = generateTimelineSchema.parse(body);
 
-    // This would typically query various tables to build timeline
-    // For now, we&apos;ll create a basic structure that other services can populate
-    
-    // TODO: Query FSM state transitions from grievances/claims tables
-    // TODO: Query assignments from case_assignments
-    // TODO: Query documents from case_documents
-    // TODO: Query meetings from caseMeetings
-    // TODO: Query evidence from caseEvidence
-    // TODO: Query outcomes from caseOutcomes
+    // Get case information first
+    const [grievance] = await db
+      .select()
+      .from(grievances)
+      .where(eq(grievances.id, caseId))
+      .limit(1);
+
+    const [claim] = await db
+      .select()
+      .from(claims)
+      .where(eq(claims.claimId, caseId))
+      .limit(1);
+
+    const caseInfo = grievance || claim;
+    if (!caseInfo) {
+      return NextResponse.json(
+        { error: 'Case not found' },
+        { status: 404 }
+      );
+    }
+
+    const organizationId = caseInfo.organizationId;
+    const events: Array<{
+      eventType: string;
+      eventCategory: string;
+      eventTitle: string;
+      eventDescription?: string;
+      eventDate: Date;
+      eventData?: any;
+      actorId?: string;
+      actorName?: string;
+    }> = [];
+
+    // Query FSM state transitions from grievances/claims
+    const stages = await db
+      .select()
+      .from(grievanceStages)
+      .where(eq(grievanceStages.claimId, caseId))
+      .orderBy(asc(grievanceStages.enteredAt));
+
+    stages.forEach(stage => {
+      events.push({
+        eventType: 'state_change',
+        eventCategory: 'milestone',
+        eventTitle: `Stage: ${stage.stageType}`,
+        eventDescription: `Case entered ${stage.stageType} stage`,
+        eventDate: stage.enteredAt || new Date(),
+        eventData: {
+          stageType: stage.stageType,
+          status: stage.status,
+        },
+      });
+    });
+
+    // Query assignments from grievanceAssignments
+    const assignments = await db
+      .select()
+      .from(grievanceAssignments)
+      .where(eq(grievanceAssignments.claimId, caseId))
+      .orderBy(asc(grievanceAssignments.assignedAt));
+
+    assignments.forEach(assignment => {
+      events.push({
+        eventType: 'assignment',
+        eventCategory: 'activity',
+        eventTitle: `Assigned to ${assignment.assignedTo}`,
+        eventDescription: `Case assigned with role: ${assignment.role}`,
+        eventDate: assignment.assignedAt || new Date(),
+        eventData: {
+          role: assignment.role,
+          status: assignment.status,
+          estimatedHours: assignment.estimatedHours,
+        },
+        actorId: assignment.assignedBy,
+      });
+    });
+
+    // Query documents from grievanceDocuments
+    const documents = await db
+      .select()
+      .from(grievanceDocuments)
+      .where(eq(grievanceDocuments.claimId, caseId))
+      .orderBy(asc(grievanceDocuments.uploadedAt));
+
+    documents.forEach(doc => {
+      events.push({
+        eventType: 'document',
+        eventCategory: 'administrative',
+        eventTitle: `Document: ${doc.documentName}`,
+        eventDescription: `${doc.documentType} document uploaded`,
+        eventDate: doc.uploadedAt || new Date(),
+        eventData: {
+          documentType: doc.documentType,
+          version: doc.version,
+          documentId: doc.id,
+        },
+        actorId: doc.uploadedBy,
+      });
+    });
+
+    // Query deadlines from grievanceDeadlines
+    const deadlines = await db
+      .select()
+      .from(grievanceDeadlines)
+      .where(eq(grievanceDeadlines.claimId, caseId))
+      .orderBy(asc(grievanceDeadlines.deadlineDate));
+
+    deadlines.forEach(deadline => {
+      events.push({
+        eventType: 'deadline',
+        eventCategory: 'milestone',
+        eventTitle: `Deadline: ${deadline.deadlineType}`,
+        eventDescription: deadline.description || `${deadline.deadlineType} deadline`,
+        eventDate: deadline.deadlineDate || new Date(),
+        eventData: {
+          deadlineType: deadline.deadlineType,
+          status: deadline.status,
+          priority: deadline.priority,
+        },
+      });
+    });
+
+    // Query settlements from grievanceSettlements
+    const settlements = await db
+      .select()
+      .from(grievanceSettlements)
+      .where(eq(grievanceSettlements.claimId, caseId))
+      .orderBy(asc(grievanceSettlements.proposedAt));
+
+    settlements.forEach(settlement => {
+      events.push({
+        eventType: 'settlement',
+        eventCategory: 'milestone',
+        eventTitle: `Settlement: ${settlement.settlementType}`,
+        eventDescription: settlement.termsDescription || 'Settlement terms proposed',
+        eventDate: settlement.proposedAt || new Date(),
+        eventData: {
+          settlementType: settlement.settlementType,
+          status: settlement.status,
+          monetaryAmount: settlement.monetaryAmount,
+        },
+      });
+    });
+
+    // Sort all events by date
+    events.sort((a, b) => a.eventDate.getTime() - b.eventDate.getTime());
+
+    // Insert events into timeline table
+    const insertedEvents = [];
+    for (const event of events) {
+      const [inserted] = await db
+        .insert(caseTimelineEvents)
+        .values({
+          caseId,
+          caseType: grievance ? 'grievance' : 'claim',
+          organizationId,
+          eventType: event.eventType,
+          eventCategory: event.eventCategory,
+          eventTitle: event.eventTitle,
+          eventDescription: event.eventDescription || null,
+          eventData: event.eventData || {},
+          actorId: event.actorId || null,
+          actorName: event.actorName || null,
+          actorRole: null,
+          eventDate: event.eventDate,
+          isPublic: true,
+          visibleToMember: true,
+          metadata: {},
+          createdBy: 'system',
+        })
+        .returning();
+      
+      insertedEvents.push(inserted);
+    }
 
     return NextResponse.json({
-      message: 'Timeline generation initiated',
+      message: 'Timeline generated successfully',
       caseId,
-      note: 'Timeline events are populated by other services. Use GET to retrieve.',
+      eventsCreated: insertedEvents.length,
+      events: insertedEvents,
     });
   } catch (error: Record<string, unknown>) {
     if (error instanceof z.ZodError) {

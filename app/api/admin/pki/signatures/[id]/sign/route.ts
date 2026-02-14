@@ -62,7 +62,6 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Missing required fields: documentType, userName'
-      // TODO: Migrate additional details: userName'
     );
       }
 

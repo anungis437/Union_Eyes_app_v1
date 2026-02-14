@@ -846,25 +846,108 @@ async function executePendingScheduledTasks(): Promise<TaskResult[]> {
 
 // Stub implementations for helper functions
 async function sendUserDigestEmail(user: any, digestType: string): Promise<void> {
-  // Implementation for sending digest emails
+  if (!user?.email) return;
+
+  const subject = digestType === 'weekly'
+    ? 'Your weekly UnionEyes digest'
+    : 'Your daily UnionEyes digest';
+
+  const body = `Hello ${user.name || 'there'},\n\n` +
+    `Here is your ${digestType} digest.\n\n` +
+    `- UnionEyes`;
+
+  const resendApiKey = Deno.env.get('RESEND_API_KEY');
+  if (!resendApiKey) {
+    console.log('RESEND_API_KEY not configured. Skipping digest email.');
+    return;
+  }
+
+  const fromEmail = Deno.env.get('EMAIL_FROM') || 'notifications@unioneyes.com';
+
+  await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${resendApiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: fromEmail,
+      to: user.email,
+      subject,
+      text: body,
+    }),
+  });
 }
 
 async function createBillingReport(period: string, organizationId?: string): Promise<any> {
-  // Implementation for creating billing reports
-  return { recordCount: 0 };
+  try {
+    const lookbackDays = period === 'monthly' ? 30 : 7;
+    const result = await dbQuery<{ record_count: number; total_amount: number }>(
+      `SELECT COUNT(*)::int AS record_count,
+              COALESCE(SUM(total_amount), 0)::float AS total_amount
+       FROM billing_transactions
+       WHERE created_at >= NOW() - ($1::text || ' days')::interval
+         AND ($2::text IS NULL OR organization_id = $2)`,
+      [lookbackDays.toString(), organizationId ?? null]
+    );
+
+    return result.rows[0] ?? { recordCount: 0, totalAmount: 0 };
+  } catch (error) {
+    console.log('Failed to build billing report', error);
+    return { recordCount: 0, totalAmount: 0, error: 'billing_report_unavailable' };
+  }
 }
 
 async function createUsageAnalytics(period: string): Promise<any> {
-  // Implementation for creating usage analytics
-  return { metricsCount: 0 };
+  try {
+    const lookbackDays = period === 'monthly' ? 30 : 7;
+    const result = await dbQuery<{ metric_count: number }>(
+      `SELECT COUNT(*)::int AS metric_count
+       FROM usage_metrics
+       WHERE recorded_at >= NOW() - ($1::text || ' days')::interval`,
+      [lookbackDays.toString()]
+    );
+
+    return { metricsCount: result.rows[0]?.metric_count ?? 0 };
+  } catch (error) {
+    console.log('Failed to build usage analytics', error);
+    return { metricsCount: 0, error: 'usage_analytics_unavailable' };
+  }
 }
 
 async function collectPerformanceMetrics(): Promise<any> {
-  // Implementation for collecting performance metrics
-  return { dataPoints: 0 };
+  try {
+    const result = await dbQuery<{ active_connections: number; total_connections: number }>(
+      `SELECT COUNT(*) FILTER (WHERE state = 'active')::int AS active_connections,
+              COUNT(*)::int AS total_connections
+       FROM pg_stat_activity`
+    );
+
+    return {
+      dataPoints: 1,
+      activeConnections: result.rows[0]?.active_connections ?? 0,
+      totalConnections: result.rows[0]?.total_connections ?? 0,
+    };
+  } catch (error) {
+    console.log('Failed to collect performance metrics', error);
+    return { dataPoints: 0, error: 'performance_metrics_unavailable' };
+  }
 }
 
 async function reviewSecurityLogs(lookbackHours: number): Promise<any[]> {
-  // Implementation for reviewing security logs
-  return [];
+  try {
+    const result = await dbQuery<Record<string, any>>(
+      `SELECT id, event_type, severity, created_at
+       FROM audit_logs
+       WHERE created_at >= NOW() - ($1::text || ' hours')::interval
+       ORDER BY created_at DESC
+       LIMIT 100`,
+      [lookbackHours.toString()]
+    );
+
+    return result.rows ?? [];
+  } catch (error) {
+    console.log('Failed to review security logs', error);
+    return [];
+  }
 }

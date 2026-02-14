@@ -255,8 +255,8 @@ export const POST = async (
         });
         return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
-      'Validation failed'
-      // TODO: Migrate additional details: details: validated.error.errors
+      'Validation failed',
+      validated.error.errors
     );
       }
 

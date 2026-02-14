@@ -112,7 +112,6 @@ export const POST = withRoleAuth('member', async (request, context) => {
         return standardErrorResponse(
           ErrorCode.VALIDATION_ERROR,
           'Missing required fields: pdfUrl, cbaId, organizationId'
-          // TODO: Migrate additional details: cbaId, organizationId'
         );
       }
 

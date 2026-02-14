@@ -20,6 +20,7 @@ import {
   sendConsentGrantedNotification, 
   sendConsentRevokedNotification 
 } from '@/lib/integrations/marketing-notifications';
+import { requireUser, requireUserForOrganization } from '@/lib/api-auth-guard';
 
 /**
  * GET /api/consent
@@ -28,7 +29,6 @@ import {
  */
 export async function GET(request: NextRequest) {
   try {
-    // TODO: Get organizationId from session
     const { searchParams } = new URL(request.url);
     const organizationId = searchParams.get('organizationId');
 
@@ -38,6 +38,8 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    await requireUserForOrganization(organizationId);
 
     const [consent] = await db
       .select()
@@ -49,6 +51,14 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ consent });
   } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     console.error('Error fetching consent:', error);
     return NextResponse.json(
       { error: 'Failed to fetch consent' },
@@ -73,6 +83,8 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    const authContext = await requireUserForOrganization(organizationId);
 
     // Validate at least one preference is true
     const hasAnyPreference = Object.values(preferences).some((v) => v === true);
@@ -99,9 +111,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get consent giver details from session
-    // TODO: Get from authenticated session
-    const consentGivenBy = 'user-placeholder';
+    const consentGivenBy = authContext.userId;
     const ipAddress = request.headers.get('x-forwarded-for') || 'unknown';
     const userAgent = request.headers.get('user-agent') || 'unknown';
 
@@ -116,7 +126,6 @@ export async function POST(request: NextRequest) {
     );
 
     // SPRINT 7: Send consent granted notification
-    // TODO: Get user details from authenticated session
     if (body.userEmail && body.userName) {
       const dataTypes = Object.keys(preferences).filter((key) => preferences[key]);
       sendConsentGrantedNotification(
@@ -133,6 +142,14 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ consent }, { status: 201 });
   } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     console.error('Error creating consent:', error);
     return NextResponse.json(
       { error: 'Failed to grant consent' },
@@ -158,14 +175,22 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // Get consent giver details from session
-    const updatedBy = 'user-placeholder'; // TODO: Get from session
+    const authContext = await requireUser();
+    const updatedBy = authContext.userId;
 
     // Update preferences
     const consent = await updateConsentPreferences(consentId, preferences, updatedBy);
 
     return NextResponse.json({ consent });
   } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     console.error('Error updating consent:', error);
     return NextResponse.json(
       { error: 'Failed to update consent' },
@@ -191,8 +216,8 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Get user details from session
-    const revokedBy = 'user-placeholder'; // TODO: Get from session
+    const authContext = await requireUser();
+    const revokedBy = authContext.userId;
 
     // Revoke consent
     const consent = await revokeConsent(consentId, revokedBy, reason);
@@ -216,6 +241,14 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ consent });
   } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     console.error('Error revoking consent:', error);
     return NextResponse.json(
       { error: 'Failed to revoke consent' },

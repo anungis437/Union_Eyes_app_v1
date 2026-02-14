@@ -16,7 +16,7 @@ import {
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
-import { standardSuccessResponse } from '@/lib/api/standardized-responses';
+import { standardErrorResponse, standardSuccessResponse, ErrorCode } from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
   try {
@@ -60,7 +60,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
       const { id } = params;
       const body = await request.json();
     // Validate request body
-    const validation = bargaining-notesSchema.safeParse(body);
+    const validation = bargainingNotesSchema.safeParse(body);
     if (!validation.success) {
       return standardErrorResponse(
         ErrorCode.VALIDATION_ERROR,
@@ -78,8 +78,8 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         if (!filename || !url || !fileType) {
           return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
-      'filename, url, and fileType are required for attachment'
-      // TODO: Migrate additional details: url, and fileType are required for attachment"
+      'filename, url, and fileType are required for attachment',
+      { missingFields: ['filename', 'url', 'fileType'] }
     );
         }
 

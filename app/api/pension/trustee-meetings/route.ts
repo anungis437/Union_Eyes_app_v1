@@ -107,7 +107,6 @@ export const POST = async (request: NextRequest) => {
         return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
       'Bad Request - trustBoardId, meetingDate, and meetingType are required'
-      // TODO: Migrate additional details: meetingDate, and meetingType are required'
     );
       }
 

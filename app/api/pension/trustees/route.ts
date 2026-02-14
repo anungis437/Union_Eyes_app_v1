@@ -133,7 +133,6 @@ export const GET = async (request: NextRequest) => {
         return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
       'Bad Request - trustBoardId, trusteeName, trusteeType, and termStartDate are required'
-      // TODO: Migrate additional details: trusteeName, trusteeType, and termStartDate are required'
     );
       }
 

@@ -19,7 +19,7 @@ import {
   sendCreditExpirationEmail, 
   sendRedemptionConfirmationEmail 
 } from './email-service';
-import { eq, and, lte, gte, desc, asc, sql, inArray } from 'drizzle-orm';
+import { eq, and, lte, gte, desc, asc, sql, inArray, gt } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { logger } from '@/lib/logger';
 
@@ -180,11 +180,54 @@ export async function notifyAwardPendingApproval(awardId: string) {
  * This function returns an empty array until expiration tracking is added.
  */
 export async function getExpiringCreditsUsers(daysBeforeExpiration: number, batchSize = BATCH_SIZE) {
-  // TODO: Implement credit expiration tracking in rewardWalletLedger schema
-  // When implemented, add expiresAt timestamp field and expirationProcessed boolean
-  
-  // For now, return empty array since expiration is not tracked
-  return [];
+  const now = new Date();
+  const expiresBefore = new Date();
+  expiresBefore.setDate(expiresBefore.getDate() + daysBeforeExpiration);
+
+  const rows = await db
+    .select({
+      userId: rewardWalletLedger.userId,
+      userEmail: users.email,
+      userName: organizationMembers.name,
+      organizationId: organizationMembers.organizationId,
+      organizationName: organizations.name,
+      expiringAmount: sql<number>`sum(${rewardWalletLedger.pointsChange})`,
+      expirationDate: rewardWalletLedger.expiresAt,
+    })
+    .from(rewardWalletLedger)
+    .leftJoin(users, eq(users.userId, rewardWalletLedger.userId))
+    .leftJoin(organizationMembers, eq(organizationMembers.userId, rewardWalletLedger.userId))
+    .leftJoin(organizations, eq(sql`${organizations.id}::text`, organizationMembers.organizationId))
+    .where(
+      and(
+        gte(rewardWalletLedger.expiresAt, now),
+        lte(rewardWalletLedger.expiresAt, expiresBefore),
+        gt(rewardWalletLedger.pointsChange, 0)
+      )
+    )
+    .groupBy(
+      rewardWalletLedger.userId,
+      rewardWalletLedger.expiresAt,
+      users.email,
+      organizationMembers.name,
+      organizationMembers.organizationId,
+      organizations.name
+    )
+    .limit(batchSize);
+
+  return rows
+    .filter((row) => row.userEmail && row.expirationDate)
+    .map((row) => ({
+      userId: row.userId,
+      userEmail: row.userEmail as string,
+      userName: row.userName || (row.userEmail as string).split('@')[0],
+      organizationName: row.organizationName || 'UnionEyes',
+      expiringAmount: row.expiringAmount || 0,
+      expirationDate: row.expirationDate as Date,
+      daysRemaining: Math.ceil(
+        ((row.expirationDate as Date).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+      ),
+    } as ExpiringCreditsNotification));
 }
 
 /**
@@ -194,22 +237,24 @@ export async function getExpiringCreditsUsers(daysBeforeExpiration: number, batc
  * This function logs a warning and returns success without sending emails.
  */
 async function sendExpirationNotificationToUser(
-  userId: string,
-  daysRemaining: number
+  entry: ExpiringCreditsNotification
 ): Promise<NotificationResult> {
   try {
-    // TODO: Implement when credit expiration tracking is added to schema
-    logger.info('[Notifications] Credit expiration not yet implemented', {
-      userId,
-      daysRemaining,
+    await sendCreditExpirationEmail({
+      recipientName: entry.userName,
+      recipientEmail: entry.userEmail,
+      orgName: entry.organizationName,
+      expiringCredits: entry.expiringAmount,
+      expirationDate: entry.expirationDate,
+      daysRemaining: entry.daysRemaining,
     });
-    
-    return { success: true, userId, emailSent: false };
+
+    return { success: true, userId: entry.userId, emailSent: true };
   } catch (error) {
-    logger.error('[Notifications] Error in expiration notification placeholder', { error, userId });
+    logger.error('[Notifications] Error sending expiration notification', { error, userId: entry.userId });
     return { 
       success: false, 
-      userId, 
+      userId: entry.userId, 
       emailSent: false, 
       error: error instanceof Error ? error.message : 'Unknown error' 
     };
@@ -249,10 +294,7 @@ export async function notifyExpiringCredits(daysBeforeExpiration = 7) {
           // Rate limit between emails
           await new Promise((resolve) => setTimeout(resolve, EMAIL_RATE_LIMIT_MS));
           
-          return sendExpirationNotificationToUser(
-            userEntry.userId, 
-            daysBeforeExpiration
-          );
+          return sendExpirationNotificationToUser(userEntry);
         })
       );
       
@@ -440,17 +482,28 @@ export async function scheduleExpirationNotifications(
   expiresAt: Date
 ) {
   try {
-    // TODO: Implement when credit expiration tracking is added to schema
-    logger.info('[Notifications] Credit expiration scheduling not yet implemented', {
-      userId,
-      creditsEarned,
-      proposedExpiresAt: expiresAt.toISOString(),
-    });
+    const [latest] = await db
+      .select({ balanceAfter: rewardWalletLedger.balanceAfter })
+      .from(rewardWalletLedger)
+      .where(eq(rewardWalletLedger.userId, userId))
+      .orderBy(desc(rewardWalletLedger.createdAt))
+      .limit(1);
 
-    return { 
-      success: true, 
-      scheduled: 0,
-      message: 'Credit expiration not yet implemented'
+    await db.insert(rewardWalletLedger).values({
+      id: uuidv4(),
+      userId,
+      transactionType: 'expiration_scheduled',
+      pointsChange: 0,
+      balanceAfter: latest?.balanceAfter ?? 0,
+      expiresAt,
+      description: 'Credit expiration scheduled',
+      createdAt: new Date(),
+    } as any);
+
+    return {
+      success: true,
+      scheduled: 1,
+      message: 'Credit expiration scheduled',
     };
   } catch (error) {
     logger.error('[Notifications] Error in expiration scheduling placeholder', { error, userId });

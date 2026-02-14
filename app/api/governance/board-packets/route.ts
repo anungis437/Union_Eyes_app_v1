@@ -10,6 +10,7 @@ import { boardPackets, boardPacketDistributions } from '@/db/schema/board-packet
 import { and, desc, or, like } from 'drizzle-orm';
 import { z } from 'zod';
 import { boardPacketGenerator } from '@/lib/services/board-packet-generator';
+import { requireUserForOrganization } from '@/lib/api-auth-guard';
 
 // Validation schema for generating board packet
 const generatePacketSchema = z.object({
@@ -148,9 +149,8 @@ export async function POST(req: NextRequest) {
     
     // Validate input
     const validatedData = generatePacketSchema.parse(body);
-    
-    // TODO: Extract from auth
-    const generatedBy = 'system'; // Replace with actual user ID
+    const authContext = await requireUserForOrganization(validatedData.organizationId);
+    const generatedBy = authContext.userId;
     
     // Generate board packet
     const packet = await boardPacketGenerator.generatePacket({
@@ -167,6 +167,14 @@ export async function POST(req: NextRequest) {
       packet,
     }, { status: 201 });
   } catch (error: Record<string, unknown>) {
+    if (error instanceof Error) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (error.message.startsWith('Forbidden')) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
     console.error('Error generating board packet:', error);
     
     if (error instanceof z.ZodError) {

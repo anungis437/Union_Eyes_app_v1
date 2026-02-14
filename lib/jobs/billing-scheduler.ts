@@ -21,10 +21,12 @@
  */
 
 import { db } from '@/db';
-import { organizations } from '@/db/schema-organizations';
+import { organizationMembers, organizations } from '@/db/schema-organizations';
+import { organizationBillingConfig } from '@/db/schema/domains/finance/billing-config';
 import { BillingCycleService, type BillingFrequency } from '@/lib/services/billing-cycle-service';
 import { logger } from '@/lib/logger';
-import { eq } from 'drizzle-orm';
+import { eq, and, inArray, or } from 'drizzle-orm';
+import { getNotificationService } from '@/lib/services/notification-service';
 
 // =============================================================================
 // TYPES
@@ -190,15 +192,36 @@ export class BillingScheduler {
   /**
    * Get organizations configured for a specific billing frequency
    * 
-   * TODO: In production, this should read from organization configuration table
-   * For now, returns all active organizations (assuming monthly billing)
+   * Reads from organization billing configuration when available
    */
   private static async getOrganizationsForBilling(
     frequency: BillingFrequency
   ): Promise<BillingScheduleConfig[]> {
     try {
-      // TODO: Join with organization_billing_config table when created
-      // For now, get all active organizations and assume they want monthly billing
+      const configured = await db
+        .select({
+          organizationId: organizationBillingConfig.organizationId,
+          organizationName: organizations.name,
+          frequency: organizationBillingConfig.billingFrequency,
+          enabled: organizationBillingConfig.enabled,
+        })
+        .from(organizationBillingConfig)
+        .innerJoin(
+          organizations,
+          eq(organizationBillingConfig.organizationId, organizations.id)
+        )
+        .where(
+          and(
+            eq(organizationBillingConfig.enabled, true),
+            eq(organizationBillingConfig.billingFrequency, frequency)
+          )
+        );
+
+      if (configured.length > 0) {
+        return configured as BillingScheduleConfig[];
+      }
+
+      // Fallback: get all active organizations and assume monthly billing
       const orgs = await db
         .select({
           id: organizations.id,
@@ -224,35 +247,112 @@ export class BillingScheduler {
 
   /**
    * Notify organization admins that billing was completed
-   * 
-   * TODO: Implement when notification system is set up
    */
   private static async notifyBillingCompleted(
     organizationId: string,
     result: unknown
   ): Promise<void> {
-    // Placeholder for notification
-    logger.info('Billing completion notification would be sent', {
-      organizationId,
-      transactionsCreated: result.transactionsCreated,
-      totalAmount: result.totalAmount,
-    });
+    const recipients = await this.getBillingRecipients(organizationId);
+    if (recipients.length === 0) {
+      logger.warn('No billing recipients found', { organizationId });
+      return;
+    }
+
+    const notificationService = getNotificationService();
+    const subject = 'Billing cycle completed';
+    const body = `Billing has completed for your organization.\n` +
+      `Transactions created: ${result.transactionsCreated ?? 0}\n` +
+      `Total amount: ${result.totalAmount ?? '0.00'}\n`;
+
+    await Promise.all(
+      recipients.map((recipient) =>
+        notificationService.send({
+          organizationId,
+          recipientEmail: recipient,
+          type: 'email',
+          priority: 'normal',
+          subject,
+          title: subject,
+          body,
+          htmlBody: body.replace(/\n/g, '<br />'),
+          metadata: {
+            type: 'billing_cycle_completed',
+            transactionsCreated: result.transactionsCreated,
+            totalAmount: result.totalAmount,
+          },
+        })
+      )
+    );
   }
 
   /**
    * Notify organization admins that billing failed
-   * 
-   * TODO: Implement when notification system is set up
    */
   private static async notifyBillingFailed(
     organizationId: string,
     error: string
   ): Promise<void> {
-    // Placeholder for notification
-    logger.error('Billing failure notification would be sent', {
-      organizationId,
-      error,
-    });
+    const recipients = await this.getBillingRecipients(organizationId);
+    if (recipients.length === 0) {
+      logger.warn('No billing recipients found', { organizationId });
+      return;
+    }
+
+    const notificationService = getNotificationService();
+    const subject = 'Billing cycle failed';
+    const body = `Billing failed for your organization.\n` +
+      `Error: ${error}`;
+
+    await Promise.all(
+      recipients.map((recipient) =>
+        notificationService.send({
+          organizationId,
+          recipientEmail: recipient,
+          type: 'email',
+          priority: 'high',
+          subject,
+          title: subject,
+          body,
+          htmlBody: body.replace(/\n/g, '<br />'),
+          metadata: {
+            type: 'billing_cycle_failed',
+            error,
+          },
+        })
+      )
+    );
+  }
+
+  private static async getBillingRecipients(organizationId: string): Promise<string[]> {
+    const [org] = await db
+      .select({ id: organizations.id, slug: organizations.slug, email: organizations.email })
+      .from(organizations)
+      .where(or(eq(organizations.id, organizationId as any), eq(organizations.slug, organizationId)))
+      .limit(1);
+
+    const orgIdentifiers = new Set<string>();
+    orgIdentifiers.add(organizationId);
+    if (org?.id) orgIdentifiers.add(String(org.id));
+    if (org?.slug) orgIdentifiers.add(org.slug);
+
+    const roles = ['admin', 'super_admin', 'billing_manager', 'billing_specialist'];
+    const members = await db
+      .select({ email: organizationMembers.email })
+      .from(organizationMembers)
+      .where(
+        and(
+          inArray(organizationMembers.organizationId, Array.from(orgIdentifiers)),
+          inArray(organizationMembers.role, roles)
+        )
+      );
+
+    const recipients = new Set<string>();
+    for (const member of members) {
+      if (member.email) recipients.add(member.email);
+    }
+    if (org?.email) recipients.add(org.email);
+
+    return Array.from(recipients);
   }
 
   /**

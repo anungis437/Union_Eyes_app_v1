@@ -16,6 +16,7 @@ import { organizationMembers } from '@/db/schema/organization-members-schema';
 import { eq, and } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import * as React from 'react';
+import { GovernanceService } from '@/services/governance-service';
 
 /**
  * Check if user has admin role
@@ -191,11 +192,14 @@ export async function hasGoldenSharePrivileges(
   organizationId: string
 ): Promise<boolean> {
   try {
-    // TODO: Integrate with governance service
-    // const { checkGoldenShareStatus } = await import('@/lib/services/governance-service');
-    // return await checkGoldenShareStatus(userId, organizationId);
+    const governanceService = new GovernanceService();
+    const status = await governanceService.checkGoldenShareStatus();
 
-    // For now, check if user is admin (golden share would be a separate check)
+    if (!status?.share || status.share.status !== 'active') {
+      return false;
+    }
+
+    // Golden share privileges are restricted to admins until council membership mapping is added.
     return await isUserAdmin(userId, organizationId);
   } catch (error) {
     logger.error('Failed to check golden share status', { error, userId, organizationId });

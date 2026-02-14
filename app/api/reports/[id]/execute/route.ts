@@ -34,8 +34,8 @@ async function postHandler(
   if (!rateLimitResult.allowed) {
     return standardErrorResponse(
       ErrorCode.RATE_LIMIT_EXCEEDED,
-      'Rate limit exceeded'
-      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+      'Rate limit exceeded',
+      { resetIn: rateLimitResult.resetIn }
     );
   }
 
@@ -56,7 +56,6 @@ async function postHandler(
       return standardErrorResponse(
       ErrorCode.MISSING_REQUIRED_FIELD,
       'Organization ID and User ID required'
-      // TODO: Migrate additional details: User ID, and Organization ID required'
     );
     }
 

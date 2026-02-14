@@ -7,9 +7,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { db, schema } from '../db';
 import { eq, and, desc, isNull } from 'drizzle-orm';
-// TODO: Fix logger import path
-// import { logger } from '@/lib/logger';
-const logger = console;
+import { logger } from '../../../lib/logger';
 
 const router = Router();
 

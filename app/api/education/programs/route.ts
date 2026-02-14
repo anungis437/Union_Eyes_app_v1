@@ -168,7 +168,6 @@ export const POST = async (request: NextRequest) => {
         return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Missing required fields: organizationId, programName'
-      // TODO: Migrate additional details: programName",
     );
       }
 

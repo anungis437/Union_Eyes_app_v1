@@ -90,7 +90,6 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
       return standardErrorResponse(
       ErrorCode.VALIDATION_ERROR,
       'Invalid horizon. Must be 30, 60, or 90 days.'
-      // TODO: Migrate additional details: 60, or 90 days.'
     );
     }
 
