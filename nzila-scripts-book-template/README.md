@@ -2,7 +2,7 @@
 
 A production-grade, auditable template kit that standardizes governance, CI/CD,
 Azure Postgres, Azure Container Apps, Clerk auth, security, observability, and
-Bash + PowerShell parity across all Nzila repositories.
+Bash + PowerShell + Python parity across all Nzila repositories.
 
 ## Overview
 
@@ -11,7 +11,7 @@ This template repository provides:
 - **Reusable template files** — scripts-book chapters, docs, CI/CD workflows, Dockerfiles
 - **Generator CLI** — reads a per-repo manifest and generates content into target repos
 - **Stack profiles** — pre-configured module bundles for common app types
-- **Parity enforcement** — ensures every `.sh` script has a matching `.ps1` (and vice versa)
+- **Parity enforcement** — ensures every `.sh` script has a matching `.ps1` and `.py` (and vice versa)
 
 ## Quick Start
 
@@ -111,10 +111,19 @@ Files that have been manually edited are skipped with a warning.
 
 ## Parity Enforcement
 
-Every `.sh` script must have a matching `.ps1` script (same basename, same folder).
+Every `.sh` script must have a matching `.ps1` and `.py` script (same basename, same folder).
+Python is a first-class scripting language in this template kit.
 
-- With `strict_parity: true` — generation fails if any script lacks its pair
+- With `strict_parity: true` — generation fails if any script lacks its triplet
 - With `strict_parity: false` — stubs are auto-generated for missing pairs
+
+### Script Headers
+
+All scripts must start with strict-mode headers:
+
+- **Bash** (`.sh`): `#!/usr/bin/env bash` + `set -euo pipefail`
+- **PowerShell** (`.ps1`): `Set-StrictMode -Version Latest` + `$ErrorActionPreference = "Stop"`
+- **Python** (`.py`): `#!/usr/bin/env python3` + standard imports (`sys`, `os`, `subprocess`, `pathlib`)
 
 ## Markdownlint
 
