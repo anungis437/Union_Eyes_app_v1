@@ -7,8 +7,7 @@ processes that keep the application secure over time.
 
 - All traffic is encrypted in transit (TLS 1.2+).
 - Authentication is delegated to {{AUTH_PROVIDER}} (see Chapter 03).
-- Tenant data isolation is enforced via `{{TENANT_KEY}}` at the query and
-  RLS layer (see Chapter 03).
+- Tenant data isolation is enforced via `{{TENANT_KEY}}` at the query and RLS layer (see Chapter 03).
 - Content Security Policy (CSP) headers are configured in `next.config.mjs`.
 
 ## Secrets hygiene
@@ -34,8 +33,7 @@ processes that keep the application secure over time.
 
 ## Static analysis
 
-- **ESLint security rules** (e.g., `no-eval`, SQL injection patterns) are
-  enforced in CI.
+- **ESLint security rules** (e.g., `no-eval`, SQL injection patterns) are enforced in CI.
 - **CodeQL** scans run on every push to `main` and on pull requests.
 
 ## Audit logging

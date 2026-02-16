@@ -21,8 +21,7 @@ The application uses **{{AUTH_PROVIDER}}** for identity management.
 1. User visits a protected route.
 2. Middleware checks for a valid session cookie.
 3. If absent, the user is redirected to {{AUTH_PROVIDER}} for login.
-4. On callback, a session is created and the `{{TENANT_KEY}}` claim is
-   extracted from the token.
+4. On callback, a session is created and the `{{TENANT_KEY}}` claim is extracted from the token.
 
 ## Multi-tenancy
 
@@ -33,8 +32,7 @@ column present on every tenant-scoped table.
 
 - Every database query includes a `WHERE {{TENANT_KEY}} = ?` clause.
 - Row-Level Security (RLS) policies mirror this constraint at the database level.
-- API middleware injects the authenticated `{{TENANT_KEY}}` into the request
-  context so that downstream handlers never need to resolve it manually.
+- API middleware injects the authenticated `{{TENANT_KEY}}` into the request context so that downstream handlers never need to resolve it manually.
 
 ### Adding a new tenant
 
@@ -44,7 +42,6 @@ column present on every tenant-scoped table.
 
 ## Security considerations
 
-- Never trust a client-supplied tenant identifier; always derive it from the
-  authenticated session.
+- Never trust a client-supplied tenant identifier; always derive it from the authenticated session.
 - Rotate `AUTH_SECRET` on a regular cadence and after any suspected compromise.
 - Audit log every tenant-switching event for compliance.

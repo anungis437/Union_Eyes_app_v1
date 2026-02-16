@@ -9,8 +9,7 @@ and operate the application without tribal knowledge.
 
 1. Read chapters in order for a first-time setup.
 2. Jump to any chapter as a reference once you are familiar with the stack.
-3. Run the companion `.sh` (Unix), `.ps1` (Windows), or `.py` (Python/cross-platform)
-   scripts directly — they are kept in strict triplet parity.
+3. Run the companion `.sh` (Unix), `.ps1` (Windows), or `.py` (Python/cross-platform) scripts directly — they are kept in strict triplet parity.
 
 ## Chapter index
 

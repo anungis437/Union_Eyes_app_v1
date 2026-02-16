@@ -14,10 +14,8 @@ Depending on the jurisdictions served, the application may be subject to:
 
 ## Data residency
 
-- All tenant data is stored in the region configured for the
-  {{DB_PROVIDER}} instance.
-- Cross-region replication is disabled by default. Enable it only after a
-  legal review confirms compliance with applicable data-residency laws.
+- All tenant data is stored in the region configured for the {{DB_PROVIDER}} instance.
+- Cross-region replication is disabled by default. Enable it only after a legal review confirms compliance with applicable data-residency laws.
 
 ## Export control classification
 
@@ -30,20 +28,16 @@ Depending on the jurisdictions served, the application may be subject to:
 
 The following automated checks run in CI:
 
-1. **License audit** — `pnpm licenses list` ensures no disallowed licenses
-   (e.g., AGPL) appear in production dependencies.
-2. **Data-flow analysis** — Verifies that PII fields are not logged or
-   exported without redaction.
-3. **Geo-IP validation** — Staging smoke tests confirm that requests from
-   embargoed regions are blocked at the edge.
+1. **License audit** — `pnpm licenses list` ensures no disallowed licenses (e.g., AGPL) appear in production dependencies.
+2. **Data-flow analysis** — Verifies that PII fields are not logged or exported without redaction.
+3. **Geo-IP validation** — Staging smoke tests confirm that requests from embargoed regions are blocked at the edge.
 
 ## Data export
 
 When a tenant requests a data export:
 
 1. An authorized admin triggers the export via the admin dashboard.
-2. The export job runs asynchronously and writes an encrypted archive to
-   blob storage.
+2. The export job runs asynchronously and writes an encrypted archive to blob storage.
 3. The tenant is notified with a time-limited download link.
 4. The export event is recorded in the audit log (see Chapter 08).
 

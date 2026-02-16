@@ -42,8 +42,7 @@ Git SHA and `latest` for the most recent successful build.
 ## Deployment strategy
 
 - **Staging** — Automatic deploy on every merge to `main`.
-- **Production** — Blue-green deployment triggered by a manual workflow
-  dispatch or a Git tag matching `v*`.
+- **Production** — Blue-green deployment triggered by a manual workflow dispatch or a Git tag matching `v*`.
 
 ## Rollback
 
