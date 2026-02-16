@@ -119,8 +119,8 @@ export async function renderToTarget(opts: RenderOptions): Promise<RenderResult>
     content = replacePlaceholders(content, placeholders);
 
     const header = getHeader(destRelative);
-    // Only add header if file doesn't already start with a shebang or header
-    if (header && !content.startsWith("#!") && !content.startsWith("<!--")) {
+    // Only add header if file doesn't already start with a shebang, comment header, or HTML comment
+    if (header && !content.startsWith("#!") && !content.startsWith("<!--") && !content.startsWith("# AUTO-GENERATED")) {
       content = header + content;
     }
 

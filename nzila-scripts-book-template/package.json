@@ -9,9 +9,9 @@
     "sb:apply": "node generator/dist/index.js apply",
     "sb:diff": "node generator/dist/index.js diff",
     "sb:doctor": "node generator/dist/index.js doctor",
-    "sb:test-example": "node generator/dist/index.js apply --target examples/nextjs-aca-azurepg-clerk && node generator/dist/index.js validate",
+    "sb:test-example": "node generator/dist/index.js apply --target examples/nextjs-aca-azurepg-clerk/generated && node generator/dist/index.js validate",
     "sb:format": "prettier --write \"generator/src/**/*.ts\"",
-    "build": "pnpm --filter generator build"
+    "build": "pnpm --filter @nzila/scripts-book-generator build"
   },
   "keywords": ["nzila", "scripts-book", "template", "governance", "azure"],
   "license": "UNLICENSED"
