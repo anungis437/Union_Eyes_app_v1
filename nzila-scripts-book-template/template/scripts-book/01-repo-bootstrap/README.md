@@ -57,7 +57,7 @@ and preparing a local development environment.
 
 ## Parity check
 
-Run the parity-check script to verify every `.sh` file has a matching `.ps1`:
+Run the parity-check script to verify every `.sh` file has a matching `.ps1` and `.py`:
 
 ```bash
 ./01-repo-bootstrap/parity-check.sh
@@ -65,9 +65,11 @@ Run the parity-check script to verify every `.sh` file has a matching `.ps1`:
 
 ## Scripts in this chapter
 
-| Script             | Purpose                                      |
-| ------------------ | -------------------------------------------- |
-| `setup.sh`         | Full bootstrap on Unix                       |
-| `setup.ps1`        | Full bootstrap on Windows                    |
-| `parity-check.sh`  | Verify .sh/.ps1 parity across scripts-book   |
-| `parity-check.ps1` | Same parity check for PowerShell environment |
+| Script             | Purpose                                              |
+| ------------------ | ---------------------------------------------------- |
+| `setup.sh`         | Full bootstrap on Unix                               |
+| `setup.ps1`        | Full bootstrap on Windows                            |
+| `setup.py`         | Full bootstrap (Python/cross-platform)               |
+| `parity-check.sh`  | Verify .sh/.ps1/.py parity across scripts-book       |
+| `parity-check.ps1` | Same parity check for PowerShell environment         |
+| `parity-check.py`  | Same parity check (Python/cross-platform)            |

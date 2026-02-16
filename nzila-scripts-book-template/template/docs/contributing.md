@@ -64,9 +64,10 @@ covers everything you need to get started.
 
 ## Scripts-Book Parity
 
-Every shell script must have a cross-platform counterpart:
+Every shell script must have cross-platform counterparts:
 
-- Every `.sh` file **must** have a corresponding `.ps1` file.
-- Every `.ps1` file **must** have a corresponding `.sh` file.
-- Both scripts must produce equivalent behaviour.
+- Every `.sh` file **must** have a corresponding `.ps1` and `.py` file.
+- Every `.ps1` file **must** have a corresponding `.sh` and `.py` file.
+- Every `.py` file **must** have a corresponding `.sh` and `.ps1` file.
+- All three scripts must produce equivalent behaviour.
 - Place scripts in the `scripts-book/` directory.

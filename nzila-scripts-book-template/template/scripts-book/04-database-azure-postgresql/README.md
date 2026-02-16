@@ -48,7 +48,8 @@ appending `?pgbouncer=true&connection_limit=10` to `DATABASE_URL`.
 
 ## Scripts in this chapter
 
-| Script       | Purpose                           |
-| ------------ | --------------------------------- |
-| `migrate.sh`  | Run pending migrations (Unix)    |
-| `migrate.ps1` | Run pending migrations (Windows) |
+| Script       | Purpose                                    |
+| ------------ | ------------------------------------------ |
+| `migrate.sh`  | Run pending migrations (Unix)             |
+| `migrate.ps1` | Run pending migrations (Windows)          |
+| `migrate.py`  | Run pending migrations (Python/cross-platform) |

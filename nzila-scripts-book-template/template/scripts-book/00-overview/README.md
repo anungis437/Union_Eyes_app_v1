@@ -9,8 +9,8 @@ and operate the application without tribal knowledge.
 
 1. Read chapters in order for a first-time setup.
 2. Jump to any chapter as a reference once you are familiar with the stack.
-3. Run the companion `.sh` (Unix) or `.ps1` (Windows) scripts directly —
-   they are kept in strict parity.
+3. Run the companion `.sh` (Unix), `.ps1` (Windows), or `.py` (Python/cross-platform)
+   scripts directly — they are kept in strict triplet parity.
 
 ## Chapter index
 
@@ -31,7 +31,7 @@ and operate the application without tribal knowledge.
 
 - All app-specific values use `{{PLACEHOLDER}}` syntax for easy templating.
 - Every chapter contains a `README.md` explaining its purpose.
-- Script files always come in `.sh` / `.ps1` pairs to guarantee cross-platform parity.
+- Script files always come in `.sh` / `.ps1` / `.py` triplets to guarantee cross-platform parity.
 
 ## Repository
 
